@@ -7,7 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="min-h-screen">
+    <header class="flex justify-between items-center mb-10 backdrop-blur-lg bg-white/40 rounded-2xl p-4 shadow-3xl">
+      <h1 class="text-2xl font-bold tracking-wide">WebChat</h1>
+      <nav class="space-x-6">
+        <a href="index.html" class="hover:text-blue-200 transition">Home</a>
+        <a href="about.html" class="hover:text-blue-200 transition">Sobre</a>
+      </nav>
+    </header>
     <div class="container mx-auto p-4">
         <h1 class="text-3xl font-bold mb-5">Chat Room</h1>
         <div class="bg-white p-4 rounded-lg shadow mb-4 h-96 overflow-y-auto">
