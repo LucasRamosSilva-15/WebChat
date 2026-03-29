@@ -11,33 +11,34 @@
     <header class="flex justify-between items-center mb-10 backdrop-blur-lg bg-white/40 rounded-2xl p-4 shadow-3xl">
       <h1 class=" text-2xl font-bold tracking-wide">WebChat</h1>
       <nav class="space-x-6">
+        <a href="rooms.html" class="hover:text-blue-200 transition">Rooms</a>
         <a href="index.html" class="hover:text-blue-200 transition">Home</a>
         <a href="about.html" class="hover:text-blue-200 transition">Sobre</a>
       </nav>
     </header>
     <div class="container mx-auto p-4">
-        <h1 class="bg-gray-100 p-3 rounded-2xl shadow-lg text-3xl font-bold mb-4">Chat Rooms</h1>
+        <h1 class="w-[200px] text-center mx-auto bg-gray-100 p-3 rounded-2xl shadow-lg text-3xl font-bold mb-4">Chat Rooms</h1>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="bg-white p-4 rounded-lg shadow">
                 <h2 class="text-xl font-semibold mb-2">General Chat</h2>
                 <p class="text-gray-600">A place for general discussions.</p>
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                <a href="chat.html?room=general" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
                     Join
-                </button>
+                </a>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
                 <h2 class="text-xl font-semibold mb-2">Tech Talk</h2>
                 <p class="text-gray-600">Discuss the latest in technology.</p>
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                <a href="chat.html?room=tech" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
                     Join
-                </button>
+                </a>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
                 <h2 class="text-xl font-semibold mb-2">Gaming</h2>
                 <p class="text-gray-600">Chat about your favorite games.</p>
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                <a href="chat.html?room=gaming" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
                     Join
-                </button>
+                </a>
             </div>
         </div>
     </div>
