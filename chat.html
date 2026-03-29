@@ -3,9 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>WebChat - Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-4">Chat Room</h1>
+        <div class="bg-white p-4 rounded-lg shadow mb-4 h-96 overflow-y-auto">
+            <!-- Chat messages will go here -->
+            <div class="mb-2">
+                <span class="font-semibold">Alice:</span>
+                <span class="text-gray-700">Hi everyone!</span>
+            </div>
+            <div class="mb-2">
+                <span class="font-semibold">Bob:</span>
+                <span class="text-gray-700">Hello Alice!</span>
+            </div>
+        </div>
+        <form class="flex space-x-2">
+            <input type="text" placeholder="Type your message..." class="flex-grow bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                Send
+            </button>
+        </form>
+    </div>
 </body>
 </html>
