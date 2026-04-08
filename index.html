@@ -8,29 +8,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-# min-h-screen: Garante que o corpo ocupe pelo menos a altura total da tela, evitando que o rodapé fique no meio da página em telas maiores.
+
+<!-- # min-h-screen: Garante que o corpo ocupe pelo menos a altura total da tela, evitando que o rodapé fique no meio da página em telas maiores.
 # flex flex-col: Define o layout do corpo como um flex container em coluna, permitindo que
+-->
 <body class="min-h-screen flex flex-col">
 
-    # apple-nav : Classe personalizada para o estilo de navegação inspirado na Apple.
-    # sticky top-0: Faz com que o cabeçalho fique fixo no topo da página ao rolar.
-    # z-50: Garante que o cabeçalho fique acima de outros elementos na página.
-    # w-full h-[48px]: Define a largura total e a altura do cabeçalho.
-    # flex items-center justify-center: Centraliza o conteúdo do cabeçalho tanto vertical quanto horizontalmente.
+    <!-- # apple-nav : Classe personalizada para o estilo de navegação inspirado na Apple. -->
+    <!-- # sticky top-0: Faz com que o cabeçalho fique fixo no topo da página ao rolar. -->
+    <!-- # z-50: Garante que o cabeçalho fique acima de outros elementos na página. -->
+    <!-- # w-full h-[48px]: Define a largura total e a altura do cabeçalho. -->
+    <!-- # flex items-center justify-center: Centraliza o conteúdo do cabeçalho tanto vertical quanto horizontalmente. -->
 
     <header class="apple-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
 
-        # max-w-[980px] w-full: Limita a largura do conteúdo do cabeçalho a 980px, mas permite que ele ocupe toda a largura disponível em telas menores.
-        # flex justify-between items-center: Distribui os itens do cabeçalho com espaço entre eles e os alinha verticalmente.
-        # px-4: Adiciona padding horizontal para evitar que o conteúdo fique colado nas bordas da tela.
+        <!-- # max-w-[980px] w-full: Limita a largura do conteúdo do cabeçalho a 980px, mas permite que ele ocupe toda a largura disponível em telas menores. -->
+        <!-- # flex justify-between items-center: Distribui os itens do cabeçalho com espaço entre eles e os alinha verticalmente. -->
+        <!-- # px-4: Adiciona padding horizontal para evitar que o conteúdo fique colado nas bordas da tela. -->
         
         <nav class="max-w-[980px] w-full flex justify-between items-center px-4">
             
-            # font-semibold tracking-tight text-[17px]: Estiliza o título do site com uma fonte semibold, espaçamento entre letras apertado e tamanho de 17px.
+            <!-- # font-semibold tracking-tight text-[17px]: Estiliza o título do site com uma fonte semibold, espaçamento entre letras apertado e tamanho de 17px. -->
             
             <span class="font-semibold tracking-tight text-[17px]">WebChat</span>
             
-            # flex space-x-8 text-[12px] font-normal text-black/80: Define um layout flexível para os links de navegação, com espaçamento entre eles, tamanho de fonte de 12px, peso normal e cor preta com 80% de opacidade.
+            <!-- # flex space-x-8 text-[12px] font-normal text-black/80: Define um layout flexível para os links de navegação, com espaçamento entre eles, tamanho de fonte de 12px, peso normal e cor preta com 80% de opacidade. -->
             
             <div class="flex space-x-8 text-[12px] font-normal text-black/80">
                 <a href="index.html" class="hover:text-black transition">Home</a>
@@ -40,40 +42,43 @@
         </nav>
     </header>
     
-    # flex-grow: Faz com que o conteúdo principal ocupe todo o espaço disponível entre o cabeçalho e o rodapé.
-    
+    <!-- # flex-grow: Faz com que o conteúdo principal ocupe todo o espaço disponível entre o cabeçalho e o rodapé.
+     -->
     <main class="flex-grow flex items-center justify-center px-6">
         
-        # max-w-[800px] w-full text-center: Limita a largura do conteúdo principal a 800px e centraliza o texto.
-        
+        <!-- # max-w-[800px] w-full text-center: Limita a largura do conteúdo principal a 800px e centraliza o texto.
+         -->
         <div class="max-w-[800px] w-full text-center">
             
-            # hero-title text-[56px] md:text-[80px] font-semibold mb-4 text-[#1d1d1f]: Estiliza o título principal com uma classe personalizada, tamanho de 56px em telas menores e 80px em telas maiores, fonte semibold, margem inferior de 4 e cor #1d1d1f.
-            
+            <!-- # hero-title text-[56px] md:text-[80px] font-semibold mb-4 text-[#1d1d1f]: Estiliza o título principal com uma classe personalizada, tamanho de 56px em telas menores e 80px em telas maiores, fonte semibold, margem inferior de 4 e cor #1d1d1f.
+             -->
             <h1 class="hero-title text-[56px] md:text-[80px] font-semibold mb-4 text-[#1d1d1f]">
                 WebChat.
             </h1>
             
-            # text-[21px] md:text-[24px] font-normal text-[#86868b] mb-10 max-w-[500px] mx-auto leading-tight: Estiliza a descrição abaixo do título com tamanho de 21px em telas menores e 24px em telas maiores, fonte normal, cor #86868b, margem inferior de 10, largura máxima de 500px, centralização horizontal e espaçamento entre linhas apertado.
+            <!-- # text-[21px] md:text-[24px] font-normal text-[#86868b] mb-10 max-w-[500px] mx-auto leading-tight: Estiliza a descrição abaixo do título com tamanho de 21px em telas menores e 24px em telas maiores, fonte normal, cor #86868b, margem inferior de 10, largura máxima de 500px, centralização horizontal e espaçamento entre linhas apertado.
+             -->
             
             <p class="text-[21px] md:text-[24px] font-normal text-[#86868b] mb-10 max-w-[500px] mx-auto leading-tight">
                 Uma aplicação de WebChat em tempo real.
             </p>
             
-            # flex flex-col sm:flex-row justify-center items-center gap-4: Define um layout flexível para os botões de ação, organizando-os em coluna em telas menores e em linha em telas maiores, centralizando-os e adicionando um espaçamento de 4 entre eles.
-            
+            <!-- # flex flex-col sm:flex-row justify-center items-center gap-4: Define um layout flexível para os botões de ação, organizando-os em coluna em telas menores e em linha em telas maiores, centralizando-os e adicionando um espaçamento de 4 entre eles.
+             -->
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
                 
-                # btn-pill btn-primary: Classes personalizadas para estilizar o botão de ação principal com um design arredondado e cor primária.
-                # w-full py-3 text-[17px] font-normal min-w-[120px]: Faz com que o botão ocupe toda a largura disponível em telas menores, tenha padding vertical de
-                
+                <!-- # btn-pill btn-primary: Classes personalizadas para estilizar o botão de ação principal com um design arredondado e cor primária.
+                 -->
+                <!-- # w-full py-3 text-[17px] font-normal min-w-[120px]: Faz com que o botão ocupe toda a largura disponível em telas menores, tenha padding vertical de
+                 -->
                 <a href="login.html" class="btn-pill btn-primary px-8 py-3 text-[17px] font-normal min-w-[120px]">
                     Entrar
                 </a>
                 
-                # btn-pill btn-secondary: Classes personalizadas para estilizar o botão de ação secundário com um design arredondado e cor secundária.
-                # px-8 py-3 text-[17px] font-normal flex items-center gap-1: Define o padding, tamanho de fonte, peso da fonte e layout flexível para o
-                
+                <!-- # btn-pill btn-secondary: Classes personalizadas para estilizar o botão de ação secundário com um design arredondado e cor secundária.
+                 -->
+                <!-- # px-8 py-3 text-[17px] font-normal flex items-center gap-1: Define o padding, tamanho de fonte, peso da fonte e layout flexível para o
+                 -->
                 <a href="register.html" class="btn-pill btn-secondary px-8 py-3 text-[17px] font-normal flex items-center gap-1">
                     Criar conta <span class="text-[14px]">›</span>
                 </a>
@@ -81,12 +86,12 @@
         </div>
     </main>
     
-    # py-10 text-center: Adiciona padding vertical de 10 e centraliza o texto no rodapé.
-    
+    <!-- # py-10 text-center: Adiciona padding vertical de 10 e centraliza o texto no rodapé.
+     -->
     <footer class="py-10 text-center">
         
-        # text-[12px] text-black/40 font-normal: Estiliza o texto do rodapé com tamanho de 12px, cor preta com 40% de opacidade e peso normal.
-        
+        <!-- # text-[12px] text-black/40 font-normal: Estiliza o texto do rodapé com tamanho de 12px, cor preta com 40% de opacidade e peso normal.
+         -->
         <p class="text-[12px] text-black/40 font-normal">
             Copyright © 2026 WebChat Inc. Todos os direitos reservados.
         </p>
