@@ -1,42 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebChat - Login</title>
+    <title>WebChat — Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="min-h-screen">
-    <header class="flex justify-between items-center mb-10 backdrop-blur-lg bg-white/40 rounded-2xl p-4 shadow-3xl">
-      <h1 class="text-2xl font-bold tracking-wide">WebChat</h1>
-      <nav class="space-x-6">
-        <a href="rooms.html" class="hover:text-blue-200 transition">Rooms</a>
-        <a href="index.html" class="hover:text-blue-200 transition">Home</a>
-        <a href="about.html" class="hover:text-blue-200 transition">Sobre</a>
-      </nav>
+<body class="min-h-screen flex flex-col">
+
+    <header class="apple-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
+        <nav class="max-w-[980px] w-full flex justify-between items-center px-4">
+            <span class="font-semibold tracking-tight text-[17px]">WebChat</span>
+            <div class="flex space-x-8 text-[12px] font-normal text-black/80">
+                <a href="index.html" class="hover:text-black transition">Home</a>
+                <a href="rooms.html" class="hover:text-black transition">Rooms</a>
+                <a href="about.html" class="hover:text-black transition">Sobre</a>
+            </div>
+        </nav>
     </header>
-    <div class="flex items-center justify-center h-screen">
-        <div class="text-center bg-gray-100 p-10 rounded-2xl shadow-lg">
-        <h1 class="text-5xl font-bold text-gray-800 mb-4">
-            WebChat
-        </h1>
-        <p class="text-gray-600 text-lg mb-8">
-            Acesse sua conta no WebChat
+
+    <main class="flex-grow flex items-center justify-center px-6">
+        <div class="max-w-[400px] w-full text-center">
+            <h1 class="hero-title text-[40px] font-semibold mb-2 text-[#1d1d1f]">
+                Acesse o WebChat.
+            </h1>
+            <p class="text-[17px] font-normal text-[#86868b] mb-10 tracking-tight">
+                Insira seus detalhes abaixo.
+            </p>
+
+            <form class="space-y-6 text-left">
+                <div class="input-group">
+                    <input type="text" id="username" placeholder="Username" required 
+                           class="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Password" required 
+                           class="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none">
+                </div>
+                
+                <button type="submit" class="btn-pill btn-primary w-full py-3 text-[17px] font-normal mt-4">
+                    Continuar
+                </button>
+            </form>
+
+            <div class="mt-8">
+                <a href="register.html" class="text-[14px] text-[#0066cc] hover:underline">
+                    Ainda não tem uma conta? Crie a sua aqui ›
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-10 text-center">
+        <p class="text-[12px] text-black/40 font-normal">
+            Copyright © 2026 WebChat Inc. Todos os direitos reservados.
         </p>
-        <form class="space-y-4">
-            <div>
-                <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
-                <input type="text" id="username" class="bg-white border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-                <input type="password" id="password" class="bg-white border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
-                Login
-            </button>
-        </form>
-    </div>
+    </footer>
 </body>
 </html>

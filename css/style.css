@@ -3,29 +3,46 @@ body {
     background-color: #f0f4f8; 
     color: #1d1d1f; 
     -webkit-font-smoothing: antialiased;
-    }
+}
+
 .apple-nav {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: saturate(180%) blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
 
 .hero-title {
     letter-spacing: -0.022em;
     line-height: 1.07;
-    }
+}
+
+.apple-input {
+    font-size: 17px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.apple-input:focus {
+    border-color: #0071e3;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+}
 
 .btn-pill {
     border-radius: 980px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .btn-primary {
     background-color: #0071e3; 
     color: white;
 }
+
 .btn-primary:hover {
     background-color: #0077ed;
     transform: scale(1.02);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
 }
 .btn-secondary {
     color: #0066cc;
