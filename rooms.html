@@ -1,46 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebChat - Rooms</title>
+    <title>WebChat — Rooms</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="min-h-screen">
-    <header class="flex justify-between items-center mb-10 backdrop-blur-lg bg-white/40 rounded-2xl p-4 shadow-3xl">
-      <h1 class=" text-2xl font-bold tracking-wide">WebChat</h1>
-      <nav class="space-x-6">
-        <a href="rooms.html" class="hover:text-blue-200 transition">Rooms</a>
-        <a href="index.html" class="hover:text-blue-200 transition">Home</a>
-        <a href="about.html" class="hover:text-blue-200 transition">Sobre</a>
-      </nav>
+<body class="min-h-screen flex flex-col">
+
+    <header class="apple-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
+        <nav class="max-w-[980px] w-full flex justify-between items-center px-4">
+            <span class="font-semibold tracking-tight text-[17px]">WebChat</span>
+            <div class="flex space-x-8 text-[12px] font-normal text-black/80">
+                <a href="index.html" class="hover:text-black transition">Home</a>
+                <a href="rooms.html" class="hover:text-black transition">Rooms</a>
+                <a href="about.html" class="hover:text-black transition">Sobre</a>
+            </div>
+        </nav>
     </header>
-    <div class="container mx-auto p-4">
-        <h1 class="w-[200px] text-center mx-auto bg-gray-100 p-3 rounded-2xl shadow-lg text-3xl font-bold mb-4">Chat Rooms</h1>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-2">Chat general</h2>
-                <p class="text-gray-600">um chat para discussões gerais.</p>
-                <a href="chat.html?room=general" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+
+    <main class="max-w-[1024px] mx-auto p-8 w-full">
+        <header class="text-center mb-12">
+            <h1 class="hero-title text-[40px] md:text-[56px] font-semibold text-[#1d1d1f]">
+                Escolha sua sala.
+            </h1>
+            <p class="text-[19px] text-[#86868b] mt-2">Explore conversas em tempo real.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white/60 backdrop-blur-md p-8 rounded-[20px] flex flex-col justify-between hover:bg-white/80 transition-all duration-500 shadow-sm">
+                <div>
+                    <h2 class="text-[24px] font-semibold tracking-tight text-[#1d1d1f] mb-2">Geral</h2>
+                    <p class="text-[17px] text-[#424245] leading-snug mb-6">Um espaço para discussões amplas e variadas.</p>
+                </div>
+                <a href="chat.html?room=general" class="btn-pill btn-primary self-start px-6 py-2 text-[14px] font-normal">
                     Entrar
                 </a>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-2">Chat de Tecnologia</h2>
-                <p class="text-gray-600">Discuta as últimas novidades em tecnologia.</p>
-                <a href="chat.html?room=tech" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+
+            <div class="bg-white/60 backdrop-blur-md p-8 rounded-[20px] flex flex-col justify-between hover:bg-white/80 transition-all duration-500 shadow-sm">
+                <div>
+                    <h2 class="text-[24px] font-semibold tracking-tight text-[#1d1d1f] mb-2">Tecnologia</h2>
+                    <p class="text-[17px] text-[#424245] leading-snug mb-6">Discuta as últimas inovações e tendências.</p>
+                </div>
+                <a href="chat.html?room=tech" class="btn-pill btn-primary self-start px-6 py-2 text-[14px] font-normal">
                     Entrar
                 </a>
             </div>
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-2">Games</h2>
-                <p class="text-gray-600">Discuta seus jogos favoritos.</p>
-                <a href="chat.html?room=gaming" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+
+            <div class="bg-white/60 backdrop-blur-md p-8 rounded-[20px] flex flex-col justify-between hover:bg-white/80 transition-all duration-500 shadow-sm">
+                <div>
+                    <h2 class="text-[24px] font-semibold tracking-tight text-[#1d1d1f] mb-2">Games</h2>
+                    <p class="text-[17px] text-[#424245] leading-snug mb-6">O ponto de encontro para jogadores de todas as plataformas.</p>
+                </div>
+                <a href="chat.html?room=gaming" class="btn-pill btn-primary self-start px-6 py-2 text-[14px] font-normal">
                     Entrar
                 </a>
             </div>
+
         </div>
-    </div>
+    </main>
+
+    <footer class="py-10 text-center mt-auto">
+        <p class="text-[12px] text-black/40 font-normal">
+            Copyright © 2026 WebChat Inc. Todos os direitos reservados.
+        </p>
+    </footer>
+
 </body>
 </html>
