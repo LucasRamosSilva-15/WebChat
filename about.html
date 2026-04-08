@@ -1,31 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebChat - Sobre</title>
+    <title>WebChat — Sobre</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="min-h-screen">
-    <header class="flex justify-between items-center mb-10 backdrop-blur-lg bg-white/40 rounded-2xl p-4 shadow-3xl">
-      <h1 class="text-2xl font-bold tracking-wide">WebChat</h1>
-      <nav class="space-x-6">
-        <a href="rooms.html" class="hover:text-blue-200 transition">Rooms</a>
-        <a href="index.html" class="hover:text-blue-200 transition">Home</a>
-        <a href="about.html" class="hover:text-blue-200 transition">Sobre</a>
-      </nav>
+<body class="min-h-screen flex flex-col">
+
+    <header class="apple-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
+        <nav class="max-w-[980px] w-full flex justify-between items-center px-4">
+            <span class="font-semibold tracking-tight text-[17px]">WebChat</span>
+            <div class="flex space-x-8 text-[12px] font-normal text-black/80">
+                <a href="index.html" class="hover:text-black transition">Home</a>
+                <a href="rooms.html" class="hover:text-black transition">Rooms</a>
+                <a href="about.html" class="hover:text-black transition">Sobre</a>
+            </div>
+        </nav>
     </header>
-    <div>
-        <h1 class="w-[400px] mx-auto bg-white p-6 rounded-lg text-4xl font-bold mb-6 text-center text-black">Sobre o WebChat</h1>
-        <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-            <p class="text-gray-700 text-lg mb-4">
-                O WebChat é uma aplicação de chat simples e moderna em tempo real, construída usando HTML, Tailwind CSS, Node.js, Express, React.js e JavaScript. Ele permite que os usuários se comuniquem em tempo real em diferentes salas de chat.
+
+    <main class="flex-grow flex flex-col items-center px-6 py-20">
+        
+        <section class="max-w-[800px] w-full text-center mb-16">
+            <h1 class="hero-title text-[56px] md:text-[72px] font-semibold text-[#1d1d1f] mb-6">
+                Sobre o WebChat.
+            </h1>
+            <p class="text-[21px] md:text-[24px] font-normal text-[#86868b] leading-tight tracking-tight max-w-[600px] mx-auto">
+                Uma aplicação de chat que é simples e moderna .
             </p>
-            <p class="text-gray-700 text-lg mb-4">
-                Este projeto foi criado como um exemplo de como construir uma aplicação web interativa usando tecnologias modernas. Ele inclui funcionalidades básicas como registro, login, criação de salas de chat e envio de mensagens.
-            </p>
+        </section>
+
+        <section class="max-w-[980px] w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white/50 backdrop-blur-sm p-10 rounded-[20px] border border-white/20">
+                <h2 class="text-[24px] font-semibold mb-4 tracking-tight">A Tecnologia</h2>
+                <p class="text-[17px] text-[#424245] leading-relaxed tracking-tight">
+                    O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js e Socket.io, proporcionando uma experiência de chat em tempo real, rápida e que é responsiva.
+                </p>
+            </div>
+
+            <div class="bg-white/50 backdrop-blur-sm p-10 rounded-[20px] border border-white/20">
+                <h2 class="text-[24px] font-semibold mb-4 tracking-tight">O Propósito</h2>
+                <p class="text-[17px] text-[#424245] leading-relaxed tracking-tight">
+                    Este projeto tem como objetivo criar uma plataforma de chat moderna e eficiente, que ofereça uma experiência de usuário excepcional em tempo real.
+                </p>
+            </div>
+        </section>
+
+        <div class="mt-20">
+            <a href="index.html" class="btn-pill btn-primary px-10 py-4 text-[17px]">
+                Voltar ao Início
+            </a>
         </div>
-    </div>
+    </main>
+
+    <footer class="py-10 text-center">
+        <p class="text-[12px] text-black/40 font-normal">
+            Copyright © 2026 WebChat Inc. Todos os direitos reservados.
+        </p>
+    </footer>
+
 </body>
 </html>
