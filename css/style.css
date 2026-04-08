@@ -1,6 +1,6 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #f0f4f8; 
+    background-color: #acc7e1; 
     color: #1d1d1f; 
     -webkit-font-smoothing: antialiased;
 }
@@ -45,13 +45,17 @@ body {
     transform: scale(0.98);
 }
 .btn-secondary {
-    color: #0066cc;
-    border: 1px solid #0066cc;
+    color: #0f1317;
+    background-color: #16ff49b7;
+    border: 1px solid #1fe239;
 }
 
 .btn-secondary:hover {
-    background-color: rgba(0, 102, 204, 0.05);
     text-decoration: underline;
+    transform: scale(1.02);
+}
+.btn-secondary:active {
+    transform: scale(0.98);
 }
 
 .chat-container::-webkit-scrollbar {
