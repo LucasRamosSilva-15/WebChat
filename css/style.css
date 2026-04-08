@@ -59,19 +59,28 @@ body {
     color: white;
 }
 
+/* Efeitos de hover e active para o botão primário, com mudança de cor e leve escala. */
+
 .btn-primary:hover {
     background-color: #0077ed;
     transform: scale(1.02);
 }
 
+/* Efeito de active para o botão primário, com leve escala para dar feedback visual. */
+
 .btn-primary:active {
     transform: scale(0.98);
 }
+
+/* Estilos para o botão secundário, com cor de fundo verde translúcida e texto escuro. */
+
 .btn-secondary {
     color: #0f1317;
     background-color: #16ff49b7;
     border: 1px solid #1fe239;
 }
+
+/* Efeitos de hover e active para o botão secundário, com sublinhado no texto e leve escala. */
 
 .btn-secondary:hover {
     text-decoration: underline;
@@ -81,18 +90,26 @@ body {
     transform: scale(0.98);
 }
 
+/* Estilos para o container de chat, com altura fixa, rolagem suave e personalização da barra de rolagem. */
+
 .chat-container::-webkit-scrollbar {
     width: 6px;
 }
+
+/* Estilos para a trilha da barra de rolagem, tornando-a transparente para um visual mais limpo. */
 
 .chat-container::-webkit-scrollbar-track {
     background: transparent;
 }
 
+/* Estilos para o polegar da barra de rolagem, com cor clara e bordas arredondadas para um visual mais suave. */
+
 .chat-container::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.1);
     border-radius: 10px;
 }
+
+/* Efeitos de hover para o polegar da barra de rolagem, escurecendo a cor para indicar interatividade. */
 
 @keyframes fadeInUp {
     from {
@@ -105,9 +122,13 @@ body {
     }
 }
 
+/* Classe para aplicar a animação de fade-in e movimento para cima, com duração de 0.3s e curva de aceleração suave. */
+
 .animate-fade-in-up {
     animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+/* Estilos para o container de chat, definindo uma altura fixa, rolagem suave e personalização da barra de rolagem para uma experiência de usuário mais agradável. */
 
 #chat-container {
     display: flex;
