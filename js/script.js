@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <span class="text-[11px] text-[#86868b] mr-3 mt-1 uppercase tracking-widest">Enviado</span>
             `;
-        } /* se não for do usuário, criar elemento para mensagem de outro usuário (fica do lado esquerdo) */
+        } /* se não for do usuário, criar elemento para mensagem de outro usuário (lado esquerdo) */
         else {
             messageDiv.className = 'flex flex-col items-start animate-fade-in-up';
             messageDiv.innerHTML = `
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         /* adicionar a mensagem ao container do chat */
         chatContainer.appendChild(messageDiv);
-        /* rolar para o final do container */
+        /* Auto-scroll para a mensagem mais recente */
         chatContainer.scrollTo({
             top: chatContainer.scrollHeight,
             behavior: 'smooth'

@@ -9,33 +9,10 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 
- <!-- A página de login segue o mesmo estilo visual das outras páginas
-# min-h-screen flex flex-col garante que o layout ocupe toda a altura da tela e organize os elementos em coluna
-### -->
-
 <body class="min-h-screen flex flex-col">
-    
-    <!-- apple-nav é a classe de navegação fixa no topo, inspirada no design da Apple
-    sticky top-0 faz com que o cabeçalho fique fixo no topo da página ao rolar
-    z-50 garante que o cabeçalho fique acima de outros elementos
-    w-full h-[48px] define a largura total e a altura do cabeçalho
-    flex items-center justify-center centraliza o conteúdo do cabeçalho tanto vertical
- -->
-
     <header class="apple-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
-        
-        <!-- # max-w-[980px] w-full limita a largura do conteúdo do cabeçalho a 980px, mas permite que ele ocupe toda a largura disponível em telas menores -->
-        <!-- # flex justify-between items-center distribui os itens do cabeçalho com espaço entre eles -->
-        <!-- # px-4 adiciona padding horizontal para evitar que o conteúdo fique colado nas bordas da tela -->
-        
-        <nav class="max-w-[980px] w-full flex justify-between items-center px-4">
-            
-            <!-- # font-semibold tracking-tight text-[17px] estiliza o título do site com uma fonte semibold, espaçamento entre letras apertado e tamanho de 17px -->
-            
-            <span class="font-semibold tracking-tight text-[17px]">WebChat</span>
-            
-            <!-- # flex space-x-8 text-[12px] font-normal text-black/80 define um layout flexível para os links de navegação, com espaçamento entre eles, tamanho de fonte de 12px, peso normal e cor preta com 80% de opacidade -->
-            
+        <nav class="max-w-[980px] w-full flex justify-between items-center px-4">            
+            <span class="font-semibold tracking-tight text-[17px]">WebChat</span>            
             <div class="flex space-x-8 text-[12px] font-normal text-black/80">
                 <a href="index.html" class="hover:text-black transition">Home</a>
                 <a href="rooms.html" class="hover:text-black transition">Rooms</a>
@@ -43,37 +20,16 @@
             </div>
         </nav>
     </header>
-    
-    <!-- # flex-grow faz com que o conteúdo principal ocupe todo o espaço disponível entre o cabeçalho e o rodapé -->
-
-    <main class="flex-grow flex items-center justify-center px-6">
-        
-        <!-- # max-w-[400px] w-full text-center limita a largura do conteúdo principal a 400px e centraliza o texto -->
-        
+    <main class="flex-grow flex items-center justify-center px-6">        
         <div class="max-w-[400px] w-full text-center">
-            
-            <!-- # hero-title text-[40px] font-semibold mb-2 text-[#1d1d1f] estiliza o título principal com uma classe personalizada, tamanho de 40px, fonte semibold, margem inferior de 2 e cor #1d1d1f -->
-
             <h1 class="hero-title text-[40px] font-semibold mb-2 text-[#1d1d1f]">
                 Acesse o WebChat.
             </h1>
-            
-            <!-- # text-[17px] font-normal text-[#86868b] mb-10 tracking-tight estiliza a descrição abaixo do título com tamanho de 17px, fonte normal, cor #86868b, margem inferior de 10 e espaçamento entre letras apertado -->
-
             <p class="text-[17px] font-normal text-[#86868b] mb-10 tracking-tight">
                 Insira seus detalhes abaixo.
             </p>
-
-            <!-- # space-y-6 text-left estiliza o formulário com espaçamento entre os campos e alinhamento à esquerda -->
-
             <form class="space-y-6 text-left">
-                
-                <!-- # input-group é uma classe personalizada para estilizar os campos de entrada -->
-
                 <div class="input-group">
-                    
-                    <!-- # apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none estiliza os campos de entrada com uma classe personalizada, largura total, padding, borda arredondada, cor de fundo semi-transparente e remove o contorno padrão ao focar -->
-
                     <input type="text" id="username" placeholder="Username" required 
                            class="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none">
                 </div>
@@ -81,18 +37,12 @@
                     <input type="password" id="password" placeholder="Password" required 
                            class="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none">
                 </div>
-                
-                <!-- # btn-pill btn-primary é uma classe personalizada para estilizar o botão de ação principal com um design arredondado e cor primária -->
-
                 <button type="submit" class="btn-pill btn-primary w-full py-3 text-[17px] font-normal mt-4">
                     Continuar
                 </button>
             </form>
 
             <div class="mt-8">
-                
-                <!-- # text-[14px] text-[#0066cc] hover:underline estiliza o link de registro com tamanho de fonte de 14px, cor azul e sublinhado ao passar o mouse -->
-
                 <a href="register.html" class="text-[14px] text-[#0066cc] hover:underline">
                     Ainda não tem uma conta? Crie a sua aqui ›
                 </a>
