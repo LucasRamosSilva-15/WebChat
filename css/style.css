@@ -1,4 +1,9 @@
+/* Estilos personalizados inspirados no design da Apple. */
+
 body {
+    
+    /* Define a fonte principal, cor de fundo e suavização de fontes para uma aparência mais nítida. */
+
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: #acc7e1; 
     color: #1d1d1f; 
@@ -6,32 +11,50 @@ body {
 }
 
 .apple-nav {
+    
+    /* Estilos para o cabeçalho inspirado na Apple, com fundo translúcido e borda sutil. */
+
     background: rgba(97, 110, 183, 0.7);
     backdrop-filter: saturate(180%) blur(20px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .hero-title {
+
+    /* Estilos para o título principal da página, com tamanho grande, peso semibold e espaçamento entre letras. */
+
     letter-spacing: -0.022em;
     line-height: 1.07;
 }
 
 .apple-input {
+    
+    /* Estilos para os campos de entrada, com borda arredondada, cor de fundo clara e transições suaves. */
+
     font-size: 17px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .apple-input:focus {
+    
+    /* Estilos para os campos de entrada quando estão focados, com borda azul e sombra sutil. */
+
     border-color: #0071e3;
     box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
 }
 
 .btn-pill {
+
+    /* Estilos para os botões, com borda arredondada, transições suaves e efeitos de hover e active. */
+
     border-radius: 980px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary {
+
+    /* Estilos para o botão primário, com cor de fundo azul e texto branco. */
+
     background-color: #0071e3; 
     color: white;
 }
