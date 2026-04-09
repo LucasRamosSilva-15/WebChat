@@ -1,5 +1,4 @@
 /* Script para manipular o chat */
-
 document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message-input');
