@@ -1,4 +1,3 @@
-/* Script para manipular o chat */
 document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message-input');
@@ -12,12 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
         /* verificar se a mensagem é do usuário (eu) ou de outro usuário */
 
         if (sender === 'me') {
-            
-            /* criar elemento para mensagem do usuário */
-            
+                        
             messageDiv.className = 'flex flex-col items-end animate-fade-in-up';
             
-            /* conteúdo HTML para a mensagem do usuário que fica do lado direito, com estilo personalizado e indicação de envio. */
+            /* conteúdo HTML para a mensagem do usuário que fica do lado direito, com estilo personalizado. */
 
             messageDiv.innerHTML = `
                 <div class="bg-[#0071e3] text-white px-4 py-2 rounded-[18px] max-w-[70%] shadow-sm">
