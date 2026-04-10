@@ -2,54 +2,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message-input');
     const chatContainer = document.getElementById('chat-container');
+
+    if (!chatForm || !messageInput || !chatContainer) return;
     
-    /* Função para adicionar uma mensagem ao chat */
-
-    const addMessage = (text, sender = 'me') => {
-        const messageDiv = document.createElement('div');
-        
-        /* verificar se a mensagem é do usuário (eu) ou de outro usuário */
-
-        if (sender === 'me') {
-                        
-            messageDiv.className = 'flex flex-col items-end animate-fade-in-up';
-            
-            /* conteúdo HTML para a mensagem do usuário que fica do lado direito, com estilo personalizado. */
-
-            messageDiv.innerHTML = `
-                <div class="bg-[#0071e3] text-white px-4 py-2 rounded-[18px] max-w-[70%] shadow-sm">
-                    <p class="text-[16px] leading-snug">${text}</p>
+    const createMessageTemplate = (text, sender) => {
+        const isMe = sender === 'me';
+        if (isMe) {
+            return `
+                <div class="flex flex-col items-end animate-fade-in-up">
+                    <div class="bg-[#0071e3] text-white px-4 py-2 rounded-[18px] max-w-[70%] shadow-sm">
+                        <p class="text-[16px] leading-snug">${text}</p>
+                    </div>
+                    <span class="text-[11px] text-[#86868b] mr-3 mt-1 uppercase tracking-widest">Enviado</span>
                 </div>
-                <span class="text-[11px] text-[#86868b] mr-3 mt-1 uppercase tracking-widest">Enviado</span>
             `;
-        } /* se não for do usuário, criar elemento para mensagem de outro usuário (lado esquerdo) */
-        else {
-            messageDiv.className = 'flex flex-col items-start animate-fade-in-up';
-            messageDiv.innerHTML = `
+        }
+        return `
+            <div class="flex flex-col items-start animate-fade-in-up">
                 <span class="text-[12px] text-[#86868b] ml-3 mb-1 font-medium">${sender}</span>
                 <div class="bg-white/70 backdrop-blur-sm text-[#1d1d1f] px-4 py-2 rounded-[18px] max-w-[70%] shadow-sm border border-white/20">
                     <p class="text-[16px] leading-snug">${text}</p>
                 </div>
-            `;
-        }
-        /* adicionar a mensagem ao container do chat */
-        chatContainer.appendChild(messageDiv);
-        /* Auto-scroll para a mensagem mais recente */
+            </div>
+        `;
+    };
+    const addMessage = (text, sender = 'me') => {
+        chatContainer.insertAdjacentHTML('beforeend', createMessageTemplate(text, sender));
+        
+        scrollToBottom();
+    };
+    const scrollToBottom = () => {
         chatContainer.scrollTo({
             top: chatContainer.scrollHeight,
             behavior: 'smooth'
         });
     };
-
-    /* Evento para enviar mensagem */
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const msg = messageInput.value.trim();
+        
+        const msg = messageInput.value?.trim();
+        messageInput.value = '';
 
         if (msg) {
             addMessage(msg, 'me');
-            messageInput.value = '';
-            
             setTimeout(() => {
                 addMessage('Mensagem recebida! (Simulação provisória)', 'Sistema');
             }, 1000);
