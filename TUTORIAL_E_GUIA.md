@@ -50,3 +50,4 @@ Para que o projeto completo funcione na sua máquina, você sempre precisará ro
 - **Visual / Cores / Telas:** Acesse a pasta `frontend/src/`. As páginas estarão dentro de `frontend/src/pages` (ex: `Home.jsx`, `Chat.jsx`).
 - **Lógica do Chat / Envio de Mensagens:** Acesse o arquivo `backend/server.js`.
 - **Estilos / CSS Global:** Acesse o arquivo `frontend/src/index.css`.
+- **Arquivos antigos:** Acesse a pasta `legacy/`
