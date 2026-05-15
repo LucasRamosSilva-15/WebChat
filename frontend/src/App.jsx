@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Rooms from './pages/Rooms';
 import Chat from './pages/Chat';
 import About from './pages/About';
+import Custom from './pages/Custom';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/about" element={<About />} />
+          <Route path="/custom" element={<Custom />} />
         </Routes>
         <Footer />
       </div>
