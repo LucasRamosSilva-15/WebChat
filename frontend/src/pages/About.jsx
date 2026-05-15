@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom';
 
+const InfoCard = ({ title, description }) => (
+    <div className="bg-white/50 backdrop-blur-sm p-10 rounded-[20px] border border-white/20">
+        <h2 className="text-[24px] font-semibold mb-4 tracking-tight">{title}</h2>
+        <p className="text-[17px] text-[#424245] leading-relaxed tracking-tight">{description}</p>
+    </div>
+);
+
 const About = () => {
     return (
         <main className="reveal flex-grow flex flex-col items-center px-6 py-20">
@@ -13,19 +20,18 @@ const About = () => {
             </section>
 
             <section className="max-w-[980px] w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white/50 backdrop-blur-sm p-10 rounded-[20px] border border-white/20">
-                    <h2 className="text-[24px] font-semibold mb-4 tracking-tight">A Tecnologia</h2>
-                    <p className="text-[17px] text-[#424245] leading-relaxed tracking-tight">
-                        O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js e Socket.io, proporcionando uma experiência de chat em tempo real, rápida e que é responsiva.
-                    </p>
-                </div>
-
-                <div className="bg-white/50 backdrop-blur-sm p-10 rounded-[20px] border border-white/20">
-                    <h2 className="text-[24px] font-semibold mb-4 tracking-tight">O Propósito</h2>
-                    <p className="text-[17px] text-[#424245] leading-relaxed tracking-tight">
-                        Este projeto tem como objetivo criar uma plataforma de chat moderna e eficiente, que ofereça uma experiência de usuário boa em tempo real.
-                    </p>
-                </div>
+                <InfoCard
+                    title="A Tecnologia"
+                    description="O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js, Express.js, e Socket.io, proporcionando uma experiência de chat em tempo real, rápida e que é responsiva."
+                />
+                <InfoCard
+                    title="O Propósito"
+                    description="Este projeto tem como objetivo criar uma plataforma de chat moderna e eficiente, que ofereça uma experiência de usuário boa em tempo real."
+                />
+                <InfoCard
+                    title="A Equipe"
+                    description="Este projeto foi desenvolvido por: Lucas Ramos Silva, Wssihélio Vasconcelos, Ruan Victor e Gabriel Lobão."
+                />
             </section>
 
             <div className="mt-20">
