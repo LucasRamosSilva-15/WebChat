@@ -38,6 +38,16 @@ const Rooms = () => {
                     description="O ponto de encontro para jogadores de todas as plataformas."
                     roomParam="gaming"
                 />
+                <RoomCard
+                    title="Computação Gráfica"
+                    description="Discuta sobre computação gráfica e animação."
+                    roomParam="cg"
+                />
+                <RoomCard
+                    title="Web"
+                    description="Discuta sobre web development."
+                    roomParam="web"
+                />
             </div>
         </main>
     );
