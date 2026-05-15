@@ -1,12 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Custom() {
     const [displayName, setDisplayName] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
 
+    useEffect(() => {
+        const savedName = localStorage.getItem('chat_displayName');
+        const savedStatus = localStorage.getItem('chat_statusMessage');
+        if (savedName) setDisplayName(savedName);
+        if (savedStatus) setStatusMessage(savedStatus);
+    }, []);
+
     const handleSave = (e) => {
         e.preventDefault();
+        localStorage.setItem('chat_displayName', displayName);
+        localStorage.setItem('chat_statusMessage', statusMessage);
+        window.dispatchEvent(new Event('profileUpdated'));
         console.log("Perfil atualizado:", { displayName, statusMessage });
+        // Provisório para feedback (vai ser melhorado no futuro com um Toast depois)
+        alert("Perfil salvo com sucesso!");
     };
 
     return (
