@@ -21,7 +21,7 @@ const Avatar = ({ src, onClick }) => (
     </div>
 );
 
-const MessageBubble = ({ msg, onAvatarClick }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick }) => {
     const msgTime = msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     if (msg.isMe) {
@@ -30,7 +30,7 @@ const MessageBubble = ({ msg, onAvatarClick }) => {
                 <div className="flex flex-col items-end max-w-[70%]">
                     <div className="bg-[#0071e3] text-white px-4 py-2 rounded-[18px] rounded-br-sm shadow-sm flex flex-col">
                         {msg.image && (
-                            <img src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover" />
+                            <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                         )}
                         {msg.text && <p className="text-[16px] leading-snug">{msg.text}</p>}
                     </div>
@@ -56,7 +56,7 @@ const MessageBubble = ({ msg, onAvatarClick }) => {
                 <span className="text-[12px] text-[#86868b] ml-1 mb-1 font-medium">{msg.sender}</span>
                 <div className="bg-white/70 backdrop-blur-sm text-[#1d1d1f] px-4 py-2 rounded-[18px] rounded-bl-sm shadow-sm border border-white/20 flex flex-col">
                     {msg.image && (
-                        <img src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover" />
+                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                     )}
                     {msg.text && <p className="text-[16px] leading-snug">{msg.text}</p>}
                 </div>
@@ -67,12 +67,11 @@ const MessageBubble = ({ msg, onAvatarClick }) => {
 };
 
 const Chat = () => {
-    const [messages, setMessages] = useState([
-        { text: "Bem-vindo ao chat!", sender: "Sistema", isMe: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
     const chatContainerRef = useRef(null);
 
@@ -84,8 +83,8 @@ const Chat = () => {
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
-                    const MAX_HEIGHT = 800;
+                    const MAX_WIDTH = 1280;
+                    const MAX_HEIGHT = 1280;
                     let width = img.width;
                     let height = img.height;
 
@@ -106,7 +105,7 @@ const Chat = () => {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
                     setImagePreview(dataUrl);
                 };
                 img.src = reader.result;
@@ -124,6 +123,35 @@ const Chat = () => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const room = queryParams.get('room') || 'general';
+    const currentRoomRef = useRef(null);
+
+    useEffect(() => {
+        const savedMessages = localStorage.getItem(`chat_messages_${room}`);
+        if (savedMessages) {
+            try {
+                setMessages(JSON.parse(savedMessages));
+            } catch (e) {
+                console.error("Erro ao carregar mensagens:", e);
+                setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+            }
+        } else {
+            setMessages([
+                { text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+            ]);
+        }
+        currentRoomRef.current = room;
+    }, [room]);
+
+    useEffect(() => {
+        if (currentRoomRef.current === room && messages.length > 0) {
+            try {
+                const messagesToSave = messages.slice(-50);
+                localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesToSave));
+            } catch (error) {
+                console.error("Erro ao salvar mensagens:", error);
+            }
+        }
+    }, [messages, room]);
 
     useEffect(() => {
         socket.emit("join_room", { room });
@@ -227,6 +255,15 @@ const Chat = () => {
 
     return (
         <>
+            {selectedImage && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setSelectedImage(null)}>
+                    <button onClick={() => setSelectedImage(null)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+                        <X size={24} />
+                    </button>
+                    <img src={selectedImage} alt="Full Screen" className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-sm" onClick={(e) => e.stopPropagation()} />
+                </div>
+            )}
+
             {selectedUser && selectedUser.sender !== "Sistema" && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedUser(null)}>
                     <div className="bg-white/90 backdrop-blur-xl p-8 rounded-[28px] shadow-2xl max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
@@ -255,7 +292,7 @@ const Chat = () => {
                 <div ref={chatContainerRef} className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-10 flex-grow overflow-y-auto space-y-4 mb-6 pr-2 chat-container">
 
                     {messages.map((msg, index) => (
-                        <MessageBubble key={index} msg={msg} onAvatarClick={setSelectedUser} />
+                        <MessageBubble key={index} msg={msg} onAvatarClick={setSelectedUser} onImageClick={setSelectedImage} />
                     ))}
 
                 </div>
