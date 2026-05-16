@@ -57,12 +57,12 @@ function Custom() {
 
                 <form onSubmit={handleSave} className="space-y-6">
                     <div className="flex flex-col items-center justify-center mb-2">
-                        <input 
-                            type="file" 
-                            accept="image/*" 
-                            ref={fileInputRef} 
-                            onChange={handlePhotoChange} 
-                            className="hidden" 
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            onChange={handlePhotoChange}
+                            className="hidden"
                         />
                         <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
                             <div className="w-[100px] h-[100px] rounded-full bg-gray-100 border border-[#d2d2d7] shadow-sm flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:shadow-md group-hover:border-[#0071e3]/50">
@@ -132,7 +132,6 @@ function Custom() {
                     </div>
                 </form>
             </div>
-            {/* Toast Notification */}
             {showToast && (
                 <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 skeuo-panel px-6 py-4 flex items-center gap-3 z-50 reveal" style={{ borderRadius: '980px', padding: '12px 24px' }}>
                     <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0 shadow-inner">

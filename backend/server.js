@@ -13,7 +13,7 @@ const io = new Server(server, {
     origin: "*",
     methods: ["GET", "POST"]
   },
-  maxHttpBufferSize: 1e8 // 100 MB
+  maxHttpBufferSize: 1e8 // Tamanho Maximo de 100 MB
 });
 
 io.on('connection', (socket) => {

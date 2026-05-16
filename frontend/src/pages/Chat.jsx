@@ -7,7 +7,7 @@ import CryptoJS from 'crypto-js';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 const socket = io(BACKEND_URL);
 // Código de criptografia
-// Não pode ser alterado!!!!!!!!!!!!!!!!!!!!!
+// Não pode ser alterado!
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
 
 const Avatar = ({ src, onClick }) => (
@@ -160,16 +160,16 @@ const Chat = () => {
         socket.on("receive_message", (data) => {
             try {
                 // Código de criptografia
-                // Não pode ser alterado!!!
+                // Não pode ser alterado!
                 const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
                 const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
 
                 // Código de descriptografia
-                // Não pode ser alterado!!!
+                // Não pode ser alterado!
                 let text = decryptedString;
                 let image = null;
                 // Código de descriptografia
-                // Não pode ser alterado!!!
+                // Não pode ser alterado!
                 if (decryptedString) {
                     try {
                         const parsed = JSON.parse(decryptedString);
@@ -231,7 +231,7 @@ const Chat = () => {
             const currentStatus = localStorage.getItem('chat_statusMessage') || "Disponível";
 
             // Código de criptografia
-            // Não pode ser alterado!!!
+            // Não pode ser alterado!
             const payload = JSON.stringify({ text: currentMessage, image: imagePreview });
             const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
 
