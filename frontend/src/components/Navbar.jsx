@@ -5,18 +5,24 @@ const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
-    // Provisório (sera substituído pelo AuthContext ou um estado global no futuro)
-    const [isLoggedIn] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [profileName, setProfileName] = useState("Minha Conta");
+    const [profilePhoto, setProfilePhoto] = useState(null);
 
     useEffect(() => {
         const loadProfile = () => {
+            const loggedInStatus = localStorage.getItem('chat_isLoggedIn') === 'true';
+            setIsLoggedIn(loggedInStatus);
+            
             const savedName = localStorage.getItem('chat_displayName');
             if (savedName) {
                 setProfileName(savedName);
             } else {
                 setProfileName("Minha Conta");
             }
+
+            const savedPhoto = localStorage.getItem('chat_profilePhoto');
+            setProfilePhoto(savedPhoto || null);
         };
 
         loadProfile();
@@ -69,6 +75,15 @@ const Navbar = () => {
                                 <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Rooms</Link>
                                 <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Sobre</Link>
                                 <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Custom</Link>
+                                {isLoggedIn && (
+                                    <button onClick={() => {
+                                        localStorage.removeItem('chat_isLoggedIn');
+                                        localStorage.removeItem('chat_displayName');
+                                        window.dispatchEvent(new Event('profileUpdated'));
+                                        setIsMenuOpen(false);
+                                        window.location.href = '/login';
+                                    }} className="px-5 py-3 text-[15px] font-medium text-[#ff3b30] hover:bg-black/5 transition-colors border-t border-black/5 text-left w-full">Sair</button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -76,9 +91,13 @@ const Navbar = () => {
                     {isLoggedIn && (
                         <div className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80">
                             <div className="w-8 h-8 rounded-full bg-gray-100 border border-[#d2d2d7] shadow-sm flex items-center justify-center overflow-hidden">
-                                <svg className="w-5 h-5 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                </svg>
+                                {profilePhoto ? (
+                                    <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <svg className="w-5 h-5 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                    </svg>
+                                )}
                             </div>
                             <div className="flex flex-col items-start hidden sm:flex">
                                 <span className="text-[13px] font-semibold text-[#1d1d1f] leading-none truncate max-w-[100px]">{profileName}</span>

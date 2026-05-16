@@ -1,6 +1,20 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Login = () => {
+    const navigate = useNavigate();
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+        if (username.trim() !== "" && password.trim() !== "") {
+            localStorage.setItem('chat_isLoggedIn', 'true');
+            localStorage.setItem('chat_displayName', username);
+            window.dispatchEvent(new Event('profileUpdated'));
+            navigate('/rooms');
+        }
+    };
     return (
         <main className="reveal flex-grow flex items-center justify-center px-6">        
             <div className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-10 max-w-[400px] w-full text-center">
@@ -10,13 +24,15 @@ const Login = () => {
                 <p className="text-[17px] font-normal text-[#86868b] mb-10 tracking-tight">
                     Insira seus detalhes abaixo
                 </p>
-                <form className="space-y-6 text-left" onSubmit={(e) => e.preventDefault()}>
+                <form className="space-y-6 text-left" onSubmit={handleLogin}>
                     <div className="input-group">
                         <input type="text" id="username" placeholder="Username" required 
+                               value={username} onChange={(e) => setUsername(e.target.value)}
                                className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
                     </div>
                     <div className="input-group">
                         <input type="password" id="password" placeholder="Password" required 
+                               value={password} onChange={(e) => setPassword(e.target.value)}
                                className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
                     </div>
                     <button type="submit" className="btn-pill btn-primary w-full py-3 text-[17px] font-normal mt-4">

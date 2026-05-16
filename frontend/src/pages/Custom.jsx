@@ -1,20 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function Custom() {
     const [displayName, setDisplayName] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
+    const [profilePhoto, setProfilePhoto] = useState(null);
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         const savedName = localStorage.getItem('chat_displayName');
         const savedStatus = localStorage.getItem('chat_statusMessage');
+        const savedPhoto = localStorage.getItem('chat_profilePhoto');
         if (savedName) setDisplayName(savedName);
         if (savedStatus) setStatusMessage(savedStatus);
+        if (savedPhoto) setProfilePhoto(savedPhoto);
     }, []);
+
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfilePhoto(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSave = (e) => {
         e.preventDefault();
         localStorage.setItem('chat_displayName', displayName);
         localStorage.setItem('chat_statusMessage', statusMessage);
+        if (profilePhoto) {
+            localStorage.setItem('chat_profilePhoto', profilePhoto);
+        }
         window.dispatchEvent(new Event('profileUpdated'));
         console.log("Perfil atualizado:", { displayName, statusMessage });
         // Provisório para feedback (vai ser melhorado no futuro com um Toast depois)
@@ -36,11 +54,22 @@ function Custom() {
 
                 <form onSubmit={handleSave} className="space-y-6">
                     <div className="flex flex-col items-center justify-center mb-2">
-                        <div className="relative group cursor-pointer">
+                        <input 
+                            type="file" 
+                            accept="image/*" 
+                            ref={fileInputRef} 
+                            onChange={handlePhotoChange} 
+                            className="hidden" 
+                        />
+                        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
                             <div className="w-[100px] h-[100px] rounded-full bg-gray-100 border border-[#d2d2d7] shadow-sm flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:shadow-md group-hover:border-[#0071e3]/50">
-                                <svg className="w-12 h-12 text-[#86868b] transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                </svg>
+                                {profilePhoto ? (
+                                    <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <svg className="w-12 h-12 text-[#86868b] transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                    </svg>
+                                )}
                             </div>
                             <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -49,7 +78,7 @@ function Custom() {
                                 </svg>
                             </div>
                         </div>
-                        <button type="button" className="mt-3 text-[13px] font-medium text-[#0071e3] hover:text-[#0077ed] hover:underline focus:outline-none transition-colors">
+                        <button type="button" onClick={() => fileInputRef.current.click()} className="mt-3 text-[13px] font-medium text-[#0071e3] hover:text-[#0077ed] hover:underline focus:outline-none transition-colors">
                             Alterar foto de perfil
                         </button>
                     </div>

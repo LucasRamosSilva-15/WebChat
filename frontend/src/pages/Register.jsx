@@ -1,6 +1,21 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Register = () => {
+    const navigate = useNavigate();
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        if (username.trim() !== "" && email.trim() !== "" && password.trim() !== "") {
+            localStorage.setItem('chat_isLoggedIn', 'true');
+            localStorage.setItem('chat_displayName', username);
+            window.dispatchEvent(new Event('profileUpdated'));
+            navigate('/rooms');
+        }
+    };
     return (
         <main className="reveal flex-grow flex items-center justify-center px-6 py-12">
             <div className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-10 max-w-[500px] w-full text-center">
@@ -11,17 +26,20 @@ const Register = () => {
                     Insira seus detalhes abaixo para criar uma nova conta
                 </p>
                 
-                <form className="space-y-4 text-left" onSubmit={(e) => e.preventDefault()}>
+                <form className="space-y-4 text-left" onSubmit={handleRegister}>
                     <div className="input-group">
                         <input type="text" id="username" placeholder="Nome de usuário" required 
+                               value={username} onChange={(e) => setUsername(e.target.value)}
                                className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
                     </div>
                     <div className="input-group">
                         <input type="email" id="email" placeholder="E-mail" required 
+                               value={email} onChange={(e) => setEmail(e.target.value)}
                                className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
                     </div>
                     <div className="input-group">
                         <input type="password" id="password" placeholder="Senha" required 
+                               value={password} onChange={(e) => setPassword(e.target.value)}
                                className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
                     </div>
                     

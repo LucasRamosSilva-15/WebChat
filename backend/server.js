@@ -12,7 +12,8 @@ const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
-  }
+  },
+  maxHttpBufferSize: 1e8 // 100 MB, para suportar imagens em Base64
 });
 
 io.on('connection', (socket) => {
