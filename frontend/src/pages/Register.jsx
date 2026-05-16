@@ -18,8 +18,8 @@ const Register = () => {
     };
     return (
         <main className="reveal flex-grow flex items-center justify-center px-6 py-12">
-            <div className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-10 max-w-[500px] w-full text-center">
-                <h1 className="hero-title text-[40px] font-semibold mb-2 text-[#1d1d1f]">
+            <div className="skeuo-panel p-10 max-w-[500px] w-full text-center">
+                <h1 className="hero-title text-[40px] font-semibold mb-2">
                     Crie sua conta
                 </h1>
                 <p className="text-[17px] font-normal text-[#86868b] mb-10 tracking-tight">
@@ -30,20 +30,20 @@ const Register = () => {
                     <div className="input-group">
                         <input type="text" id="username" placeholder="Nome de usuário" required 
                                value={username} onChange={(e) => setUsername(e.target.value)}
-                               className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
+                               className="skeuo-input w-full px-4 py-3" />
                     </div>
                     <div className="input-group">
                         <input type="email" id="email" placeholder="E-mail" required 
                                value={email} onChange={(e) => setEmail(e.target.value)}
-                               className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
+                               className="skeuo-input w-full px-4 py-3" />
                     </div>
                     <div className="input-group">
                         <input type="password" id="password" placeholder="Senha" required 
                                value={password} onChange={(e) => setPassword(e.target.value)}
-                               className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
+                               className="skeuo-input w-full px-4 py-3" />
                     </div>
                     
-                    <button type="submit" className="btn-pill btn-primary w-full py-3 text-[17px] font-normal mt-6">
+                    <button type="submit" className="skeuo-btn w-full py-3 text-[17px] mt-6">
                         Cadastrar
                     </button>
                 </form>

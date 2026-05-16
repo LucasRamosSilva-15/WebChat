@@ -8,12 +8,22 @@ const Navbar = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [profileName, setProfileName] = useState("Minha Conta");
     const [profilePhoto, setProfilePhoto] = useState(null);
+    const [theme, setTheme] = useState(localStorage.getItem('chat_theme') || 'skeuo');
+
+    useEffect(() => {
+        if (theme === 'skeuo') {
+            document.body.classList.add('theme-skeuo');
+        } else {
+            document.body.classList.remove('theme-skeuo');
+        }
+        localStorage.setItem('chat_theme', theme);
+    }, [theme]);
 
     useEffect(() => {
         const loadProfile = () => {
             const loggedInStatus = localStorage.getItem('chat_isLoggedIn') === 'true';
             setIsLoggedIn(loggedInStatus);
-            
+
             const savedName = localStorage.getItem('chat_displayName');
             if (savedName) {
                 setProfileName(savedName);
@@ -51,9 +61,9 @@ const Navbar = () => {
     }, []);
 
     return (
-        <header className="apple-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
+        <header className="skeuo-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
             <nav className="max-w-[980px] w-full flex justify-between items-center px-4 relative">
-                <span className="font-semibold tracking-tight text-[17px]">WebChat</span>
+                <span className="font-bold tracking-tight text-[17px] text-shadow-sm">WebChat</span>
 
                 <div className="flex items-center gap-4">
                     <div className="relative" ref={menuRef}>
@@ -67,7 +77,7 @@ const Navbar = () => {
                             <div className={`w-5 h-[2px] bg-black/80 transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-[6px]' : ''}`}></div>
                         </button>
                         <div
-                            className={`absolute right-0 top-[40px] w-48 bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-[22px] overflow-hidden transition-all duration-300 origin-top-right ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
+                            className={`absolute right-0 top-[40px] w-48 skeuo-panel overflow-hidden transition-all duration-300 origin-top-right ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
                                 }`}
                         >
                             <div className="flex flex-col py-2">
@@ -75,6 +85,15 @@ const Navbar = () => {
                                 <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Rooms</Link>
                                 <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Sobre</Link>
                                 <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Custom</Link>
+                                <button 
+                                    onClick={() => {
+                                        setTheme(theme === 'glass' ? 'skeuo' : 'glass');
+                                        setIsMenuOpen(false);
+                                    }} 
+                                    className="px-5 py-3 text-[15px] font-medium text-[#0071e3] hover:bg-black/5 transition-colors border-t border-black/5 text-left w-full"
+                                >
+                                    Tema: {theme === 'glass' ? 'Glass (Antigo)' : 'Esquimorfismo'}
+                                </button>
                                 {isLoggedIn && (
                                     <button onClick={() => {
                                         localStorage.removeItem('chat_isLoggedIn');

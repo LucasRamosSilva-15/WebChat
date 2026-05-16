@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Custom() {
+    const navigate = useNavigate();
     const [displayName, setDisplayName] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
     const [profilePhoto, setProfilePhoto] = useState(null);
+    const [showToast, setShowToast] = useState(false);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
@@ -35,13 +38,13 @@ function Custom() {
         }
         window.dispatchEvent(new Event('profileUpdated'));
         console.log("Perfil atualizado:", { displayName, statusMessage });
-        // Provisório para feedback (vai ser melhorado no futuro com um Toast depois)
-        alert("Perfil salvo com sucesso!");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
     };
 
     return (
         <main className="flex-1 flex items-center justify-center p-4 md:p-6 w-full z-10 relative">
-            <div className="w-full max-w-[500px] bg-white/80 backdrop-blur-xl border border-white/40 rounded-[32px] p-8 md:p-10 shadow-2xl reveal">
+            <div className="w-full max-w-[500px] skeuo-panel p-8 md:p-10 reveal">
 
                 <div className="text-center mb-8">
                     <h2 className="text-[28px] md:text-[32px] font-semibold text-[#1d1d1f] tracking-tight leading-tight">
@@ -93,7 +96,7 @@ function Custom() {
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
                             placeholder="Ex: João Silva"
-                            className="w-full bg-white/50 border border-[#d2d2d7] rounded-[12px] px-4 py-3 text-[17px] text-[#1d1d1f] outline-none focus:border-[#0071e3] focus:shadow-[0_0_0_4px_rgba(0,113,227,0.15)] placeholder-[#86868b] transition-all duration-300"
+                            className="skeuo-input w-full px-4 py-3"
                         />
                     </div>
 
@@ -107,27 +110,37 @@ function Custom() {
                             value={statusMessage}
                             onChange={(e) => setStatusMessage(e.target.value)}
                             placeholder="O que você está pensando?"
-                            className="w-full bg-white/50 border border-[#d2d2d7] rounded-[12px] px-4 py-3 text-[17px] text-[#1d1d1f] outline-none focus:border-[#0071e3] focus:shadow-[0_0_0_4px_rgba(0,113,227,0.15)] placeholder-[#86868b] transition-all duration-300"
+                            className="skeuo-input w-full px-4 py-3"
                         />
                     </div>
 
                     <div className="pt-6 space-y-3">
                         <button
                             type="submit"
-                            className="btn-pill btn-primary w-full py-3.5 text-[17px] font-medium shadow-sm flex justify-center items-center"
+                            className="skeuo-btn w-full py-3.5 text-[17px]"
                         >
                             Salvar Alterações
                         </button>
 
                         <button
                             type="button"
-                            className="btn-pill w-full py-3.5 text-[17px] font-medium text-[#424245] bg-transparent border border-transparent hover:bg-black/5 flex justify-center items-center"
+                            onClick={() => navigate(-1)}
+                            className="btn-secondary-glossy w-full py-3.5 text-[17px]"
                         >
                             Cancelar
                         </button>
                     </div>
                 </form>
             </div>
+            {/* Toast Notification */}
+            {showToast && (
+                <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 skeuo-panel px-6 py-4 flex items-center gap-3 z-50 reveal" style={{ borderRadius: '980px', padding: '12px 24px' }}>
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0 shadow-inner">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <span className="text-[15px] font-semibold text-[#1d1d1f]">Perfil atualizado com sucesso!</span>
+                </div>
+            )}
         </main>
     );
 }

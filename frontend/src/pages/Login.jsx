@@ -16,9 +16,9 @@ const Login = () => {
         }
     };
     return (
-        <main className="reveal flex-grow flex items-center justify-center px-6">        
-            <div className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-10 max-w-[400px] w-full text-center">
-                <h1 className="hero-title text-[40px] font-semibold mb-2 text-[#1d1d1f]">
+        <main className="reveal flex-grow flex items-center justify-center px-6">
+            <div className="skeuo-panel p-10 max-w-[400px] w-full text-center">
+                <h1 className="hero-title text-[40px] font-semibold mb-2">
                     Acesse o WebChat
                 </h1>
                 <p className="text-[17px] font-normal text-[#86868b] mb-10 tracking-tight">
@@ -26,16 +26,16 @@ const Login = () => {
                 </p>
                 <form className="space-y-6 text-left" onSubmit={handleLogin}>
                     <div className="input-group">
-                        <input type="text" id="username" placeholder="Username" required 
-                               value={username} onChange={(e) => setUsername(e.target.value)}
-                               className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
+                        <input type="text" id="username" placeholder="Username" required
+                            value={username} onChange={(e) => setUsername(e.target.value)}
+                            className="skeuo-input w-full px-4 py-3" />
                     </div>
                     <div className="input-group">
-                        <input type="password" id="password" placeholder="Password" required 
-                               value={password} onChange={(e) => setPassword(e.target.value)}
-                               className="apple-input w-full px-4 py-3 rounded-[12px] border border-[#d2d2d7] bg-white/50 focus:outline-none" />
+                        <input type="password" id="password" placeholder="Password" required
+                            value={password} onChange={(e) => setPassword(e.target.value)}
+                            className="skeuo-input w-full px-4 py-3" />
                     </div>
-                    <button type="submit" className="btn-pill btn-primary w-full py-3 text-[17px] font-normal mt-4">
+                    <button type="submit" className="skeuo-btn w-full py-3 text-[17px] mt-4">
                         Continuar
                     </button>
                 </form>

@@ -4,7 +4,8 @@ import io from 'socket.io-client';
 import { Send, ImagePlus, X } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 
-const socket = io('http://localhost:3001');
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const socket = io(BACKEND_URL);
 // Código de criptografia
 // Não pode ser alterado!!!!!!!!!!!!!!!!!!!!!
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
@@ -28,7 +29,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick }) => {
         return (
             <div className="flex items-end justify-end gap-2 animate-fade-in-up">
                 <div className="flex flex-col items-end max-w-[70%]">
-                    <div className="bg-[#0071e3] text-white px-4 py-2 rounded-[18px] rounded-br-sm shadow-sm flex flex-col">
+                    <div className="skeuo-bubble-sent px-4 py-2 flex flex-col">
                         {msg.image && (
                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                         )}
@@ -54,7 +55,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick }) => {
             <Avatar src={msg.avatar} onClick={() => onAvatarClick(msg)} />
             <div className="flex flex-col items-start max-w-[70%]">
                 <span className="text-[12px] text-[#86868b] ml-1 mb-1 font-medium">{msg.sender}</span>
-                <div className="bg-white/70 backdrop-blur-sm text-[#1d1d1f] px-4 py-2 rounded-[18px] rounded-bl-sm shadow-sm border border-white/20 flex flex-col">
+                <div className="skeuo-bubble-received px-4 py-2 flex flex-col">
                     {msg.image && (
                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                     )}
@@ -266,7 +267,7 @@ const Chat = () => {
 
             {selectedUser && selectedUser.sender !== "Sistema" && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedUser(null)}>
-                    <div className="bg-white/90 backdrop-blur-xl p-8 rounded-[28px] shadow-2xl max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
+                    <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
                         <div className="w-24 h-24 mx-auto rounded-full bg-gray-100 border-2 border-white shadow-md flex items-center justify-center overflow-hidden mb-4">
                             {selectedUser.avatar ? (
                                 <img src={selectedUser.avatar} alt={selectedUser.sender} className="w-full h-full object-cover" />
@@ -278,18 +279,18 @@ const Chat = () => {
                         </div>
                         <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1">{selectedUser.sender}</h3>
                         <p className="text-[15px] text-[#86868b]">{selectedUser.status || "Sem recado"}</p>
-                        <button onClick={() => setSelectedUser(null)} className="mt-6 btn-pill bg-gray-200 text-black hover:bg-gray-300 w-full py-2">Fechar</button>
+                        <button onClick={() => setSelectedUser(null)} className="mt-6 btn-secondary-glossy w-full py-2">Fechar</button>
                     </div>
                 </div>
             )}
 
             <main className="reveal flex-grow flex flex-col max-w-[1000px] mx-auto w-full p-4 md:p-6 h-[calc(100vh-120px)] overflow-hidden">
 
-                <div className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-5 mb-6 max-w-[500px] mx-auto w-full text-center shrink-0">
-                    <h1 className="hero-title text-[24px] font-semibold text-[#1d1d1f]">{room.toUpperCase()}</h1>
+                <div className="skeuo-panel p-5 mb-6 max-w-[500px] mx-auto w-full text-center shrink-0">
+                    <h1 className="hero-title text-[24px] font-semibold">{room.toUpperCase()}</h1>
                 </div>
 
-                <div ref={chatContainerRef} className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-10 flex-grow overflow-y-auto space-y-4 mb-6 pr-2 chat-container">
+                <div ref={chatContainerRef} className="skeuo-panel p-10 flex-grow overflow-y-auto space-y-4 mb-6 pr-2 chat-container">
 
                     {messages.map((msg, index) => (
                         <MessageBubble key={index} msg={msg} onAvatarClick={setSelectedUser} onImageClick={setSelectedImage} />
@@ -299,7 +300,7 @@ const Chat = () => {
 
                 <footer className="pb-4 shrink-0 relative">
                     {imagePreview && (
-                        <div className="absolute bottom-[calc(100%+10px)] left-0 bg-white/90 backdrop-blur-md p-2 rounded-[16px] shadow-lg border border-white/40 flex items-center gap-2 z-10 animate-fade-in-up">
+                        <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up">
                             <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
                             <button type="button" onClick={clearImagePreview} className="p-1 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
                                 <X size={16} />
@@ -318,10 +319,10 @@ const Chat = () => {
                             onChange={(e) => setCurrentMessage(e.target.value)}
                             placeholder="Mensagem..."
                             autoComplete="off"
-                            className="apple-input w-full bg-white/50 border border-[#d2d2d7] rounded-[22px] py-3 pl-12 pr-12 text-[16px] focus:outline-none focus:bg-white transition-all shadow-sm"
+                            className="skeuo-input w-full py-3 pl-12 pr-12 text-[16px]"
                         />
 
-                        <button type="submit" disabled={!currentMessage.trim() && !imagePreview} className={`absolute right-2 text-white w-9 h-9 rounded-full flex items-center justify-center transition shadow-sm ${currentMessage.trim() || imagePreview ? 'bg-[#0071e3] hover:bg-[#0077ed]' : 'bg-gray-300 cursor-not-allowed'}`}>
+                        <button type="submit" disabled={!currentMessage.trim() && !imagePreview} className={`absolute right-2 text-white w-9 h-9 rounded-full flex items-center justify-center transition shadow-sm ${currentMessage.trim() || imagePreview ? 'skeuo-btn px-0 py-0' : 'bg-gray-300 cursor-not-allowed'}`}>
                             <Send size={18} />
                         </button>
                     </form>

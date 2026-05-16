@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const InfoCard = ({ title, description }) => (
-    <div className="bg-white/50 backdrop-blur-sm p-10 rounded-[20px] border border-white/20">
+    <div className="skeuo-panel p-10 rounded-[20px]">
         <h2 className="text-[24px] font-semibold mb-4 tracking-tight">{title}</h2>
         <p className="text-[17px] text-[#424245] leading-relaxed tracking-tight">{description}</p>
     </div>
@@ -10,7 +10,7 @@ const InfoCard = ({ title, description }) => (
 const About = () => {
     return (
         <main className="reveal flex-grow flex flex-col items-center px-6 py-20">
-            <section className="bg-white/80 backdrop-blur-xl rounded-[28px] shadow-2xl p-10 max-w-[700px] w-full text-center mb-16">
+            <section className="skeuo-panel rounded-[28px] shadow-2xl p-10 max-w-[700px] w-full text-center mb-16">
                 <h1 className="hero-title text-[56px] md:text-[72px] font-semibold text-[#1d1d1f] mb-6">
                     Sobre o WebChat
                 </h1>
@@ -35,7 +35,7 @@ const About = () => {
             </section>
 
             <div className="mt-20">
-                <Link to="/" className="btn-pill btn-primary px-10 py-4 text-[17px]">
+                <Link to="/" className="skeuo-btn px-10 py-4 text-[17px]">
                     Voltar ao Início
                 </Link>
             </div>
