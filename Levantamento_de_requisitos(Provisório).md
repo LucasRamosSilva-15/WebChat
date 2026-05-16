@@ -40,5 +40,6 @@ Os requisitos não-funcionais definem as qualidades, atributos e restrições te
 | **RNF02** | Plataforma de Software (Back-End) | A lógica do servidor deve ser processada utilizando JavaScript via Node.js e o framework Express.js. | Obrigatória |
 | **RNF03** | Desempenho e Comunicação | A comunicação em tempo real para as mensagens e salas deve ser garantida pela utilização da biblioteca Socket.io. | Obrigatória |
 | **RNF04** | Armazenamento e Banco de Dados | Os dados transacionais e de usuários devem ser persistidos em um banco de dados relacional PostgreSQL, gerenciado através do Supabase. | Obrigatória |
-| **RNF05** | Disponibilidade e Hospedagem | O sistema front-end deve ser implantado e hospedado na plataforma Vercel. | Obrigatória |
-| **RNF06** | Segurança e Privacidade | os dados pessoais dos usuários e as conversas nos chats devem ter criptografia de ponta a ponta e armazenados de forma segura no banco de dados. | Obrigatória |
+| **RNF05** | Hospedagem (Front-End) | O sistema front-end deve ser implantado na plataforma Vercel ou Netlify. A Vercel continua sendo uma das mais fáceis e adequadas do mercado para React/Vite. | Obrigatória |
+| **RNF06** | Segurança e Privacidade | Os dados pessoais dos usuários e as conversas nos chats devem ter criptografia de ponta a ponta e armazenados de forma segura no banco de dados. | Obrigatória |
+| **RNF07** | Hospedagem (Back-End) | O servidor Node.js com Socket.io deve ser hospedado em uma plataforma que suporte WebSockets (conexões contínuas), como **Render** ou **Railway**. A Vercel não é adequada para o back-end do projeto. | Obrigatória |

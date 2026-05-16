@@ -2,8 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
 import { Send } from 'lucide-react';
+import CryptoJS from 'crypto-js';
 
 const socket = io('http://localhost:3001');
+// Código de criptografia
+// Não pode ser alterado!!!!!!!!!!!!!!!!!!!!!
+const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
 
 const Avatar = () => (
     <div className="w-8 h-8 rounded-full bg-gray-100 border border-[#d2d2d7] shrink-0 flex items-center justify-center overflow-hidden shadow-sm mb-4">
@@ -24,6 +28,14 @@ const MessageBubble = ({ msg }) => {
                         <p className="text-[16px] leading-snug">{msg.text}</p>
                     </div>
                     <span className="text-[11px] text-[#86868b] mt-1 uppercase tracking-widest">{msgTime} • Enviado</span>
+                    {msg.readBy && msg.readBy.length > 0 && (
+                        <div className="text-[10px] text-[#0071e3] mt-0.5 text-right font-medium relative group cursor-help transition-all">
+                            ✓ Lido por {msg.readBy.length}
+                            <div className="absolute bottom-full right-0 mb-1 w-max bg-black/80 text-white text-[11px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg backdrop-blur-md">
+                                Visto por: {msg.readBy.join(", ")}
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <Avatar />
             </div>
@@ -59,11 +71,45 @@ const Chat = () => {
         socket.emit("join_room", { room });
 
         socket.on("receive_message", (data) => {
-            setMessages((list) => [...list, { text: data.message, sender: data.sender, isMe: false, time: data.time }]);
+            try {
+                // Código de criptografia
+                // Não pode ser alterado!!!
+                const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
+                const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
+                // Código de criptografia
+                // Não pode ser alterado!!!
+                if (decryptedMessage) {
+                    setMessages((list) => [...list, { messageId: data.messageId, text: decryptedMessage, sender: data.sender, isMe: false, time: data.time, readBy: [] }]);
+
+                    // Emite recibo de leitura para a sala
+                    const currentReader = localStorage.getItem('chat_displayName') || "Usuário";
+                    if (data.messageId) {
+                        socket.emit("read_message", { room: data.room, messageId: data.messageId, reader: currentReader });
+                    }
+                } else {
+                    setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, isMe: false, time: data.time, readBy: [] }]);
+                }
+            } catch (error) {
+                console.error("Erro ao descriptografar mensagem:", error);
+                setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, isMe: false, time: data.time, readBy: [] }]);
+            }
+        });
+
+        socket.on("message_read", (data) => {
+            setMessages((list) => list.map(msg => {
+                if (msg.messageId === data.messageId) {
+                    const readBy = msg.readBy || [];
+                    if (!readBy.includes(data.reader)) {
+                        return { ...msg, readBy: [...readBy, data.reader] };
+                    }
+                }
+                return msg;
+            }));
         });
 
         return () => {
             socket.off("receive_message");
+            socket.off("message_read");
         };
     }, [room]);
 
@@ -80,15 +126,24 @@ const Chat = () => {
         e.preventDefault();
         if (currentMessage.trim() !== "") {
             const currentSender = localStorage.getItem('chat_displayName') || "Usuário";
+
+            // Código de criptografia
+            // Não pode ser alterado!!!
+            const encryptedMessage = CryptoJS.AES.encrypt(currentMessage, SECRET_KEY).toString();
+
+            // Gerar ID único para a mensagem para rastrear visualizações
+            const messageId = Date.now().toString() + Math.random().toString(36).substring(7);
+
             const messageData = {
                 room: room,
+                messageId: messageId,
                 sender: currentSender,
-                message: currentMessage,
+                message: encryptedMessage,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
             await socket.emit("send_message", messageData);
-            setMessages((list) => [...list, { text: currentMessage, sender: currentSender, isMe: true, time: messageData.time }]);
+            setMessages((list) => [...list, { messageId: messageId, text: currentMessage, sender: currentSender, isMe: true, time: messageData.time, readBy: [] }]);
             setCurrentMessage("");
         }
     };
