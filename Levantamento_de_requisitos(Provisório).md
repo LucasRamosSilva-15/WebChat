@@ -5,7 +5,7 @@ Apresenta-se a seguir a reestruturação profissional do levantamento de requisi
 ---
 
 ## 1. Visão Geral e Objetivos do Sistema
-A finalidade deste projeto é criar uma plataforma de WebChat focada na comunicação por mensagens instantâneas e assíncronas. O sistema deve permitir que os usuários realizem cadastros, naveguem entre páginas, escolham salas virtuais para interação e possuam controle sobre seus perfis.
+A finalidade deste projeto é criar uma plataforma de WebChat focada na comunicação por mensagens instantâneas e sincronizadas em tempo real. O sistema deve permitir que os usuários realizem cadastros, naveguem entre páginas, escolham salas virtuais ou criem suas próprias salas para interação e personalizem seus perfis.
 
 ---
 
@@ -14,18 +14,18 @@ Os requisitos funcionais definem exatamente o que o sistema deve fazer. Seguindo
 
 | Ref # | Função do Sistema | Categoria (Visibilidade) | Categoria (Prioridade) |
 | :--- | :--- | :--- | :--- |
-| **RF01** | Processar mensagens instantâneas e assíncronas entre os usuários. | Evidente | Obrigatória |
-| **RF02** | Efetuar o cadastro e login para acesso ao sistema. | Evidente | Obrigatória |
+| **RF01** | Processar mensagens instantâneas e sincronizadas em tempo real entre os usuários. | Evidente | Obrigatória |
+| **RF02** | Efetuar o cadastro e login para acesso ao sistema. Os usuários podem se cadastrar utilizando seu E-mail e Senha ou através de sua conta Google. | Evidente | Obrigatória |
 | **RF03** | Efetuar o logout do usuário da sessão atual. | Evidente | Obrigatória |
 | **RF04** | Realizar a criação de novas salas de bate-papo. | Evidente | Obrigatória |
 | **RF05** | Permitir a criação e votação de enquetes dentro das salas. | Evidente | Opcional |
 | **RF06** | Permitir o envio de imagens nas conversas. | Evidente | Opcional |
 | **RF07** | Exibir informações prévias e status nas mensagens (Data, enviada ou não, visto ou não). | Evidente | Obrigatória |
 | **RF08** | Possibilitar a navegação estruturada entre as diferentes páginas do sistema. | Evidente | Obrigatória |
-| **RF09** | Permitir a customização de perfil pelo próprio dono da conta. | Evidente | Obrigatória |
-| **RF10** | Permitir a visualização do perfil alheio por outros participantes. | Evidente | Obrigatória |
-| **RF11** | Prover um sistema de denúncia contra comportamentos inadequados. | Evidente | Obrigatória |
-| **RF12** | Prover um painel de administração geral do sistema. | Oculta (para usuários comuns) | Obrigatória |
+| **RF09** | Permitir a customização do perfil pelo próprio dono da conta. | Evidente | Obrigatória |
+| **RF10** | Permitir a visualização do perfil de outros usuários. | Evidente | Obrigatória |
+| **RF11** | Prover um sistema de denúncia contra comportamentos errados ou inadequados. | Evidente | Obrigatória |
+| **RF12** | Prover um painel de administração geral das salas criadas pelo usuário administrador. | Oculta (para usuários comuns) | Obrigatória |
 | **RF13** | Executar o banimento de usuários de salas específicas. | Oculta (para usuários comuns) | Obrigatória |
 | **RF14** | Prover ferramentas de busca para localização de conteúdos ou usuários. | Evidente | Obrigatória |
 
@@ -41,3 +41,4 @@ Os requisitos não-funcionais definem as qualidades, atributos e restrições te
 | **RNF03** | Desempenho e Comunicação | A comunicação em tempo real para as mensagens e salas deve ser garantida pela utilização da biblioteca Socket.io. | Obrigatória |
 | **RNF04** | Armazenamento e Banco de Dados | Os dados transacionais e de usuários devem ser persistidos em um banco de dados relacional PostgreSQL, gerenciado através do Supabase. | Obrigatória |
 | **RNF05** | Disponibilidade e Hospedagem | O sistema front-end deve ser implantado e hospedado na plataforma Vercel. | Obrigatória |
+| **RNF06** | Segurança e Privacidade | os dados pessoais dos usuários e as conversas nos chats devem ter criptografia de ponta a ponta e armazenados de forma segura no banco de dados. | Obrigatória |

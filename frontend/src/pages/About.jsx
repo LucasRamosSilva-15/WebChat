@@ -22,7 +22,7 @@ const About = () => {
             <section className="max-w-[980px] w-full grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoCard
                     title="A Tecnologia"
-                    description="O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js, Express.js, e Socket.io, proporcionando uma experiência de chat em tempo real, rápida e que é responsiva."
+                    description="O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js, Express.js, PostgreSQL, e Socket.io, proporcionando uma experiência de chat em tempo real, rápida e que é responsiva."
                 />
                 <InfoCard
                     title="O Propósito"
