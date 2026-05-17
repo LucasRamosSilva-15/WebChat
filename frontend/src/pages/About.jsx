@@ -33,8 +33,8 @@ const About = () => {
                     description="Este projeto foi desenvolvido por: Lucas Ramos Silva, Wssihélio Vasconcelos, Ruan Victor e Gabriel Lobão."
                 />
                 <InfoCard
-                    title="Hospedagem"
-                    description="O WebChat por enquanto é hospedado em: https://chat-ws.onrender.com/"
+                    title="A Hospedagem"
+                    description="Vai ser definido no futuro."
                 />
             </section>
 

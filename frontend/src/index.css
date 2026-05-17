@@ -8,7 +8,6 @@ body {
     transition: background 0.3s ease;
 }
 
-/* Tema Antigo */
 body:not(.theme-skeuo) {
     background: linear-gradient(200deg, #0280ff 0%, rgb(184, 220, 255) 100%);
     background-attachment: fixed;
@@ -94,8 +93,6 @@ body:not(.theme-skeuo) .hero-title {
     text-shadow: none;
 }
 
-
-/* Tema Novo */
 body.theme-skeuo {
     background: 
         repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 4px),
