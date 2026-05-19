@@ -2,7 +2,7 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #1d1d1f; 
+    color: #1d1d1f;
     -webkit-font-smoothing: antialiased;
     background-attachment: fixed;
     transition: background 0.3s ease;
@@ -27,7 +27,7 @@ body:not(.theme-skeuo) .skeuo-nav {
 }
 
 body:not(.theme-skeuo) .skeuo-btn {
-    background-color: #0071e3; 
+    background-color: #0071e3;
     color: white !important;
     border-radius: 980px;
     padding: 8px 16px;
@@ -39,34 +39,44 @@ body:not(.theme-skeuo) .skeuo-btn {
     align-items: center;
     justify-content: center;
 }
-body:not(.theme-skeuo) .skeuo-btn:hover { background-color: #0077ed; transform: scale(1.02); }
-body:not(.theme-skeuo) .skeuo-btn:active { transform: scale(0.98); }
+
+body:not(.theme-skeuo) .skeuo-btn:hover {
+    background-color: #0077ed;
+    transform: scale(1.02);
+}
+
+body:not(.theme-skeuo) .skeuo-btn:active {
+    transform: scale(0.98);
+}
 
 body:not(.theme-skeuo) .btn-secondary-glossy {
     background-color: transparent;
     color: #0066cc !important;
     border: 1px solid #0066cc;
     border-radius: 980px;
-    box-shadow: none; text-shadow: none;
+    box-shadow: none;
+    text-shadow: none;
     padding: 8px 16px;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
+
 body:not(.theme-skeuo) .btn-secondary-glossy:hover {
     background-color: rgba(0, 102, 204, 0.05);
     text-decoration: underline;
 }
 
 body:not(.theme-skeuo) .skeuo-input {
-    background: rgba(255,255,255,0.5);
+    background: rgba(255, 255, 255, 0.5);
     border: 1px solid #d2d2d7;
     border-radius: 22px;
     box-shadow: none;
     font-size: 16px;
     transition: all 0.3s ease;
 }
+
 body:not(.theme-skeuo) .skeuo-input:focus {
     border-color: #0071e3;
     background: #ffffff;
@@ -75,27 +85,33 @@ body:not(.theme-skeuo) .skeuo-input:focus {
 }
 
 body:not(.theme-skeuo) .skeuo-bubble-received {
-    background: rgba(255,255,255,0.7);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 18px; border-bottom-left-radius: 2px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     color: #1d1d1f;
 }
+
 body:not(.theme-skeuo) .skeuo-bubble-sent {
     background: #0071e3;
     color: white;
-    border-radius: 18px; border-bottom-right-radius: 2px;
-    border: none; box-shadow: none; text-shadow: none;
+    border-radius: 18px;
+    border-bottom-right-radius: 2px;
+    border: none;
+    box-shadow: none;
+    text-shadow: none;
 }
+
 body:not(.theme-skeuo) .hero-title {
     color: #1d1d1f;
     text-shadow: none;
 }
 
 body.theme-skeuo {
-    background: 
-        repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 4px),
+    background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 4px),
         linear-gradient(200deg, #0280ff 0%, rgb(184, 220, 255) 100%);
     background-attachment: fixed;
 }
@@ -104,7 +120,7 @@ body.theme-skeuo .skeuo-panel {
     background: linear-gradient(to bottom, #ffffff 0%, #f4f5f7 100%);
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.05);
 }
 
 body.theme-skeuo .skeuo-nav {
@@ -128,8 +144,16 @@ body.theme-skeuo .skeuo-btn {
     align-items: center;
     justify-content: center;
 }
-body.theme-skeuo .skeuo-btn:hover { background: linear-gradient(to bottom, #66b3ff 0%, #1a82ff 50%, #006ce6 51%, #0055a3 100%); }
-body.theme-skeuo .skeuo-btn:active { background: linear-gradient(to bottom, #004488 0%, #005bb5 100%); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5); border-top-color: #002244; }
+
+body.theme-skeuo .skeuo-btn:hover {
+    background: linear-gradient(to bottom, #66b3ff 0%, #1a82ff 50%, #006ce6 51%, #0055a3 100%);
+}
+
+body.theme-skeuo .skeuo-btn:active {
+    background: linear-gradient(to bottom, #004488 0%, #005bb5 100%);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    border-top-color: #002244;
+}
 
 body.theme-skeuo .btn-secondary-glossy {
     background: linear-gradient(to bottom, #ffffff 0%, #e6e6e6 50%, #cccccc 51%, #b3b3b3 100%);
@@ -151,42 +175,75 @@ body.theme-skeuo .skeuo-input {
     border: 1px solid #b3b3b3;
     border-top-color: #999;
     border-radius: 22px;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255,255,255,0.8);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);
     font-size: 16px;
     color: #1d1d1f;
     transition: border 0.2s ease, box-shadow 0.2s ease;
 }
+
 body.theme-skeuo .skeuo-input:focus {
-    outline: none; background: #ffffff; border-color: #0071e3;
+    outline: none;
+    background: #ffffff;
+    border-color: #0071e3;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 113, 227, 0.6);
 }
 
 body.theme-skeuo .skeuo-bubble-received {
     background: linear-gradient(to bottom, #f9f9f9 0%, #ebebeb 100%);
     border: 1px solid #ccc;
-    border-radius: 18px; border-bottom-left-radius: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,1);
+    border-radius: 18px;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
     color: #1d1d1f;
 }
+
 body.theme-skeuo .skeuo-bubble-sent {
     background: linear-gradient(to bottom, #3399ff 0%, #0071e3 100%);
     border: 1px solid #005bb5;
-    border-radius: 18px; border-bottom-right-radius: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4);
-    color: #ffffff; text-shadow: 0 -1px 0 rgba(0,0,0,0.2);
+    border-radius: 18px;
+    border-bottom-right-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
+
 body.theme-skeuo .hero-title {
     color: #1d1d1f;
     text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
 }
 
-.chat-container::-webkit-scrollbar { width: 8px; }
-.chat-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); border-radius: 10px; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
-.chat-container::-webkit-scrollbar-thumb { background: linear-gradient(to right, #c2c2c2, #a3a3a3); border-radius: 10px; border: 1px solid #8c8c8c; }
-.chat-container::-webkit-scrollbar-thumb:hover { background: linear-gradient(to right, #a3a3a3, #8c8c8c); }
+.chat-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(to right, #c2c2c2, #a3a3a3);
+    border-radius: 10px;
+    border: 1px solid #8c8c8c;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to right, #a3a3a3, #8c8c8c);
+}
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
-.reveal { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+
+.reveal {
+    animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
