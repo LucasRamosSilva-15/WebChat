@@ -1,10 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Search, Filter, MessageSquare, Users, AlertTriangle, Plus, Hash, Star } from 'lucide-react';
-import { io } from 'socket.io-client';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-const socket = io(BACKEND_URL);
+import { socket } from '../socket';
 
 const defaultRooms = [
     { title: "Geral", description: "Um espaço para discussões amplas e variadas.", roomParam: "general", category: "Casual", status: "Ativa", members: 245, date: "12 Jan, 2024" },
@@ -212,6 +209,8 @@ const Rooms = () => {
         socket.on('active_users_count', (count) => {
             setOnlineUsers(count);
         });
+        
+        socket.emit('request_active_users');
 
         return () => {
             socket.off('active_users_count');

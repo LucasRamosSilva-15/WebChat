@@ -17,7 +17,7 @@
 - [ ] adicionar botão para sair da sala
 - [ ] adicionar um sistema de administração da sala
 - [ ] adicionar sistema de cargo para usuarios (dono, moderador, usuario)
-- [ ] mostrar quantidade de usuarios onlines na sala
+- [✅] mostrar quantidade de usuarios onlines na sala
 - [ ] mostrar os usuários que estão dentro da sala
 - [ ] adicionar a opção de apagar as mensagens enviada pelo usuário
 - [✅] sistema de armazenamento de mensagens
@@ -38,13 +38,13 @@
 - [ ] fazer a caixinha de denuncias funcionar corretamente
 - [✅] mostrar a quantidade de usuários que tem uma sala
 - [✅] adicionar botão para favoritar sala 
-- [ ] implementar filtro por categoria
+- [✅] implementar filtro por categoria
 - [ ] adicionar um botão de denunciar sala
 - [ ] criar um sistema de denuncias
 - [ ] adicionar um sistema de sala cheia
 - [✅] mostrar as salas criadas
 - [✅] mostrar quantas salas foram criadas
-- [] mostrar quantidade de usuários onlines
+- [✅] mostrar quantidade de usuários onlines
 # Na Suporte.jsx (ideia de pagina)
 
 - [ ] mostrar salas que foram denunciadas
@@ -63,14 +63,14 @@
 
 - [ ] fazer um sistema de login funcional
 - [✅] ter um sistema de login parcialmente funcional
-- [ ] adicionar uma opção de fazer o login com a conta google
+- [✅] adicionar uma opção de fazer o login com a conta google (ainda vamos implementar o sistema no futuro)
 - [ ] adicionar um sistema de recuperação de senha
 
 # Em Register.jsx
 
 - [ ] fazer um sistema de registro funcional
 - [✅] ter um sistema de registro parcialmente funcional
-- [ ] adicionar uma opção de fazer o registro com a conta google
+- [✅] adicionar uma opção de fazer o registro com a conta google (ainda vamos implementar o sistema no futuro)
 - [ ] implementar sistema de confirmação de email
 
 # Na About.jsx

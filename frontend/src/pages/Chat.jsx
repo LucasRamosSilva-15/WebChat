@@ -3,9 +3,7 @@ import { useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
 import { Send, ImagePlus, X } from 'lucide-react';
 import CryptoJS from 'crypto-js';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-const socket = io(BACKEND_URL);
+import { socket } from '../socket';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
@@ -71,6 +69,7 @@ const Chat = () => {
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
+    const [onlineUsers, setOnlineUsers] = useState("...");
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
@@ -156,6 +155,11 @@ const Chat = () => {
 
     useEffect(() => {
         socket.emit("join_room", { room });
+        socket.emit("request_active_users");
+
+        socket.on("active_users_count", (count) => {
+            setOnlineUsers(count);
+        });
 
         socket.on("receive_message", (data) => {
             try {
@@ -210,6 +214,7 @@ const Chat = () => {
 
         return () => {
             socket.off("receive_message");
+            socket.off("active_users_count");
             socket.off("message_read");
         };
     }, [room]);
@@ -288,6 +293,10 @@ const Chat = () => {
 
                 <div className="skeuo-panel p-5 mb-6 max-w-[500px] mx-auto w-full text-center shrink-0">
                     <h1 className="hero-title text-[24px] font-semibold">{room.toUpperCase()}</h1>
+                    <p className="text-[13px] text-[#86868b] mt-1 font-medium tracking-wide">
+                        <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
+                        {onlineUsers} online no servidor
+                    </p>
                 </div>
 
                 <div ref={chatContainerRef} className="skeuo-panel p-10 flex-grow overflow-y-auto space-y-4 mb-6 pr-2 chat-container">

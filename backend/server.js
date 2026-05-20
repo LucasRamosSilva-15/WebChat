@@ -23,6 +23,10 @@ io.on('connection', (socket) => {
   io.emit('active_users_count', activeUsers);
   console.log('Um usuário se conectou:', socket.id);
 
+  socket.on('request_active_users', () => {
+    socket.emit('active_users_count', activeUsers);
+  });
+
   socket.on('join_room', (data) => {
     socket.join(data.room);
     console.log(`Usuário com ID: ${socket.id} entrou na sala: ${data.room}`);
