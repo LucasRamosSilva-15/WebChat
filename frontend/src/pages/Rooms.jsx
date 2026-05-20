@@ -1,6 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Search, Filter, MessageSquare, Users, AlertTriangle, Plus, Hash } from 'lucide-react';
+import { Search, Filter, MessageSquare, Users, AlertTriangle, Plus, Hash, Star } from 'lucide-react';
+import { io } from 'socket.io-client';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const socket = io(BACKEND_URL);
 
 const defaultRooms = [
     { title: "Geral", description: "Um espaço para discussões amplas e variadas.", roomParam: "general", category: "Casual", status: "Ativa", members: 245, date: "12 Jan, 2024" },
@@ -123,7 +127,7 @@ const CreateRoomModal = ({
     );
 };
 
-const RoomRow = ({ room }) => (
+const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
     <tr className="border-b border-[#d2d2d7]/30 hover:bg-black/[0.02] transition-colors">
         <td className="px-6 py-4">
             <div className="flex items-center gap-4">
@@ -157,7 +161,14 @@ const RoomRow = ({ room }) => (
             {room.members === 0 ? '--' : room.members}
         </td>
 
-        <td className="px-6 py-4">
+        <td className="px-6 py-4 flex gap-2 items-center">
+            <button
+                onClick={() => onToggleFavorite(room.roomParam)}
+                className={`p-1.5 rounded-full transition-colors flex shrink-0 ${isFavorite ? 'text-[#f59e0b] hover:bg-[#f59e0b]/10' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
+                title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
+            >
+                <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
+            </button>
             {room.status !== "Arquivada" && (
                 <Link to={`/chat?room=${room.roomParam}`} className="btn-secondary-glossy px-4 py-1.5 text-[13px]">
                     Entrar
@@ -173,6 +184,9 @@ const Rooms = () => {
     const [customRooms, setCustomRooms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterCategory, setFilterCategory] = useState('Todas');
+    const [onlineUsers, setOnlineUsers] = useState("...");
+    const [favorites, setFavorites] = useState([]);
 
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const [newRoomDesc, setNewRoomDesc] = useState('');
@@ -187,6 +201,21 @@ const Rooms = () => {
                 console.error("Erro ao carregar salas customizadas");
             }
         }
+
+        const savedFavorites = localStorage.getItem('chat_favorites');
+        if (savedFavorites) {
+            try {
+                setFavorites(JSON.parse(savedFavorites));
+            } catch (e) { }
+        }
+
+        socket.on('active_users_count', (count) => {
+            setOnlineUsers(count);
+        });
+
+        return () => {
+            socket.off('active_users_count');
+        };
     }, []);
 
     const handleCreateRoom = (e) => {
@@ -216,9 +245,29 @@ const Rooms = () => {
     };
 
     const allRooms = [...defaultRooms, ...customRooms];
-    const filteredRooms = allRooms.filter(room =>
-        room.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredRooms = allRooms.filter(room => {
+        const matchesSearch = room.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = filterCategory === 'Todas' || room.category === filterCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    const sortedRooms = [...filteredRooms].sort((a, b) => {
+        const aFav = favorites.includes(a.roomParam);
+        const bFav = favorites.includes(b.roomParam);
+        if (aFav && !bFav) return -1;
+        if (!aFav && bFav) return 1;
+        return 0;
+    });
+
+    const toggleFavorite = (roomParam) => {
+        setFavorites(prev => {
+            const newFavorites = prev.includes(roomParam)
+                ? prev.filter(r => r !== roomParam)
+                : [...prev, roomParam];
+            localStorage.setItem('chat_favorites', JSON.stringify(newFavorites));
+            return newFavorites;
+        });
+    };
 
     return (
         <>
@@ -252,9 +301,24 @@ const Rooms = () => {
                                 className="skeuo-input w-full pl-10 pr-4 py-2 text-[15px]"
                             />
                         </div>
-                        <button className="skeuo-panel flex items-center justify-center w-10 h-10 shrink-0 text-[#0071e3] hover:opacity-80 transition cursor-pointer" style={{ borderRadius: '50%', padding: 0 }}>
-                            <Filter size={18} />
-                        </button>
+                        <div className="relative">
+                            <select
+                                value={filterCategory}
+                                onChange={(e) => setFilterCategory(e.target.value)}
+                                className="skeuo-input w-[200px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
+                            >
+                                <option value="Todas">Todas as Categorias</option>
+                                <option value="Casual">Casual</option>
+                                <option value="Tecnologia">Tecnologia</option>
+                                <option value="Jogos">Jogos</option>
+                                <option value="Arte">Arte</option>
+                                <option value="Estudos">Estudos</option>
+                            </select>
+                            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0071e3]" size={16} />
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="#86868b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -268,8 +332,8 @@ const Rooms = () => {
                     />
                     <StatCard
                         title="Usuários Online"
-                        value="3,892"
-                        subtext={<><span className="text-green-500 font-medium">↗ Pico às 20h</span></>}
+                        value={onlineUsers}
+                        subtext={<><span className="text-green-500 font-medium">↗ Atualizado em tempo real</span></>}
                         icon={Users}
                         colorClass="bg-green-100 text-green-600 shadow-inner"
                     />
@@ -306,11 +370,16 @@ const Rooms = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredRooms.map((room, i) => (
-                                    <RoomRow key={i} room={room} />
+                                {sortedRooms.map((room, i) => (
+                                    <RoomRow
+                                        key={i}
+                                        room={room}
+                                        isFavorite={favorites.includes(room.roomParam)}
+                                        onToggleFavorite={toggleFavorite}
+                                    />
                                 ))}
 
-                                {filteredRooms.length === 0 && (
+                                {sortedRooms.length === 0 && (
                                     <tr>
                                         <td colSpan="5" className="px-6 py-12 text-center text-[#86868b] text-[15px]">
                                             Nenhuma sala encontrada com o termo "{searchQuery}".

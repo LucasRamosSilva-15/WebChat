@@ -33,11 +33,11 @@
 - [ ] adicionar sistema de envio de emojis 
 # Na Rooms.jsx
 
-- [ ] fazer a caixinha que mostra quantidade de usuarios funcionar corretamente
-- [ ] fazer a caixinha que mostra a data funcionar corretamente
+- [✅] fazer a caixinha que mostra quantidade de usuarios funcionar corretamente
+- [✅] fazer a caixinha que mostra a data da sala funcionar corretamente
 - [ ] fazer a caixinha de denuncias funcionar corretamente
-- [ ] mostrar a quantidade de usuários que tem uma sala
-- [ ] adicionar botão para favoritar sala 
+- [✅] mostrar a quantidade de usuários que tem uma sala
+- [✅] adicionar botão para favoritar sala 
 - [ ] implementar filtro por categoria
 - [ ] adicionar um botão de denunciar sala
 - [ ] criar um sistema de denuncias

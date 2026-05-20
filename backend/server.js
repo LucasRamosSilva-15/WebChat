@@ -16,7 +16,11 @@ const io = new Server(server, {
   maxHttpBufferSize: 1e8 // Tamanho Maximo de 100 MB
 });
 
+let activeUsers = 0;
+
 io.on('connection', (socket) => {
+  activeUsers++;
+  io.emit('active_users_count', activeUsers);
   console.log('Um usuário se conectou:', socket.id);
 
   socket.on('join_room', (data) => {
@@ -33,6 +37,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    activeUsers--;
+    io.emit('active_users_count', activeUsers);
     console.log('Usuário se desconectou:', socket.id);
   });
 });
