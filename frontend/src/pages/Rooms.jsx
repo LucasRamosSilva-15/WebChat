@@ -32,11 +32,11 @@ const RoomIconWithTooltip = ({ description }) => (
             <Hash size={20} />
         </div>
 
-        <div className="absolute bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2 flex flex-col items-center z-50 pointer-events-none opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out w-max max-w-[220px]">
-            <div className="skeuo-panel px-3.5 py-2 text-[12px] leading-snug text-[#1d1d1f] font-medium text-center shadow-lg rounded-[12px] border border-black/5 max-w-[200px] break-words">
+        <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 flex items-center z-50 pointer-events-none opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out w-max max-w-[220px]">
+            <div className="w-2.5 h-2.5 bg-[#ffffff] border-l border-t border-black/5 -rotate-45 -mr-1.5 z-10 shadow-[-2px_-2px_2px_rgba(0,0,0,0.02)]"></div>
+            <div className="skeuo-panel px-3.5 py-2 text-[12px] leading-snug text-[#1d1d1f] font-medium text-left shadow-lg rounded-[12px] border border-black/5 max-w-[200px] break-words">
                 {description || "Sem descrição disponível."}
             </div>
-            <div className="w-2.5 h-2.5 bg-[#f4f5f7] border-r border-b border-black/5 rotate-45 -mt-1.5 shadow-[2px_2px_2px_rgba(0,0,0,0.02)]"></div>
         </div>
     </div>
 );
