@@ -16,20 +16,53 @@ const io = new Server(server, {
   maxHttpBufferSize: 1e8 // Tamanho Maximo de 100 MB
 });
 
-let activeUsers = 0;
+const socketUsers = new Map();
+
+function getUniqueRoomCount(io, roomName) {
+  const socketsInRoom = io.sockets.adapter.rooms.get(roomName);
+  if (!socketsInRoom) return 0;
+  
+  const uniqueUsers = new Set();
+  for (const sid of socketsInRoom) {
+    uniqueUsers.add(socketUsers.get(sid) || sid);
+  }
+  return uniqueUsers.size;
+}
 
 io.on('connection', (socket) => {
-  activeUsers++;
-  io.emit('active_users_count', activeUsers);
   console.log('Um usuário se conectou:', socket.id);
 
-  socket.on('request_active_users', () => {
-    socket.emit('active_users_count', activeUsers);
+  const broadcastRoomCounts = () => {
+    const counts = {};
+    for (const [room, set] of io.sockets.adapter.rooms.entries()) {
+      if (!io.sockets.sockets.has(room)) {
+        counts[room] = getUniqueRoomCount(io, room);
+      }
+    }
+    io.emit('all_rooms_counts', counts);
+  };
+
+  socket.on('request_all_rooms_counts', () => {
+    broadcastRoomCounts();
   });
 
   socket.on('join_room', (data) => {
+    if (data.userId) {
+      socketUsers.set(socket.id, data.userId);
+    }
+
+    const currentRoomCount = getUniqueRoomCount(io, data.room);
+
+    if (currentRoomCount >= 200 && !socket.rooms.has(data.room)) {
+      socket.emit('room_full_error', { message: 'A sala atingiu o limite máximo de 200 membros.' });
+      return;
+    }
+
     socket.join(data.room);
     console.log(`Usuário com ID: ${socket.id} entrou na sala: ${data.room}`);
+    const newCount = getUniqueRoomCount(io, data.room);
+    io.to(data.room).emit('active_users_count', newCount);
+    broadcastRoomCounts();
   });
 
   socket.on('send_message', (data) => {
@@ -40,10 +73,34 @@ io.on('connection', (socket) => {
     socket.to(data.room).emit('message_read', data);
   });
 
+  socket.on('delete_message', (data) => {
+    socket.to(data.room).emit('message_deleted', data);
+  });
+
+  socket.on('disconnecting', () => {
+    for (const room of socket.rooms) {
+      if (room !== socket.id) {
+        // Calcular o count ignorando este socket, já que ele vai desconectar
+        const socketsInRoom = io.sockets.adapter.rooms.get(room);
+        let newCount = 0;
+        if (socketsInRoom) {
+          const uniqueUsers = new Set();
+          for (const sid of socketsInRoom) {
+            if (sid !== socket.id) {
+              uniqueUsers.add(socketUsers.get(sid) || sid);
+            }
+          }
+          newCount = uniqueUsers.size;
+        }
+        io.to(room).emit('active_users_count', newCount);
+      }
+    }
+  });
+
   socket.on('disconnect', () => {
-    activeUsers--;
-    io.emit('active_users_count', activeUsers);
     console.log('Usuário se desconectou:', socket.id);
+    socketUsers.delete(socket.id);
+    broadcastRoomCounts();
   });
 });
 

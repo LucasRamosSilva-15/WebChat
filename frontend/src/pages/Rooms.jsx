@@ -154,8 +154,8 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
             )}
         </td>
 
-        <td className="px-6 py-4 text-[15px] font-medium text-[#1d1d1f]">
-            {room.members === 0 ? '--' : room.members}
+        <td className="px-6 py-4 text-[15px] font-medium text-[#1d1d1f] whitespace-nowrap">
+            {room.members} / 200
         </td>
 
         <td className="px-6 py-4 flex gap-2 items-center">
@@ -167,9 +167,15 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
                 <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
             </button>
             {room.status !== "Arquivada" && (
-                <Link to={`/chat?room=${room.roomParam}`} className="btn-secondary-glossy px-4 py-1.5 text-[13px]">
-                    Entrar
-                </Link>
+                room.members >= 200 ? (
+                    <span className="text-[#ef4444] text-[13px] font-medium px-4 py-1.5 bg-[#fee2e2] rounded-[12px] inline-block text-center shadow-sm">
+                        Lotada
+                    </span>
+                ) : (
+                    <Link to={`/chat?room=${room.roomParam}`} className="btn-secondary-glossy px-4 py-1.5 text-[13px]">
+                        Entrar
+                    </Link>
+                )
             )}
         </td>
     </tr>
@@ -184,6 +190,7 @@ const Rooms = () => {
     const [filterCategory, setFilterCategory] = useState('Todas');
     const [onlineUsers, setOnlineUsers] = useState("...");
     const [favorites, setFavorites] = useState([]);
+    const [roomCounts, setRoomCounts] = useState({});
 
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const [newRoomDesc, setNewRoomDesc] = useState('');
@@ -206,14 +213,16 @@ const Rooms = () => {
             } catch (e) { }
         }
 
-        socket.on('active_users_count', (count) => {
-            setOnlineUsers(count);
+        socket.on('all_rooms_counts', (counts) => {
+            setRoomCounts(counts);
+            const total = Object.values(counts).reduce((a, b) => a + b, 0);
+            setOnlineUsers(total === 0 ? "..." : total);
         });
-        
-        socket.emit('request_active_users');
+
+        socket.emit('request_all_rooms_counts');
 
         return () => {
-            socket.off('active_users_count');
+            socket.off('all_rooms_counts');
         };
     }, []);
 
@@ -243,7 +252,11 @@ const Rooms = () => {
         navigate(`/chat?room=${roomParam}`);
     };
 
-    const allRooms = [...defaultRooms, ...customRooms];
+    const allRooms = [...defaultRooms, ...customRooms].map(room => ({
+        ...room,
+        members: roomCounts[room.roomParam] || 0
+    }));
+
     const filteredRooms = allRooms.filter(room => {
         const matchesSearch = room.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = filterCategory === 'Todas' || room.category === filterCategory;

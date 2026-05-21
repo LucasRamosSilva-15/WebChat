@@ -6,25 +6,26 @@
 
 # Na Chat.jsx
 
-- [ ] adicionar um limite de quantas pessoas podem ter uma sala ativa
-- [ ] adicioar chat privado entre usuarios, onde somente os usuarios possam ver
+- [✅] adicionar um limite de quantas pessoas podem ter uma sala ativa
+- [ ] adicionar chat privado entre usuarios, onde somente os usuarios possam ver
 - [ ] adicionar botão para deletar sala
 - [ ] adicionar botão para silenciar usuário
 - [ ] adicionar botão para banir usuário
 - [ ] adicionar botão para denunciar usuário
 - [ ] adicionar botão para denunciar sala
-- [ ] adicionar botão para marcar mensagem como favorita
-- [ ] adicionar botão para sair da sala
+- [✅] adicionar botão para marcar mensagem como favorita (faltar adicionar no futuro um filtro que mostrar somente as mensagens favoritas)
+- [✅] adicionar um filtro que mostrar somente as mensagens favoritas
+- [✅] adicionar a data da mensagem (se foi hoje mostrar so hora, se foi ontem mostrar ontem, se foi em outro dia mostrar dia, mes e ano)
+- [✅] adicionar botão para sair da sala
 - [ ] adicionar um sistema de administração da sala
 - [ ] adicionar sistema de cargo para usuarios (dono, moderador, usuario)
 - [✅] mostrar quantidade de usuarios onlines na sala
 - [ ] mostrar os usuários que estão dentro da sala
-- [ ] adicionar a opção de apagar as mensagens enviada pelo usuário
+- [✅] adicionar a opção de apagar as mensagens enviada pelo usuário em um intervalo de 24 horas
 - [✅] sistema de armazenamento de mensagens
 - [✅] adicionar sistema de envio de imagens
 - [ ] ter um sistema de edição das mensagens enviada pelo usuário
 - [ ] ter um sistema de fixar mensagem (apenas admin)
-- [ ] ter um sistema de marcar mensagem como favorita (apenas dono da sala)
 - [ ] ter um sistema de curtir mensagem
 - [✅] ter um sistema de envio de mensagens em tempo real
 - [ ] arrumar bugs visuais

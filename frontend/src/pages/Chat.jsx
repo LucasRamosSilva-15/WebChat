@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-import { Send, ImagePlus, X, Star } from 'lucide-react';
+import { Send, ImagePlus, X, Star, LogOut, Trash2 } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 import { socket } from '../socket';
 // Código de criptografia
@@ -20,8 +20,45 @@ const Avatar = ({ src, onClick }) => (
     </div>
 );
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite }) => {
-    const msgTime = msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const formatMessageTime = (timeStr) => {
+    if (!timeStr) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    if (timeStr.includes('T')) {
+        const msgDate = new Date(timeStr);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const isToday = msgDate.getDate() === today.getDate() && 
+                        msgDate.getMonth() === today.getMonth() && 
+                        msgDate.getFullYear() === today.getFullYear();
+        
+        const isYesterday = msgDate.getDate() === yesterday.getDate() && 
+                            msgDate.getMonth() === yesterday.getMonth() && 
+                            msgDate.getFullYear() === yesterday.getFullYear();
+
+        if (isToday) {
+            return msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (isYesterday) {
+            return "Ontem às " + msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else {
+            return msgDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + " " + msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }
+    
+    return timeStr;
+};
+
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage }) => {
+    const msgTime = formatMessageTime(msg.time);
+
+    let canDelete = false;
+    if (msg.isMe && msg.time && msg.messageId) {
+        const msgDate = new Date(msg.time);
+        const now = new Date();
+        const diffHours = (now - msgDate) / (1000 * 60 * 60);
+        if (diffHours < 24) canDelete = true;
+    }
 
     if (msg.isMe) {
         return (
@@ -35,6 +72,15 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite }) =
                         >
                             <Star size={16} fill={msg.isFavorite ? "currentColor" : "none"} />
                         </button>
+                        {canDelete && (
+                            <button
+                                onClick={() => onDeleteMessage(msg.messageId)}
+                                className={`absolute top-10 right-full mr-2 p-1.5 rounded-full transition-all opacity-0 group-hover/msg:opacity-100 text-[#ef4444] hover:bg-[#fee2e2] hover:text-[#dc2626]`}
+                                title="Apagar mensagem"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        )}
                         {msg.image && (
                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                         )}
@@ -84,8 +130,10 @@ const Chat = () => {
     const [currentMessage, setCurrentMessage] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState("...");
+    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [roomFullError, setRoomFullError] = useState(false);
     const fileInputRef = useRef(null);
     const chatContainerRef = useRef(null);
 
@@ -145,10 +193,28 @@ const Chat = () => {
         });
     };
 
+    const deleteMessage = (messageId) => {
+        socket.emit("delete_message", { room, messageId });
+        setMessages(prev => {
+            const updated = prev.filter(m => m.messageId !== messageId);
+            try {
+                const messagesToSave = updated.slice(-50);
+                localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesToSave));
+            } catch (e) { }
+            return updated;
+        });
+    };
+
     const location = useLocation();
+    const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
     const room = queryParams.get('room') || 'general';
     const currentRoomRef = useRef(null);
+
+    const [hasJoined, setHasJoined] = useState(() => {
+        const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+        return joinedRooms.includes(room);
+    });
 
     useEffect(() => {
         const savedMessages = localStorage.getItem(`chat_messages_${room}`);
@@ -157,11 +223,11 @@ const Chat = () => {
                 setMessages(JSON.parse(savedMessages));
             } catch (e) {
                 console.error("Erro ao carregar mensagens:", e);
-                setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+                setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
             }
         } else {
             setMessages([
-                { text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+                { text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }
             ]);
         }
         currentRoomRef.current = room;
@@ -179,11 +245,37 @@ const Chat = () => {
     }, [messages, room]);
 
     useEffect(() => {
-        socket.emit("join_room", { room });
-        socket.emit("request_active_users");
+        if (!hasJoined) return;
+
+        let userId = localStorage.getItem('chat_uniqueUserId');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('chat_uniqueUserId', userId);
+        }
+
+        socket.emit("join_room", { room, userId });
+
+        socket.on("room_full_error", (err) => {
+            setRoomFullError(err.message);
+            setHasJoined(false);
+            const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+            const updated = joinedRooms.filter(r => r !== room);
+            localStorage.setItem('chat_joinedRooms', JSON.stringify(updated));
+        });
 
         socket.on("active_users_count", (count) => {
             setOnlineUsers(count);
+        });
+
+        socket.on("message_deleted", (data) => {
+            setMessages(prev => {
+                const updated = prev.filter(m => m.messageId !== data.messageId);
+                try {
+                    const messagesToSave = updated.slice(-50);
+                    localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesToSave));
+                } catch (e) { }
+                return updated;
+            });
         });
 
         socket.on("receive_message", (data) => {
@@ -241,8 +333,10 @@ const Chat = () => {
             socket.off("receive_message");
             socket.off("active_users_count");
             socket.off("message_read");
+            socket.off("room_full_error");
+            socket.off("message_deleted");
         };
-    }, [room]);
+    }, [room, hasJoined]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -274,7 +368,7 @@ const Chat = () => {
                 avatar: currentPhoto,
                 status: currentStatus,
                 message: encryptedMessage,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                time: new Date().toISOString()
             };
 
             await socket.emit("send_message", messageData);
@@ -283,6 +377,58 @@ const Chat = () => {
             setImagePreview(null);
         }
     };
+
+    if (!hasJoined || roomFullError) {
+        return (
+            <main className="reveal flex-grow flex items-center justify-center px-6">
+                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center animate-fade-in-up">
+                    <div className="w-20 h-20 bg-[#f4f5f7] rounded-full mx-auto flex items-center justify-center border border-black/5 mb-6 shadow-inner">
+                        <span className="text-[36px]">🚪</span>
+                    </div>
+                    <h1 className="hero-title text-[28px] font-semibold mb-2">
+                        {room.toUpperCase()}
+                    </h1>
+
+                    {roomFullError ? (
+                        <p className="text-[15px] font-medium text-[#ef4444] mb-8 tracking-tight leading-snug p-3 bg-[#fee2e2] rounded-[12px]">
+                            {roomFullError}
+                        </p>
+                    ) : (
+                        <p className="text-[15px] font-normal text-[#86868b] mb-8 tracking-tight leading-snug">
+                            Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?
+                        </p>
+                    )}
+
+                    <div className="flex flex-col gap-3">
+                        {!roomFullError && (
+                            <button 
+                                onClick={() => {
+                                    const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+                                    if (!joinedRooms.includes(room)) {
+                                        joinedRooms.push(room);
+                                        localStorage.setItem('chat_joinedRooms', JSON.stringify(joinedRooms));
+                                    }
+                                    setHasJoined(true);
+                                }} 
+                                className="skeuo-btn w-full py-3 text-[16px] font-medium"
+                            >
+                                Entrar na Sala
+                            </button>
+                        )}
+                        <button 
+                            onClick={() => {
+                                setRoomFullError(false);
+                                navigate('/rooms');
+                            }} 
+                            className="w-full py-3 text-[16px] font-medium text-[#ef4444] hover:bg-[#fee2e2] rounded-[12px] transition-colors"
+                        >
+                            {roomFullError ? "Voltar para Salas" : "Cancelar"}
+                        </button>
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <>
@@ -316,25 +462,51 @@ const Chat = () => {
 
             <main className="reveal flex-grow flex flex-col max-w-[1000px] mx-auto w-full p-4 md:p-6 h-[calc(100vh-120px)] overflow-hidden">
 
-                <div className="skeuo-panel p-5 mb-6 max-w-[500px] mx-auto w-full text-center shrink-0">
-                    <h1 className="hero-title text-[24px] font-semibold">{room.toUpperCase()}</h1>
-                    <p className="text-[13px] text-[#86868b] mt-1 font-medium tracking-wide">
-                        <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
-                        {onlineUsers} online no servidor
-                    </p>
+                <div className="skeuo-panel p-5 mb-6 max-w-[500px] mx-auto w-full text-center shrink-0 relative flex items-center justify-center">
+                    <button 
+                        onClick={() => navigate('/rooms')}
+                        className={`absolute left-4 w-9 h-9 rounded-full transition-all flex items-center justify-center bg-[#f4f5f7] text-[#ef4444] hover:bg-[#fee2e2] hover:text-[#dc2626] shadow-sm border border-black/5`}
+                        title="Sair da sala"
+                    >
+                        <LogOut size={16} />
+                    </button>
+                    <button 
+                        onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                        className={`absolute right-4 w-9 h-9 rounded-full transition-all flex items-center justify-center ${showFavoritesOnly ? 'bg-[#f59e0b]/10 text-[#f59e0b] shadow-inner' : 'bg-[#f4f5f7] text-[#86868b] hover:bg-[#e8e9eb] hover:text-[#1d1d1f] shadow-sm border border-black/5'}`}
+                        title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
+                    >
+                        <Star size={16} fill={showFavoritesOnly ? "currentColor" : "none"} />
+                    </button>
+                    <div>
+                        <h1 className="hero-title text-[24px] font-semibold">{room.toUpperCase()}</h1>
+                        <p className="text-[13px] text-[#86868b] mt-1 font-medium tracking-wide">
+                            <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
+                            {onlineUsers} online no servidor
+                        </p>
+                    </div>
                 </div>
 
                 <div ref={chatContainerRef} className="skeuo-panel p-10 flex-grow overflow-y-auto space-y-4 mb-6 pr-2 chat-container">
 
-                    {messages.map((msg, index) => (
-                        <MessageBubble
-                            key={index}
-                            msg={msg}
-                            onAvatarClick={setSelectedUser}
-                            onImageClick={setSelectedImage}
-                            onToggleFavorite={() => toggleFavorite(index)}
-                        />
-                    ))}
+                    {messages.map((msg, index) => {
+                        if (showFavoritesOnly && !msg.isFavorite) return null;
+                        return (
+                            <MessageBubble
+                                key={index}
+                                msg={msg}
+                                onAvatarClick={setSelectedUser}
+                                onImageClick={setSelectedImage}
+                                onToggleFavorite={() => toggleFavorite(index)}
+                                onDeleteMessage={deleteMessage}
+                            />
+                        );
+                    })}
+
+                    {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
+                        <div className="text-center text-[#86868b] mt-10 text-[14px]">
+                            Você ainda não tem nenhuma mensagem favorita nesta sala.
+                        </div>
+                    )}
 
                 </div>
 
