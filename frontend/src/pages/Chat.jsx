@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
-import { Send, ImagePlus, X } from 'lucide-react';
+import { Send, ImagePlus, X, Star } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 import { socket } from '../socket';
 // Código de criptografia
@@ -20,14 +20,21 @@ const Avatar = ({ src, onClick }) => (
     </div>
 );
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite }) => {
     const msgTime = msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     if (msg.isMe) {
         return (
             <div className="flex items-end justify-end gap-2 animate-fade-in-up">
-                <div className="flex flex-col items-end max-w-[70%]">
-                    <div className="skeuo-bubble-sent px-4 py-2 flex flex-col">
+                <div className="flex flex-col items-end max-w-[70%] group/msg">
+                    <div className="skeuo-bubble-sent px-4 py-2 flex flex-col relative">
+                        <button
+                            onClick={onToggleFavorite}
+                            className={`absolute top-2 right-full mr-2 p-1.5 rounded-full transition-all opacity-0 group-hover/msg:opacity-100 ${msg.isFavorite ? 'text-[#f59e0b] opacity-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
+                            title={msg.isFavorite ? "Remover dos Favoritos" : "Marcar como Favorita"}
+                        >
+                            <Star size={16} fill={msg.isFavorite ? "currentColor" : "none"} />
+                        </button>
                         {msg.image && (
                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                         )}
@@ -51,9 +58,16 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick }) => {
     return (
         <div className="flex items-end justify-start gap-2 animate-fade-in-up">
             <Avatar src={msg.avatar} onClick={() => onAvatarClick(msg)} />
-            <div className="flex flex-col items-start max-w-[70%]">
+            <div className="flex flex-col items-start max-w-[70%] group/msg">
                 <span className="text-[12px] text-[#86868b] ml-1 mb-1 font-medium">{msg.sender}</span>
-                <div className="skeuo-bubble-received px-4 py-2 flex flex-col">
+                <div className="skeuo-bubble-received px-4 py-2 flex flex-col relative">
+                    <button
+                        onClick={onToggleFavorite}
+                        className={`absolute top-2 left-full ml-2 p-1.5 rounded-full transition-all opacity-0 group-hover/msg:opacity-100 ${msg.isFavorite ? 'text-[#f59e0b] opacity-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
+                        title={msg.isFavorite ? "Remover dos Favoritos" : "Marcar como Favorita"}
+                    >
+                        <Star size={16} fill={msg.isFavorite ? "currentColor" : "none"} />
+                    </button>
                     {msg.image && (
                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                     )}
@@ -118,6 +132,17 @@ const Chat = () => {
     const clearImagePreview = () => {
         setImagePreview(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const toggleFavorite = (index) => {
+        setMessages(prev => {
+            const updated = prev.map((m, i) => i === index ? { ...m, isFavorite: !m.isFavorite } : m);
+            try {
+                const messagesToSave = updated.slice(-50);
+                localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesToSave));
+            } catch (e) { }
+            return updated;
+        });
     };
 
     const location = useLocation();
@@ -302,7 +327,13 @@ const Chat = () => {
                 <div ref={chatContainerRef} className="skeuo-panel p-10 flex-grow overflow-y-auto space-y-4 mb-6 pr-2 chat-container">
 
                     {messages.map((msg, index) => (
-                        <MessageBubble key={index} msg={msg} onAvatarClick={setSelectedUser} onImageClick={setSelectedImage} />
+                        <MessageBubble
+                            key={index}
+                            msg={msg}
+                            onAvatarClick={setSelectedUser}
+                            onImageClick={setSelectedImage}
+                            onToggleFavorite={() => toggleFavorite(index)}
+                        />
                     ))}
 
                 </div>

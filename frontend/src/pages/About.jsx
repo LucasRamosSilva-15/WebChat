@@ -34,7 +34,7 @@ const About = () => {
                 />
                 <InfoCard
                     title="A Hospedagem"
-                    description="Vai ser definido no futuro."
+                    description="O Backend está hospedado na Render e o Frontend está hospedado no Vercel."
                 />
             </section>
 

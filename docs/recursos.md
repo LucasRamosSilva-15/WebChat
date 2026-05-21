@@ -33,6 +33,7 @@
 - [ ] adicionar sistema de envio de emojis 
 # Na Rooms.jsx
 
+- [ ] arrumar bugs visuais
 - [✅] fazer a caixinha que mostra quantidade de usuarios funcionar corretamente
 - [✅] fazer a caixinha que mostra a data da sala funcionar corretamente
 - [ ] fazer a caixinha de denuncias funcionar corretamente
@@ -75,5 +76,5 @@
 
 # Na About.jsx
 
-- [ ] Atualizar a caixinha A Hospedagem
+- [✅] Atualizar a caixinha A Hospedagem
 - [✅] Informações sobre o site e o projeto 
