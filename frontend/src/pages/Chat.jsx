@@ -749,7 +749,7 @@ const Chat = () => {
                             <FaThumbtack className="text-[#d97706] drop-shadow-sm" size={14} />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-[11px] font-bold text-[#d97706] uppercase tracking-widest mb-0.5" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.8)' }}>
+                            <div className="text-[11px] font-bold text-[#d97706] uppercase tracking-widest mb-0.5 pinned-title">
                                 Mensagem Fixada
                             </div>
                             <div className="text-[14px] text-[#1d1d1f] truncate font-medium">

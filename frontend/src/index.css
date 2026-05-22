@@ -247,3 +247,134 @@ body.theme-skeuo .hero-title {
 .reveal {
     animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
+.pinned-title {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+html.dark body {
+    color: #f5f5f7;
+    background: linear-gradient(200deg, #111 0%, #1a1a1c 100%);
+}
+
+html.dark body.theme-skeuo {
+    background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 2px, transparent 2px, transparent 4px),
+        linear-gradient(200deg, #111111 0%, #1c1c1e 100%);
+    background-attachment: fixed;
+}
+
+html.dark .skeuo-panel {
+    background: linear-gradient(to bottom, #2a2a2c 0%, #1e1e20 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+html.dark .skeuo-nav {
+    background: linear-gradient(to bottom, #2a2a2c 0%, #1e1e20 100%) !important;
+    border-bottom: 1px solid #000 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: #f5f5f7 !important;
+}
+
+html.dark .hero-title {
+    color: #f5f5f7 !important;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8) !important;
+}
+
+html.dark .btn-secondary-glossy {
+    background: linear-gradient(to bottom, #3a3a3c 0%, #2c2c2e 50%, #202022 51%, #1a1a1c 100%) !important;
+    border: 1px solid #000 !important;
+    color: #f5f5f7 !important;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .skeuo-input {
+    background: #1a1a1c !important;
+    border: 1px solid #000 !important;
+    border-top-color: #000 !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: #f5f5f7 !important;
+}
+
+html.dark .skeuo-input:focus {
+    background: #2a2a2c !important;
+    border-color: #3b82f6 !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px rgba(59, 130, 246, 0.6) !important;
+}
+
+html.dark .skeuo-bubble-received {
+    background: linear-gradient(to bottom, #2c2c2e 0%, #202022 100%) !important;
+    border: 1px solid #1a1a1c !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: #f5f5f7 !important;
+}
+
+html.dark .bg-white {
+    background-color: #2c2c2e !important;
+}
+
+html.dark .bg-\[\#f4f5f7\] {
+    background-color: #202022 !important;
+}
+
+html.dark .text-\[\#1d1d1f\] {
+    color: #f5f5f7 !important;
+}
+
+html.dark .text-\[\#86868b\] {
+    color: #a1a1a6 !important;
+}
+
+html.dark .border-black\/5 {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark .bg-black\/5 {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark .hover\:bg-black\/5:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .bg-gray-100 {
+    background-color: #3a3a3c !important;
+}
+
+html.dark .border-gray-200 {
+    border-color: #4a4a4c !important;
+}
+
+html.dark .text-gray-600 {
+    color: #a1a1a6 !important;
+}
+
+html.dark .bg-green-50 {
+    background-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+html.dark .border-green-200 {
+    border-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+html.dark .text-green-700 {
+    color: #4ade80 !important;
+}
+
+html.dark .text-\[\#424245\] {
+    color: #a1a1a6 !important;
+}
+
+html.dark [style*="textShadow"] {
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8) !important;
+}
+
+html.dark .pinned-title {
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8) !important;
+    color: #f59e0b !important;
+}
+
+html.dark .border-\[\#d2d2d7\] {
+    border-color: #1a1a1c !important;
+}

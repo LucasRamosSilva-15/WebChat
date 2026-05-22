@@ -34,7 +34,7 @@
 - [ ] adicionar sistema de envio de emojis 
 # Na Rooms.jsx
 
-- [ ] arrumar bugs visuais
+- [✅] arrumar bugs visuais
 - [✅] fazer a caixinha que mostra quantidade de usuarios funcionar corretamente
 - [✅] fazer a caixinha que mostra a data da sala funcionar corretamente
 - [ ] fazer a caixinha de denuncias funcionar corretamente
@@ -43,7 +43,7 @@
 - [✅] implementar filtro por categoria
 - [ ] adicionar um botão de denunciar sala
 - [ ] criar um sistema de denuncias
-- [ ] adicionar um sistema de sala cheia
+- [✅] adicionar um sistema de sala cheia
 - [✅] mostrar as salas criadas
 - [✅] mostrar quantas salas foram criadas
 - [✅] mostrar quantidade de usuários onlines
@@ -79,3 +79,11 @@
 
 - [✅] Atualizar a caixinha A Hospedagem
 - [✅] Informações sobre o site e o projeto 
+
+# Na Navbar.jsx
+
+- [✅] adicionar sistema de modo escuro e claro
+- [] adicionar sistema de idioma
+- [] adicionar sistema de notificações
+- [✅] adicionar a opção de configurações
+- [] Corrigir bugs visuais

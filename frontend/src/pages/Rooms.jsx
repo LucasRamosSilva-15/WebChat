@@ -302,7 +302,7 @@ const Rooms = () => {
                         <h1 className="hero-title text-[28px] md:text-[32px] font-semibold">Gerenciamento de Salas</h1>
                         <p className="text-[16px] text-[#86868b] mt-1">Administre salas, moderadores e atividades da comunidade.</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 pr-6">
                         <div className="relative w-full md:w-[280px]">
                             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b]" size={16} />
                             <input
