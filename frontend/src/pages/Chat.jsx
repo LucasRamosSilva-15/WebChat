@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
-import { Send, ImagePlus, X, Star, LogOut, Trash2 } from 'lucide-react';
 import CryptoJS from 'crypto-js';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag } from 'react-icons/fa';
 import { socket } from '../socket';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
@@ -22,20 +22,20 @@ const Avatar = ({ src, onClick }) => (
 
 const formatMessageTime = (timeStr) => {
     if (!timeStr) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
+
     if (timeStr.includes('T')) {
         const msgDate = new Date(timeStr);
         const today = new Date();
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
 
-        const isToday = msgDate.getDate() === today.getDate() && 
-                        msgDate.getMonth() === today.getMonth() && 
-                        msgDate.getFullYear() === today.getFullYear();
-        
-        const isYesterday = msgDate.getDate() === yesterday.getDate() && 
-                            msgDate.getMonth() === yesterday.getMonth() && 
-                            msgDate.getFullYear() === yesterday.getFullYear();
+        const isToday = msgDate.getDate() === today.getDate() &&
+            msgDate.getMonth() === today.getMonth() &&
+            msgDate.getFullYear() === today.getFullYear();
+
+        const isYesterday = msgDate.getDate() === yesterday.getDate() &&
+            msgDate.getMonth() === yesterday.getMonth() &&
+            msgDate.getFullYear() === yesterday.getFullYear();
 
         if (isToday) {
             return msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -45,11 +45,11 @@ const formatMessageTime = (timeStr) => {
             return msgDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + " " + msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
     }
-    
+
     return timeStr;
 };
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick }) => {
     const msgTime = formatMessageTime(msg.time);
 
     let canDelete = false;
@@ -65,28 +65,53 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
             <div className="flex items-end justify-end gap-2 animate-fade-in-up">
                 <div className="flex flex-col items-end max-w-[70%] group/msg">
                     <div className="skeuo-bubble-sent px-4 py-2 flex flex-col relative">
-                        <button
-                            onClick={onToggleFavorite}
-                            className={`absolute top-2 right-full mr-2 p-1.5 rounded-full transition-all opacity-0 group-hover/msg:opacity-100 ${msg.isFavorite ? 'text-[#f59e0b] opacity-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
-                            title={msg.isFavorite ? "Remover dos Favoritos" : "Marcar como Favorita"}
-                        >
-                            <Star size={16} fill={msg.isFavorite ? "currentColor" : "none"} />
-                        </button>
-                        {canDelete && (
-                            <button
-                                onClick={() => onDeleteMessage(msg.messageId)}
-                                className={`absolute top-10 right-full mr-2 p-1.5 rounded-full transition-all opacity-0 group-hover/msg:opacity-100 text-[#ef4444] hover:bg-[#fee2e2] hover:text-[#dc2626]`}
-                                title="Apagar mensagem"
-                            >
-                                <Trash2 size={16} />
+                        <div className="absolute top-2 right-full mr-2 group/menu z-10">
+                            <button className="p-1.5 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
+                                <FaEllipsisV size={14} className="drop-shadow-sm" />
                             </button>
-                        )}
+
+                            <div className="absolute top-0 right-full mr-2 bg-[#f4f5f7] rounded-[12px] shadow-lg border border-black/5 flex flex-col overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 min-w-[140px]">
+                                <button onClick={onToggleFavorite} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2.5 text-[#1d1d1f]">
+                                    <FaStar size={12} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                </button>
+                                {canDelete && (
+                                    <>
+                                        <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
+                                        <button onClick={() => onEditClick(msg)} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-[#e0f2fe] whitespace-nowrap flex items-center gap-2.5 text-[#1d1d1f]">
+                                            <FaPencilAlt size={12} className="text-[#0071e3] drop-shadow-sm" /> Editar
+                                        </button>
+                                        <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
+                                        <button onClick={() => onDeleteMessage(msg.messageId)} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2.5 text-[#ef4444]">
+                                            <FaTrash size={12} className="drop-shadow-sm" /> Apagar
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
                         {msg.image && (
                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                         )}
                         {msg.text && <p className="text-[16px] leading-snug">{msg.text}</p>}
                     </div>
-                    <span className="text-[11px] text-[#86868b] mt-1 uppercase tracking-widest">{msgTime} • Enviado</span>
+                    <div className="flex items-center justify-end gap-2 mt-1 w-full">
+                        <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-sm border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-sm border border-black/5' : ''}`}>
+                            {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={12} className="drop-shadow-sm" /> : <FaRegHeart size={12} />}
+                            {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                        </button>
+                        <span className="text-[11px] text-[#86868b] uppercase tracking-widest flex items-center gap-1.5">
+                            {mockRoles && mockRoles[msg.sender] === 'Dono' && (
+                                <span className="bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-amber-200/50 shadow-sm flex items-center gap-1">
+                                    👑 Dono
+                                </span>
+                            )}
+                            {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
+                                <span className="bg-blue-100 text-blue-700 text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-blue-200/50 shadow-sm flex items-center gap-1">
+                                    🛡️ Mod
+                                </span>
+                            )}
+                            {msgTime} {msg.isEdited && "(editada)"} • Enviado
+                        </span>
+                    </div>
                     {msg.readBy && msg.readBy.length > 0 && (
                         <div className="text-[10px] text-[#0071e3] mt-0.5 text-right font-medium relative group cursor-help transition-all">
                             ✓ Lido por {msg.readBy.length}
@@ -105,35 +130,92 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         <div className="flex items-end justify-start gap-2 animate-fade-in-up">
             <Avatar src={msg.avatar} onClick={() => onAvatarClick(msg)} />
             <div className="flex flex-col items-start max-w-[70%] group/msg">
-                <span className="text-[12px] text-[#86868b] ml-1 mb-1 font-medium">{msg.sender}</span>
+                <span className="text-[12px] text-[#86868b] ml-1 mb-1 font-medium flex items-center gap-1.5">
+                    {mockRoles && mockRoles[msg.sender] === 'Dono' && (
+                        <span className="bg-amber-100 text-amber-700 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-amber-200/50 shadow-sm flex items-center gap-1">
+                            👑 Dono
+                        </span>
+                    )}
+                    {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
+                        <span className="bg-blue-100 text-blue-700 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-blue-200/50 shadow-sm flex items-center gap-1">
+                            🛡️ Mod
+                        </span>
+                    )}
+                    {msg.sender}
+                </span>
                 <div className="skeuo-bubble-received px-4 py-2 flex flex-col relative">
-                    <button
-                        onClick={onToggleFavorite}
-                        className={`absolute top-2 left-full ml-2 p-1.5 rounded-full transition-all opacity-0 group-hover/msg:opacity-100 ${msg.isFavorite ? 'text-[#f59e0b] opacity-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
-                        title={msg.isFavorite ? "Remover dos Favoritos" : "Marcar como Favorita"}
-                    >
-                        <Star size={16} fill={msg.isFavorite ? "currentColor" : "none"} />
-                    </button>
+                    <div className="absolute top-2 left-full ml-2 group/menu z-10">
+                        <button className="p-1.5 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
+                            <FaEllipsisV size={14} className="drop-shadow-sm" />
+                        </button>
+
+                        <div className="absolute top-0 left-full ml-2 bg-[#f4f5f7] rounded-[12px] shadow-lg border border-black/5 flex flex-col overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 min-w-[140px]">
+                            <button onClick={onToggleFavorite} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2.5 text-[#1d1d1f]">
+                                <FaStar size={12} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                            </button>
+                            <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
+                            <button onClick={() => onReportClick({ type: 'message', target: msg })} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2.5 text-[#ef4444]">
+                                <FaFlag size={12} className="drop-shadow-sm" /> Denunciar
+                            </button>
+                        </div>
+                    </div>
                     {msg.image && (
                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                     )}
                     {msg.text && <p className="text-[16px] leading-snug">{msg.text}</p>}
                 </div>
-                <span className="text-[11px] text-[#86868b] mt-1 ml-1 uppercase tracking-widest">{msgTime}</span>
+                <div className="flex items-center justify-start gap-2 mt-1 ml-1 w-full">
+                    <span className="text-[11px] text-[#86868b] uppercase tracking-widest">{msgTime} {msg.isEdited && "(editada)"}</span>
+                    <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-sm border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-sm border border-black/5' : ''}`}>
+                        {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={12} className="drop-shadow-sm" /> : <FaRegHeart size={12} />}
+                        {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                    </button>
+                </div>
             </div>
         </div>
     );
 };
 
 const Chat = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(location.search);
+    const room = queryParams.get('room') || 'general';
+
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
+    const [mockRoles, setMockRoles] = useState(() => {
+        return JSON.parse(localStorage.getItem(`chat_roles_${room}`) || '{}');
+    });
+
+    const [reportModalData, setReportModalData] = useState(null);
+    const [reportReason, setReportReason] = useState('Spam');
+    const [reportDetails, setReportDetails] = useState('');
+
+    const handleReportSubmit = (e) => {
+        e.preventDefault();
+        alert(`Denúncia simulada enviada ao servidor!\nTipo: ${reportModalData.type}\nMotivo: ${reportReason}`);
+        setReportModalData(null);
+        setReportReason('Spam');
+        setReportDetails('');
+    };
+
+    const handleRoleChange = (sender, newRole) => {
+        setMockRoles(prev => {
+            const updated = { ...prev, [sender]: newRole };
+            localStorage.setItem(`chat_roles_${room}`, JSON.stringify(updated));
+            return updated;
+        });
+    };
     const [onlineUsers, setOnlineUsers] = useState("...");
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [roomFullError, setRoomFullError] = useState(false);
+    const [editingMessageId, setEditingMessageId] = useState(null);
+    const [pinnedMessage, setPinnedMessage] = useState({ text: "Bem-vindos! Lembrem-se de manter o respeito e ler as regras da sala.", sender: "Admin" });
+    const [currentUserId, setCurrentUserId] = useState(() => localStorage.getItem('chat_uniqueUserId') || 'user_' + Math.random().toString(36).substr(2, 9));
     const fileInputRef = useRef(null);
     const chatContainerRef = useRef(null);
 
@@ -205,10 +287,34 @@ const Chat = () => {
         });
     };
 
-    const location = useLocation();
-    const navigate = useNavigate();
-    const queryParams = new URLSearchParams(location.search);
-    const room = queryParams.get('room') || 'general';
+    const handleEditClick = (msg) => {
+        setEditingMessageId(msg.messageId);
+        setCurrentMessage(msg.text || "");
+    };
+
+    const cancelEdit = () => {
+        setEditingMessageId(null);
+        setCurrentMessage("");
+    };
+
+    const toggleLike = (messageId) => {
+        socket.emit("toggle_like", { room, messageId, userId: currentUserId });
+
+        setMessages(prev => {
+            const updated = prev.map(m => {
+                if (m.messageId === messageId) {
+                    const likes = m.likes || [];
+                    const hasLiked = likes.includes(currentUserId);
+                    const newLikes = hasLiked ? likes.filter(id => id !== currentUserId) : [...likes, currentUserId];
+                    return { ...m, likes: newLikes };
+                }
+                return m;
+            });
+            try { localStorage.setItem(`chat_messages_${room}`, JSON.stringify(updated.slice(-50))); } catch (e) { }
+            return updated;
+        });
+    };
+
     const currentRoomRef = useRef(null);
 
     const [hasJoined, setHasJoined] = useState(() => {
@@ -249,7 +355,7 @@ const Chat = () => {
 
         let userId = localStorage.getItem('chat_uniqueUserId');
         if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            userId = currentUserId;
             localStorage.setItem('chat_uniqueUserId', userId);
         }
 
@@ -270,6 +376,58 @@ const Chat = () => {
         socket.on("message_deleted", (data) => {
             setMessages(prev => {
                 const updated = prev.filter(m => m.messageId !== data.messageId);
+                try {
+                    const messagesToSave = updated.slice(-50);
+                    localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesToSave));
+                } catch (e) { }
+                return updated;
+            });
+        });
+
+        socket.on("message_edited", (data) => {
+            setMessages(prev => {
+                const updated = prev.map(m => {
+                    if (m.messageId === data.messageId) {
+                        try {
+                            const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
+                            const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+                            let text = decryptedString;
+                            let image = m.image;
+                            if (decryptedString) {
+                                try {
+                                    const parsed = JSON.parse(decryptedString);
+                                    if (parsed.text !== undefined || parsed.image !== undefined) {
+                                        text = parsed.text || "";
+                                        image = parsed.image || null;
+                                    }
+                                } catch (e) { }
+                            }
+                            return { ...m, text, image, isEdited: true };
+                        } catch (e) {
+                            return { ...m, text: data.message, isEdited: true };
+                        }
+                    }
+                    return m;
+                });
+                try {
+                    const messagesToSave = updated.slice(-50);
+                    localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesToSave));
+                } catch (e) { }
+                return updated;
+            });
+        });
+
+        socket.on("like_toggled", (data) => {
+            setMessages(prev => {
+                const updated = prev.map(m => {
+                    if (m.messageId === data.messageId) {
+                        const likes = m.likes || [];
+                        const hasLiked = likes.includes(data.userId);
+                        const newLikes = hasLiked ? likes.filter(id => id !== data.userId) : [...likes, data.userId];
+                        return { ...m, likes: newLikes };
+                    }
+                    return m;
+                });
                 try {
                     const messagesToSave = updated.slice(-50);
                     localStorage.setItem(`chat_messages_${room}`, JSON.stringify(messagesToSave));
@@ -302,18 +460,18 @@ const Chat = () => {
 
                     }
 
-                    setMessages((list) => [...list, { messageId: data.messageId, text: text, image: image, sender: data.sender, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [] }]);
+                    setMessages((list) => [...list, { messageId: data.messageId, text: text, image: image, sender: data.sender, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
 
                     const currentReader = localStorage.getItem('chat_displayName') || "Usuário";
                     if (data.messageId) {
                         socket.emit("read_message", { room: data.room, messageId: data.messageId, reader: currentReader });
                     }
                 } else {
-                    setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [] }]);
+                    setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
                 }
             } catch (error) {
                 console.error("Erro ao descriptografar mensagem:", error);
-                setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, isMe: false, time: data.time, readBy: [] }]);
+                setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, isMe: false, time: data.time, readBy: [], likes: [] }]);
             }
         });
 
@@ -335,6 +493,8 @@ const Chat = () => {
             socket.off("message_read");
             socket.off("room_full_error");
             socket.off("message_deleted");
+            socket.off("message_edited");
+            socket.off("like_toggled");
         };
     }, [room, hasJoined]);
 
@@ -354,27 +514,49 @@ const Chat = () => {
             const currentPhoto = localStorage.getItem('chat_profilePhoto');
             const currentStatus = localStorage.getItem('chat_statusMessage') || "Disponível";
 
-            // Código de criptografia
-            // Provisório! deve ser mudado para JWT e bcrypt no futuro
-            const payload = JSON.stringify({ text: currentMessage, image: imagePreview });
-            const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
+            if (editingMessageId) {
+                const msgToEdit = messages.find(m => m.messageId === editingMessageId);
+                const payload = JSON.stringify({ text: currentMessage, image: imagePreview || (msgToEdit ? msgToEdit.image : null) });
+                const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
 
-            const messageId = Date.now().toString() + Math.random().toString(36).substring(7);
+                const editData = {
+                    room: room,
+                    messageId: editingMessageId,
+                    message: encryptedMessage,
+                    time: new Date().toISOString()
+                };
 
-            const messageData = {
-                room: room,
-                messageId: messageId,
-                sender: currentSender,
-                avatar: currentPhoto,
-                status: currentStatus,
-                message: encryptedMessage,
-                time: new Date().toISOString()
-            };
+                await socket.emit("edit_message", editData);
+                setMessages((prev) => {
+                    const updated = prev.map(m => m.messageId === editingMessageId ? { ...m, text: currentMessage, image: imagePreview || m.image, isEdited: true } : m);
+                    try { localStorage.setItem(`chat_messages_${room}`, JSON.stringify(updated.slice(-50))); } catch (e) { }
+                    return updated;
+                });
 
-            await socket.emit("send_message", messageData);
-            setMessages((list) => [...list, { messageId: messageId, text: currentMessage, image: imagePreview, sender: currentSender, avatar: currentPhoto, status: currentStatus, isMe: true, time: messageData.time, readBy: [] }]);
-            setCurrentMessage("");
-            setImagePreview(null);
+                setCurrentMessage("");
+                setImagePreview(null);
+                setEditingMessageId(null);
+            } else {
+                const payload = JSON.stringify({ text: currentMessage, image: imagePreview });
+                const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
+
+                const messageId = Date.now().toString() + Math.random().toString(36).substring(7);
+
+                const messageData = {
+                    room: room,
+                    messageId: messageId,
+                    sender: currentSender,
+                    avatar: currentPhoto,
+                    status: currentStatus,
+                    message: encryptedMessage,
+                    time: new Date().toISOString()
+                };
+
+                await socket.emit("send_message", messageData);
+                setMessages((list) => [...list, { messageId: messageId, text: currentMessage, image: imagePreview, sender: currentSender, avatar: currentPhoto, status: currentStatus, isMe: true, time: messageData.time, readBy: [], likes: [] }]);
+                setCurrentMessage("");
+                setImagePreview(null);
+            }
         }
     };
 
@@ -382,8 +564,8 @@ const Chat = () => {
         return (
             <main className="reveal flex-grow flex items-center justify-center px-6">
                 <div className="skeuo-panel p-10 max-w-[400px] w-full text-center animate-fade-in-up">
-                    <div className="w-20 h-20 bg-[#f4f5f7] rounded-full mx-auto flex items-center justify-center border border-black/5 mb-6 shadow-inner">
-                        <span className="text-[36px]">🚪</span>
+                    <div className="w-20 h-20 bg-[#f4f5f7] text-[#86868b] rounded-full mx-auto flex items-center justify-center border border-black/5 mb-6 shadow-inner text-[36px]">
+                        <FaSignOutAlt />
                     </div>
                     <h1 className="hero-title text-[28px] font-semibold mb-2">
                         {room.toUpperCase()}
@@ -401,7 +583,7 @@ const Chat = () => {
 
                     <div className="flex flex-col gap-3">
                         {!roomFullError && (
-                            <button 
+                            <button
                                 onClick={() => {
                                     const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
                                     if (!joinedRooms.includes(room)) {
@@ -409,17 +591,17 @@ const Chat = () => {
                                         localStorage.setItem('chat_joinedRooms', JSON.stringify(joinedRooms));
                                     }
                                     setHasJoined(true);
-                                }} 
+                                }}
                                 className="skeuo-btn w-full py-3 text-[16px] font-medium"
                             >
                                 Entrar na Sala
                             </button>
                         )}
-                        <button 
+                        <button
                             onClick={() => {
                                 setRoomFullError(false);
                                 navigate('/rooms');
-                            }} 
+                            }}
                             className="w-full py-3 text-[16px] font-medium text-[#ef4444] hover:bg-[#fee2e2] rounded-[12px] transition-colors"
                         >
                             {roomFullError ? "Voltar para Salas" : "Cancelar"}
@@ -435,7 +617,7 @@ const Chat = () => {
             {selectedImage && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setSelectedImage(null)}>
                     <button onClick={() => setSelectedImage(null)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
-                        <X size={24} />
+                        <FaTimes size={20} />
                     </button>
                     <img src={selectedImage} alt="Full Screen" className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-sm" onClick={(e) => e.stopPropagation()} />
                 </div>
@@ -453,9 +635,84 @@ const Chat = () => {
                                 </svg>
                             )}
                         </div>
-                        <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1">{selectedUser.sender}</h3>
-                        <p className="text-[15px] text-[#86868b]">{selectedUser.status || "Sem recado"}</p>
-                        <button onClick={() => setSelectedUser(null)} className="mt-6 btn-secondary-glossy w-full py-2">Fechar</button>
+                        <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
+                            {selectedUser.sender}
+                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="bg-amber-100 text-amber-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-amber-200 shadow-sm flex items-center gap-1">👑 Dono</span>}
+                            {mockRoles[selectedUser.sender] === 'Moderador' && <span className="bg-blue-100 text-blue-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-blue-200 shadow-sm flex items-center gap-1">🛡️ Mod</span>}
+                        </h3>
+                        <p className="text-[15px] text-[#86868b] mb-6">{selectedUser.status || "Sem recado"}</p>
+
+                        <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 shadow-inner">
+                            <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-2">Cargos e Moderação</label>
+                            <select
+                                value={mockRoles[selectedUser.sender] || 'Usuário'}
+                                onChange={(e) => handleRoleChange(selectedUser.sender, e.target.value)}
+                                className="skeuo-input w-full px-3 py-2 text-[14px] bg-white cursor-pointer mb-3"
+                            >
+                                <option value="Usuário">👤 Usuário Comum</option>
+                                <option value="Moderador">🛡️ Moderador</option>
+                                <option value="Dono">👑 Dono da Sala</option>
+                            </select>
+
+                            <div className="flex gap-2">
+                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] hover:bg-[#fee2e2]">Silenciar</button>
+                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] hover:bg-[#fee2e2]">Banir</button>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-4">
+                            <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#ef4444] hover:bg-[#fee2e2]">
+                                <FaFlag size={12} /> Denunciar
+                            </button>
+                            <button onClick={() => setSelectedUser(null)} className="skeuo-btn w-full py-2">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {reportModalData && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setReportModalData(null)}>
+                    <div className="skeuo-panel p-8 max-w-[400px] w-full relative" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-full bg-[#fee2e2] text-[#ef4444] flex items-center justify-center border border-[#fca5a5] shadow-inner shrink-0">
+                                <FaFlag size={18} />
+                            </div>
+                            <div>
+                                <h3 className="text-[20px] font-semibold text-[#1d1d1f] leading-tight">Denunciar {reportModalData.type === 'user' ? 'Usuário' : 'Mensagem'}</h3>
+                                <p className="text-[13px] text-[#86868b]">Sua denúncia será avaliada pela moderação.</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleReportSubmit} className="space-y-4 text-left">
+                            <div className="space-y-1.5">
+                                <label className="block text-[12px] font-bold text-[#86868b] uppercase tracking-widest ml-1">Motivo</label>
+                                <select
+                                    value={reportReason}
+                                    onChange={(e) => setReportReason(e.target.value)}
+                                    className="skeuo-input w-full px-4 py-3 bg-white"
+                                >
+                                    <option value="Spam">Spam ou Flood</option>
+                                    <option value="Assédio">Assédio ou Ofensas</option>
+                                    <option value="Conteúdo Impróprio">Conteúdo Impróprio</option>
+                                    <option value="Outro">Outro (Especificar)</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="block text-[12px] font-bold text-[#86868b] uppercase tracking-widest ml-1">Detalhes</label>
+                                <textarea
+                                    value={reportDetails}
+                                    onChange={(e) => setReportDetails(e.target.value)}
+                                    placeholder="Descreva o problema..."
+                                    className="skeuo-input w-full px-4 py-3 min-h-[80px] resize-none"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button type="button" onClick={() => setReportModalData(null)} className="btn-secondary-glossy flex-1 py-2.5 text-[14px]">Cancelar</button>
+                                <button type="submit" className="skeuo-btn flex-1 py-2.5 text-[14px] bg-[#ef4444] border-red-700 shadow-sm">Enviar</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
@@ -463,19 +720,19 @@ const Chat = () => {
             <main className="reveal flex-grow flex flex-col max-w-[1000px] mx-auto w-full p-4 md:p-6 h-[calc(100vh-120px)] overflow-hidden">
 
                 <div className="skeuo-panel p-5 mb-6 max-w-[500px] mx-auto w-full text-center shrink-0 relative flex items-center justify-center">
-                    <button 
+                    <button
                         onClick={() => navigate('/rooms')}
-                        className={`absolute left-4 w-9 h-9 rounded-full transition-all flex items-center justify-center bg-[#f4f5f7] text-[#ef4444] hover:bg-[#fee2e2] hover:text-[#dc2626] shadow-sm border border-black/5`}
+                        className={`absolute left-4 w-9 h-9 rounded-full transition-all flex items-center justify-center bg-[#f4f5f7] hover:bg-[#fee2e2] shadow-sm border border-black/5`}
                         title="Sair da sala"
                     >
-                        <LogOut size={16} />
+                        <FaSignOutAlt size={16} className="text-[#86868b]" />
                     </button>
-                    <button 
+                    <button
                         onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                        className={`absolute right-4 w-9 h-9 rounded-full transition-all flex items-center justify-center ${showFavoritesOnly ? 'bg-[#f59e0b]/10 text-[#f59e0b] shadow-inner' : 'bg-[#f4f5f7] text-[#86868b] hover:bg-[#e8e9eb] hover:text-[#1d1d1f] shadow-sm border border-black/5'}`}
+                        className={`absolute right-4 w-9 h-9 rounded-full transition-all flex items-center justify-center ${showFavoritesOnly ? 'bg-black/5 shadow-inner' : 'bg-[#f4f5f7] hover:bg-[#e8e9eb] shadow-sm border border-black/5'}`}
                         title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
                     >
-                        <Star size={16} fill={showFavoritesOnly ? "currentColor" : "none"} />
+                        <FaStar size={16} className={`drop-shadow-sm ${showFavoritesOnly ? 'text-[#f59e0b]' : 'text-[#86868b] opacity-60 hover:opacity-100'}`} />
                     </button>
                     <div>
                         <h1 className="hero-title text-[24px] font-semibold">{room.toUpperCase()}</h1>
@@ -485,6 +742,30 @@ const Chat = () => {
                         </p>
                     </div>
                 </div>
+
+                {pinnedMessage && (
+                    <div className="skeuo-panel px-4 py-3 mb-6 mx-auto w-full shrink-0 relative flex items-center gap-3 border-l-4 border-l-[#f59e0b] shadow-[0_4px_10px_rgba(0,0,0,0.05),inset_0_2px_0_rgba(255,255,255,1)] group hover:brightness-[0.98] transition-all cursor-pointer">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-b from-[#fef3c7] to-[#fde68a] border border-[#fcd34d] flex items-center justify-center shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)]">
+                            <FaThumbtack className="text-[#d97706] drop-shadow-sm" size={14} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="text-[11px] font-bold text-[#d97706] uppercase tracking-widest mb-0.5" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.8)' }}>
+                                Mensagem Fixada
+                            </div>
+                            <div className="text-[14px] text-[#1d1d1f] truncate font-medium">
+                                <span className="text-[#86868b] mr-1">{pinnedMessage.sender}:</span>
+                                {pinnedMessage.text}
+                            </div>
+                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setPinnedMessage(null); }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-black/5 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Desfixar mensagem"
+                        >
+                            <FaTimes size={14} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
+                        </button>
+                    </div>
+                )}
 
                 <div ref={chatContainerRef} className="skeuo-panel p-10 flex-grow overflow-y-auto space-y-4 mb-6 pr-2 chat-container">
 
@@ -498,6 +779,11 @@ const Chat = () => {
                                 onImageClick={setSelectedImage}
                                 onToggleFavorite={() => toggleFavorite(index)}
                                 onDeleteMessage={deleteMessage}
+                                onEditClick={handleEditClick}
+                                onToggleLike={toggleLike}
+                                currentUserId={currentUserId}
+                                mockRoles={mockRoles}
+                                onReportClick={setReportModalData}
                             />
                         );
                     })}
@@ -511,18 +797,27 @@ const Chat = () => {
                 </div>
 
                 <footer className="pb-4 shrink-0 relative">
-                    {imagePreview && (
+                    {imagePreview && !editingMessageId && (
                         <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up">
                             <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
-                            <button type="button" onClick={clearImagePreview} className="p-1 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
-                                <X size={16} />
+                            <button type="button" onClick={clearImagePreview} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                                <FaTimes size={12} />
+                            </button>
+                        </div>
+                    )}
+                    {editingMessageId && (
+                        <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 px-4 flex items-center gap-2 z-10 animate-fade-in-up text-[#86868b] text-sm font-medium">
+                            <FaPencilAlt size={12} className="text-[#0071e3]" />
+                            <span>Editando mensagem...</span>
+                            <button type="button" onClick={cancelEdit} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f] ml-2">
+                                <FaTimes size={12} />
                             </button>
                         </div>
                     )}
                     <form onSubmit={sendMessage} className="relative flex items-center">
                         <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
-                        <button type="button" onClick={() => fileInputRef.current.click()} className="absolute left-4 text-[#86868b] hover:text-[#0071e3] transition-colors focus:outline-none">
-                            <ImagePlus size={20} />
+                        <button type="button" onClick={() => fileInputRef.current.click()} className="absolute left-4 text-[#86868b] hover:text-[#0071e3] transition-colors focus:outline-none drop-shadow-sm">
+                            <FaCamera size={18} />
                         </button>
 
                         <input
@@ -535,7 +830,7 @@ const Chat = () => {
                         />
 
                         <button type="submit" disabled={!currentMessage.trim() && !imagePreview} className={`absolute right-2 text-white w-9 h-9 rounded-full flex items-center justify-center transition shadow-sm ${currentMessage.trim() || imagePreview ? 'skeuo-btn px-0 py-0' : 'bg-gray-300 cursor-not-allowed'}`}>
-                            <Send size={18} />
+                            <FaPaperPlane size={14} className="mr-0.5 mt-0.5" />
                         </button>
                     </form>
                 </footer>

@@ -21,7 +21,7 @@ const socketUsers = new Map();
 function getUniqueRoomCount(io, roomName) {
   const socketsInRoom = io.sockets.adapter.rooms.get(roomName);
   if (!socketsInRoom) return 0;
-  
+
   const uniqueUsers = new Set();
   for (const sid of socketsInRoom) {
     uniqueUsers.add(socketUsers.get(sid) || sid);
@@ -77,10 +77,17 @@ io.on('connection', (socket) => {
     socket.to(data.room).emit('message_deleted', data);
   });
 
+  socket.on('edit_message', (data) => {
+    socket.to(data.room).emit('message_edited', data);
+  });
+
+  socket.on('toggle_like', (data) => {
+    socket.to(data.room).emit('like_toggled', data);
+  });
+
   socket.on('disconnecting', () => {
     for (const room of socket.rooms) {
       if (room !== socket.id) {
-        // Calcular o count ignorando este socket, já que ele vai desconectar
         const socketsInRoom = io.sockets.adapter.rooms.get(room);
         let newCount = 0;
         if (socketsInRoom) {

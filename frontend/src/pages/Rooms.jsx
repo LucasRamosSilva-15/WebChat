@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Search, Filter, MessageSquare, Users, AlertTriangle, Plus, Hash, Star } from 'lucide-react';
 import { socket } from '../socket';
+import { FaSearch, FaSlidersH, FaCommentAlt, FaUsers, FaExclamationTriangle, FaPlus, FaHashtag, FaStar } from 'react-icons/fa';
 
 const defaultRooms = [
     { title: "Geral", description: "Um espaço para discussões amplas e variadas.", roomParam: "general", category: "Casual", status: "Ativa", members: 245, date: "12 Jan, 2024" },
@@ -16,8 +16,8 @@ const StatCard = ({ title, value, subtext, icon: Icon, colorClass }) => (
     <div className="skeuo-panel p-6 flex flex-col justify-between h-full hover:scale-[1.02] transition-transform duration-300">
         <div className="flex justify-between items-start mb-4">
             <h3 className="text-[13px] font-semibold text-[#86868b] uppercase tracking-widest">{title}</h3>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${colorClass}`}>
-                <Icon size={20} />
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[18px] drop-shadow-sm ${colorClass}`}>
+                <Icon />
             </div>
         </div>
         <div>
@@ -30,7 +30,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, colorClass }) => (
 const RoomIconWithTooltip = ({ description }) => (
     <div className="relative group">
         <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#0071e3] to-[#4da4ff] text-white flex items-center justify-center shrink-0 shadow-sm border border-[#005bb5] cursor-help transition-transform duration-200 group-hover:scale-105">
-            <Hash size={20} />
+            <FaHashtag className="drop-shadow-sm" size={18} />
         </div>
 
         <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 flex items-center z-50 pointer-events-none opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out w-max max-w-[220px]">
@@ -161,10 +161,10 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
         <td className="px-6 py-4 flex gap-2 items-center">
             <button
                 onClick={() => onToggleFavorite(room.roomParam)}
-                className={`p-1.5 rounded-full transition-colors flex shrink-0 ${isFavorite ? 'text-[#f59e0b] hover:bg-[#f59e0b]/10' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
+                className={`p-1.5 rounded-full transition-colors flex shrink-0 ${isFavorite ? 'text-[#f59e0b] drop-shadow-sm bg-[#f59e0b]/10' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
                 title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
             >
-                <Star size={18} fill={isFavorite ? "currentColor" : "none"} />
+                <FaStar size={18} />
             </button>
             {room.status !== "Arquivada" && (
                 room.members >= 200 ? (
@@ -216,7 +216,7 @@ const Rooms = () => {
         socket.on('all_rooms_counts', (counts) => {
             setRoomCounts(counts);
             const total = Object.values(counts).reduce((a, b) => a + b, 0);
-            setOnlineUsers(total === 0 ? "..." : total);
+            setOnlineUsers(total);
         });
 
         socket.emit('request_all_rooms_counts');
@@ -304,7 +304,7 @@ const Rooms = () => {
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="relative w-full md:w-[280px]">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b]" size={18} />
+                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b]" size={16} />
                             <input
                                 type="text"
                                 placeholder="Buscar salas..."
@@ -326,7 +326,7 @@ const Rooms = () => {
                                 <option value="Arte">Arte</option>
                                 <option value="Estudos">Estudos</option>
                             </select>
-                            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0071e3]" size={16} />
+                            <FaSlidersH className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0071e3]" size={16} />
                             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="#86868b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             </div>
@@ -339,21 +339,21 @@ const Rooms = () => {
                         title="Salas Ativas"
                         value={filteredRooms.length}
                         subtext={<><span className="text-green-500 font-medium">↗ +{customRooms.length}</span> esta semana</>}
-                        icon={MessageSquare}
+                        icon={FaCommentAlt}
                         colorClass="bg-[#e6f0ff] text-[#0071e3] shadow-inner"
                     />
                     <StatCard
                         title="Usuários Online"
                         value={onlineUsers}
                         subtext={<><span className="text-green-500 font-medium">↗ Atualizado em tempo real</span></>}
-                        icon={Users}
+                        icon={FaUsers}
                         colorClass="bg-green-100 text-green-600 shadow-inner"
                     />
                     <StatCard
                         title="Reportes Pendentes"
                         value="7"
                         subtext={<><span className="text-[#86868b]">Requer atenção</span></>}
-                        icon={AlertTriangle}
+                        icon={FaExclamationTriangle}
                         colorClass="bg-red-100 text-red-500 shadow-inner"
                     />
                 </div>
@@ -365,7 +365,7 @@ const Rooms = () => {
                             onClick={() => setIsModalOpen(true)}
                             className="skeuo-btn px-6 py-2.5 text-[15px] flex items-center gap-2"
                         >
-                            <Plus size={18} />
+                            <FaPlus size={14} />
                             Criar Sala
                         </button>
                     </div>
