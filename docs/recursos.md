@@ -7,10 +7,10 @@
 # Na Chat.jsx
 
 - [✅] adicionar um limite de quantas pessoas podem ter uma sala ativa
-- [ ] adicionar chat privado entre usuarios, onde somente os usuarios possam ver
-- [ ] adicionar botão para deletar sala (vou precisa da minha equipe do backend para adicionar isso)
-- [✅ Parcialmente] adicionar botão para silenciar usuário (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] adicionar botão para banir usuário (vou precisa da minha equipe do backend para adicionar isso)
+- [✅ Parcialmente] adicionar chat privado entre usuarios, onde somente os usuarios possam ver
+- [ ] adicionar botão para deletar sala (apenas o admin ou o dono da sala) (vou precisa da minha equipe do backend para adicionar isso)
+- [✅ Parcialmente] adicionar botão para silenciar usuário (apenas admin e dono) (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] adicionar botão para banir usuário (apenas admin, dono e moderador) (vou precisa da minha equipe do backend para adicionar isso)
 - [✅ Parcialmente] adicionar botão para denunciar usuário (vou precisa da minha equipe do backend para adicionar isso)
 - [ ] adicionar botão para denunciar sala (vou precisa da minha equipe do backend para adicionar isso)
 - [✅] adicionar botão para marcar mensagem como favorita (faltar adicionar no futuro um filtro que mostrar somente as mensagens favoritas)

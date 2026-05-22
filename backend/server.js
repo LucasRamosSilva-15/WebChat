@@ -85,6 +85,19 @@ io.on('connection', (socket) => {
     socket.to(data.room).emit('like_toggled', data);
   });
 
+  socket.on('private_invite', (data) => {
+    let targetSocketId = null;
+    for (const [sid, uid] of socketUsers.entries()) {
+      if (uid === data.to) {
+        targetSocketId = sid;
+        break;
+      }
+    }
+    if (targetSocketId) {
+      io.to(targetSocketId).emit('receive_private_invite', data);
+    }
+  });
+
   socket.on('disconnecting', () => {
     for (const room of socket.rooms) {
       if (room !== socket.id) {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag } from 'react-icons/fa';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt } from 'react-icons/fa';
 import { socket } from '../socket';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
@@ -211,6 +211,7 @@ const Chat = () => {
     const [onlineUsers, setOnlineUsers] = useState("...");
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [privateInvite, setPrivateInvite] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [roomFullError, setRoomFullError] = useState(false);
     const [editingMessageId, setEditingMessageId] = useState(null);
@@ -373,6 +374,11 @@ const Chat = () => {
             setOnlineUsers(count);
         });
 
+        socket.on("receive_private_invite", (data) => {
+            // data: { to: userId, from: senderName, room: privateRoomName }
+            setPrivateInvite(data);
+        });
+
         socket.on("message_deleted", (data) => {
             setMessages(prev => {
                 const updated = prev.filter(m => m.messageId !== data.messageId);
@@ -460,18 +466,18 @@ const Chat = () => {
 
                     }
 
-                    setMessages((list) => [...list, { messageId: data.messageId, text: text, image: image, sender: data.sender, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
+                    setMessages((list) => [...list, { messageId: data.messageId, text: text, image: image, sender: data.sender, userId: data.userId, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
 
                     const currentReader = localStorage.getItem('chat_displayName') || "Usuário";
                     if (data.messageId) {
                         socket.emit("read_message", { room: data.room, messageId: data.messageId, reader: currentReader });
                     }
                 } else {
-                    setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
+                    setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, userId: data.userId, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
                 }
             } catch (error) {
                 console.error("Erro ao descriptografar mensagem:", error);
-                setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, isMe: false, time: data.time, readBy: [], likes: [] }]);
+                setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, userId: data.userId, isMe: false, time: data.time, readBy: [], likes: [] }]);
             }
         });
 
@@ -546,6 +552,7 @@ const Chat = () => {
                     room: room,
                     messageId: messageId,
                     sender: currentSender,
+                    userId: currentUserId,
                     avatar: currentPhoto,
                     status: currentStatus,
                     message: encryptedMessage,
@@ -553,7 +560,7 @@ const Chat = () => {
                 };
 
                 await socket.emit("send_message", messageData);
-                setMessages((list) => [...list, { messageId: messageId, text: currentMessage, image: imagePreview, sender: currentSender, avatar: currentPhoto, status: currentStatus, isMe: true, time: messageData.time, readBy: [], likes: [] }]);
+                setMessages((list) => [...list, { messageId: messageId, text: currentMessage, image: imagePreview, sender: currentSender, userId: currentUserId, avatar: currentPhoto, status: currentStatus, isMe: true, time: messageData.time, readBy: [], likes: [] }]);
                 setCurrentMessage("");
                 setImagePreview(null);
             }
@@ -660,11 +667,46 @@ const Chat = () => {
                             </div>
                         </div>
 
-                        <div className="flex gap-3 mt-4">
-                            <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#ef4444] hover:bg-[#fee2e2]">
-                                <FaFlag size={12} /> Denunciar
-                            </button>
-                            <button onClick={() => setSelectedUser(null)} className="skeuo-btn w-full py-2">Fechar</button>
+                        <div className="flex flex-col gap-3 mt-4">
+                            {selectedUser.sender !== (localStorage.getItem('chat_displayName') || 'Usuário') && (
+                                <button onClick={() => {
+                                    const currentUser = localStorage.getItem('chat_displayName') || 'Usuário';
+                                    const targetId = selectedUser.userId || selectedUser.sender;
+                                    const privateRoomName = `privado-${[currentUserId, targetId].sort().join('-')}`;
+                                    
+                                    const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
+                                    if (!savedRooms.find(r => r.roomParam === privateRoomName)) {
+                                        savedRooms.push({
+                                            title: `Chat Privado: ${selectedUser.sender}`,
+                                            description: `Mensagens diretas.`,
+                                            roomParam: privateRoomName,
+                                            category: "Privado",
+                                            status: "Ativa",
+                                            members: 2,
+                                            date: new Date().toLocaleDateString('pt-BR')
+                                        });
+                                        localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
+                                    }
+
+                                    socket.emit("private_invite", {
+                                        to: targetId,
+                                        from: currentUser,
+                                        room: privateRoomName,
+                                        senderId: currentUserId
+                                    });
+
+                                    navigate(`/chat?room=${privateRoomName}`);
+                                    setSelectedUser(null);
+                                }} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff]">
+                                    <FaCommentAlt size={12} /> Mensagem Privada
+                                </button>
+                            )}
+                            <div className="flex gap-3">
+                                <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="btn-secondary-glossy flex-1 py-2 flex items-center justify-center gap-2 text-[#ef4444] hover:bg-[#fee2e2]">
+                                    <FaFlag size={12} /> Denunciar
+                                </button>
+                                <button onClick={() => setSelectedUser(null)} className="skeuo-btn flex-1 py-2">Fechar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -834,6 +876,35 @@ const Chat = () => {
                         </button>
                     </form>
                 </footer>
+                
+                {privateInvite && (
+                    <div className="fixed bottom-6 right-6 z-[200] skeuo-panel p-4 animate-fade-in-up border-l-4 border-[#0071e3] shadow-2xl w-80">
+                        <h4 className="text-[14px] font-bold text-[#1d1d1f] mb-1">Convite de Chat Privado</h4>
+                        <p className="text-[13px] text-[#86868b] mb-4">
+                            <strong className="text-[#1d1d1f]">{privateInvite.from}</strong> quer conversar com você no privado.
+                        </p>
+                        <div className="flex gap-2">
+                            <button onClick={() => {
+                                const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
+                                if (!savedRooms.find(r => r.roomParam === privateInvite.room)) {
+                                    savedRooms.push({
+                                        title: `Chat Privado: ${privateInvite.from}`,
+                                        description: `Mensagens diretas.`,
+                                        roomParam: privateInvite.room,
+                                        category: "Privado",
+                                        status: "Ativa",
+                                        members: 2,
+                                        date: new Date().toLocaleDateString('pt-BR')
+                                    });
+                                    localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
+                                }
+                                navigate(`/chat?room=${privateInvite.room}`);
+                                setPrivateInvite(null);
+                            }} className="skeuo-btn flex-1 py-1.5 text-[12px]">Aceitar</button>
+                            <button onClick={() => setPrivateInvite(null)} className="btn-secondary-glossy flex-1 py-1.5 text-[12px]">Recusar</button>
+                        </div>
+                    </div>
+                )}
 
             </main>
         </>
