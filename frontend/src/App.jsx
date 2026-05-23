@@ -8,6 +8,7 @@ import Rooms from './pages/Rooms';
 import Chat from './pages/Chat';
 import About from './pages/About';
 import Custom from './pages/Custom';
+import LayoutDemo from './pages/LayoutDemo';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/about" element={<About />} />
           <Route path="/custom" element={<Custom />} />
+          <Route path="/layout-demo" element={<LayoutDemo />} />
         </Routes>
         <Footer />
       </div>
