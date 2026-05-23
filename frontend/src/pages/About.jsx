@@ -22,19 +22,27 @@ const About = () => {
             <section className="max-w-[980px] w-full grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoCard
                     title="A Tecnologia"
-                    description="O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js, Express.js, PostgreSQL, e Socket.io, proporcionando uma experiência de chat em tempo real."
+                    description="O WebChat foi desenvolvido com HTML, Tailwind CSS, Node.js, React, Express, PostgreSQL e Socket.IO, oferecendo comunicação em tempo real e recursos essenciais para salas de bate-papo."
                 />
                 <InfoCard
                     title="O Propósito"
-                    description="Este projeto tem como objetivo criar uma plataforma de chat moderna e eficiente, que ofereça uma experiência de usuário boa em tempo real."
+                    description="O objetivo do projeto é criar uma plataforma de chat simples, moderna e eficiente, com foco em boa experiência de uso e comunicação em tempo real."
                 />
                 <InfoCard
                     title="A Equipe"
-                    description="Este projeto foi desenvolvido por: Lucas Ramos Silva, Wssihélio Vasconcelos, Ruan Victor e Gabriel Lobão."
+                    description="Este projeto foi desenvolvido por Lucas Ramos Silva, Wssihélio Vasconcelos, Ruan Victor e Gabriel Lobão."
                 />
                 <InfoCard
                     title="A Hospedagem"
-                    description="O Backend está hospedado na Render e o Frontend está hospedado no Vercel."
+                    description="O backend está hospedado na Render e o frontend está hospedado na Vercel."
+                />
+                <InfoCard
+                    title="O Design"
+                    description="O visual do WebChat foi inspirado no Twitter antigo, combinando interfaces sociais clássicas com botões em relevo, gradientes, sombras suaves e uma abordagem skeuomórfica moderna."
+                />
+                <InfoCard
+                    title="A Finalidade"
+                    description="Este projeto foi desenvolvido para a disciplina de Web 2, ministrada pelo professor Wemerson Thayne no IFPB — Campus Campina Grande, no Curso Técnico em Informática."
                 />
             </section>
 

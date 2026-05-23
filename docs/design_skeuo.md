@@ -20,7 +20,10 @@ Para manter a compatibilidade total de layout durante a alternância dinâmica d
   - Agrupamento de balões do mesmo usuário: `mb-1`. Troca de usuário: `mb-4`.
   - Margem de segurança móvel: `px-4` a `px-6` para evitar colisão de relevos com a borda da tela física.
 - **Refinamento UI (Densidade):**
-  - O design deve evitar o "efeito IA/Template" provocado por excesso de área branca. No chat, bolhas de mensagens e avatares devem usar margens compactas (`px-3 py-1.5`, `mt-0.5`) para agrupar melhor o fluxo de conversa.
+  - O design deve evitar o "efeito IA/Template" provocado por excesso de área branca. No chat, bolhas de mensagens e avatares devem usar margens compactas (`px-3 py-[2px]`, `mt-0.5`) para agrupar melhor o fluxo de conversa.
+- **Macro-Estrutura (Layout App-Like):**
+  - A interface principal do chat deve preencher a tela em 100vh (`h-[calc(100vh-48px)]`) sem se comportar como um card solto. A estrutura é dividida em 3 colunas coladas: `ChatSidebar` (esquerda, fixa 220px) + `Chat` (centro, flex-1) + `MembersSidebar` (direita, fixa 220px).
+  - **Empty State:** O estado vazio das telas não deve inserir "dados falsos". Salas sem mensagens mostram um componente flutuante translúcido elegante no centro (`FaComments`) convidando o usuário a interagir.
 
 ---
 
