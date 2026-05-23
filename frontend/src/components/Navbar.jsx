@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -108,23 +109,37 @@ const Navbar = () => {
                             <div className={`absolute bg-black/80 dark:bg-white/80 transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-0 scale-50 w-5 h-[2px]' : 'translate-y-[6px] opacity-100 scale-100 w-5 h-[2px] rounded-sm'}`}></div>
                         </button>
                         <div
-                            className={`absolute right-0 top-[40px] w-48 skeuo-panel overflow-hidden transition-all duration-300 origin-top-right ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
+                            className={`absolute right-0 top-[48px] w-52 bg-gradient-to-b from-white to-[#f8fafc] border border-[#d2d2d7] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden transition-all duration-300 origin-top-right ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
                                 }`}
                         >
                             <div className="flex flex-col py-2">
-                                <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors">Início</Link>
-                                <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Salas</Link>
-                                <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Sobre</Link>
-                                <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Perfil</Link>
+                                <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors flex items-center gap-3">
+                                    <FaHome className="text-[#86868b]" size={16} /> Início
+                                </Link>
+                                <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                    <FaComments className="text-[#86868b]" size={16} /> Salas
+                                </Link>
+                                <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                    <FaEnvelope className="text-[#86868b]" size={16} /> Diretas
+                                </Link>
+                                <Link to="/favorites" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                    <FaStar className="text-[#86868b]" size={16} /> Favoritos
+                                </Link>
+                                <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                    <FaUser className="text-[#86868b]" size={16} /> Perfil
+                                </Link>
                                 <button 
                                     onClick={() => {
                                         setIsSettingsOpen(true);
                                         setIsMenuOpen(false);
                                     }} 
-                                    className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5 text-left w-full flex items-center gap-2"
+                                    className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] text-left w-full flex items-center gap-3"
                                 >
-                                    <svg className="w-4 h-4 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg> Configurações
+                                    <FaCog className="text-[#86868b]" size={16} /> Ajustes
                                 </button>
+                                <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                    <FaInfoCircle className="text-[#86868b]" size={16} /> Sobre
+                                </Link>
                                 {isLoggedIn && (
                                     <button onClick={() => {
                                         localStorage.removeItem('chat_isLoggedIn');
@@ -132,7 +147,9 @@ const Navbar = () => {
                                         window.dispatchEvent(new Event('profileUpdated'));
                                         setIsMenuOpen(false);
                                         window.location.href = '/login';
-                                    }} className="px-5 py-3 text-[15px] font-medium text-[#ff3b30] hover:bg-black/5 transition-colors border-t border-black/5 text-left w-full">Sair</button>
+                                    }} className="px-5 py-3 text-[15px] font-medium text-[#ff3b30] hover:bg-gradient-to-r hover:from-[#fee2e2] hover:to-transparent transition-colors border-t border-[#e5e5e5] text-left w-full flex items-center gap-3">
+                                        <FaSignOutAlt className="text-[#ff3b30]" size={16} /> Sair
+                                    </button>
                                 )}
                             </div>
                         </div>
@@ -144,31 +161,31 @@ const Navbar = () => {
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                                 className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
                             >
-                                <div className="w-8 h-8 rounded-full bg-gray-100 border border-[#d2d2d7] shadow-sm flex items-center justify-center overflow-hidden">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-[#b3b3b3] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1),0_1px_0_rgba(255,255,255,0.8)] flex items-center justify-center overflow-hidden shrink-0">
                                     {profilePhoto ? (
                                         <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
-                                        <svg className="w-5 h-5 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                        <svg className="w-1/2 h-1/2 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                         </svg>
                                     )}
                                 </div>
                                 <div className="flex flex-col items-start hidden sm:flex">
                                     <span className="text-[13px] font-semibold text-[#1d1d1f] leading-none truncate max-w-[100px]">{profileName}</span>
-                                    <span className="text-[10px] text-[#86868b] uppercase tracking-widest mt-[2px]">Online</span>
+                                    <span className="text-[10px] text-green-600 uppercase tracking-widest mt-[2px] font-bold">Online</span>
                                 </div>
                             </div>
                             
                             <div
-                                className={`absolute right-0 top-[40px] w-[240px] skeuo-panel overflow-hidden transition-all duration-300 origin-top-right ${isProfileOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
+                                className={`absolute right-0 top-[48px] w-[260px] bg-gradient-to-b from-white to-[#f8fafc] border border-[#d2d2d7] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden transition-all duration-300 origin-top-right ${isProfileOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
                                     }`}
                             >
                                 <div className="flex flex-col text-center p-5 items-center">
-                                    <div className="w-16 h-16 rounded-full bg-gray-100 border border-[#d2d2d7] shadow-sm flex items-center justify-center overflow-hidden mb-3">
+                                    <div className="w-16 h-16 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-[#b3b3b3] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1),0_1px_0_rgba(255,255,255,0.8)] flex items-center justify-center overflow-hidden mb-3">
                                         {profilePhoto ? (
                                             <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
-                                            <svg className="w-8 h-8 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                            <svg className="w-1/2 h-1/2 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                                             </svg>
                                         )}
@@ -176,7 +193,7 @@ const Navbar = () => {
                                     <h3 className="text-[18px] font-semibold text-[#1d1d1f] mb-1 leading-tight">{profileName}</h3>
                                     <p className="text-[13px] text-[#86868b] leading-snug">{profileDesc}</p>
                                 </div>
-                                <div className="p-3 bg-black/5 border-t border-black/5">
+                                <div className="p-3 bg-gradient-to-b from-[#f0f0f0] to-[#e5e5e5] border-t border-[#d2d2d7]">
                                     <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy w-full py-2 block text-center text-[13px]">Editar Perfil</Link>
                                 </div>
                             </div>
@@ -188,58 +205,58 @@ const Navbar = () => {
 
             {isSettingsOpen && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsSettingsOpen(false)}>
-                    <div className="skeuo-panel p-8 max-w-[500px] w-full relative" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-gradient-to-b from-white to-[#f8fafc] border border-[#d2d2d7] rounded-[24px] shadow-[0_25px_60px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,1)] p-8 max-w-[500px] w-full relative" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-[24px] font-semibold text-[#1d1d1f]">Configurações</h2>
-                            <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors">
-                                <svg className="w-5 h-5 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            <h2 className="text-[24px] font-semibold text-[#1d1d1f] text-shadow-[0_1px_0_rgba(255,255,255,0.8)]">Configurações</h2>
+                            <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-gray-300 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] hover:from-gray-200 hover:to-gray-300 transition-all">
+                                <FaTimes className="text-[#86868b]" size={14} />
                             </button>
                         </div>
 
                         <div className="space-y-6">
-                            <div className="bg-black/5 p-4 rounded-[12px] border border-black/5 shadow-inner text-left">
+                            <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] p-4 rounded-[16px] border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-left">
                                 <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Aparência do WebChat</label>
                                 <div className="space-y-3">
-                                    <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'skeuo' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="theme" 
                                             checked={theme === 'skeuo'} 
                                             onChange={() => setTheme('skeuo')}
-                                            className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                            className="w-4 h-4 accent-[#0071e3]"
                                         />
                                         <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Clássico (Recomendado)</span>
-                                            <span className="text-[12px] text-[#86868b]">Visual premium, botões com profundidade e sombras detalhadas.</span>
+                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Clássico</span>
+                                            <span className="text-[12px] text-[#86868b]">Visual premium, botões com profundidade e sombras.</span>
                                         </div>
                                     </label>
 
-                                    <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'glass' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="theme" 
                                             checked={theme === 'glass'} 
                                             onChange={() => setTheme('glass')}
-                                            className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                            className="w-4 h-4 accent-[#0071e3]"
                                         />
                                         <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Translúcido (Antigo)</span>
-                                            <span className="text-[12px] text-[#86868b]">Visual embaçado, limpo e com desfoque de fundo.</span>
+                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Translúcido</span>
+                                            <span className="text-[12px] text-[#86868b]">Visual embaçado, limpo e com desfoque.</span>
                                         </div>
                                     </label>
                                 </div>
                             </div>
 
-                            <div className="bg-black/5 p-4 rounded-[12px] border border-black/5 shadow-inner text-left">
+                            <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] p-4 rounded-[16px] border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-left">
                                 <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Modo de Cor</label>
                                 <div className="space-y-3">
-                                    <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'light' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="colorMode" 
                                             checked={colorMode === 'light'} 
                                             onChange={() => setColorMode('light')}
-                                            className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                            className="w-4 h-4 accent-[#0071e3]"
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-[14px] font-medium text-[#1d1d1f]">Modo Claro</span>
@@ -247,13 +264,13 @@ const Navbar = () => {
                                         </div>
                                     </label>
 
-                                    <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'dark' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="colorMode" 
                                             checked={colorMode === 'dark'} 
                                             onChange={() => setColorMode('dark')}
-                                            className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                            className="w-4 h-4 accent-[#0071e3]"
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-[14px] font-medium text-[#1d1d1f]">Modo Escuro</span>
@@ -264,34 +281,34 @@ const Navbar = () => {
                             </div>
 
                             {theme === 'skeuo' && colorMode === 'light' && (
-                                <div className="bg-black/5 p-4 rounded-[12px] border border-black/5 shadow-inner text-left">
+                                <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] p-4 rounded-[16px] border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-left">
                                     <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Cor de Fundo (Modo Claro)</label>
                                     <div className="space-y-3">
-                                        <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'neutral' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
                                             <input 
                                                 type="radio" 
                                                 name="bgColor" 
                                                 checked={bgColor === 'neutral'} 
                                                 onChange={() => setBgColor('neutral')}
-                                                className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                                className="w-4 h-4 accent-[#0071e3]"
                                             />
                                             <div className="flex flex-col">
                                                 <span className="text-[14px] font-medium text-[#1d1d1f]">Neutro / Ardósia</span>
-                                                <span className="text-[12px] text-[#86868b]">Fundo suave acinzentado, menos cansativo.</span>
+                                                <span className="text-[12px] text-[#86868b]">Fundo cinza-azulado suave.</span>
                                             </div>
                                         </label>
 
-                                        <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'classic_blue' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
                                             <input 
                                                 type="radio" 
                                                 name="bgColor" 
                                                 checked={bgColor === 'classic_blue'} 
                                                 onChange={() => setBgColor('classic_blue')}
-                                                className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                                className="w-4 h-4 accent-[#0071e3]"
                                             />
                                             <div className="flex flex-col">
                                                 <span className="text-[14px] font-medium text-[#1d1d1f]">Azul Clássico</span>
-                                                <span className="text-[12px] text-[#86868b]">O fundo azul vibrante original.</span>
+                                                <span className="text-[12px] text-[#86868b]">Fundo azul gradiente tradicional.</span>
                                             </div>
                                         </label>
                                     </div>
@@ -299,7 +316,9 @@ const Navbar = () => {
                             )}
                         </div>
 
-                        <button onClick={() => setIsSettingsOpen(false)} className="mt-8 skeuo-btn w-full py-3 text-[15px] font-medium">Salvar e Fechar</button>
+                        <div className="mt-6">
+                            <button onClick={() => setIsSettingsOpen(false)} className="skeuo-btn w-full py-3 text-[16px] font-medium">Salvar e Fechar</button>
+                        </div>
                     </div>
                 </div>
             )}

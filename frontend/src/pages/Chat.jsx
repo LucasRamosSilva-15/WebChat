@@ -2,21 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt } from 'react-icons/fa';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments } from 'react-icons/fa';
 import { socket } from '../socket';
+import ChatSidebar from '../components/ChatSidebar';
+import MembersSidebar from '../components/MembersSidebar';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
 
 const Avatar = ({ src, onClick }) => (
-    <div onClick={onClick} className="w-8 h-8 rounded-full bg-gray-100 border border-[#d2d2d7] shrink-0 flex items-center justify-center overflow-hidden shadow-sm mb-4 cursor-pointer hover:opacity-80 transition-opacity">
-        {src ? (
-            <img src={src} alt="Avatar" className="w-full h-full object-cover" />
-        ) : (
-            <svg className="w-5 h-5 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-        )}
+    <div onClick={onClick} className="relative inline-flex shrink-0 cursor-pointer hover:opacity-80 transition-opacity mt-1">
+        <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]">
+            <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center font-semibold text-gray-700 text-[12px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] overflow-hidden">
+                {src ? (
+                    <img src={src} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                    <FaUser className="text-[#86868b] w-3 h-3" />
+                )}
+            </div>
+        </div>
     </div>
 );
 
@@ -62,112 +66,103 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     if (msg.isMe) {
         return (
-            <div className="flex items-end justify-end gap-2 animate-fade-in-up">
-                <div className="flex flex-col items-end max-w-[70%] group/msg">
-                    <div className="skeuo-bubble-sent px-3 py-1.5 flex flex-col relative">
+            <div className="flex justify-end px-3 py-[2px] group animate-fade-in-up">
+                <div className="flex flex-col items-end max-w-[80%] group/msg">
+                    <div className="bg-gradient-to-b from-sky-500 to-sky-600 text-white rounded-[14px] rounded-tr-sm px-3 py-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)] flex flex-col relative">
                         <div className="absolute top-2 right-full mr-2 group/menu z-10">
-                            <button className="p-1.5 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
-                                <FaEllipsisV size={14} className="drop-shadow-sm" />
+                            <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
+                                <FaEllipsisV size={12} className="drop-shadow-sm" />
                             </button>
 
                             <div className="absolute top-0 right-full mr-2 bg-[#f4f5f7] rounded-[12px] shadow-lg border border-black/5 flex flex-col overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 min-w-[140px]">
-                                <button onClick={onToggleFavorite} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2.5 text-[#1d1d1f]">
-                                    <FaStar size={12} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                <button onClick={onToggleFavorite} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2 text-[#1d1d1f]">
+                                    <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                                 </button>
                                 {canDelete && (
                                     <>
                                         <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
-                                        <button onClick={() => onEditClick(msg)} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-[#e0f2fe] whitespace-nowrap flex items-center gap-2.5 text-[#1d1d1f]">
-                                            <FaPencilAlt size={12} className="text-[#0071e3] drop-shadow-sm" /> Editar
+                                        <button onClick={() => onEditClick(msg)} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-[#e0f2fe] whitespace-nowrap flex items-center gap-2 text-[#1d1d1f]">
+                                            <FaPencilAlt size={10} className="text-[#0071e3] drop-shadow-sm" /> Editar
                                         </button>
                                         <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
-                                        <button onClick={() => onDeleteMessage(msg.messageId)} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2.5 text-[#ef4444]">
-                                            <FaTrash size={12} className="drop-shadow-sm" /> Apagar
+                                        <button onClick={() => onDeleteMessage(msg.messageId)} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2 text-[#ef4444]">
+                                            <FaTrash size={10} className="drop-shadow-sm" /> Apagar
                                         </button>
                                     </>
                                 )}
                             </div>
                         </div>
                         {msg.image && (
-                            <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                            <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-white/20 shadow-sm" />
                         )}
-                        {msg.text && <p className="text-[16px] leading-snug">{msg.text}</p>}
+                        {msg.text && <p className="text-[13px] leading-tight">{msg.text}</p>}
                     </div>
-                    <div className="flex items-center justify-end gap-2 mt-0.5 w-full">
-                        <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-sm border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-sm border border-black/5' : ''}`}>
-                            {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={12} className="drop-shadow-sm" /> : <FaRegHeart size={12} />}
+                    <div className="flex items-center justify-end gap-2 mt-0.5 px-1 w-full">
+                        <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-gray-200' : ''}`}>
+                            {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                             {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                         </button>
-                        <span className="text-[11px] text-[#86868b] uppercase tracking-widest flex items-center gap-1.5">
+                        <span className="text-[10px] text-[#86868b] font-medium flex items-center gap-1.5">
                             {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                                <span className="bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-amber-200/50 shadow-sm flex items-center gap-1">
-                                    👑 Dono
+                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                                    <FaCrown size={8} /> DONO
                                 </span>
                             )}
                             {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                                <span className="bg-blue-100 text-blue-700 text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-blue-200/50 shadow-sm flex items-center gap-1">
-                                    🛡️ Mod
+                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-violet-400 to-violet-600 text-white rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                                    <FaShieldAlt size={8} /> MOD
                                 </span>
                             )}
-                            {msgTime} {msg.isEdited && "(editada)"} • Enviado
+                            {msgTime} {msg.isEdited && "(editada)"} <span className="text-sky-500 text-[10px] ml-0.5">✓✓</span>
                         </span>
                     </div>
-                    {msg.readBy && msg.readBy.length > 0 && (
-                        <div className="text-[10px] text-[#0071e3] mt-0.5 text-right font-medium relative group cursor-help transition-all">
-                            ✓ Lido por {msg.readBy.length}
-                            <div className="absolute bottom-full right-0 mb-1 w-max bg-black/80 text-white text-[11px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg backdrop-blur-md">
-                                Visto por: {msg.readBy.join(", ")}
-                            </div>
-                        </div>
-                    )}
                 </div>
-                <Avatar src={msg.avatar} onClick={() => onAvatarClick(msg)} />
             </div>
         );
     }
 
     return (
-        <div className="flex items-end justify-start gap-2 animate-fade-in-up">
+        <div className="flex gap-2 px-3 py-[2px] group animate-fade-in-up">
             <Avatar src={msg.avatar} onClick={() => onAvatarClick(msg)} />
-            <div className="flex flex-col items-start max-w-[70%] group/msg">
-                <span className="text-[12px] text-[#86868b] ml-1 mb-0.5 font-medium flex items-center gap-1.5">
+            <div className="flex flex-col items-start max-w-[80%] group/msg">
+                <span className="text-[11.5px] text-[#1d1d1f] font-bold flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
+                    {msg.sender}
                     {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                        <span className="bg-amber-100 text-amber-700 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-amber-200/50 shadow-sm flex items-center gap-1">
-                            👑 Dono
+                        <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                            <FaCrown size={8} /> DONO
                         </span>
                     )}
                     {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                        <span className="bg-blue-100 text-blue-700 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-[4px] tracking-wider border border-blue-200/50 shadow-sm flex items-center gap-1">
-                            🛡️ Mod
+                        <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-violet-400 to-violet-600 text-white rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                            <FaShieldAlt size={8} /> MOD
                         </span>
                     )}
-                    {msg.sender}
                 </span>
-                <div className="skeuo-bubble-received px-3 py-1.5 flex flex-col relative">
+                <div className="bg-gradient-to-b from-white to-gray-50 rounded-[14px] rounded-tl-sm px-3 py-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] border border-gray-200/80 flex flex-col relative">
                     <div className="absolute top-2 left-full ml-2 group/menu z-10">
-                        <button className="p-1.5 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
-                            <FaEllipsisV size={14} className="drop-shadow-sm" />
+                        <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
+                            <FaEllipsisV size={12} className="drop-shadow-sm" />
                         </button>
 
                         <div className="absolute top-0 left-full ml-2 bg-[#f4f5f7] rounded-[12px] shadow-lg border border-black/5 flex flex-col overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 min-w-[140px]">
-                            <button onClick={onToggleFavorite} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2.5 text-[#1d1d1f]">
-                                <FaStar size={12} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                            <button onClick={onToggleFavorite} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2 text-[#1d1d1f]">
+                                <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                             </button>
                             <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
-                            <button onClick={() => onReportClick({ type: 'message', target: msg })} className="px-4 py-2.5 text-left text-[13px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2.5 text-[#ef4444]">
-                                <FaFlag size={12} className="drop-shadow-sm" /> Denunciar
+                            <button onClick={() => onReportClick({ type: 'message', target: msg })} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2 text-[#ef4444]">
+                                <FaFlag size={10} className="drop-shadow-sm" /> Denunciar
                             </button>
                         </div>
                     </div>
                     {msg.image && (
-                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[280px] rounded-[12px] mb-2 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-black/5 shadow-sm" />
                     )}
-                    {msg.text && <p className="text-[16px] leading-snug">{msg.text}</p>}
+                    {msg.text && <p className="text-[13px] text-gray-800 leading-tight">{msg.text}</p>}
                 </div>
-                <div className="flex items-center justify-start gap-2 mt-0.5 ml-1 w-full">
-                    <span className="text-[11px] text-[#86868b] uppercase tracking-widest">{msgTime} {msg.isEdited && "(editada)"}</span>
-                    <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-sm border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-sm border border-black/5' : ''}`}>
-                        {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={12} className="drop-shadow-sm" /> : <FaRegHeart size={12} />}
+                <div className="flex items-center justify-start gap-2 mt-0.5 ml-1 px-1 w-full">
+                    <span className="text-[10px] text-[#86868b] font-medium">{msgTime} {msg.isEdited && "(editada)"}</span>
+                    <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-gray-200' : ''}`}>
+                        {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                         {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                     </button>
                 </div>
@@ -394,6 +389,8 @@ const Chat = () => {
                 const updated = prev.map(m => {
                     if (m.messageId === data.messageId) {
                         try {
+                            // Código de criptografia
+                            // Provisório! deve ser mudado para JWT e bcrypt no futuro
                             const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
                             const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
                             let text = decryptedString;
@@ -443,7 +440,7 @@ const Chat = () => {
 
         socket.on("receive_message", (data) => {
             try {
-                // Código de criptografia
+                // Código de descriptografia
                 // Provisório! deve ser mudado para JWT e bcrypt no futuro
                 const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
                 const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
@@ -479,6 +476,8 @@ const Chat = () => {
                 setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, userId: data.userId, isMe: false, time: data.time, readBy: [], likes: [] }]);
             }
         });
+
+
 
         socket.on("message_read", (data) => {
             setMessages((list) => list.map(msg => {
@@ -713,199 +712,178 @@ const Chat = () => {
 
             {reportModalData && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setReportModalData(null)}>
-                    <div className="skeuo-panel p-8 max-w-[400px] w-full relative" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-full bg-[#fee2e2] text-[#ef4444] flex items-center justify-center border border-[#fca5a5] shadow-inner shrink-0">
-                                <FaFlag size={18} />
-                            </div>
-                            <div>
-                                <h3 className="text-[20px] font-semibold text-[#1d1d1f] leading-tight">Denunciar {reportModalData.type === 'user' ? 'Usuário' : 'Mensagem'}</h3>
-                                <p className="text-[13px] text-[#86868b]">Sua denúncia será avaliada pela nossa moderação.</p>
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleReportSubmit} className="space-y-4 text-left">
-                            <div className="space-y-1.5">
-                                <label className="block text-[12px] font-bold text-[#86868b] uppercase tracking-widest ml-1">Motivo</label>
-                                <select
-                                    value={reportReason}
-                                    onChange={(e) => setReportReason(e.target.value)}
-                                    className="skeuo-input w-full px-4 py-3 bg-white"
-                                >
-                                    <option value="Spam">Spam ou Flood (envio excessivo de mensagens)</option>
-                                    <option value="Assédio">Assédio ou Ofensas</option>
-                                    <option value="Conteúdo Impróprio">Conteúdo Impróprio (pornografia, violência, etc)</option>
-                                    <option value="Outro">Outro (Especificar)</option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="block text-[12px] font-bold text-[#86868b] uppercase tracking-widest ml-1">Detalhes</label>
-                                <textarea
-                                    value={reportDetails}
-                                    onChange={(e) => setReportDetails(e.target.value)}
-                                    placeholder="Descreva qual o problema..."
-                                    className="skeuo-input w-full px-4 py-3 min-h-[80px] resize-none"
-                                />
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setReportModalData(null)} className="btn-secondary-glossy flex-1 py-2.5 text-[14px]">Cancelar</button>
-                                <button type="submit" className="skeuo-btn flex-1 py-2.5 text-[14px] bg-[#ef4444] border-red-700 shadow-sm">Enviar</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             )}
 
-            <main className="reveal flex-grow flex flex-col max-w-[1000px] mx-auto w-full p-4 md:p-6 h-[calc(100vh-120px)] overflow-hidden">
+            <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden">
+                <ChatSidebar />
+                <main className="flex-1 min-w-0 flex flex-col h-full bg-white relative">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
 
-                <div className="skeuo-panel p-5 mb-6 max-w-[500px] mx-auto w-full text-center shrink-0 relative flex items-center justify-center">
-                    <button
-                        onClick={() => navigate('/rooms')}
-                        className={`absolute left-4 w-9 h-9 !p-0 rounded-full transition-all flex items-center justify-center btn-secondary-glossy`}
-                        title="Sair da sala"
-                    >
-                        <FaSignOutAlt size={14} className="text-[#86868b] hover:text-[#ef4444] transition-colors drop-shadow-sm" />
-                    </button>
-                    <button
-                        onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                        className={`absolute right-4 w-9 h-9 !p-0 rounded-full transition-all flex items-center justify-center btn-secondary-glossy ${showFavoritesOnly ? '!bg-black/5 !shadow-inner' : ''}`}
-                        title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
-                    >
-                        <FaStar size={14} className={`drop-shadow-sm transition-colors ${showFavoritesOnly ? 'text-[#f59e0b]' : 'text-[#86868b] hover:text-[#1d1d1f]'}`} />
-                    </button>
-                    <div>
-                        <h1 className="hero-title text-[24px] font-semibold">{room.toUpperCase()}</h1>
-                        <p className="text-[13px] text-[#86868b] mt-1 font-medium tracking-wide">
-                            <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
-                            {onlineUsers} online no servidor
-                        </p>
-                    </div>
-                </div>
-
-                {pinnedMessage && (
-                    <div className="skeuo-panel px-4 py-3 mb-6 mx-auto w-full shrink-0 relative flex items-center gap-3 border-l-4 border-l-[#f59e0b] shadow-[0_4px_10px_rgba(0,0,0,0.05),inset_0_2px_0_rgba(255,255,255,1)] group hover:brightness-[0.98] transition-all cursor-pointer">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-b from-[#fef3c7] to-[#fde68a] border border-[#fcd34d] flex items-center justify-center shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)]">
-                            <FaThumbtack className="text-[#d97706] drop-shadow-sm" size={14} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="text-[11px] font-bold text-[#d97706] uppercase tracking-widest mb-0.5 pinned-title">
-                                Mensagem Fixada
+                    <div className="px-4 py-2.5 border-b border-[#d2d2d7] flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)] border border-sky-500">
+                                <FaCommentAlt size={12} />
                             </div>
-                            <div className="text-[14px] text-[#1d1d1f] truncate font-medium">
-                                <span className="text-[#86868b] mr-1">{pinnedMessage.sender}:</span>
-                                {pinnedMessage.text}
+                            <div className="flex flex-col justify-center">
+                                <h2 className="font-bold text-[#1d1d1f] text-[15px] leading-tight">{room.toUpperCase()}</h2>
+                                <p className="text-[11px] text-[#86868b] flex items-center gap-1.5 mt-0.5">
+                                    <span className="flex items-center gap-1 font-medium">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
+                                        {onlineUsers} online
+                                    </span>
+                                </p>
                             </div>
                         </div>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setPinnedMessage(null); }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-black/5 transition-colors opacity-0 group-hover:opacity-100"
-                            title="Desfixar mensagem"
-                        >
-                            <FaTimes size={14} className="text-[#86868b] group-hover:text-[#1d1d1f]" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 text-gray-600'}`}
+                                title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
+                            >
+                                <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500'} />
+                            </button>
+                            <button
+                                onClick={() => navigate('/rooms')}
+                                className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 text-gray-600 border border-gray-200/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] hover:from-rose-50 hover:to-rose-100 hover:text-rose-600"
+                                title="Sair da sala"
+                            >
+                                <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
+                            </button>
+                        </div>
                     </div>
-                )}
 
-                <div ref={chatContainerRef} className="skeuo-panel p-3 sm:p-4 flex-grow overflow-y-auto space-y-1 mb-4 pr-2 chat-container">
+                    {pinnedMessage && (
+                        <div className="px-4 pt-3 shrink-0">
+                            <div className="relative bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200/80 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] flex items-start gap-3">
+                                <div className="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300">
+                                    <FaThumbtack className="w-2.5 h-2.5 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-0.5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[11px] font-bold text-amber-900">{pinnedMessage.sender}</span>
+                                        </div>
+                                        <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full hover:bg-amber-100 transition-colors shrink-0">
+                                            <FaTimes size={10} className="text-amber-700/50 hover:text-amber-700" />
+                                        </button>
+                                    </div>
+                                    <p className="text-[12.5px] text-amber-800 leading-snug">{pinnedMessage.text}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                    {messages.map((msg, index) => {
-                        if (showFavoritesOnly && !msg.isFavorite) return null;
-                        return (
-                            <MessageBubble
-                                key={index}
-                                msg={msg}
-                                onAvatarClick={setSelectedUser}
-                                onImageClick={setSelectedImage}
-                                onToggleFavorite={() => toggleFavorite(index)}
-                                onDeleteMessage={deleteMessage}
-                                onEditClick={handleEditClick}
-                                onToggleLike={toggleLike}
-                                currentUserId={currentUserId}
-                                mockRoles={mockRoles}
-                                onReportClick={setReportModalData}
+                    <div ref={chatContainerRef} className="flex-grow overflow-y-auto space-y-0.5 mb-2 pr-2 pt-2 chat-container">
+
+                        {messages.length === 0 && !showFavoritesOnly && (
+                            <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4 animate-fade-in-up opacity-80">
+                                <div className="w-16 h-16 rounded-full bg-gradient-to-b from-gray-50 to-gray-200 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)] flex items-center justify-center mb-4 text-[#86868b]">
+                                    <FaComments size={24} className="drop-shadow-sm text-[#0071e3]/60" />
+                                </div>
+                                <h3 className="text-[15px] font-semibold text-[#1d1d1f] mb-1">Nenhuma mensagem ainda</h3>
+                                <p className="text-[13px] text-[#86868b]">Seja o primeiro a conversar nesta sala.</p>
+                            </div>
+                        )}
+
+                        {messages.map((msg, index) => {
+                            if (showFavoritesOnly && !msg.isFavorite) return null;
+                            return (
+                                <MessageBubble
+                                    key={index}
+                                    msg={msg}
+                                    onAvatarClick={setSelectedUser}
+                                    onImageClick={setSelectedImage}
+                                    onToggleFavorite={() => toggleFavorite(index)}
+                                    onDeleteMessage={deleteMessage}
+                                    onEditClick={handleEditClick}
+                                    onToggleLike={toggleLike}
+                                    currentUserId={currentUserId}
+                                    mockRoles={mockRoles}
+                                    onReportClick={setReportModalData}
+                                />
+                            );
+                        })}
+
+                        {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
+                            <div className="text-center text-[#86868b] mt-10 text-[14px]">
+                                Você ainda não tem nenhuma mensagem favorita nesta sala.
+                            </div>
+                        )}
+
+                    </div>
+
+                    <footer className="shrink-0 relative p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] border-t border-[#d2d2d7]">
+                        {imagePreview && !editingMessageId && (
+                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up shadow-lg">
+                                <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
+                                <button type="button" onClick={clearImagePreview} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                                    <FaTimes size={12} />
+                                </button>
+                            </div>
+                        )}
+                        {editingMessageId && (
+                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 px-4 flex items-center gap-2 z-10 animate-fade-in-up text-[#86868b] text-sm font-medium shadow-lg">
+                                <FaPencilAlt /> Editando mensagem...
+                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="ml-2 p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                                    <FaTimes size={12} />
+                                </button>
+                            </div>
+                        )}
+                        <form onSubmit={sendMessage} className="flex gap-2">
+                            <label className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 text-[#86868b] border border-gray-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] hover:from-gray-50 hover:to-gray-200 hover:text-[#1d1d1f] cursor-pointer transition-all shrink-0">
+                                <FaCamera size={14} className="drop-shadow-sm" />
+                                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                            </label>
+                            <input
+                                type="text"
+                                className="px-4 py-2 font-medium text-[14px] bg-[#f5f5f7] border border-[#d2d2d7] shadow-[inset_0_1px_3px_rgba(0,0,0,0.05)] rounded-[20px] flex-grow outline-none focus:bg-white focus:border-[#0071e3] focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.02),0_0_0_2px_rgba(0,113,227,0.2)] transition-all"
+                                placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
+                                value={currentMessage}
+                                onChange={(e) => setCurrentMessage(e.target.value)}
                             />
-                        );
-                    })}
-
-                    {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
-                        <div className="text-center text-[#86868b] mt-10 text-[14px]">
-                            Você ainda não tem nenhuma mensagem favorita nesta sala.
-                        </div>
-                    )}
-
-                </div>
-
-                <footer className="pb-4 shrink-0 relative">
-                    {imagePreview && !editingMessageId && (
-                        <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up">
-                            <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
-                            <button type="button" onClick={clearImagePreview} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
-                                <FaTimes size={12} />
+                            <button
+                                type="submit"
+                                disabled={!currentMessage.trim() && !imagePreview}
+                                className={`w-10 h-10 shrink-0 rounded-full shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center transition-all ${(currentMessage.trim() || imagePreview) ? 'hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed grayscale'}`}
+                                title={editingMessageId ? "Salvar Edição" : "Enviar Mensagem"}
+                            >
+                                <FaPaperPlane size={12} className="ml-[-2px]" />
                             </button>
-                        </div>
-                    )}
-                    {editingMessageId && (
-                        <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 px-4 flex items-center gap-2 z-10 animate-fade-in-up text-[#86868b] text-sm font-medium">
-                            <FaPencilAlt size={12} className="text-[#0071e3]" />
-                            <span>Editando mensagem...</span>
-                            <button type="button" onClick={cancelEdit} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f] ml-2">
-                                <FaTimes size={12} />
-                            </button>
-                        </div>
-                    )}
-                    <form onSubmit={sendMessage} className="relative flex items-center">
-                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
-                        <button type="button" onClick={() => fileInputRef.current.click()} className="absolute left-4 text-[#86868b] hover:text-[#0071e3] transition-colors focus:outline-none drop-shadow-sm">
-                            <FaCamera size={18} />
-                        </button>
+                        </form>
+                    </footer>
+                </main>
+                <MembersSidebar onlineCount={onlineUsers} mockRoles={mockRoles} />
+            </div>
 
-                        <input
-                            type="text"
-                            value={currentMessage}
-                            onChange={(e) => setCurrentMessage(e.target.value)}
-                            placeholder="Mensagem..."
-                            autoComplete="off"
-                            className="skeuo-input w-full py-3 pl-12 pr-12 text-[16px]"
-                        />
-
-                        <button type="submit" disabled={!currentMessage.trim() && !imagePreview} className={`absolute right-2 text-white w-9 h-9 rounded-full flex items-center justify-center transition shadow-sm ${currentMessage.trim() || imagePreview ? 'skeuo-btn px-0 py-0' : 'bg-gray-300 cursor-not-allowed'}`}>
-                            <FaPaperPlane size={14} className="mr-0.5 mt-0.5" />
-                        </button>
-                    </form>
-                </footer>
-
-                {privateInvite && (
-                    <div className="fixed bottom-6 right-6 z-[200] skeuo-panel p-4 animate-fade-in-up border-l-4 border-[#0071e3] shadow-2xl w-80">
-                        <h4 className="text-[14px] font-bold text-[#1d1d1f] mb-1">Convite de Chat Privado</h4>
-                        <p className="text-[13px] text-[#86868b] mb-4">
-                            <strong className="text-[#1d1d1f]">{privateInvite.from}</strong> quer conversar com você no privado.
-                        </p>
-                        <div className="flex gap-2">
-                            <button onClick={() => {
-                                const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
-                                if (!savedRooms.find(r => r.roomParam === privateInvite.room)) {
-                                    savedRooms.push({
-                                        title: `Chat Privado: ${privateInvite.from}`,
-                                        description: `Mensagens diretas.`,
-                                        roomParam: privateInvite.room,
-                                        category: "Privado",
-                                        status: "Ativa",
-                                        members: 2,
-                                        date: new Date().toLocaleDateString('pt-BR')
-                                    });
-                                    localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
-                                }
-                                navigate(`/chat?room=${privateInvite.room}`);
-                                setPrivateInvite(null);
-                            }} className="skeuo-btn flex-1 py-1.5 text-[12px]">Aceitar</button>
-                            <button onClick={() => setPrivateInvite(null)} className="btn-secondary-glossy flex-1 py-1.5 text-[12px]">Recusar</button>
-                        </div>
+            {privateInvite && (
+                <div className="fixed bottom-6 right-6 z-[200] skeuo-panel p-4 animate-fade-in-up border-l-4 border-[#0071e3] shadow-2xl w-80">
+                    <h4 className="text-[14px] font-bold text-[#1d1d1f] mb-1">Convite de Chat Privado</h4>
+                    <p className="text-[13px] text-[#86868b] mb-4">
+                        <strong className="text-[#1d1d1f]">{privateInvite.from}</strong> quer conversar com você no privado.
+                    </p>
+                    <div className="flex gap-2">
+                        <button onClick={() => {
+                            const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
+                            if (!savedRooms.find(r => r.roomParam === privateInvite.room)) {
+                                savedRooms.push({
+                                    title: `Chat Privado: ${privateInvite.from}`,
+                                    description: `Mensagens diretas.`,
+                                    roomParam: privateInvite.room,
+                                    category: "Privado",
+                                    status: "Ativa",
+                                    members: 2,
+                                    date: new Date().toLocaleDateString('pt-BR')
+                                });
+                                localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
+                            }
+                            navigate(`/chat?room=${privateInvite.room}`);
+                            setPrivateInvite(null);
+                        }} className="skeuo-btn flex-1 py-1.5 text-[12px]">Aceitar</button>
+                        <button onClick={() => setPrivateInvite(null)} className="btn-secondary-glossy flex-1 py-1.5 text-[12px]">Recusar</button>
                     </div>
-                )}
-
-            </main>
+                </div>
+            )}
         </>
     );
 };

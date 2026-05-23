@@ -8,6 +8,14 @@ import Rooms from './pages/Rooms';
 import Chat from './pages/Chat';
 import About from './pages/About';
 import Custom from './pages/Custom';
+// import LayoutDemo from './pages/LayoutDemo';
+// import LayoutDemo1 from './pages/LayoutDemo1';
+
+// Páginas que ainda vamos implementar
+
+// import Admin from './pages/Admin';
+// import Suporte from './pages/Suporte';
+
 
 function App() {
   return (
@@ -22,6 +30,8 @@ function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/about" element={<About />} />
           <Route path="/custom" element={<Custom />} />
+          {/* <Route path="/layout-demo" element={<LayoutDemo />} /> */}
+          {/* <Route path="/layout-demo1" element={<LayoutDemo1 />} /> */}
         </Routes>
         <Footer />
       </div>

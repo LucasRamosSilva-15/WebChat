@@ -43,94 +43,132 @@ function Custom() {
     };
 
     return (
-        <main className="flex-1 flex items-center justify-center p-4 md:p-6 w-full z-10 relative">
-            <div className="w-full max-w-[500px] skeuo-panel p-8 md:p-10 reveal">
+        <main className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 w-full z-10 relative">
+            <div className="w-full max-w-[1000px] grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 reveal">
 
-                <div className="text-center mb-8">
-                    <h2 className="text-[28px] md:text-[32px] font-semibold text-[#1d1d1f] tracking-tight leading-tight">
-                        Customizar Perfil
-                    </h2>
-                    <p className="text-[17px] text-[#424245] mt-2 font-normal">
-                        Personalize como os outros veem você no chat.
-                    </p>
-                </div>
+                <div className="skeuo-card p-8 md:p-10">
+                    <div className="mb-8">
+                        <h2 className="text-[28px] md:text-[32px] font-semibold text-[#1d1d1f] tracking-tight leading-tight">
+                            Customizar Perfil
+                        </h2>
+                        <p className="text-[17px] text-[#424245] mt-2 font-normal">
+                            Personalize como os outros veem você no chat.
+                        </p>
+                    </div>
 
-                <form onSubmit={handleSave} className="space-y-6">
-                    <div className="flex flex-col items-center justify-center mb-2">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            onChange={handlePhotoChange}
-                            className="hidden"
-                        />
-                        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
-                            <div className="w-[100px] h-[100px] rounded-full bg-gray-100 border border-[#d2d2d7] shadow-sm flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:shadow-md group-hover:border-[#0071e3]/50">
-                                {profilePhoto ? (
-                                    <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                                ) : (
-                                    <svg className="w-12 h-12 text-[#86868b] transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                    </svg>
-                                )}
-                            </div>
-                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                                </svg>
+                    <form onSubmit={handleSave} className="space-y-6">
+                        <div className="flex flex-col items-start justify-center mb-6">
+                            <label className="block text-[12px] font-semibold text-[#86868b] uppercase tracking-widest mb-3 ml-1">
+                                Foto de Perfil
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handlePhotoChange}
+                                className="hidden"
+                            />
+                            <div className="flex items-center gap-6">
+                                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
+                                    <div className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)] transition-all duration-300 group-hover:scale-105">
+                                        <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] overflow-hidden">
+                                            {profilePhoto ? (
+                                                <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <svg className="w-10 h-10 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 m-[3px]">
+                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <button type="button" onClick={() => fileInputRef.current.click()} className="text-[14px] font-medium text-[#0071e3] hover:text-[#0077ed] hover:underline focus:outline-none transition-colors">
+                                    Alterar foto de perfil
+                                </button>
                             </div>
                         </div>
-                        <button type="button" onClick={() => fileInputRef.current.click()} className="mt-3 text-[13px] font-medium text-[#0071e3] hover:text-[#0077ed] hover:underline focus:outline-none transition-colors">
-                            Alterar foto de perfil
-                        </button>
-                    </div>
 
-                    <div className="space-y-1">
-                        <label htmlFor="displayName" className="block text-[11px] md:text-[12px] font-medium text-[#86868b] ml-1 uppercase tracking-widest">
-                            Nome de Exibição
-                        </label>
-                        <input
-                            type="text"
-                            id="displayName"
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            placeholder="Ex: João Silva"
-                            className="skeuo-input w-full px-4 py-3"
-                        />
-                    </div>
+                        <div className="space-y-1">
+                            <label htmlFor="displayName" className="block text-[12px] font-semibold text-[#86868b] uppercase tracking-widest mb-2 ml-1">
+                                Nome de Exibição
+                            </label>
+                            <input
+                                type="text"
+                                id="displayName"
+                                value={displayName}
+                                onChange={(e) => setDisplayName(e.target.value)}
+                                placeholder="Ex: João Silva"
+                                className="skeuo-input w-full px-4 py-3 bg-[#fbfbfd]"
+                            />
+                        </div>
 
-                    <div className="space-y-1">
-                        <label htmlFor="statusMessage" className="block text-[11px] md:text-[12px] font-medium text-[#86868b] ml-1 uppercase tracking-widest">
-                            Status / Recado
-                        </label>
-                        <input
-                            type="text"
-                            id="statusMessage"
-                            value={statusMessage}
-                            onChange={(e) => setStatusMessage(e.target.value)}
-                            placeholder="O que você está pensando?"
-                            className="skeuo-input w-full px-4 py-3"
-                        />
-                    </div>
+                        <div className="space-y-1">
+                            <label htmlFor="statusMessage" className="block text-[12px] font-semibold text-[#86868b] uppercase tracking-widest mb-2 ml-1">
+                                Status / Recado
+                            </label>
+                            <input
+                                type="text"
+                                id="statusMessage"
+                                value={statusMessage}
+                                onChange={(e) => setStatusMessage(e.target.value)}
+                                placeholder="O que você está pensando?"
+                                className="skeuo-input w-full px-4 py-3 bg-[#fbfbfd]"
+                            />
+                        </div>
 
-                    <div className="pt-6 space-y-3">
-                        <button
-                            type="submit"
-                            className="skeuo-btn w-full py-3.5 text-[17px]"
-                        >
-                            Salvar Alterações
-                        </button>
+                        <div className="pt-6 flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => navigate(-1)}
+                                className="btn-secondary-glossy flex-1 py-3 text-[16px] font-medium"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                className="skeuo-btn flex-1 py-3 text-[16px] font-medium"
+                            >
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-                        <button
-                            type="button"
-                            onClick={() => navigate(-1)}
-                            className="btn-secondary-glossy w-full py-3.5 text-[17px]"
-                        >
-                            Cancelar
-                        </button>
+                <div className="skeuo-card p-8 h-fit">
+                    <h3 className="text-[20px] font-semibold text-[#1d1d1f] mb-4">Prévia do Perfil</h3>
+                    <p className="text-[13px] text-[#86868b] mb-6">Como outros usuários verão seu perfil</p>
+
+                    <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] rounded-[16px] p-6 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+                        <div className="flex items-center gap-4">
+                            <div className="relative inline-flex shrink-0">
+                                <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]">
+                                    <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center font-semibold text-gray-700 text-[18px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] overflow-hidden">
+                                        {profilePhoto ? (
+                                            <img src={profilePhoto} alt="Profile Preview" className="w-full h-full object-cover" />
+                                        ) : (
+                                            displayName ? displayName.charAt(0).toUpperCase() : '?'
+                                        )}
+                                    </div>
+                                </div>
+                                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full border-2 border-white shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h4 className="text-[18px] font-semibold text-[#1d1d1f] truncate">{displayName || "Seu Nome"}</h4>
+                                <p className="text-[13px] text-[#86868b] truncate">{statusMessage || "Sem recado"}</p>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]"></span>
+                                    <span className="text-[11px] text-emerald-600 font-bold uppercase tracking-wide">Online</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </form>
+                </div>
             </div>
             {showToast && (
                 <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 skeuo-panel px-6 py-4 flex items-center gap-3 z-50 reveal" style={{ borderRadius: '980px', padding: '12px 24px' }}>

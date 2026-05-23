@@ -18,7 +18,7 @@ const Register = () => {
     };
     return (
         <main className="reveal flex-grow flex items-center justify-center px-6 py-12">
-            <div className="skeuo-panel p-10 max-w-[500px] w-full text-center">
+            <div className="skeuo-card p-10 max-w-[500px] w-full text-center">
                 <h1 className="hero-title text-[40px] font-semibold mb-2">
                     Crie sua conta
                 </h1>
@@ -55,7 +55,7 @@ const Register = () => {
 
                     <button 
                         type="button" 
-                        className="btn-white-glossy w-full py-3 text-[15px] font-medium flex items-center justify-center gap-3 cursor-pointer" 
+                        className="btn-secondary-glossy w-full py-3 text-[15px] font-medium flex items-center justify-center gap-3 cursor-pointer" 
                         onClick={() => alert("Registro com Google em desenvolvimento!")}
                     >
                         <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">

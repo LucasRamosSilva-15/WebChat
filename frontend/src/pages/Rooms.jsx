@@ -29,8 +29,8 @@ const StatCard = ({ title, value, subtext, icon: Icon, colorClass }) => (
 
 const RoomIconWithTooltip = ({ description }) => (
     <div className="relative group">
-        <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#0071e3] to-[#4da4ff] text-white flex items-center justify-center shrink-0 shadow-sm border border-[#005bb5] cursor-help transition-transform duration-200 group-hover:scale-105">
-            <FaHashtag className="drop-shadow-sm" size={18} />
+        <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#4da4ff] to-[#0071e3] text-white flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.2)] border border-[#005bb5] cursor-help transition-transform duration-200 group-hover:scale-105">
+            <FaHashtag size={18} />
         </div>
 
         <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 flex items-center z-50 pointer-events-none opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out w-max max-w-[220px]">
@@ -142,13 +142,18 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
 
         <td className="px-6 py-4">
             {room.status === "Arquivada" ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-600 text-[13px] font-medium shadow-sm">
-                    <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-gray-300 text-gray-600 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)]">
+                    <span className="w-2 h-2 rounded-full bg-gray-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                     Arquivada
                 </span>
+            ) : room.members >= 200 ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-red-100 to-red-200 border border-red-300 text-red-700 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)]">
+                    <span className="w-2 h-2 rounded-full bg-red-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                    Cheia
+                </span>
             ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 text-[13px] font-medium shadow-sm">
-                    <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5)]"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-green-100 to-green-200 border border-green-300 text-green-700 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)]">
+                    <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5),inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                     Ativa
                 </span>
             )}
@@ -161,10 +166,10 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
         <td className="px-6 py-4 flex gap-2 items-center">
             <button
                 onClick={() => onToggleFavorite(room.roomParam)}
-                className={`p-1.5 rounded-full transition-colors flex shrink-0 ${isFavorite ? 'btn-secondary-glossy !text-[#f59e0b] !p-1.5' : 'btn-secondary-glossy !text-[#86868b] !p-1.5'}`}
+                className={`p-2 rounded-full transition-all ${isFavorite ? 'bg-gradient-to-b from-amber-100 to-amber-200 text-amber-600 border border-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]' : 'bg-gradient-to-b from-gray-100 to-gray-200 text-[#86868b] border border-gray-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:from-amber-50 hover:to-amber-100'}`}
                 title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
             >
-                <FaStar size={16} />
+                <FaStar size={14} />
             </button>
             {room.status !== "Arquivada" && (
                 room.members >= 200 ? (
@@ -317,7 +322,7 @@ const Rooms = () => {
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="skeuo-input w-[220px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
+                                className="skeuo-input w-[240px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
                             >
                                 <option value="Todas">Todas as Categorias</option>
                                 <option value="Casual">Casual</option>

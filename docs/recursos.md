@@ -20,19 +20,24 @@
 - [✅ Parcialmente] adicionar um sistema de administração da sala (vou precisa da minha equipe do backend para adicionar isso)
 - [✅ Parcialmente] adicionar sistema de cargo para usuarios (dono, moderador, usuario) (vou precisa da minha equipe do backend para adicionar isso)
 - [✅] mostrar quantidade de usuarios onlines na sala
-- [ ] mostrar os usuários que estão dentro da sala
+- [✅ Parcialmente] mostrar os usuários que estão dentro da sala (Painel lateral direito MembersSidebar adicionado)
 - [✅] adicionar a opção de apagar as mensagens enviada pelo usuário em um intervalo de 24 horas
 - [✅] sistema de armazenamento de mensagens
 - [✅] adicionar sistema de envio de imagens
 - [✅] adicionar um sistema de edição das mensagens enviada pelo usuário
-- [ ] ter um sistema de fixar mensagem (apenas admin) (vou precisa da minha equipe do backend para adicionar isso)
+- [✅ Parcialmente] ter um sistema de fixar mensagem (apenas admin) (vou precisa da minha equipe do backend para adicionar isso - UI base implementada)
 - [✅] adicionar um sistema de curtir mensagem (e mostrar a quantidade de curtida)
 - [✅] ter um sistema de envio de mensagens em tempo real
-- [ ] arrumar bugs visuais
+- [✅] arrumar bugs visuais
 - [ ] adicionar sistema de envio de áudio
 - [ ] adicionar sistema de envio de gifs
 - [ ] adicionar sistema de envio de emojis
-- [ ] refinamento visual ou redesign
+- [✅] refinamento visual ou redesign (Chat.jsx totalmente reestilizado para Web 2.0 / Skeuomorphism)
+- [✅] implementar novo layout de 3 colunas (Sidebar de Navegação, Chat Central e Painel de Membros)
+- [✅] adicionar estado vazio (Empty State) intuitivo para salas sem mensagens
+- [✅] adicionar suporte a mensagens exclusivas do sistema (System Messages)
+- [ ] corrigir botões que não faz nada
+- [ ] adicionar uma busca de mensagens ou as mensagens de um determinado usuario
 # Na Rooms.jsx
 
 - [✅] arrumar bugs visuais
@@ -62,8 +67,12 @@
 - [✅] ter um sistema login e logout parcialmente funcional
 - [✅] ter uma navegação funcional
 - [ ] deixar as paginas Chat.jsx, Rooms.jsx e Suporte.jsx somente acessivel para usuarios logados
-- [ ] refinamento visual ou redesign de algumas paginas
-- [ ] melhorar o design_minix (o design translucido) e corrigir os bugs visuais 
+- [✅ Parcialmente] refinamento visual ou redesign de algumas paginas (Chat.jsx e componentes satélites totalmente refeitos)
+- [ ] melhorar o design_glass (o design translucido) e corrigir os bugs visuais
+- [✅] testar novos layouts (LayoutDemo1 validado e aplicado no Chat principal)
+- [✅] adicionar uma identidade visual mais unica (Identidade clássica retrô-moderna Web 2.0 definida)
+- [ ] corrigir o tema escuro e os bugs visuais
+
 # Em Login.jsx
 
 - [ ] fazer um sistema de login funcional (vou precisa da minha equipe do backend para adicionar isso)

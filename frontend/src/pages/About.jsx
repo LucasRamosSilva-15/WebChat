@@ -1,28 +1,28 @@
 import { Link } from 'react-router-dom';
 
 const InfoCard = ({ title, description }) => (
-    <div className="skeuo-panel p-10 rounded-[20px]">
-        <h2 className="text-[24px] font-semibold mb-4 tracking-tight">{title}</h2>
-        <p className="text-[17px] text-[#424245] leading-relaxed tracking-tight">{description}</p>
+    <div className="skeuo-card p-8 h-full">
+        <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-4 text-shadow-[0_1px_0_rgba(255,255,255,0.8)]">{title}</h3>
+        <p className="text-[16px] text-[#424245] leading-relaxed">{description}</p>
     </div>
 );
 
 const About = () => {
     return (
         <main className="reveal flex-grow flex flex-col items-center px-6 py-20">
-            <section className="skeuo-panel rounded-[28px] shadow-2xl p-10 max-w-[700px] w-full text-center mb-16">
-                <h1 className="hero-title text-[56px] md:text-[72px] font-semibold text-[#1d1d1f] mb-6">
+            <section className="skeuo-card p-10 max-w-[800px] w-full text-center mb-12">
+                <h1 className="text-[48px] md:text-[56px] font-semibold text-[#1d1d1f] mb-4 text-shadow-[0_2px_0_rgba(255,255,255,0.8)]">
                     Sobre o WebChat
                 </h1>
-                <p className="text-[21px] md:text-[24px] font-normal text-[#86868b] leading-tight tracking-tight max-w-[600px] mx-auto">
-                    Uma aplicação de chat que é simples e moderna
+                <p className="text-[18px] md:text-[21px] text-[#86868b] max-w-[600px] mx-auto">
+                    Uma aplicação de chat simples, moderna e em tempo real.
                 </p>
             </section>
 
             <section className="max-w-[980px] w-full grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoCard
                     title="A Tecnologia"
-                    description="O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js, Express.js, PostgreSQL, e Socket.io, proporcionando uma experiência de chat em tempo real, rápida e que é responsiva."
+                    description="O WebChat foi construído com HTML, Tailwind CSS, Node.js, React.js, Express.js, PostgreSQL, e Socket.io, proporcionando uma experiência de chat em tempo real."
                 />
                 <InfoCard
                     title="O Propósito"

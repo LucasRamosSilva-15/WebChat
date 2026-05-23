@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./webchat-components.css";
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

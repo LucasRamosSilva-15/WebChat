@@ -1,0 +1,143 @@
+.skeuo-card {
+  position: relative;
+  background-color: white;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+}
+.skeuo-card-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to right, #38bdf8, #0ea5e9, #38bdf8);
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.3);
+}
+
+html.dark .skeuo-card {
+  background-color: #202022;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.skeuo-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.skeuo-badge-dono {
+  background: linear-gradient(to bottom, #fbbf24, #f59e0b, #f59e0b);
+  color: #78350f;
+  border-color: #fcd34d;
+}
+.skeuo-badge-mod {
+  background: linear-gradient(to bottom, #a78bfa, #7c3aed);
+  color: white;
+}
+.skeuo-badge-vip {
+  background: linear-gradient(to bottom, #38bdf8, #0284c7);
+  color: white;
+}
+.skeuo-badge-online {
+  background: linear-gradient(to bottom, #34d399, #059669);
+  color: white;
+}
+.skeuo-badge-ativa {
+  background: linear-gradient(to bottom, #dcfce7, #bbf7d0);
+  color: #15803d;
+  border-color: #86efac;
+}
+.skeuo-badge-cheia {
+  background: linear-gradient(to bottom, #fee2e2, #fecaca);
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+.skeuo-badge-arquivada {
+  background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+  color: #4b5563;
+  border-color: #d1d5db;
+}
+
+.webchat-avatar-frame {
+  position: relative;
+  display: inline-flex;
+  border-radius: 9999px;
+  padding: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.webchat-avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+html.dark .webchat-avatar-inner {
+  background: linear-gradient(to bottom, #374151, #1f2937);
+  color: #f3f4f6;
+}
+
+.webchat-sidebar-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
+  color: #4b5563;
+}
+.webchat-sidebar-item:hover {
+  background-color: white;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.webchat-sidebar-item.active {
+  background: linear-gradient(to right, #0ea5e9, #0284c7);
+  color: white;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+html.dark .webchat-sidebar-item {
+  color: #9ca3af;
+}
+html.dark .webchat-sidebar-item:hover {
+  background-color: #374151;
+}
+
+.webchat-message-in {
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  border-radius: 1rem;
+  border-top-left-radius: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  color: #1f2937;
+}
+html.dark .webchat-message-in {
+  background: linear-gradient(to bottom, #2a2a2c, #1e1e20);
+  border-color: #3f3f46;
+  color: #f3f4f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.webchat-message-out {
+  background: linear-gradient(to bottom, #0ea5e9, #0284c7);
+  color: white;
+  border-radius: 1rem;
+  border-bottom-right-radius: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
