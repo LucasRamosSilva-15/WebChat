@@ -10,16 +10,18 @@ import About from './pages/About';
 import Custom from './pages/Custom';
 import LayoutDemo from './pages/LayoutDemo';
 import LayoutDemo1 from './pages/LayoutDemo1';
+import LayoutDemo2 from './pages/LayoutDemo2';
 
 // Layout wrapper that conditionally shows Navbar/Footer
 function AppLayout() {
   const location = useLocation();
-  const isFullscreenRoute = location.pathname === '/layout-demo-1';
+  const isFullscreenRoute = ['/layout-demo-1', '/layout-demo-2'].includes(location.pathname);
 
   if (isFullscreenRoute) {
     return (
       <Routes>
         <Route path="/layout-demo-1" element={<LayoutDemo1 />} />
+        <Route path="/layout-demo-2" element={<LayoutDemo2 />} />
       </Routes>
     );
   }
