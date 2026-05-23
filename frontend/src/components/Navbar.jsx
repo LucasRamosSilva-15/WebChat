@@ -14,6 +14,7 @@ const Navbar = () => {
     const profileRef = useRef(null);
     const [theme, setTheme] = useState(localStorage.getItem('chat_theme') || 'skeuo');
     const [colorMode, setColorMode] = useState(localStorage.getItem('chat_colorMode') || 'light');
+    const [bgColor, setBgColor] = useState(localStorage.getItem('chat_bg_color') || 'neutral');
 
     useEffect(() => {
         if (theme === 'skeuo') {
@@ -32,6 +33,15 @@ const Navbar = () => {
         }
         localStorage.setItem('chat_colorMode', colorMode);
     }, [colorMode]);
+
+    useEffect(() => {
+        if (bgColor === 'classic_blue') {
+            document.body.classList.add('bg-classic-blue');
+        } else {
+            document.body.classList.remove('bg-classic-blue');
+        }
+        localStorage.setItem('chat_bg_color', bgColor);
+    }, [bgColor]);
 
     useEffect(() => {
         const loadProfile = () => {
@@ -102,10 +112,10 @@ const Navbar = () => {
                                 }`}
                         >
                             <div className="flex flex-col py-2">
-                                <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors">Home</Link>
-                                <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Rooms</Link>
+                                <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors">Início</Link>
+                                <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Salas</Link>
                                 <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Sobre</Link>
-                                <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Custom</Link>
+                                <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-black/5 transition-colors border-t border-black/5">Perfil</Link>
                                 <button 
                                     onClick={() => {
                                         setIsSettingsOpen(true);
@@ -199,7 +209,7 @@ const Navbar = () => {
                                             className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
                                         />
                                         <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Esquimorfismo (Recomendado)</span>
+                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Clássico (Recomendado)</span>
                                             <span className="text-[12px] text-[#86868b]">Visual premium, botões com profundidade e sombras detalhadas.</span>
                                         </div>
                                     </label>
@@ -213,8 +223,8 @@ const Navbar = () => {
                                             className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
                                         />
                                         <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Glassmorphism (Antigo)</span>
-                                            <span className="text-[12px] text-[#86868b]">Visual translúcido, desfocado e limpo.</span>
+                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Translúcido (Antigo)</span>
+                                            <span className="text-[12px] text-[#86868b]">Visual embaçado, limpo e com desfoque de fundo.</span>
                                         </div>
                                     </label>
                                 </div>
@@ -252,6 +262,41 @@ const Navbar = () => {
                                     </label>
                                 </div>
                             </div>
+
+                            {theme === 'skeuo' && colorMode === 'light' && (
+                                <div className="bg-black/5 p-4 rounded-[12px] border border-black/5 shadow-inner text-left">
+                                    <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Cor de Fundo (Modo Claro)</label>
+                                    <div className="space-y-3">
+                                        <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                            <input 
+                                                type="radio" 
+                                                name="bgColor" 
+                                                checked={bgColor === 'neutral'} 
+                                                onChange={() => setBgColor('neutral')}
+                                                className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-[14px] font-medium text-[#1d1d1f]">Neutro / Ardósia</span>
+                                                <span className="text-[12px] text-[#86868b]">Fundo suave acinzentado, menos cansativo.</span>
+                                            </div>
+                                        </label>
+
+                                        <label className="flex items-center gap-3 cursor-pointer p-3 bg-white rounded-[8px] border border-black/5 hover:border-[#0071e3] transition-colors">
+                                            <input 
+                                                type="radio" 
+                                                name="bgColor" 
+                                                checked={bgColor === 'classic_blue'} 
+                                                onChange={() => setBgColor('classic_blue')}
+                                                className="w-4 h-4 text-[#0071e3] focus:ring-[#0071e3]"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-[14px] font-medium text-[#1d1d1f]">Azul Clássico</span>
+                                                <span className="text-[12px] text-[#86868b]">O fundo azul vibrante original.</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <button onClick={() => setIsSettingsOpen(false)} className="mt-8 skeuo-btn w-full py-3 text-[15px] font-medium">Salvar e Fechar</button>

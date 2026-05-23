@@ -28,10 +28,11 @@
 - [ ] ter um sistema de fixar mensagem (apenas admin) (vou precisa da minha equipe do backend para adicionar isso)
 - [✅] adicionar um sistema de curtir mensagem (e mostrar a quantidade de curtida)
 - [✅] ter um sistema de envio de mensagens em tempo real
-- [✅] arrumar bugs visuais
+- [ ] arrumar bugs visuais
 - [ ] adicionar sistema de envio de áudio
 - [ ] adicionar sistema de envio de gifs
-- [ ] adicionar sistema de envio de emojis 
+- [ ] adicionar sistema de envio de emojis
+- [ ] refinamento visual ou redesign
 # Na Rooms.jsx
 
 - [✅] arrumar bugs visuais
@@ -54,13 +55,15 @@
 - [ ] mostrar salas que foram banidas
 - [ ] mostrar as suas denuncias
 - [ ] ter uma seção de perguntas mais frequentes (FAQ)
-
+- [ ] refinamento visual
 # Em Geral
 
 - [ ] adicionar duas nuvens grande no fundo, uma do lado direito e outra do lado esquerdo para dar efeito visual melhor
 - [✅] ter um sistema login e logout parcialmente funcional
 - [✅] ter uma navegação funcional
 - [ ] deixar as paginas Chat.jsx, Rooms.jsx e Suporte.jsx somente acessivel para usuarios logados
+- [ ] refinamento visual ou redesign de algumas paginas
+- [ ] melhorar o design_minix (o design translucido) e corrigir os bugs visuais 
 # Em Login.jsx
 
 - [ ] fazer um sistema de login funcional (vou precisa da minha equipe do backend para adicionar isso)
@@ -79,7 +82,7 @@
 
 - [✅] Atualizar a caixinha A Hospedagem
 - [✅] Informações sobre o site e o projeto 
-
+- [ ] refinamento visual
 # Na Navbar.jsx
 
 - [✅] adicionar sistema de modo escuro e claro
@@ -87,3 +90,13 @@
 - [] adicionar sistema de notificações
 - [✅] adicionar a opção de configurações
 - [] Corrigir bugs visuais
+- [] adicionar icones consistentes
+
+# Na Admin.jsx (ideia de pagina) (ideia de sala de administração)
+
+- [ ] implementar sistema de administração (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] implementar sistema de banimento de salas (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] implementar sistema de banimento de usuarios (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] implementar sistema de moderação de salas (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] implementar sistema de moderação de usuários (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] adicionar um caixinha grande contendo uma listas contendo as denuncias de salas e usuarios (vou precisa da minha equipe do backend para adicionar isso)

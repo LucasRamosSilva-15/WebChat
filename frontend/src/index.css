@@ -68,6 +68,27 @@ body:not(.theme-skeuo) .btn-secondary-glossy:hover {
     text-decoration: underline;
 }
 
+body:not(.theme-skeuo) .btn-white-glossy {
+    background-color: white;
+    color: #333 !important;
+    border: 1px solid #ddd;
+    border-radius: 980px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body:not(.theme-skeuo) .btn-white-glossy:hover {
+    background-color: #f9f9f9;
+    transform: scale(1.02);
+}
+
+body:not(.theme-skeuo) .btn-white-glossy:active {
+    transform: scale(0.98);
+}
+
 body:not(.theme-skeuo) .skeuo-input {
     background: rgba(255, 255, 255, 0.5);
     border: 1px solid #d2d2d7;
@@ -110,17 +131,36 @@ body:not(.theme-skeuo) .hero-title {
 }
 
 body.theme-skeuo {
+    background: linear-gradient(200deg, #dbeafe 0%, #f1f5f9 100%);
+    background-attachment: fixed;
+    color: #1d1d1f;
+}
+
+body.theme-skeuo.bg-classic-blue {
     background:
         repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 4px),
         linear-gradient(200deg, #0280ff 0%, rgb(184, 220, 255) 100%);
     background-attachment: fixed;
 }
 
+body.theme-skeuo::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 0px, transparent 4px);
+    pointer-events: none;
+    z-index: -1;
+}
+
+body.theme-skeuo.bg-classic-blue::before {
+    display: none;
+}
+
 body.theme-skeuo .skeuo-panel {
-    background: linear-gradient(to bottom, #ffffff 0%, #f4f5f7 100%);
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
     border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 22px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.03);
 }
 
 body.theme-skeuo .skeuo-nav {
@@ -135,8 +175,8 @@ body.theme-skeuo .skeuo-btn {
     border: 1px solid #004488;
     border-radius: 980px;
     color: white !important;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.15);
     font-weight: 500;
     transition: all 0.1s ease;
     cursor: pointer;
@@ -168,6 +208,43 @@ body.theme-skeuo .btn-secondary-glossy {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.1s ease;
+}
+
+body.theme-skeuo .btn-secondary-glossy:hover {
+    background: linear-gradient(to bottom, #ffffff 0%, #f2f2f2 50%, #d9d9d9 51%, #cccccc 100%);
+}
+
+body.theme-skeuo .btn-secondary-glossy:active {
+    background: linear-gradient(to bottom, #cccccc 0%, #b3b3b3 100%);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+    border-top-color: #666666;
+}
+
+body.theme-skeuo .btn-white-glossy {
+    background: linear-gradient(to bottom, #ffffff 0%, #f9f9f9 50%, #f0f0f0 51%, #e6e6e6 100%);
+    border: 1px solid #cccccc;
+    border-radius: 980px;
+    color: #1d1d1f !important;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
+}
+
+body.theme-skeuo .btn-white-glossy:hover {
+    background: linear-gradient(to bottom, #ffffff 0%, #ffffff 50%, #f9f9f9 51%, #f0f0f0 100%);
+}
+
+body.theme-skeuo .btn-white-glossy:active {
+    background: linear-gradient(to bottom, #e6e6e6 0%, #cccccc 100%);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-top-color: #999999;
 }
 
 body.theme-skeuo .skeuo-input {
@@ -263,6 +340,14 @@ html.dark body.theme-skeuo {
     background-attachment: fixed;
 }
 
+html.dark body.theme-skeuo::before {
+    display: none;
+}
+
+html.dark footer p {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
 html.dark .skeuo-panel {
     background: linear-gradient(to bottom, #2a2a2c 0%, #1e1e20 100%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -287,6 +372,34 @@ html.dark .btn-secondary-glossy {
     color: #f5f5f7 !important;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8) !important;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .btn-secondary-glossy:hover {
+    background: linear-gradient(to bottom, #4a4a4c 0%, #3a3a3c 50%, #2c2c2e 51%, #202022 100%) !important;
+}
+
+html.dark .btn-secondary-glossy:active {
+    background: linear-gradient(to bottom, #202022 0%, #1a1a1c 100%) !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+    border-top-color: #000 !important;
+}
+
+html.dark .btn-white-glossy {
+    background: linear-gradient(to bottom, #2a2a2c 0%, #1e1e20 100%) !important;
+    border: 1px solid #000 !important;
+    color: #f5f5f7 !important;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark .btn-white-glossy:hover {
+    background: linear-gradient(to bottom, #3a3a3c 0%, #2a2a2c 100%) !important;
+}
+
+html.dark .btn-white-glossy:active {
+    background: linear-gradient(to bottom, #1a1a1c 0%, #111 100%) !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5) !important;
+    border-top-color: #000 !important;
 }
 
 html.dark .skeuo-input {

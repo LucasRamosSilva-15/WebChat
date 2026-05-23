@@ -161,14 +161,14 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
         <td className="px-6 py-4 flex gap-2 items-center">
             <button
                 onClick={() => onToggleFavorite(room.roomParam)}
-                className={`p-1.5 rounded-full transition-colors flex shrink-0 ${isFavorite ? 'text-[#f59e0b] drop-shadow-sm bg-[#f59e0b]/10' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f]'}`}
+                className={`p-1.5 rounded-full transition-colors flex shrink-0 ${isFavorite ? 'btn-secondary-glossy !text-[#f59e0b] !p-1.5' : 'btn-secondary-glossy !text-[#86868b] !p-1.5'}`}
                 title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
             >
-                <FaStar size={18} />
+                <FaStar size={16} />
             </button>
             {room.status !== "Arquivada" && (
                 room.members >= 200 ? (
-                    <span className="text-[#ef4444] text-[13px] font-medium px-4 py-1.5 bg-[#fee2e2] rounded-[12px] inline-block text-center shadow-sm">
+                    <span className="btn-secondary-glossy !text-[#ef4444] px-4 py-1.5 text-[13px] !cursor-not-allowed opacity-80">
                         Lotada
                     </span>
                 ) : (
@@ -317,7 +317,7 @@ const Rooms = () => {
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="skeuo-input w-[200px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
+                                className="skeuo-input w-[220px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
                             >
                                 <option value="Todas">Todas as Categorias</option>
                                 <option value="Casual">Casual</option>

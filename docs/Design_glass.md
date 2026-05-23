@@ -1,7 +1,9 @@
-# Minix Design System (MDS) - Guia Arquitetural e Visual
+# Glass Design System (MDS) - Guia Arquitetural e Visual
+
+# Obs: esse design sera totalmente reformulado no futuro.
 
 ## 1. Filosofia Visual e Princípios Fundamentais
-O Minix é regido pelo minimalismo utilitário. O design é "invisível" — o usuário não deve notar a interface, apenas o fluxo da conversa.
+O design Translúcido (Glass) é regido pelo minimalismo utilitário. O design é "invisível" — o usuário não deve notar a interface, apenas o fluxo da conversa.
 - **Clareza Absoluta:** O espaço em branco (negative space) é a nossa principal ferramenta de layout. Ele guia o olhar e separa elementos sem a necessidade de linhas visíveis.
 - **Materialidade e Profundidade:** A tela é um ambiente 3D. Utilizamos camadas de "vidro" (Glassmorphism) e elevações suaves para indicar o que está mais próximo do usuário.
 - **Reducionismo:** Se uma linha, borda ou fundo não possuir uma função interativa ou de separação estritamente necessária, deve ser removida.
@@ -9,6 +11,7 @@ O Minix é regido pelo minimalismo utilitário. O design é "invisível" — o u
 ---
 
 ## 2. Sistema de Espaçamento e Grid (Spatial System)
+
 Utilizamos um sistema de espaçamento baseado em múltiplos de 4px e 8px (padrão Tailwind).
 - **Max-Widths:** - Containers principais (Nav/Footer): `max-w-[980px]`.
   - Container de Chat (Main): `max-w-[800px]`.
