@@ -22,7 +22,7 @@ const About = () => {
             <section className="max-w-[980px] w-full grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoCard
                     title="A Tecnologia"
-                    description="O WebChat foi desenvolvido com HTML, Tailwind CSS, Node.js, React, Express, PostgreSQL e Socket.IO, oferecendo comunicação em tempo real e recursos essenciais para salas de bate-papo."
+                    description="O WebChat foi desenvolvido com HTML, Tailwind CSS, Node.js, React, Express, PostgreSQL e Socket.IO. Ele oferece comunicação em tempo real e recursos essenciais para salas de bate-papo."
                 />
                 <InfoCard
                     title="O Propósito"
@@ -38,7 +38,7 @@ const About = () => {
                 />
                 <InfoCard
                     title="O Design"
-                    description="O visual do WebChat foi inspirado no Twitter antigo, combinando interfaces sociais clássicas com botões em relevo, gradientes, sombras suaves e uma abordagem skeuomórfica moderna."
+                    description="O visual do WebChat foi inspirado no Twitter antigo. Ele combina interfaces sociais clássicas com botões em relevo, gradientes, sombras suaves e uma abordagem moderna."
                 />
                 <InfoCard
                     title="A Finalidade"

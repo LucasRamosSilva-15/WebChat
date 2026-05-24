@@ -109,3 +109,58 @@
 - [ ] implementar sistema de moderação de salas (vou precisa da minha equipe do backend para adicionar isso)
 - [ ] implementar sistema de moderação de usuários (vou precisa da minha equipe do backend para adicionar isso)
 - [ ] adicionar um caixinha grande contendo uma listas contendo as denuncias de salas e usuarios (vou precisa da minha equipe do backend para adicionar isso)
+
+# Em Settings.jsx (ideia de pagina) (ideia de configurações)
+
+- [ ] criar pagina de configurações (vou precisa da minha equipe do backend para adicionar isso)
+
+# Em Error.jsx (vai vários erros) (ideia de pagina) (ideia de página de erro 404)
+
+- [ ] criar pagina de erro 404 (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] adicionar outros tipos de erros
+- [ ] mostrar tipo de erro
+- [ ] mostrar uma imagem relacionada ao erro
+- [ ] mostrar uma mensagem relacionada ao erro
+- [ ] mostrar um botão de voltar para pagina inicial
+
+# Em ServerStatus.jsx (vai vários status) (ideia de pagina) (ideia de página de status do servidor)
+
+- [ ] criar pagina de status do servidor (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] mostrar tipo de status
+- [ ] mostrar uma imagem relacionada ao status
+- [ ] mostrar uma mensagem relacionada ao status
+- [ ] mostrar um botão de voltar para pagina inicial
+
+# Em RoomConfig.jsx (ideia de pagina) (ideia de configurações da sala)
+
+- [ ] criar pagina de configurações da sala (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] mostrar um botão de voltar para pagina inicial
+
+# Em Feedback.jsx (ideia de pagina) (ideia de feedback)
+
+- [ ] criar pagina de feedback (vou precisa da minha equipe do backend para adicionar isso)
+- [ ] mostrar um botão de voltar para pagina inicial
+- [ ] mostrar um botão de enviar feedback
+- [ ] mostrar um botão de cancelar
+- [ ] mostrar um botão de limpar
+- [ ] mostrar um botão de confirmar
+- [ ] mostrar um botão de cancelar
+
+# Criar um README.md para o projeto
+
+- [ ] criar pagina de informações sobre o projeto
+
+# Criar várias documentações
+
+- [ ] criar documentação sobre o projeto
+- [ ] criar documentação sobre o código
+- [ ] criar documentação sobre a API
+- [ ] criar documentação sobre os testes
+- [ ] criar documentação sobre as tecnologias
+- [ ] criar documentação sobre o segurança
+- [ ] criar documentação sobre o design
+- [ ] criar documentação sobre o banco de dados
+- [ ] criar documentação sobre o backend
+- [ ] criar documentação sobre o frontend
+- [ ] criar documentação sobre o deploy
+- [ ] criar documentação sobre o uso
