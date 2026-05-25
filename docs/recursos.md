@@ -1,7 +1,7 @@
 # Lista de recursos que falta no frontend:
 # alguns recursos não são obrigatórios implementar, apenas se a gente conseguir implementar.
 # Data:19/05/2026
-# Ultima autalização: 19/05/2026
+# Ultima autalização: 25/05/2026
 # Status: Em desenvolvimento
 
 # Na Chat.jsx
@@ -36,7 +36,7 @@
 - [✅] implementar novo layout de 3 colunas (Sidebar de Navegação, Chat Central e Painel de Membros)
 - [✅] adicionar estado vazio (Empty State) intuitivo para salas sem mensagens
 - [✅] adicionar suporte a mensagens exclusivas do sistema (System Messages)
-- [ ] corrigir botões que não faz nada
+- [✅] corrigir botões que não faz nada
 - [ ] adicionar uma busca de mensagens ou as mensagens de um determinado usuario
 # Na Rooms.jsx
 
@@ -66,12 +66,14 @@
 - [ ] adicionar duas nuvens grande no fundo, uma do lado direito e outra do lado esquerdo para dar efeito visual melhor
 - [✅] ter um sistema login e logout parcialmente funcional
 - [✅] ter uma navegação funcional
-- [ ] deixar as paginas Chat.jsx, Rooms.jsx e Suporte.jsx somente acessivel para usuarios logados
+- [✅] deixar as paginas Chat.jsx, Rooms.jsx, Custom.jsx, Suporte.jsx e etc somente acessivel para usuarios logados
+- [ ] adicionar que paginas de administração são acessivel com um id espécifico (possui o admin da sala ou moderador, admin do site ou moderador e pode ser a equipe do site)
 - [✅ Parcialmente] refinamento visual ou redesign de algumas paginas (Chat.jsx e componentes satélites totalmente refeitos)
 - [ ] melhorar o design_glass (o design translucido) e corrigir os bugs visuais
 - [✅] testar novos layouts (LayoutDemo1 validado e aplicado no Chat principal)
 - [✅] adicionar uma identidade visual mais unica (Identidade clássica retrô-moderna Web 2.0 definida)
 - [ ] corrigir o tema escuro e os bugs visuais
+- [ ] corrigir o sistema de contador de usuários onlines
 
 # Em Login.jsx
 
@@ -95,11 +97,11 @@
 # Na Navbar.jsx
 
 - [✅] adicionar sistema de modo escuro e claro
-- [] adicionar sistema de idioma
-- [] adicionar sistema de notificações
+- [ ] adicionar sistema de idioma
+- [ ] adicionar sistema de notificações
 - [✅] adicionar a opção de configurações
-- [] Corrigir bugs visuais
-- [] adicionar icones consistentes
+- [ ] Corrigir bugs visuais
+- [✅] adicionar icones consistentes
 
 # Na Admin.jsx (ideia de pagina) (ideia de sala de administração)
 

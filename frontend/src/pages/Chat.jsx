@@ -6,23 +6,12 @@ import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPenci
 import { socket } from '../socket';
 import ChatSidebar from '../components/ChatSidebar';
 import MembersSidebar from '../components/MembersSidebar';
+import UserAvatar from '../components/UserAvatar';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
 
-const Avatar = ({ src, onClick }) => (
-    <div onClick={onClick} className="relative inline-flex shrink-0 cursor-pointer hover:opacity-80 transition-opacity mt-1">
-        <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]">
-            <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center font-semibold text-gray-700 text-[12px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] overflow-hidden">
-                {src ? (
-                    <img src={src} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                    <FaUser className="text-[#86868b] w-3 h-3" />
-                )}
-            </div>
-        </div>
-    </div>
-);
+
 
 const formatMessageTime = (timeStr) => {
     if (!timeStr) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -123,7 +112,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     return (
         <div className="flex gap-2 px-3 py-[2px] group animate-fade-in-up">
-            <Avatar src={msg.avatar} onClick={() => onAvatarClick(msg)} />
+            <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 hover:opacity-80 transition-opacity" />
             <div className="flex flex-col items-start max-w-[80%] group/msg">
                 <span className="text-[11.5px] text-[#1d1d1f] font-bold flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
                     {msg.sender}
@@ -631,15 +620,7 @@ const Chat = () => {
             {selectedUser && selectedUser.sender !== "Sistema" && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedUser(null)}>
                     <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
-                        <div className="w-24 h-24 mx-auto rounded-full bg-gray-100 border-2 border-white shadow-md flex items-center justify-center overflow-hidden mb-4">
-                            {selectedUser.avatar ? (
-                                <img src={selectedUser.avatar} alt={selectedUser.sender} className="w-full h-full object-cover" />
-                            ) : (
-                                <svg className="w-12 h-12 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                </svg>
-                            )}
-                        </div>
+                        <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="mx-auto mb-4 border-2 border-white shadow-md" />
                         <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
                             {mockRoles[selectedUser.sender] === 'Dono' && <span className="bg-amber-100 text-amber-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-amber-200 shadow-sm flex items-center gap-1">👑 Dono</span>}
@@ -660,8 +641,8 @@ const Chat = () => {
                             </select>
 
                             <div className="flex gap-2">
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] hover:bg-[#fee2e2]">Silenciar</button>
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] hover:bg-[#fee2e2]">Banir</button>
+                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed" disabled>Silenciar</button>
+                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed" disabled>Banir</button>
                             </div>
                         </div>
 

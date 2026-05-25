@@ -8,7 +8,7 @@ import Rooms from './pages/Rooms';
 import Chat from './pages/Chat';
 import About from './pages/About';
 import Custom from './pages/Custom';
-// import LayoutDemo from './pages/LayoutDemo';
+import PrivateRoute from './components/PrivateRoute';
 // import LayoutDemo1 from './pages/LayoutDemo1';
 
 // Páginas que ainda vamos implementar
@@ -26,10 +26,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/rooms" element={<Rooms />} />
-          <Route path="/chat" element={<Chat />} />
           <Route path="/about" element={<About />} />
-          <Route path="/custom" element={<Custom />} />
+          <Route path="/rooms" element={<PrivateRoute><Rooms /></PrivateRoute>} />
+          <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
+          <Route path="/custom" element={<PrivateRoute><Custom /></PrivateRoute>} />
           {/* <Route path="/layout-demo" element={<LayoutDemo />} /> */}
           {/* <Route path="/layout-demo1" element={<LayoutDemo1 />} /> */}
         </Routes>

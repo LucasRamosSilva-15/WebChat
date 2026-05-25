@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaUser } from 'react-icons/fa';
+import UserAvatar from '../components/UserAvatar';
 
 function Custom() {
     const navigate = useNavigate();
@@ -70,18 +72,8 @@ function Custom() {
                             />
                             <div className="flex items-center gap-6">
                                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
-                                    <div className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)] transition-all duration-300 group-hover:scale-105">
-                                        <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] overflow-hidden">
-                                            {profilePhoto ? (
-                                                <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <svg className="w-10 h-10 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                                </svg>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 m-[3px]">
+                                    <UserAvatar src={profilePhoto} name={displayName} size="2xl" />
+                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 m-[3px] pointer-events-none">
                                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
@@ -146,18 +138,7 @@ function Custom() {
 
                     <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] rounded-[16px] p-6 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
                         <div className="flex items-center gap-4">
-                            <div className="relative inline-flex shrink-0">
-                                <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]">
-                                    <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center font-semibold text-gray-700 text-[18px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] overflow-hidden">
-                                        {profilePhoto ? (
-                                            <img src={profilePhoto} alt="Profile Preview" className="w-full h-full object-cover" />
-                                        ) : (
-                                            displayName ? displayName.charAt(0).toUpperCase() : '?'
-                                        )}
-                                    </div>
-                                </div>
-                                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full border-2 border-white shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
-                            </div>
+                            <UserAvatar src={profilePhoto} name={displayName} size="lg" showStatus={true} status="online" />
                             <div className="flex-1 min-w-0">
                                 <h4 className="text-[18px] font-semibold text-[#1d1d1f] truncate">{displayName || "Seu Nome"}</h4>
                                 <p className="text-[13px] text-[#86868b] truncate">{statusMessage || "Sem recado"}</p>

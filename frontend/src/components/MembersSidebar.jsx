@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaCrown, FaShieldAlt } from 'react-icons/fa';
+import UserAvatar from './UserAvatar';
 
 const MembersSidebar = ({ onlineCount, mockRoles = {} }) => {
     // Mock members (deve ser removido no futuro)
@@ -19,14 +20,7 @@ const MembersSidebar = ({ onlineCount, mockRoles = {} }) => {
             <div className="px-3 space-y-1">
                 {mockMembers.filter(m => m.online).map((member, i) => (
                     <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer transition-all">
-                        <div className="relative inline-flex shrink-0">
-                            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]">
-                                <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center font-semibold text-gray-700 text-[12px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]">
-                                    {member.name.charAt(0).toUpperCase()}
-                                </div>
-                            </div>
-                            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full border-2 border-white shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
-                        </div>
+                        <UserAvatar name={member.name} size="sm" showStatus={true} status={member.online ? 'online' : 'offline'} />
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <span className="text-[13px] font-semibold text-[#1d1d1f] truncate leading-tight">{member.name}</span>
                             {member.role === 'Dono' && (

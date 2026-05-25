@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import UserAvatar from './UserAvatar';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -122,9 +123,9 @@ const Navbar = () => {
                                 <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
                                     <FaEnvelope className="text-[#86868b]" size={16} /> Diretas
                                 </Link>
-                                <Link to="/favorites" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
-                                    <FaStar className="text-[#86868b]" size={16} /> Favoritos
-                                </Link>
+                                <span className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] border-t border-[#e5e5e5] flex items-center gap-3 opacity-50 cursor-not-allowed">
+                                    <FaStar className="text-[#86868b]" size={16} /> Favoritos (Em breve)
+                                </span>
                                 <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
                                     <FaUser className="text-[#86868b]" size={16} /> Perfil
                                 </Link>
@@ -161,15 +162,7 @@ const Navbar = () => {
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                                 className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
                             >
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-[#b3b3b3] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1),0_1px_0_rgba(255,255,255,0.8)] flex items-center justify-center overflow-hidden shrink-0">
-                                    {profilePhoto ? (
-                                        <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <svg className="w-1/2 h-1/2 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                        </svg>
-                                    )}
-                                </div>
+                                <UserAvatar src={profilePhoto} name={profileName} size="sm" showStatus={false} />
                                 <div className="flex flex-col items-start hidden sm:flex">
                                     <span className="text-[13px] font-semibold text-[#1d1d1f] leading-none truncate max-w-[100px]">{profileName}</span>
                                     <span className="text-[10px] text-green-600 uppercase tracking-widest mt-[2px] font-bold">Online</span>
@@ -181,15 +174,7 @@ const Navbar = () => {
                                     }`}
                             >
                                 <div className="flex flex-col text-center p-5 items-center">
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-[#b3b3b3] shadow-[inset_0_2px_4px_rgba(0,0,0,0.1),0_1px_0_rgba(255,255,255,0.8)] flex items-center justify-center overflow-hidden mb-3">
-                                        {profilePhoto ? (
-                                            <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <svg className="w-1/2 h-1/2 text-[#86868b]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                            </svg>
-                                        )}
-                                    </div>
+                                    <UserAvatar src={profilePhoto} name={profileName} size="xl" className="mb-3" showStatus={false} />
                                     <h3 className="text-[18px] font-semibold text-[#1d1d1f] mb-1 leading-tight">{profileName}</h3>
                                     <p className="text-[13px] text-[#86868b] leading-snug">{profileDesc}</p>
                                 </div>
