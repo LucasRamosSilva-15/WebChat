@@ -74,7 +74,8 @@
 - [✅] adicionar uma identidade visual mais unica (Identidade clássica retrô-moderna Web 2.0 definida)
 - [ ] corrigir o tema escuro e os bugs visuais
 - [ ] corrigir o sistema de contador de usuários onlines
-
+- [✅] o usuário teve logado em Home.jsx mudar a mensagem principal e botão para entrar em escolher uma sala
+- [ ] adicionar um sistema de escolha de idiomas
 # Em Login.jsx
 
 - [ ] fazer um sistema de login funcional (vou precisa da minha equipe do backend para adicionar isso)

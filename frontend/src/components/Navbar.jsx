@@ -164,7 +164,12 @@ const Navbar = () => {
                             >
                                 <UserAvatar src={profilePhoto} name={profileName} size="sm" showStatus={false} />
                                 <div className="flex flex-col items-start hidden sm:flex">
-                                    <span className="text-[13px] font-semibold text-[#1d1d1f] leading-none truncate max-w-[100px]">{profileName}</span>
+                                    <span 
+                                        className="text-[13px] font-semibold text-[#1d1d1f] leading-none truncate max-w-[180px] md:max-w-[240px]" 
+                                        title={profileName}
+                                    >
+                                        {profileName}
+                                    </span>
                                     <span className="text-[10px] text-green-600 uppercase tracking-widest mt-[2px] font-bold">Online</span>
                                 </div>
                             </div>
