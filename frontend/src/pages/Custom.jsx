@@ -96,7 +96,7 @@ function Custom() {
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
                                 placeholder="Ex: João Silva"
-                                className="skeuo-input w-full px-4 py-3 bg-[#fbfbfd]"
+                                className="skeuo-input w-full px-4 py-3 bg-[#fbfbfd] dark:bg-[#1e293b]"
                             />
                         </div>
 
@@ -110,7 +110,7 @@ function Custom() {
                                 value={statusMessage}
                                 onChange={(e) => setStatusMessage(e.target.value)}
                                 placeholder="O que você está pensando?"
-                                className="skeuo-input w-full px-4 py-3 bg-[#fbfbfd]"
+                                className="skeuo-input w-full px-4 py-3 bg-[#fbfbfd] dark:bg-[#1e293b]"
                             />
                         </div>
 
@@ -136,7 +136,7 @@ function Custom() {
                     <h3 className="text-[20px] font-semibold text-[#1d1d1f] mb-4">Prévia do Perfil</h3>
                     <p className="text-[13px] text-[#86868b] mb-6">Como outros usuários verão seu perfil</p>
 
-                    <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] rounded-[16px] p-6 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+                    <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#0f172a] dark:to-[#020617] rounded-[16px] p-6 border border-[#d2d2d7] dark:border-white/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]">
                         <div className="flex items-center gap-4">
                             <UserAvatar src={profilePhoto} name={displayName} size="lg" showStatus={true} status="online" />
                             <div className="flex-1 min-w-0">
@@ -152,7 +152,7 @@ function Custom() {
                 </div>
             </div>
             {showToast && (
-                <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 skeuo-panel px-6 py-4 flex items-center gap-3 z-50 reveal" style={{ borderRadius: '980px', padding: '12px 24px' }}>
+                <div className="fixed bottom-[88px] left-1/2 transform -translate-x-1/2 skeuo-panel px-6 py-4 flex items-center gap-3 z-[9999] reveal" style={{ borderRadius: '980px', padding: '12px 24px' }}>
                     <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0 shadow-inner">
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path></svg>
                     </div>

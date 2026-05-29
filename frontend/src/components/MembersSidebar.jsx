@@ -11,7 +11,7 @@ const MembersSidebar = ({ onlineCount, mockRoles = {} }) => {
     ];
 
     return (
-        <div className="w-[220px] h-[calc(100vh-48px)] sticky top-[48px] bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] border-l border-[#d2d2d7] shadow-[inset_1px_0_0_rgba(255,255,255,0.8)] hidden xl:flex flex-col shrink-0 overflow-y-auto">
+        <div className="w-[220px] h-[calc(100vh-48px)] sticky top-[48px] bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-l border-[#d2d2d7] dark:border-white/5 shadow-[inset_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_1px_0_0_rgba(255,255,255,0.02)] hidden xl:flex flex-col shrink-0 overflow-y-auto">
             <div className="p-4 pt-5">
                 <h3 className="text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-1">
                     Online — {onlineCount || mockMembers.filter(m => m.online).length}
@@ -19,7 +19,7 @@ const MembersSidebar = ({ onlineCount, mockRoles = {} }) => {
             </div>
             <div className="px-3 space-y-1">
                 {mockMembers.filter(m => m.online).map((member, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] cursor-pointer transition-all">
+                    <div key={i} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white dark:hover:bg-[#334155] hover:shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_1px_2px_rgba(0,0,0,0.3)] cursor-pointer transition-all">
                         <UserAvatar name={member.name} size="sm" showStatus={true} status={member.online ? 'online' : 'offline'} />
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <span className="text-[13px] font-semibold text-[#1d1d1f] truncate leading-tight">{member.name}</span>
@@ -40,7 +40,7 @@ const MembersSidebar = ({ onlineCount, mockRoles = {} }) => {
                     </div>
                 ))}
             </div>
-            <div className="p-4 mt-4 border-t border-[#d2d2d7] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+            <div className="p-4 mt-4 border-t border-[#d2d2d7] dark:border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <h3 className="text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-1">
                     Offline — 0
                 </h3>

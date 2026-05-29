@@ -110,23 +110,23 @@ const Navbar = () => {
                             <div className={`absolute bg-black/80 dark:bg-white/80 transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-0 scale-50 w-5 h-[2px]' : 'translate-y-[6px] opacity-100 scale-100 w-5 h-[2px] rounded-sm'}`}></div>
                         </button>
                         <div
-                            className={`absolute right-0 top-[48px] w-52 bg-gradient-to-b from-white to-[#f8fafc] border border-[#d2d2d7] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden transition-all duration-300 origin-top-right ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
+                            className={`absolute right-0 top-[48px] w-52 skeuo-panel !rounded-[16px] !p-0 overflow-hidden transition-all duration-300 origin-top-right ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
                                 }`}
                         >
                             <div className="flex flex-col py-2">
-                                <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors flex items-center gap-3">
+                                <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors flex items-center gap-3">
                                     <FaHome className="text-[#86868b]" size={16} /> Início
                                 </Link>
-                                <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
                                     <FaComments className="text-[#86868b]" size={16} /> Salas
                                 </Link>
-                                <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
                                     <FaEnvelope className="text-[#86868b]" size={16} /> Diretas
                                 </Link>
-                                <span className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] border-t border-[#e5e5e5] flex items-center gap-3 opacity-50 cursor-not-allowed">
+                                <span className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3 opacity-50 cursor-not-allowed">
                                     <FaStar className="text-[#86868b]" size={16} /> Favoritos (Em breve)
                                 </span>
-                                <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
                                     <FaUser className="text-[#86868b]" size={16} /> Perfil
                                 </Link>
                                 <button 
@@ -134,11 +134,11 @@ const Navbar = () => {
                                         setIsSettingsOpen(true);
                                         setIsMenuOpen(false);
                                     }} 
-                                    className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] text-left w-full flex items-center gap-3"
+                                    className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 text-left w-full flex items-center gap-3"
                                 >
                                     <FaCog className="text-[#86868b]" size={16} /> Ajustes
                                 </button>
-                                <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent transition-colors border-t border-[#e5e5e5] flex items-center gap-3">
+                                <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
                                     <FaInfoCircle className="text-[#86868b]" size={16} /> Sobre
                                 </Link>
                                 {isLoggedIn && (
@@ -148,7 +148,7 @@ const Navbar = () => {
                                         window.dispatchEvent(new Event('profileUpdated'));
                                         setIsMenuOpen(false);
                                         window.location.href = '/login';
-                                    }} className="px-5 py-3 text-[15px] font-medium text-[#ff3b30] hover:bg-gradient-to-r hover:from-[#fee2e2] hover:to-transparent transition-colors border-t border-[#e5e5e5] text-left w-full flex items-center gap-3">
+                                    }} className="px-5 py-3 text-[15px] font-medium text-[#ff3b30] hover:bg-gradient-to-r hover:from-[#fee2e2] dark:hover:from-[#7f1d1d]/40 hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 text-left w-full flex items-center gap-3">
                                         <FaSignOutAlt className="text-[#ff3b30]" size={16} /> Sair
                                     </button>
                                 )}
@@ -175,15 +175,15 @@ const Navbar = () => {
                             </div>
                             
                             <div
-                                className={`absolute right-0 top-[48px] w-[260px] bg-gradient-to-b from-white to-[#f8fafc] border border-[#d2d2d7] rounded-[16px] shadow-[0_10px_40px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,1)] overflow-hidden transition-all duration-300 origin-top-right ${isProfileOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
+                                className={`absolute right-0 top-[48px] w-[260px] skeuo-panel !rounded-[16px] !p-0 overflow-hidden transition-all duration-300 origin-top-right ${isProfileOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
                                     }`}
                             >
                                 <div className="flex flex-col text-center p-5 items-center">
                                     <UserAvatar src={profilePhoto} name={profileName} size="xl" className="mb-3" showStatus={false} />
-                                    <h3 className="text-[18px] font-semibold text-[#1d1d1f] mb-1 leading-tight">{profileName}</h3>
-                                    <p className="text-[13px] text-[#86868b] leading-snug">{profileDesc}</p>
+                                    <h3 className="text-[18px] font-semibold text-[#1d1d1f] dark:text-[#f8fafc] mb-1 leading-tight">{profileName}</h3>
+                                    <p className="text-[13px] text-[#86868b] dark:text-[#94a3b8] leading-snug">{profileDesc}</p>
                                 </div>
-                                <div className="p-3 bg-gradient-to-b from-[#f0f0f0] to-[#e5e5e5] border-t border-[#d2d2d7]">
+                                <div className="p-3 bg-gradient-to-b from-[#f0f0f0] to-[#e5e5e5] dark:from-[#0f172a] dark:to-[#020617] border-t border-[#d2d2d7] dark:border-white/5">
                                     <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy w-full py-2 block text-center text-[13px]">Editar Perfil</Link>
                                 </div>
                             </div>
@@ -195,19 +195,19 @@ const Navbar = () => {
 
             {isSettingsOpen && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsSettingsOpen(false)}>
-                    <div className="bg-gradient-to-b from-white to-[#f8fafc] border border-[#d2d2d7] rounded-[24px] shadow-[0_25px_60px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,1)] p-8 max-w-[500px] w-full relative" onClick={(e) => e.stopPropagation()}>
+                    <div className="skeuo-panel p-8 max-w-[500px] w-full relative" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-[24px] font-semibold text-[#1d1d1f] text-shadow-[0_1px_0_rgba(255,255,255,0.8)]">Configurações</h2>
-                            <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-gray-300 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] hover:from-gray-200 hover:to-gray-300 transition-all">
+                            <h2 className="text-[24px] font-semibold text-[#1d1d1f] dark:text-[#f8fafc] text-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:text-shadow-[0_1px_0_rgba(0,0,0,0.8)]">Configurações</h2>
+                            <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 border border-gray-300 dark:border-slate-600 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-200 hover:to-gray-300 dark:hover:from-slate-600 dark:hover:to-slate-700 transition-all">
                                 <FaTimes className="text-[#86868b]" size={14} />
                             </button>
                         </div>
 
                         <div className="space-y-6">
-                            <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] p-4 rounded-[16px] border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-left">
+                            <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
                                 <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Aparência do WebChat</label>
                                 <div className="space-y-3">
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'skeuo' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'skeuo' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="theme" 
@@ -221,7 +221,7 @@ const Navbar = () => {
                                         </div>
                                     </label>
 
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'glass' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'glass' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="theme" 
@@ -237,10 +237,10 @@ const Navbar = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] p-4 rounded-[16px] border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-left">
+                            <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
                                 <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Modo de Cor</label>
                                 <div className="space-y-3">
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'light' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'light' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="colorMode" 
@@ -254,7 +254,7 @@ const Navbar = () => {
                                         </div>
                                     </label>
 
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'dark' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'dark' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
                                         <input 
                                             type="radio" 
                                             name="colorMode" 
@@ -271,10 +271,10 @@ const Navbar = () => {
                             </div>
 
                             {theme === 'skeuo' && colorMode === 'light' && (
-                                <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] p-4 rounded-[16px] border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] text-left">
+                                <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
                                     <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Cor de Fundo (Modo Claro)</label>
                                     <div className="space-y-3">
-                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'neutral' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'neutral' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
                                             <input 
                                                 type="radio" 
                                                 name="bgColor" 
@@ -288,7 +288,7 @@ const Navbar = () => {
                                             </div>
                                         </label>
 
-                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'classic_blue' ? 'bg-white border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white border-[#d2d2d7] hover:border-[#0071e3]'}`}>
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'classic_blue' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
                                             <input 
                                                 type="radio" 
                                                 name="bgColor" 

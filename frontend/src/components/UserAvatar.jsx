@@ -39,8 +39,8 @@ const UserAvatar = ({ src, name = '?', size = 'md', showStatus = false, status =
             className={`relative inline-flex shrink-0 ${onClick ? 'cursor-pointer transition-all duration-300 hover:scale-105' : ''} ${className}`}
             onClick={onClick}
         >
-            <div className={`${sizeClass} rounded-full ${pClass} bg-gradient-to-b from-sky-400 to-sky-600 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]`}>
-                <div className="w-full h-full rounded-full bg-gradient-to-b from-white to-gray-50 flex items-center justify-center font-semibold text-gray-700 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] overflow-hidden">
+            <div className={`${sizeClass} rounded-full ${pClass} bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-700 dark:to-sky-900 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]`}>
+                <div className="webchat-avatar-inner">
                     {src ? (
                         <img src={src} alt={name} className="w-full h-full object-cover" />
                     ) : (
@@ -49,7 +49,7 @@ const UserAvatar = ({ src, name = '?', size = 'md', showStatus = false, status =
                 </div>
             </div>
             {showStatus && (
-                <span className={`absolute bottom-0 right-0 ${statusClass} bg-gradient-to-b ${currentStatusColor} rounded-full border-2 border-white`} />
+                <span className={`absolute bottom-0 right-0 ${statusClass} bg-gradient-to-b ${currentStatusColor} rounded-full border-2 border-white dark:border-[#0f172a]`} />
             )}
         </div>
     );

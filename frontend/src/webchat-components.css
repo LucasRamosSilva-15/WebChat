@@ -66,6 +66,48 @@ html.dark .skeuo-card {
   border-color: #d1d5db;
 }
 
+html.dark .skeuo-badge-dono {
+  background: linear-gradient(to bottom, #b45309, #92400e);
+  color: #fef3c7;
+  border-color: #78350f;
+}
+
+html.dark .skeuo-badge-mod {
+  background: linear-gradient(to bottom, #6d28d9, #5b21b6);
+  color: #ede9fe;
+  border-color: #4c1d95;
+}
+
+html.dark .skeuo-badge-vip {
+  background: linear-gradient(to bottom, #0369a1, #075985);
+  color: #e0f2fe;
+  border-color: #0c4a6e;
+}
+
+html.dark .skeuo-badge-online {
+  background: linear-gradient(to bottom, #047857, #065f46);
+  color: #d1fae5;
+  border-color: #064e3b;
+}
+
+html.dark .skeuo-badge-ativa {
+  background: linear-gradient(to bottom, #166534, #14532d);
+  color: #bbf7d0;
+  border-color: #14532d;
+}
+
+html.dark .skeuo-badge-cheia {
+  background: linear-gradient(to bottom, #991b1b, #7f1d1d);
+  color: #fecaca;
+  border-color: #7f1d1d;
+}
+
+html.dark .skeuo-badge-arquivada {
+  background: linear-gradient(to bottom, #374151, #1f2937);
+  color: #d1d5db;
+  border-color: #1f2937;
+}
+
 .webchat-avatar-frame {
   position: relative;
   display: inline-flex;

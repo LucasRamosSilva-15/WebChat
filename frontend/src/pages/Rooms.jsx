@@ -34,7 +34,7 @@ const RoomIconWithTooltip = ({ description }) => (
         </div>
 
         <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 flex items-center z-50 pointer-events-none opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out w-max max-w-[220px]">
-            <div className="w-2.5 h-2.5 bg-[#ffffff] border-l border-t border-black/5 -rotate-45 -mr-1.5 z-10 shadow-[-2px_-2px_2px_rgba(0,0,0,0.02)]"></div>
+            <div className="w-2.5 h-2.5 bg-white dark:bg-[#1e293b] border-l border-t border-black/5 -rotate-45 -mr-1.5 z-10 shadow-[-2px_-2px_2px_rgba(0,0,0,0.02)]"></div>
             <div className="skeuo-panel px-3.5 py-2 text-[12px] leading-snug text-[#1d1d1f] font-medium text-left shadow-lg rounded-[12px] border border-black/5 max-w-[200px] break-words">
                 {description || "Sem descrição disponível."}
             </div>
@@ -83,7 +83,7 @@ const CreateRoomModal = ({
                         <select
                             value={newRoomCategory}
                             onChange={(e) => setNewRoomCategory(e.target.value)}
-                            className="skeuo-input w-full px-4 py-3 bg-white"
+                            className="skeuo-input w-full px-4 py-3 bg-white dark:bg-[#1e293b]"
                         >
                             <option>Casual</option>
                             <option>Tecnologia</option>
@@ -142,18 +142,18 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
 
         <td className="px-6 py-4">
             {room.status === "Arquivada" ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-gray-300 text-gray-600 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)]">
-                    <span className="w-2 h-2 rounded-full bg-gray-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)]">
+                    <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-slate-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                     Arquivada
                 </span>
             ) : room.members >= 200 ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-red-100 to-red-200 border border-red-300 text-red-700 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)]">
-                    <span className="w-2 h-2 rounded-full bg-red-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-900/60 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-400 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)]">
+                    <span className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                     Cheia
                 </span>
             ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-green-100 to-green-200 border border-green-300 text-green-700 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)]">
-                    <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.5),inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-b from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-900/60 border border-green-300 dark:border-green-800 text-green-700 dark:text-green-400 text-[13px] font-medium shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)]">
+                    <span className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 shadow-[0_0_4px_rgba(34,197,94,0.5),inset_0_1px_2px_rgba(0,0,0,0.2)] dark:shadow-[0_0_4px_rgba(74,222,128,0.5),inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                     Ativa
                 </span>
             )}
@@ -166,7 +166,7 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
         <td className="px-6 py-4 flex gap-2 items-center">
             <button
                 onClick={() => onToggleFavorite(room.roomParam)}
-                className={`p-2 rounded-full transition-all ${isFavorite ? 'bg-gradient-to-b from-amber-100 to-amber-200 text-amber-600 border border-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]' : 'bg-gradient-to-b from-gray-100 to-gray-200 text-[#86868b] border border-gray-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:from-amber-50 hover:to-amber-100'}`}
+                className={`p-2 rounded-full transition-all ${isFavorite ? 'bg-gradient-to-b from-amber-100 to-amber-200 dark:from-amber-700 dark:to-amber-800 text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'bg-gradient-to-b from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 text-[#86868b] dark:text-[#94a3b8] border border-gray-300 dark:border-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:from-amber-50 hover:to-amber-100 dark:hover:from-amber-900/40 dark:hover:to-amber-900/60'}`}
                 title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
             >
                 <FaStar size={14} />
@@ -345,21 +345,21 @@ const Rooms = () => {
                         value={filteredRooms.length}
                         subtext={<><span className="text-green-500 font-medium">↗ +{customRooms.length}</span> esta semana</>}
                         icon={FaCommentAlt}
-                        colorClass="bg-[#e6f0ff] text-[#0071e3] shadow-inner"
+                        colorClass="bg-[#e6f0ff] dark:bg-blue-900/40 text-[#0071e3] dark:text-blue-400 shadow-inner"
                     />
                     <StatCard
                         title="Usuários Online"
                         value={onlineUsers}
                         subtext={<><span className="text-green-500 font-medium">↗ Atualizado em tempo real</span></>}
                         icon={FaUsers}
-                        colorClass="bg-green-100 text-green-600 shadow-inner"
+                        colorClass="bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 shadow-inner"
                     />
                     <StatCard
                         title="Reportes Pendentes"
                         value="7"
-                        subtext={<><span className="text-[#86868b]">Requer atenção</span></>}
+                        subtext={<><span className="text-[#86868b] dark:text-[#94a3b8]">Requer atenção</span></>}
                         icon={FaExclamationTriangle}
-                        colorClass="bg-red-100 text-red-500 shadow-inner"
+                        colorClass="bg-red-100 dark:bg-red-900/40 text-red-500 dark:text-red-400 shadow-inner"
                     />
                 </div>
 

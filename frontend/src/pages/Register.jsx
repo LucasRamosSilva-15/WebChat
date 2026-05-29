@@ -49,9 +49,9 @@ const Register = () => {
                     </button>
 
                     <div className="flex items-center mt-8 mb-6">
-                        <div className="flex-grow border-t border-[#d2d2d7]"></div>
+                        <div className="flex-grow border-t border-[#d2d2d7] dark:border-white/10"></div>
                         <span className="px-4 text-[12px] text-[#86868b] font-medium uppercase tracking-wider">ou continue com</span>
-                        <div className="flex-grow border-t border-[#d2d2d7]"></div>
+                        <div className="flex-grow border-t border-[#d2d2d7] dark:border-white/10"></div>
                     </div>
 
                     <button 

@@ -73,7 +73,7 @@
 - [ ] melhorar o design_glass (o design translucido) e corrigir os bugs visuais
 - [✅] testar novos layouts (LayoutDemo1 validado e aplicado no Chat principal)
 - [✅] adicionar uma identidade visual mais unica (Identidade clássica retrô-moderna Web 2.0 definida)
-- [ ] corrigir o tema escuro e os bugs visuais
+- [✅] corrigir o tema escuro e os bugs visuais
 - [ ] corrigir o sistema de contador de usuários onlines
 - [✅] o usuário teve logado em Home.jsx mudar a mensagem principal e botão para entrar em escolher uma sala
 - [ ] adicionar um sistema de escolha de idiomas
@@ -121,9 +121,9 @@
 
 - [ ] criar pagina de configurações (vou precisa da minha equipe do backend para adicionar isso)
 
-# Em Error.jsx (vai vários erros) (ideia de pagina) (ideia de página de erro 404)
+# Em NotFound.jsx (vai vários erros) (ideia de pagina) (ideia de página de erro 404)
 
-- [ ] criar pagina de erro 404 (vou precisa da minha equipe do backend para adicionar isso)
+- [✅] criar pagina de erro 404
 - [ ] adicionar outros tipos de erros
 - [ ] mostrar tipo de erro
 - [ ] mostrar uma imagem relacionada ao erro

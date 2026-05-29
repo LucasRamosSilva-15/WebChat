@@ -57,7 +57,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         return (
             <div className="flex justify-end px-3 py-[2px] group animate-fade-in-up">
                 <div className="flex flex-col items-end max-w-[80%] group/msg">
-                    <div className="bg-gradient-to-b from-sky-500 to-sky-600 text-white rounded-[14px] rounded-tr-sm px-3 py-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)] flex flex-col relative">
+                    <div className="skeuo-bubble-sent rounded-[14px] rounded-tr-sm px-3 py-1.5 flex flex-col relative">
                         <div className="absolute top-2 right-full mr-2 group/menu z-10">
                             <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -127,7 +127,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </span>
                     )}
                 </span>
-                <div className="bg-gradient-to-b from-white to-gray-50 rounded-[14px] rounded-tl-sm px-3 py-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] border border-gray-200/80 flex flex-col relative">
+                <div className="skeuo-bubble-received rounded-[14px] rounded-tl-sm px-3 py-1.5 flex flex-col relative">
                     <div className="absolute top-2 left-full ml-2 group/menu z-10">
                         <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -144,9 +144,9 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </div>
                     </div>
                     {msg.image && (
-                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-black/5 shadow-sm" />
+                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-black/5 dark:border-white/5 shadow-sm" />
                     )}
-                    {msg.text && <p className="text-[13px] text-gray-800 leading-tight">{msg.text}</p>}
+                    {msg.text && <p className="text-[13px] text-[#1d1d1f] dark:text-[#f8fafc] leading-tight">{msg.text}</p>}
                 </div>
                 <div className="flex items-center justify-start gap-2 mt-0.5 ml-1 px-1 w-full">
                     <span className="text-[10px] text-[#86868b] font-medium">{msgTime} {msg.isEdited && "(editada)"}</span>
@@ -628,12 +628,12 @@ const Chat = () => {
                         </h3>
                         <p className="text-[15px] text-[#86868b] mb-6">{selectedUser.status || "Sem recado"}</p>
 
-                        <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 shadow-inner">
+                        <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 dark:border-white/5 shadow-inner">
                             <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-2">Cargos e Moderação</label>
                             <select
                                 value={mockRoles[selectedUser.sender] || 'Usuário'}
                                 onChange={(e) => handleRoleChange(selectedUser.sender, e.target.value)}
-                                className="skeuo-input w-full px-3 py-2 text-[14px] bg-white cursor-pointer mb-3"
+                                className="skeuo-input w-full px-3 py-2 text-[14px] bg-white dark:bg-[#1e293b] cursor-pointer mb-3"
                             >
                                 <option value="Usuário">👤 Usuário Comum</option>
                                 <option value="Moderador">🛡️ Moderador da Sala</option>
@@ -698,10 +698,10 @@ const Chat = () => {
 
             <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden">
                 <ChatSidebar />
-                <main className="flex-1 min-w-0 flex flex-col h-full bg-white relative">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
+                <main className="flex-1 min-w-0 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
 
-                    <div className="px-4 py-2.5 border-b border-[#d2d2d7] flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] shrink-0">
+                    <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)] border border-sky-500">
                                 <FaCommentAlt size={12} />
@@ -719,14 +719,14 @@ const Chat = () => {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 text-gray-600'}`}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
                                 title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
                             >
-                                <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500'} />
+                                <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => navigate('/rooms')}
-                                className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 text-gray-600 border border-gray-200/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] hover:from-rose-50 hover:to-rose-100 hover:text-rose-600"
+                                className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-900/40 dark:hover:to-rose-900/60 hover:text-rose-600 dark:hover:text-rose-400"
                                 title="Sair da sala"
                             >
                                 <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
@@ -736,20 +736,20 @@ const Chat = () => {
 
                     {pinnedMessage && (
                         <div className="px-4 pt-3 shrink-0">
-                            <div className="relative bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200/80 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] flex items-start gap-3">
-                                <div className="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300">
+                            <div className="relative bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/40 dark:to-amber-900/20 rounded-lg border border-amber-200/80 dark:border-amber-700/50 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] flex items-start gap-3">
+                                <div className="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300 dark:border-amber-500">
                                     <FaThumbtack className="w-2.5 h-2.5 text-white" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[11px] font-bold text-amber-900">{pinnedMessage.sender}</span>
+                                            <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200">{pinnedMessage.sender}</span>
                                         </div>
-                                        <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full hover:bg-amber-100 transition-colors shrink-0">
-                                            <FaTimes size={10} className="text-amber-700/50 hover:text-amber-700" />
+                                        <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full hover:bg-amber-100 dark:hover:bg-amber-800/50 transition-colors shrink-0">
+                                            <FaTimes size={10} className="text-amber-700/50 dark:text-amber-400/50 hover:text-amber-700 dark:hover:text-amber-300" />
                                         </button>
                                     </div>
-                                    <p className="text-[12.5px] text-amber-800 leading-snug">{pinnedMessage.text}</p>
+                                    <p className="text-[12.5px] text-amber-800 dark:text-amber-100 leading-snug">{pinnedMessage.text}</p>
                                 </div>
                             </div>
                         </div>
@@ -794,7 +794,7 @@ const Chat = () => {
 
                     </div>
 
-                    <footer className="shrink-0 relative p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] border-t border-[#d2d2d7]">
+                    <footer className="shrink-0 relative p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-t border-[#d2d2d7] dark:border-white/5">
                         {imagePreview && !editingMessageId && (
                             <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up shadow-lg">
                                 <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
@@ -812,13 +812,13 @@ const Chat = () => {
                             </div>
                         )}
                         <form onSubmit={sendMessage} className="flex gap-2">
-                            <label className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 text-[#86868b] border border-gray-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] hover:from-gray-50 hover:to-gray-200 hover:text-[#1d1d1f] cursor-pointer transition-all shrink-0">
+                            <label className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-[#86868b] dark:text-slate-300 border border-gray-200 dark:border-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-50 hover:to-gray-200 hover:text-[#1d1d1f] dark:hover:from-slate-600 dark:hover:to-slate-700 dark:hover:text-white cursor-pointer transition-all shrink-0">
                                 <FaCamera size={14} className="drop-shadow-sm" />
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                             </label>
                             <input
                                 type="text"
-                                className="px-4 py-2 font-medium text-[14px] bg-[#f5f5f7] border border-[#d2d2d7] shadow-[inset_0_1px_3px_rgba(0,0,0,0.05)] rounded-[20px] flex-grow outline-none focus:bg-white focus:border-[#0071e3] focus:shadow-[inset_0_1px_2px_rgba(0,0,0,0.02),0_0_0_2px_rgba(0,113,227,0.2)] transition-all"
+                                className="skeuo-input w-full px-4 py-2 flex-grow"
                                 placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
                                 value={currentMessage}
                                 onChange={(e) => setCurrentMessage(e.target.value)}

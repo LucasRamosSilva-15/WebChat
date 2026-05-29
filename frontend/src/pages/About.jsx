@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 
 const InfoCard = ({ title, description }) => (
     <div className="skeuo-card p-8 h-full">
-        <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-4 text-shadow-[0_1px_0_rgba(255,255,255,0.8)]">{title}</h3>
-        <p className="text-[16px] text-[#424245] leading-relaxed">{description}</p>
+        <h3 className="text-[22px] font-semibold text-[#1d1d1f] dark:text-[#f8fafc] mb-4 text-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:text-shadow-[0_1px_0_rgba(0,0,0,0.8)]">{title}</h3>
+        <p className="text-[16px] text-[#424245] dark:text-[#94a3b8] leading-relaxed">{description}</p>
     </div>
 );
 
@@ -11,7 +11,7 @@ const About = () => {
     return (
         <main className="reveal flex-grow flex flex-col items-center px-6 py-20">
             <section className="skeuo-card p-10 max-w-[800px] w-full text-center mb-12">
-                <h1 className="text-[48px] md:text-[56px] font-semibold text-[#1d1d1f] mb-4 text-shadow-[0_2px_0_rgba(255,255,255,0.8)]">
+                <h1 className="text-[48px] md:text-[56px] font-semibold text-[#1d1d1f] dark:text-[#f8fafc] mb-4 text-shadow-[0_2px_0_rgba(255,255,255,0.8)] dark:text-shadow-[0_2px_0_rgba(0,0,0,0.8)]">
                     Sobre o WebChat
                 </h1>
                 <p className="text-[18px] md:text-[21px] text-[#86868b] max-w-[600px] mx-auto">
