@@ -1,7 +1,7 @@
 # Lista de recursos que falta no frontend:
 # alguns recursos não são obrigatórios implementar, apenas se a gente conseguir implementar.
 # Data:19/05/2026
-# Ultima autalização: 25/05/2026
+# Ultima autalização: 29/05/2026
 # Status: Em desenvolvimento
 
 # Na Chat.jsx
@@ -66,8 +66,9 @@
 - [ ] adicionar duas nuvens grande no fundo, uma do lado direito e outra do lado esquerdo para dar efeito visual melhor
 - [✅] ter um sistema login e logout parcialmente funcional
 - [✅] ter uma navegação funcional
-- [✅] deixar as paginas Chat.jsx, Rooms.jsx, Custom.jsx, Suporte.jsx e etc somente acessivel para usuarios logados
-- [ ] adicionar que paginas de administração são acessivel com um id espécifico (possui o admin da sala ou moderador, admin do site ou moderador e pode ser a equipe do site)
+- [✅] deixar as paginas Chat.jsx, Rooms.jsx, Custom.jsx, Suporte.jsx e etc somente acessivel para usuarios 
+- [✅] padronizar avatar sem foto em Navbar, Chat, MembersSidebar e Profile;
+- [ ] adicionar que paginas de administração são acessivel com um usuário que tem id espécifico (que são: o admin da sala ou moderador, admin do site ou moderador e pode ser a equipe do site)
 - [✅ Parcialmente] refinamento visual ou redesign de algumas paginas (Chat.jsx e componentes satélites totalmente refeitos)
 - [ ] melhorar o design_glass (o design translucido) e corrigir os bugs visuais
 - [✅] testar novos layouts (LayoutDemo1 validado e aplicado no Chat principal)
@@ -76,6 +77,9 @@
 - [ ] corrigir o sistema de contador de usuários onlines
 - [✅] o usuário teve logado em Home.jsx mudar a mensagem principal e botão para entrar em escolher uma sala
 - [ ] adicionar um sistema de escolha de idiomas
+- [✅ Parcialmente] adicionar um sistema de escolha de temas (claro, escuro, "clássico", "mod" e etc)
+- [ ] adicionar um sistema de escolha de cores
+
 # Em Login.jsx
 
 - [ ] fazer um sistema de login funcional (vou precisa da minha equipe do backend para adicionar isso)

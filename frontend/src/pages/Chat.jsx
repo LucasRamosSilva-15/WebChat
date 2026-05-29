@@ -640,9 +640,9 @@ const Chat = () => {
                                 <option value="Dono">👑 Dono da Sala</option>
                             </select>
 
-                            <div className="flex gap-2">
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed" disabled>Silenciar</button>
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed" disabled>Banir</button>
+                            <div className="flex gap-2 flex-wrap">
+                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Silenciar (Em breve)</button>
+                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Banir (Em breve)</button>
                             </div>
                         </div>
 

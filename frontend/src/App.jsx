@@ -8,6 +8,7 @@ import Rooms from './pages/Rooms';
 import Chat from './pages/Chat';
 import About from './pages/About';
 import Custom from './pages/Custom';
+import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
 // import LayoutDemo1 from './pages/LayoutDemo1';
 
@@ -32,6 +33,9 @@ function App() {
           <Route path="/custom" element={<PrivateRoute><Custom /></PrivateRoute>} />
           {/* <Route path="/layout-demo" element={<LayoutDemo />} /> */}
           {/* <Route path="/layout-demo1" element={<LayoutDemo1 />} /> */}
+          
+          {/* Fallback 404 Route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
       </div>
