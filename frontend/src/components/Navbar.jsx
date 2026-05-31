@@ -14,18 +14,17 @@ const Navbar = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const profileRef = useRef(null);
-    const [theme, setTheme] = useState(localStorage.getItem('chat_theme') || 'skeuo');
+    const [primaryColor, setPrimaryColor] = useState(localStorage.getItem('chat_primaryColor') || 'blue');
     const [colorMode, setColorMode] = useState(localStorage.getItem('chat_colorMode') || 'light');
-    const [bgColor, setBgColor] = useState(localStorage.getItem('chat_bg_color') || 'neutral');
+    const [bgColor, setBgColor] = useState(localStorage.getItem('chat_bgColor') || 'neutral');
 
     useEffect(() => {
-        if (theme === 'skeuo') {
-            document.body.classList.add('theme-skeuo');
-        } else {
-            document.body.classList.remove('theme-skeuo');
+        document.body.classList.remove('color-blue', 'color-green', 'color-purple', 'color-red', 'color-slate');
+        if (primaryColor !== 'blue') {
+            document.body.classList.add(`color-${primaryColor}`);
         }
-        localStorage.setItem('chat_theme', theme);
-    }, [theme]);
+        localStorage.setItem('chat_primaryColor', primaryColor);
+    }, [primaryColor]);
 
     useEffect(() => {
         if (colorMode === 'dark') {
@@ -37,12 +36,15 @@ const Navbar = () => {
     }, [colorMode]);
 
     useEffect(() => {
+        document.body.classList.remove('bg-classic-blue', 'bg-smooth-gradient', 'bg-clean-light');
         if (bgColor === 'classic_blue') {
             document.body.classList.add('bg-classic-blue');
-        } else {
-            document.body.classList.remove('bg-classic-blue');
+        } else if (bgColor === 'smooth_gradient') {
+            document.body.classList.add('bg-smooth-gradient');
+        } else if (bgColor === 'clean_light') {
+            document.body.classList.add('bg-clean-light');
         }
-        localStorage.setItem('chat_bg_color', bgColor);
+        localStorage.setItem('chat_bgColor', bgColor);
     }, [bgColor]);
 
     useEffect(() => {
@@ -205,48 +207,42 @@ const Navbar = () => {
 
                         <div className="space-y-6">
                             <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
-                                <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Aparência do WebChat</label>
-                                <div className="space-y-3">
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'skeuo' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
-                                        <input 
-                                            type="radio" 
-                                            name="theme" 
-                                            checked={theme === 'skeuo'} 
-                                            onChange={() => setTheme('skeuo')}
-                                            className="w-4 h-4 accent-[#0071e3]"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Clássico</span>
-                                            <span className="text-[12px] text-[#86868b]">Visual premium, botões com profundidade e sombras.</span>
-                                        </div>
-                                    </label>
-
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${theme === 'glass' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
-                                        <input 
-                                            type="radio" 
-                                            name="theme" 
-                                            checked={theme === 'glass'} 
-                                            onChange={() => setTheme('glass')}
-                                            className="w-4 h-4 accent-[#0071e3]"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Visual Translúcido</span>
-                                            <span className="text-[12px] text-[#86868b]">Visual embaçado, limpo e com desfoque.</span>
-                                        </div>
-                                    </label>
+                                <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Cor Principal</label>
+                                <div className="space-y-2">
+                                    <div className="flex flex-wrap gap-3">
+                                        {[
+                                            { id: 'blue', color: 'bg-blue-500', name: 'Azul' },
+                                            { id: 'green', color: 'bg-emerald-500', name: 'Verde' },
+                                            { id: 'purple', color: 'bg-purple-500', name: 'Roxo' },
+                                            { id: 'red', color: 'bg-rose-500', name: 'Vermelho' },
+                                            { id: 'slate', color: 'bg-slate-500', name: 'Cinza' }
+                                        ].map((colorOpt) => (
+                                            <button
+                                                key={colorOpt.id}
+                                                onClick={() => setPrimaryColor(colorOpt.id)}
+                                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${colorOpt.color} ${primaryColor === colorOpt.id ? 'ring-2 ring-offset-2 ring-black/20 dark:ring-white/20 dark:ring-offset-[#1e293b] scale-110 shadow-lg' : 'opacity-80 hover:opacity-100 hover:scale-105 shadow-md border border-white/20'}`}
+                                                title={colorOpt.name}
+                                                aria-label={`Selecionar cor ${colorOpt.name}`}
+                                            >
+                                                {primaryColor === colorOpt.id && (
+                                                    <div className="w-3 h-3 bg-white rounded-full shadow-inner"></div>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
                                 <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Modo de Cor</label>
                                 <div className="space-y-3">
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'light' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'light' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                         <input 
                                             type="radio" 
                                             name="colorMode" 
                                             checked={colorMode === 'light'} 
                                             onChange={() => setColorMode('light')}
-                                            className="w-4 h-4 accent-[#0071e3]"
+                                            className="w-4 h-4 accent-[var(--primary-main)]"
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-[14px] font-medium text-[#1d1d1f]">Modo Claro</span>
@@ -254,13 +250,13 @@ const Navbar = () => {
                                         </div>
                                     </label>
 
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'dark' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'dark' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                         <input 
                                             type="radio" 
                                             name="colorMode" 
                                             checked={colorMode === 'dark'} 
                                             onChange={() => setColorMode('dark')}
-                                            className="w-4 h-4 accent-[#0071e3]"
+                                            className="w-4 h-4 accent-[var(--primary-main)]"
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-[14px] font-medium text-[#1d1d1f]">Modo Escuro</span>
@@ -270,35 +266,63 @@ const Navbar = () => {
                                 </div>
                             </div>
 
-                            {theme === 'skeuo' && colorMode === 'light' && (
+                            {colorMode === 'light' && (
                                 <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
-                                    <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Cor de Fundo (Modo Claro)</label>
+                                    <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Fundo da Aplicação</label>
                                     <div className="space-y-3">
-                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'neutral' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'neutral' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                             <input 
                                                 type="radio" 
                                                 name="bgColor" 
                                                 checked={bgColor === 'neutral'} 
                                                 onChange={() => setBgColor('neutral')}
-                                                className="w-4 h-4 accent-[#0071e3]"
+                                                className="w-4 h-4 accent-[var(--primary-main)]"
                                             />
                                             <div className="flex flex-col">
-                                                <span className="text-[14px] font-medium text-[#1d1d1f]">Neutro / Ardósia</span>
-                                                <span className="text-[12px] text-[#86868b]">Fundo cinza-azulado suave.</span>
+                                                <span className="text-[14px] font-medium text-[#1d1d1f]">Ardósia Padrão</span>
+                                                <span className="text-[12px] text-[#86868b]">Fundo cinza-azulado suave original.</span>
                                             </div>
                                         </label>
 
-                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'classic_blue' ? 'bg-white dark:bg-[#1e293b] border-[#0071e3] shadow-[0_0_0_3px_rgba(0,113,227,0.1)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[#0071e3]'}`}>
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'classic_blue' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                             <input 
                                                 type="radio" 
                                                 name="bgColor" 
                                                 checked={bgColor === 'classic_blue'} 
                                                 onChange={() => setBgColor('classic_blue')}
-                                                className="w-4 h-4 accent-[#0071e3]"
+                                                className="w-4 h-4 accent-[var(--primary-main)]"
                                             />
                                             <div className="flex flex-col">
                                                 <span className="text-[14px] font-medium text-[#1d1d1f]">Azul Clássico</span>
-                                                <span className="text-[12px] text-[#86868b]">Fundo azul gradiente tradicional.</span>
+                                                <span className="text-[12px] text-[#86868b]">Gradiente listrado inspirado no clássico.</span>
+                                            </div>
+                                        </label>
+
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'smooth_gradient' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                                            <input 
+                                                type="radio" 
+                                                name="bgColor" 
+                                                checked={bgColor === 'smooth_gradient'} 
+                                                onChange={() => setBgColor('smooth_gradient')}
+                                                className="w-4 h-4 accent-[var(--primary-main)]"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-[14px] font-medium text-[#1d1d1f]">Gradiente Suave</span>
+                                                <span className="text-[12px] text-[#86868b]">Tons muito sutis de cinza prateado.</span>
+                                            </div>
+                                        </label>
+
+                                        <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'clean_light' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                                            <input 
+                                                type="radio" 
+                                                name="bgColor" 
+                                                checked={bgColor === 'clean_light'} 
+                                                onChange={() => setBgColor('clean_light')}
+                                                className="w-4 h-4 accent-[var(--primary-main)]"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-[14px] font-medium text-[#1d1d1f]">Claro Limpo</span>
+                                                <span className="text-[12px] text-[#86868b]">Fundo minimalista acinzentado sólido.</span>
                                             </div>
                                         </label>
                                     </div>

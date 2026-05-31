@@ -1,58 +1,59 @@
 # Lista de recursos que falta no frontend:
 # alguns recursos não são obrigatórios implementar, apenas se a gente conseguir implementar.
 # Data:19/05/2026
-# Ultima autalização: 29/05/2026
+# Ultima autalização: 31/05/2026
 # Status: Em desenvolvimento
 
 # Na Chat.jsx
 
-- [✅] adicionar um limite de quantas pessoas podem ter uma sala ativa
-- [✅ Parcialmente] adicionar chat privado entre usuarios, onde somente os usuarios possam ver
+- [X] adicionar um limite de quantas pessoas podem ter uma sala ativa
+- [X] (Parcialmente) adicionar chat privado entre usuarios, onde somente os usuarios possam ver
 - [ ] adicionar botão para deletar sala (apenas o admin ou o dono da sala) (vou precisa da minha equipe do backend para adicionar isso)
-- [✅ Parcialmente] adicionar botão para silenciar usuário (apenas admin e dono) (vou precisa da minha equipe do backend para adicionar isso)
+- [X] (Parcialmente) adicionar botão para silenciar usuário (apenas admin e dono) (vou precisa da minha equipe do backend para adicionar isso)
 - [ ] adicionar botão para banir usuário (apenas admin, dono e moderador) (vou precisa da minha equipe do backend para adicionar isso)
-- [✅ Parcialmente] adicionar botão para denunciar usuário (vou precisa da minha equipe do backend para adicionar isso)
+- [X] (Parcialmente) adicionar botão para denunciar usuário (vou precisa da minha equipe do backend para adicionar isso)
 - [ ] adicionar botão para denunciar sala (vou precisa da minha equipe do backend para adicionar isso)
-- [✅] adicionar botão para marcar mensagem como favorita (faltar adicionar no futuro um filtro que mostrar somente as mensagens favoritas)
-- [✅] adicionar um filtro que mostrar somente as mensagens favoritas
-- [✅] adicionar a data da mensagem (se foi hoje mostrar so hora, se foi ontem mostrar ontem, se foi em outro dia mostrar dia, mes e ano)
-- [✅] adicionar botão para sair da sala
-- [✅ Parcialmente] adicionar um sistema de administração da sala (vou precisa da minha equipe do backend para adicionar isso)
-- [✅ Parcialmente] adicionar sistema de cargo para usuarios (dono, moderador, usuario) (vou precisa da minha equipe do backend para adicionar isso)
-- [✅] mostrar quantidade de usuarios onlines na sala
-- [✅ Parcialmente] mostrar os usuários que estão dentro da sala (Painel lateral direito MembersSidebar adicionado)
-- [✅] adicionar a opção de apagar as mensagens enviada pelo usuário em um intervalo de 24 horas
-- [✅] sistema de armazenamento de mensagens
-- [✅] adicionar sistema de envio de imagens
-- [✅] adicionar um sistema de edição das mensagens enviada pelo usuário
-- [✅ Parcialmente] ter um sistema de fixar mensagem (apenas admin) (vou precisa da minha equipe do backend para adicionar isso - UI base implementada)
-- [✅] adicionar um sistema de curtir mensagem (e mostrar a quantidade de curtida)
-- [✅] ter um sistema de envio de mensagens em tempo real
-- [✅] arrumar bugs visuais
+- [X] adicionar botão para marcar mensagem como favorita (faltar adicionar no futuro um filtro que mostrar somente as mensagens favoritas)
+- [X] adicionar um filtro que mostrar somente as mensagens favoritas
+- [X] adicionar a data da mensagem (se foi hoje mostrar so hora, se foi ontem mostrar ontem, se foi em outro dia mostrar dia, mes e ano)
+- [X] adicionar botão para sair da sala
+- [X] (Parcialmente) adicionar um sistema de administração da sala (vou precisa da minha equipe do backend para adicionar isso)
+- [X] (Parcialmente) adicionar sistema de cargo para usuarios (dono, moderador, usuario) (vou precisa da minha equipe do backend para adicionar isso)
+- [X] mostrar quantidade de usuarios onlines na sala
+- [X] (Parcialmente) mostrar os usuários que estão dentro da sala (Painel lateral direito MembersSidebar adicionado)
+- [X] adicionar a opção de apagar as mensagens enviada pelo usuário em um intervalo de 24 horas
+- [X] sistema de armazenamento de mensagens
+- [X] adicionar sistema de envio de imagens
+- [X] adicionar um sistema de edição das mensagens enviada pelo usuário
+- [X] ( Parcialmente ) ter um sistema de fixar mensagem (apenas admin) (vou precisa da minha equipe do backend para adicionar isso - UI base implementada)
+- [X] adicionar um sistema de curtir mensagem (e mostrar a quantidade de curtida)
+- [X] ter um sistema de envio de mensagens em tempo real
+- [X] arrumar bugs visuais
 - [ ] adicionar sistema de envio de áudio
 - [ ] adicionar sistema de envio de gifs
 - [ ] adicionar sistema de envio de emojis
-- [✅] refinamento visual ou redesign (Chat.jsx totalmente reestilizado para Web 2.0 / Skeuomorphism)
-- [✅] implementar novo layout de 3 colunas (Sidebar de Navegação, Chat Central e Painel de Membros)
-- [✅] adicionar estado vazio (Empty State) intuitivo para salas sem mensagens
-- [✅] adicionar suporte a mensagens exclusivas do sistema (System Messages)
-- [✅] corrigir botões que não faz nada
+- [X] refinamento visual ou redesign (Chat.jsx totalmente reestilizado para Web 2.0 / Skeuomorphism)
+- [X] implementar novo layout de 3 colunas (Sidebar de Navegação, Chat Central e Painel de Membros)
+- [X] adicionar estado vazio (Empty State) intuitivo para salas sem mensagens
+- [X] adicionar suporte a mensagens exclusivas do sistema (System Messages)
+- [X] corrigir botões que não faz nada
 - [ ] adicionar uma busca de mensagens ou as mensagens de um determinado usuario
 # Na Rooms.jsx
 
-- [✅] arrumar bugs visuais
-- [✅] fazer a caixinha que mostra quantidade de usuarios funcionar corretamente
-- [✅] fazer a caixinha que mostra a data da sala funcionar corretamente
+- [X] arrumar bugs visuais
+- [X] fazer a caixinha que mostra quantidade de usuarios funcionar corretamente
+- [X] fazer a caixinha que mostra a data da sala funcionar corretamente
 - [ ] fazer a caixinha de denuncias funcionar corretamente
-- [✅] mostrar a quantidade de usuários que tem uma sala
-- [✅] adicionar botão para favoritar sala 
-- [✅] implementar filtro por categoria
+- [X] mostrar a quantidade de usuários que tem uma sala
+- [X] adicionar botão para favoritar sala 
+- [X] implementar filtro por categoria
 - [ ] adicionar um botão de denunciar sala
 - [ ] criar um sistema de denuncias
-- [✅] adicionar um sistema de sala cheia
-- [✅] mostrar as salas criadas
-- [✅] mostrar quantas salas foram criadas
-- [✅] mostrar quantidade de usuários onlines
+- [X] adicionar um sistema de sala cheia
+- [X] mostrar as salas criadas
+- [X] mostrar quantas salas foram criadas
+- [X] mostrar quantidade de usuários 
+- [ ] melhorar o sistema que mostra os usuários onlines (o sistema atual tá muito errado, pois mostra que tem 6 usuários onlines, sendo que tem apenas 1)
 # Na Suporte.jsx (ideia de pagina) (vou precisa da minha equipe do backend para adicionar isso)
 
 - [ ] mostrar salas que foram denunciadas
@@ -64,49 +65,50 @@
 # Em Geral
 
 - [ ] adicionar duas nuvens grande no fundo, uma do lado direito e outra do lado esquerdo para dar efeito visual melhor
-- [✅] ter um sistema login e logout parcialmente funcional
-- [✅] ter uma navegação funcional
-- [✅] deixar as paginas Chat.jsx, Rooms.jsx, Custom.jsx, Suporte.jsx e etc somente acessivel para usuarios 
-- [✅] padronizar avatar sem foto em Navbar, Chat, MembersSidebar e Profile;
+- [X] ter um sistema login e logout parcialmente funcional
+- [X] ter uma navegação funcional
+- [X] deixar as paginas Chat.jsx, Rooms.jsx, Custom.jsx, Suporte.jsx e etc somente acessivel para usuarios 
+- [X] padronizar avatar sem foto em Navbar, Chat, MembersSidebar e Profile;
 - [ ] adicionar que paginas de administração são acessivel com um usuário que tem id espécifico (que são: o admin da sala ou moderador, admin do site ou moderador e pode ser a equipe do site)
-- [✅ Parcialmente] refinamento visual ou redesign de algumas paginas (Chat.jsx e componentes satélites totalmente refeitos)
-- [ ] melhorar o design_glass (o design translucido) e corrigir os bugs visuais
-- [✅] testar novos layouts (LayoutDemo1 validado e aplicado no Chat principal)
-- [✅] adicionar uma identidade visual mais unica (Identidade clássica retrô-moderna Web 2.0 definida)
-- [✅] corrigir o tema escuro e os bugs visuais
+- [X] (Parcialmente) refinamento visual ou redesign de algumas paginas (Chat.jsx e componentes satélites totalmente refeitos)
+- [X] testar novos layouts (LayoutDemo1 validado e aplicado no Chat principal)
+- [X] adicionar uma identidade visual mais unica (Identidade clássica retrô-moderna Web 2.0 definida)
+- [X] corrigir o tema escuro e os bugs visuais
 - [ ] corrigir o sistema de contador de usuários onlines
-- [✅] o usuário teve logado em Home.jsx mudar a mensagem principal e botão para entrar em escolher uma sala
+- [X] o usuário teve logado em Home.jsx mudar a mensagem principal e botão para entrar em escolher uma sala
 - [ ] adicionar um sistema de escolha de idiomas
-- [✅ Parcialmente] adicionar um sistema de escolha de temas (claro, escuro, "clássico", "mod" e etc)
-- [ ] adicionar um sistema de escolha de cores
-
+- [X] adicionar um sistema de escolha de cores
+- [X] adicionar um sistema de escolha de cores do fundo  
+- [ ] adicionar um sistema de notificações 
+- [ ] criar uma aba de notificações
 # Em Login.jsx
 
 - [ ] fazer um sistema de login funcional (vou precisa da minha equipe do backend para adicionar isso)
-- [✅] ter um sistema de login parcialmente funcional
-- [✅] adicionar uma opção de fazer o login com a conta google (ainda vamos implementar o sistema no futuro)
+- [X] ter um sistema de login parcialmente funcional
+- [X] adicionar uma opção de fazer o login com a conta google (ainda vamos implementar o sistema no futuro)
 - [ ] adicionar um sistema de recuperação de senha (vou precisa da minha equipe do backend para adicionar isso)
 
 # Em Register.jsx
 
 - [ ] fazer um sistema de registro funcional (vou precisa da minha equipe do backend para adicionar isso)
-- [✅] ter um sistema de registro parcialmente funcional
-- [✅] adicionar uma opção de fazer o registro com a conta google (ainda vamos implementar o sistema no futuro)
+- [X] ter um sistema de registro parcialmente funcional
+- [X] adicionar uma opção de fazer o registro com a conta google (ainda vamos implementar o sistema no futuro)
 - [ ] implementar sistema de confirmação de email (vou precisa da minha equipe do backend para adicionar isso)
 
 # Na About.jsx
 
-- [✅] Atualizar a caixinha A Hospedagem
-- [✅] Informações sobre o site e o projeto 
+- [X] Atualizar a caixinha A Hospedagem
+- [X] Informações sobre o site e o projeto 
 - [ ] refinamento visual
+- [ ] atualizar layout para novo layout melhor
 # Na Navbar.jsx
 
-- [✅] adicionar sistema de modo escuro e claro
+- [X] adicionar sistema de modo escuro e claro
 - [ ] adicionar sistema de idioma
-- [ ] adicionar sistema de notificações
-- [✅] adicionar a opção de configurações
-- [ ] Corrigir bugs visuais
-- [✅] adicionar icones consistentes
+- [X] adicionar a opção de configurações
+- [X] Corrigir bugs visuais
+- [X] adicionar icones consistentes
+- [ ] criar um sistema de notificação e mostrar um icone na navbarque mostrar as notificações recebidas (no futuro vou criar uma aba de notificações)
 
 # Na Admin.jsx (ideia de pagina) (ideia de sala de administração)
 
@@ -123,7 +125,7 @@
 
 # Em NotFound.jsx (vai vários erros) (ideia de pagina) (ideia de página de erro 404)
 
-- [✅] criar pagina de erro 404
+- [X] criar pagina de erro 404
 - [ ] adicionar outros tipos de erros
 - [ ] mostrar tipo de erro
 - [ ] mostrar uma imagem relacionada ao erro

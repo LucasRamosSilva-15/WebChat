@@ -11,142 +11,85 @@ body {
     transition: background 0.3s ease;
 }
 
-body:not(.theme-skeuo) {
-    background: linear-gradient(200deg, #0280ff 0%, rgb(184, 220, 255) 100%);
-    background-attachment: fixed;
+:root {
+    --primary-light: #4da4ff;
+    --primary-main: #0071e3;
+    --primary-dark: #005bb5;
+    --primary-darker: #004488;
+    --primary-hover-light: #66b3ff;
+    --primary-hover-main: #1a82ff;
+    --primary-hover-dark: #006ce6;
+    --primary-hover-darker: #0055a3;
+    --primary-ring: rgba(0, 113, 227, 0.1);
+    --primary-ring-focus: rgba(0, 113, 227, 0.6);
 }
 
-body:not(.theme-skeuo) .skeuo-panel {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(24px);
-    border-radius: 28px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+body.color-green {
+    --primary-light: #34d399;
+    --primary-main: #10b981;
+    --primary-dark: #059669;
+    --primary-darker: #047857;
+    --primary-hover-light: #6ee7b7;
+    --primary-hover-main: #34d399;
+    --primary-hover-dark: #10b981;
+    --primary-hover-darker: #059669;
+    --primary-ring: rgba(16, 185, 129, 0.1);
+    --primary-ring-focus: rgba(16, 185, 129, 0.6);
 }
 
-body:not(.theme-skeuo) .skeuo-nav {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+body.color-purple {
+    --primary-light: #c084fc;
+    --primary-main: #a855f7;
+    --primary-dark: #9333ea;
+    --primary-darker: #7e22ce;
+    --primary-hover-light: #d8b4fe;
+    --primary-hover-main: #c084fc;
+    --primary-hover-dark: #a855f7;
+    --primary-hover-darker: #9333ea;
+    --primary-ring: rgba(168, 85, 247, 0.1);
+    --primary-ring-focus: rgba(168, 85, 247, 0.6);
 }
 
-body:not(.theme-skeuo) .skeuo-btn {
-    background-color: #0071e3;
-    color: white !important;
-    border-radius: 980px;
-    padding: 8px 16px;
-    transition: all 0.3s ease;
-    border: none;
-    box-shadow: none;
-    text-shadow: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+body.color-red {
+    --primary-light: #fb7185;
+    --primary-main: #f43f5e;
+    --primary-dark: #e11d48;
+    --primary-darker: #be123c;
+    --primary-hover-light: #fda4af;
+    --primary-hover-main: #fb7185;
+    --primary-hover-dark: #f43f5e;
+    --primary-hover-darker: #e11d48;
+    --primary-ring: rgba(244, 63, 94, 0.1);
+    --primary-ring-focus: rgba(244, 63, 94, 0.6);
 }
 
-body:not(.theme-skeuo) .skeuo-btn:hover {
-    background-color: #0077ed;
-    transform: scale(1.02);
+body.color-slate {
+    --primary-light: #94a3b8;
+    --primary-main: #64748b;
+    --primary-dark: #475569;
+    --primary-darker: #334155;
+    --primary-hover-light: #cbd5e1;
+    --primary-hover-main: #94a3b8;
+    --primary-hover-dark: #64748b;
+    --primary-hover-darker: #475569;
+    --primary-ring: rgba(100, 116, 139, 0.1);
+    --primary-ring-focus: rgba(100, 116, 139, 0.6);
 }
 
-body:not(.theme-skeuo) .skeuo-btn:active {
-    transform: scale(0.98);
-}
-
-body:not(.theme-skeuo) .btn-secondary-glossy {
-    background-color: transparent;
-    color: #0066cc !important;
-    border: 1px solid #0066cc;
-    border-radius: 980px;
-    box-shadow: none;
-    text-shadow: none;
-    padding: 8px 16px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-body:not(.theme-skeuo) .btn-secondary-glossy:hover {
-    background-color: rgba(0, 102, 204, 0.05);
-    text-decoration: underline;
-}
-
-body:not(.theme-skeuo) .btn-white-glossy {
-    background-color: white;
-    color: #333 !important;
-    border: 1px solid #ddd;
-    border-radius: 980px;
-    padding: 8px 16px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-body:not(.theme-skeuo) .btn-white-glossy:hover {
-    background-color: #f9f9f9;
-    transform: scale(1.02);
-}
-
-body:not(.theme-skeuo) .btn-white-glossy:active {
-    transform: scale(0.98);
-}
-
-body:not(.theme-skeuo) .skeuo-input {
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid #d2d2d7;
-    border-radius: 22px;
-    box-shadow: none;
-    font-size: 16px;
-    transition: all 0.3s ease;
-}
-
-body:not(.theme-skeuo) .skeuo-input:focus {
-    border-color: #0071e3;
-    background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
-    outline: none;
-}
-
-body:not(.theme-skeuo) .skeuo-bubble-received {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 18px;
-    border-bottom-left-radius: 2px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    color: #1d1d1f;
-}
-
-body:not(.theme-skeuo) .skeuo-bubble-sent {
-    background: #0071e3;
-    color: white;
-    border-radius: 18px;
-    border-bottom-right-radius: 2px;
-    border: none;
-    box-shadow: none;
-    text-shadow: none;
-}
-
-body:not(.theme-skeuo) .hero-title {
-    color: #1d1d1f;
-    text-shadow: none;
-}
-
-body.theme-skeuo {
+body {
     background: linear-gradient(200deg, #dbeafe 0%, #f1f5f9 100%);
     background-attachment: fixed;
     color: #1d1d1f;
 }
 
-body.theme-skeuo.bg-classic-blue {
+body.bg-classic-blue {
     background:
         repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 4px),
         linear-gradient(200deg, #0280ff 0%, rgb(184, 220, 255) 100%);
     background-attachment: fixed;
 }
 
-body.theme-skeuo::before {
+body::before {
     content: '';
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -155,27 +98,37 @@ body.theme-skeuo::before {
     z-index: -1;
 }
 
-body.theme-skeuo.bg-classic-blue::before {
+body.bg-classic-blue::before, body.bg-smooth-gradient::before, body.bg-clean-light::before, html.dark body::before {
     display: none;
 }
 
-body.theme-skeuo .skeuo-panel {
+body.bg-smooth-gradient {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background-attachment: fixed;
+}
+
+body.bg-clean-light {
+    background: #f8fafc;
+    background-attachment: fixed;
+}
+
+.skeuo-panel {
     background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 22px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.03);
 }
 
-body.theme-skeuo .skeuo-nav {
+.skeuo-nav {
     background: linear-gradient(to bottom, #ffffff 0%, #eef1f5 100%);
     border-bottom: 1px solid #d2d2d7;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
     color: #1d1d1f;
 }
 
-body.theme-skeuo .skeuo-btn {
-    background: linear-gradient(to bottom, #4da4ff 0%, #0071e3 50%, #005bb5 51%, #004488 100%);
-    border: 1px solid #004488;
+.skeuo-btn {
+    background: linear-gradient(to bottom, var(--primary-light) 0%, var(--primary-main) 50%, var(--primary-dark) 51%, var(--primary-darker) 100%);
+    border: 1px solid var(--primary-darker);
     border-radius: 980px;
     color: white !important;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
@@ -188,17 +141,17 @@ body.theme-skeuo .skeuo-btn {
     justify-content: center;
 }
 
-body.theme-skeuo .skeuo-btn:hover {
-    background: linear-gradient(to bottom, #66b3ff 0%, #1a82ff 50%, #006ce6 51%, #0055a3 100%);
+.skeuo-btn:hover {
+    background: linear-gradient(to bottom, var(--primary-hover-light) 0%, var(--primary-hover-main) 50%, var(--primary-hover-dark) 51%, var(--primary-hover-darker) 100%);
 }
 
-body.theme-skeuo .skeuo-btn:active {
-    background: linear-gradient(to bottom, #004488 0%, #005bb5 100%);
+.skeuo-btn:active {
+    background: linear-gradient(to bottom, var(--primary-darker) 0%, var(--primary-dark) 100%);
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
-    border-top-color: #002244;
+    border-top-color: #000000;
 }
 
-body.theme-skeuo .btn-secondary-glossy {
+.btn-secondary-glossy {
     background: linear-gradient(to bottom, #ffffff 0%, #e6e6e6 50%, #cccccc 51%, #b3b3b3 100%);
     border: 1px solid #999;
     border-radius: 980px;
@@ -214,17 +167,17 @@ body.theme-skeuo .btn-secondary-glossy {
     transition: all 0.1s ease;
 }
 
-body.theme-skeuo .btn-secondary-glossy:hover {
+.btn-secondary-glossy:hover {
     background: linear-gradient(to bottom, #ffffff 0%, #f2f2f2 50%, #d9d9d9 51%, #cccccc 100%);
 }
 
-body.theme-skeuo .btn-secondary-glossy:active {
+.btn-secondary-glossy:active {
     background: linear-gradient(to bottom, #cccccc 0%, #b3b3b3 100%);
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
     border-top-color: #666666;
 }
 
-body.theme-skeuo .btn-white-glossy {
+.btn-white-glossy {
     background: linear-gradient(to bottom, #ffffff 0%, #f9f9f9 50%, #f0f0f0 51%, #e6e6e6 100%);
     border: 1px solid #cccccc;
     border-radius: 980px;
@@ -240,17 +193,17 @@ body.theme-skeuo .btn-white-glossy {
     transition: all 0.1s ease;
 }
 
-body.theme-skeuo .btn-white-glossy:hover {
+.btn-white-glossy:hover {
     background: linear-gradient(to bottom, #ffffff 0%, #ffffff 50%, #f9f9f9 51%, #f0f0f0 100%);
 }
 
-body.theme-skeuo .btn-white-glossy:active {
+.btn-white-glossy:active {
     background: linear-gradient(to bottom, #e6e6e6 0%, #cccccc 100%);
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
     border-top-color: #999999;
 }
 
-body.theme-skeuo .skeuo-input {
+.skeuo-input {
     background: #fafafa;
     border: 1px solid #b3b3b3;
     border-top-color: #999;
@@ -261,14 +214,14 @@ body.theme-skeuo .skeuo-input {
     transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
-body.theme-skeuo .skeuo-input:focus {
+.skeuo-input:focus {
     outline: none;
     background: #ffffff;
-    border-color: #0071e3;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 113, 227, 0.6);
+    border-color: var(--primary-main);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 8px var(--primary-ring-focus);
 }
 
-body.theme-skeuo .skeuo-bubble-received {
+.skeuo-bubble-received {
     background: linear-gradient(to bottom, #f9f9f9 0%, #ebebeb 100%);
     border: 1px solid #ccc;
     border-radius: 18px;
@@ -277,9 +230,9 @@ body.theme-skeuo .skeuo-bubble-received {
     color: #1d1d1f;
 }
 
-body.theme-skeuo .skeuo-bubble-sent {
-    background: linear-gradient(to bottom, #3399ff 0%, #0071e3 100%);
-    border: 1px solid #005bb5;
+.skeuo-bubble-sent {
+    background: linear-gradient(to bottom, var(--primary-hover-light) 0%, var(--primary-main) 100%);
+    border: 1px solid var(--primary-dark);
     border-radius: 18px;
     border-bottom-right-radius: 2px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -287,7 +240,7 @@ body.theme-skeuo .skeuo-bubble-sent {
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
-body.theme-skeuo .hero-title {
+.hero-title {
     color: #1d1d1f;
     text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
 }
@@ -332,18 +285,14 @@ body.theme-skeuo .hero-title {
 }
 
 html.dark body {
-    color: #f8fafc;
-    background: linear-gradient(200deg, #0f172a 0%, #020617 100%);
-}
-
-html.dark body.theme-skeuo {
     background:
-        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 2px, transparent 2px, transparent 4px),
-        linear-gradient(200deg, #0f172a 0%, #020617 100%);
+        radial-gradient(circle at top, var(--primary-ring) 0%, transparent 45%),
+        linear-gradient(180deg, #111827 0%, #0f172a 100%);
     background-attachment: fixed;
+    color: #f8fafc;
 }
 
-html.dark body.theme-skeuo::before {
+html.dark body.bg-classic-blue::before, html.dark body.bg-smooth-gradient::before, html.dark body.bg-clean-light::before {
     display: none;
 }
 
@@ -370,17 +319,17 @@ html.dark .hero-title {
 }
 
 html.dark .skeuo-btn {
-    background: linear-gradient(to bottom, #1e40af 0%, #1d4ed8 50%, #1e3a8a 51%, #172554 100%) !important;
-    border: 1px solid #1e3a8a !important;
+    background: linear-gradient(to bottom, var(--primary-main) 0%, var(--primary-dark) 50%, var(--primary-darker) 51%, rgba(0,0,0,0.5) 100%) !important;
+    border: 1px solid var(--primary-darker) !important;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
 html.dark .skeuo-btn:hover {
-    background: linear-gradient(to bottom, #2563eb 0%, #1d4ed8 50%, #1e40af 51%, #1e3a8a 100%) !important;
+    background: linear-gradient(to bottom, var(--primary-light) 0%, var(--primary-main) 50%, var(--primary-dark) 51%, var(--primary-darker) 100%) !important;
 }
 
 html.dark .skeuo-btn:active {
-    background: linear-gradient(to bottom, #172554 0%, #1e3a8a 100%) !important;
+    background: linear-gradient(to bottom, var(--primary-darker) 0%, rgba(0,0,0,0.6) 100%) !important;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
     border-top-color: #000 !important;
 }
@@ -431,8 +380,8 @@ html.dark .skeuo-input {
 
 html.dark .skeuo-input:focus {
     background: #1e293b !important;
-    border-color: #3b82f6 !important;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px rgba(59, 130, 246, 0.6) !important;
+    border-color: var(--primary-main) !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px var(--primary-ring-focus) !important;
 }
 
 html.dark .skeuo-bubble-received {
@@ -443,8 +392,8 @@ html.dark .skeuo-bubble-received {
 }
 
 html.dark .skeuo-bubble-sent {
-    background: linear-gradient(to bottom, #1e40af 0%, #1e3a8a 100%) !important;
-    border: 1px solid #172554 !important;
+    background: linear-gradient(to bottom, var(--primary-dark) 0%, var(--primary-darker) 100%) !important;
+    border: 1px solid var(--primary-darker) !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     color: #f8fafc !important;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
@@ -547,16 +496,37 @@ html.dark .border-\[\#d2d2d7\]\/30 {
     border-color: rgba(255, 255, 255, 0.03) !important;
 }
 
-html.dark .text-\[\#0066cc\] {
-    color: #60a5fa !important;
+.text-\[\#0066cc\], html.dark .text-\[\#0066cc\] {
+    color: var(--primary-main) !important;
+}
+
+.text-\[\#0071e3\], html.dark .text-\[\#0071e3\] {
+    color: var(--primary-main) !important;
+}
+
+.bg-\[\#0071e3\], html.dark .bg-\[\#0071e3\] {
+    background-color: var(--primary-main) !important;
+}
+
+.border-\[\#0071e3\] {
+    border-color: var(--primary-main) !important;
+}
+
+.border-\[\#005bb5\] {
+    border-color: var(--primary-dark) !important;
+}
+
+.from-\[\#4da4ff\] {
+    --tw-gradient-from: var(--primary-light) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+}
+
+.to-\[\#0071e3\] {
+    --tw-gradient-to: var(--primary-main) !important;
 }
 
 html.dark .hover\:bg-gray-200:hover {
     background-color: #334155 !important;
-}
-
-html.dark .bg-\[\#0071e3\] {
-    background-color: #3b82f6 !important;
 }
 
 html.dark .hover\:bg-\[\#e0f2fe\]:hover {
