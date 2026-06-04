@@ -285,9 +285,15 @@ body.bg-clean-light {
 }
 
 .message-search-match {
-    outline: 2px solid var(--primary-main) !important;
-    box-shadow: 0 0 0 4px var(--primary-ring) !important;
+    outline: 1px solid var(--primary-main) !important;
+    box-shadow: 0 0 0 3px var(--primary-ring) !important;
     z-index: 10;
+}
+
+.message-search-current {
+    outline: 2px solid var(--primary-main) !important;
+    box-shadow: 0 0 0 4px var(--primary-ring-focus) !important;
+    z-index: 11;
 }
 
 html.dark body {

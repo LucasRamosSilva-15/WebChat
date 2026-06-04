@@ -1,7 +1,7 @@
 # Lista de recursos que falta no frontend:
 # alguns recursos não são obrigatórios implementar, apenas se a gente conseguir implementar.
 # Data:19/05/2026
-# Ultima autalização: 31/05/2026
+# Ultima autalização: 04/06/2026
 # Status: Em desenvolvimento
 
 # Na Chat.jsx
@@ -37,7 +37,7 @@
 - [X] adicionar estado vazio (Empty State) intuitivo para salas sem mensagens
 - [X] adicionar suporte a mensagens exclusivas do sistema (System Messages)
 - [X] corrigir botões que não faz nada
-- [ ] adicionar uma busca de mensagens ou as mensagens de um determinado usuario
+- [X] ( Parcialmente ) adicionar uma busca de mensagens ou as mensagens de um determinado usuario
 # Na Rooms.jsx
 
 - [X] arrumar bugs visuais
@@ -100,7 +100,7 @@
 - [X] Atualizar a caixinha A Hospedagem
 - [X] Informações sobre o site e o projeto 
 - [ ] refinamento visual
-- [ ] atualizar layout para novo layout melhor
+- [ ] atualizar layout para um novo layout melhor
 # Na Navbar.jsx
 
 - [X] adicionar sistema de modo escuro e claro
