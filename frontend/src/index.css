@@ -284,6 +284,12 @@ body.bg-clean-light {
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
+.message-search-match {
+    outline: 2px solid var(--primary-main) !important;
+    box-shadow: 0 0 0 4px var(--primary-ring) !important;
+    z-index: 10;
+}
+
 html.dark body {
     background:
         radial-gradient(circle at top, var(--primary-ring) 0%, transparent 45%),

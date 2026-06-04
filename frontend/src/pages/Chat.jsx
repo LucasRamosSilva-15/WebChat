@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments } from 'react-icons/fa';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch } from 'react-icons/fa';
 import { socket } from '../socket';
 import ChatSidebar from '../components/ChatSidebar';
 import MembersSidebar from '../components/MembersSidebar';
@@ -42,7 +42,7 @@ const formatMessageTime = (timeStr) => {
     return timeStr;
 };
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm }) => {
     const msgTime = formatMessageTime(msg.time);
 
     let canDelete = false;
@@ -53,11 +53,13 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         if (diffHours < 24) canDelete = true;
     }
 
+    const isMatch = searchTerm && msg.text && msg.text.toLowerCase().includes(searchTerm);
+
     if (msg.isMe) {
         return (
             <div className="flex justify-end px-3 py-[2px] group animate-fade-in-up">
                 <div className="flex flex-col items-end max-w-[80%] group/msg">
-                    <div className="skeuo-bubble-sent rounded-[14px] rounded-tr-sm px-3 py-1.5 flex flex-col relative">
+                    <div className={`skeuo-bubble-sent rounded-[14px] rounded-tr-sm px-3 py-1.5 flex flex-col relative transition-all duration-300 ${isMatch ? 'message-search-match scale-[1.02]' : ''}`}>
                         <div className="absolute top-2 right-full mr-2 group/menu z-10">
                             <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -127,7 +129,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </span>
                     )}
                 </span>
-                <div className="skeuo-bubble-received rounded-[14px] rounded-tl-sm px-3 py-1.5 flex flex-col relative">
+                <div className={`skeuo-bubble-received rounded-[14px] rounded-tl-sm px-3 py-1.5 flex flex-col relative transition-all duration-300 ${isMatch ? 'message-search-match scale-[1.02]' : ''}`}>
                     <div className="absolute top-2 left-full ml-2 group/menu z-10">
                         <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -168,6 +170,10 @@ const Chat = () => {
 
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
     const [imagePreview, setImagePreview] = useState(null);
     const [mockRoles, setMockRoles] = useState(() => {
         return JSON.parse(localStorage.getItem(`chat_roles_${room}`) || '{}');
@@ -718,6 +724,13 @@ const Chat = () => {
                         </div>
                         <div className="flex items-center gap-2">
                             <button
+                                onClick={() => setSearchOpen(!searchOpen)}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${searchOpen ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
+                                title="Buscar mensagens"
+                            >
+                                <FaSearch size={14} className={searchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
+                            </button>
+                            <button
                                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
                                 className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
                                 title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
@@ -733,6 +746,35 @@ const Chat = () => {
                             </button>
                         </div>
                     </div>
+
+                    {searchOpen && (
+                        <div className="px-4 py-2 border-b border-[#d2d2d7] dark:border-white/5 bg-[#f5f5f7]/90 dark:bg-[#1e293b]/90 backdrop-blur-md flex items-center gap-3 shrink-0 z-10 shadow-sm animate-fade-in-up">
+                            <div className="relative flex-1">
+                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b] dark:text-slate-400" size={12} />
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Buscar mensagens..."
+                                    className="w-full pl-8 pr-8 py-1.5 rounded-full text-[13px] skeuo-input"
+                                    autoFocus
+                                />
+                                {searchTerm && (
+                                    <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+                                        <FaTimes size={12} />
+                                    </button>
+                                )}
+                            </div>
+                            {searchTerm && (
+                                <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
+                                    {messages.filter(m => m.text && m.text.toLowerCase().includes(normalizedSearchTerm)).length} resultados
+                                </span>
+                            )}
+                            <button onClick={() => { setSearchOpen(false); setSearchTerm(''); }} className="text-[12px] font-medium text-[var(--primary-main)] hover:underline whitespace-nowrap transition-colors">
+                                Fechar
+                            </button>
+                        </div>
+                    )}
 
                     {pinnedMessage && (
                         <div className="px-4 pt-3 shrink-0">
@@ -782,6 +824,7 @@ const Chat = () => {
                                     currentUserId={currentUserId}
                                     mockRoles={mockRoles}
                                     onReportClick={setReportModalData}
+                                    searchTerm={normalizedSearchTerm}
                                 />
                             );
                         })}
