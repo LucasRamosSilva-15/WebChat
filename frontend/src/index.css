@@ -320,17 +320,19 @@ html.dark .hero-title {
 
 html.dark .skeuo-btn {
     background: linear-gradient(to bottom, var(--primary-main) 0%, var(--primary-dark) 50%, var(--primary-darker) 51%, rgba(0,0,0,0.5) 100%) !important;
-    border: 1px solid var(--primary-darker) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
 html.dark .skeuo-btn:hover {
     background: linear-gradient(to bottom, var(--primary-light) 0%, var(--primary-main) 50%, var(--primary-dark) 51%, var(--primary-darker) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
 html.dark .skeuo-btn:active {
     background: linear-gradient(to bottom, var(--primary-darker) 0%, rgba(0,0,0,0.6) 100%) !important;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+    border-color: rgba(0, 0, 0, 0.8) !important;
     border-top-color: #000 !important;
 }
 
@@ -393,7 +395,7 @@ html.dark .skeuo-bubble-received {
 
 html.dark .skeuo-bubble-sent {
     background: linear-gradient(to bottom, var(--primary-dark) 0%, var(--primary-darker) 100%) !important;
-    border: 1px solid var(--primary-darker) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
     color: #f8fafc !important;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
@@ -514,6 +516,10 @@ html.dark .border-\[\#d2d2d7\]\/30 {
 
 .border-\[\#005bb5\] {
     border-color: var(--primary-dark) !important;
+}
+
+html.dark .border-\[\#005bb5\] {
+    border-color: rgba(255, 255, 255, 0.16) !important;
 }
 
 .from-\[\#4da4ff\] {
