@@ -1,130 +1,110 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const apiRoutes = require('./src/routes/api');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
+app.use(express.json());
+
+app.use('/api', apiRoutes);
+
+app.get('/', (req, res) => {
+  res.json({ status: 'online', service: 'WebChat MVP API' });
+});
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  },
-  maxHttpBufferSize: 1e8 // Tamanho Maximo de 100 MB
+    origin: process.env.FRONTEND_URL || '*',
+    methods: ['GET', 'POST']
+  }
 });
 
-const socketUsers = new Map();
+const supabase = createClient(
+  process.env.SUPABASE_URL || 'http://placeholder',
+  process.env.SUPABASE_KEY || 'placeholder'
+);
 
-function getUniqueRoomCount(io, roomName) {
-  const socketsInRoom = io.sockets.adapter.rooms.get(roomName);
-  if (!socketsInRoom) return 0;
 
-  const uniqueUsers = new Set();
-  for (const sid of socketsInRoom) {
-    uniqueUsers.add(socketUsers.get(sid) || sid);
-  }
-  return uniqueUsers.size;
-}
+const roomConnections = new Map(); 
 
 io.on('connection', (socket) => {
-  console.log('Um usuário se conectou:', socket.id);
 
-  const broadcastRoomCounts = () => {
-    const counts = {};
-    for (const [room, set] of io.sockets.adapter.rooms.entries()) {
-      if (!io.sockets.sockets.has(room)) {
-        counts[room] = getUniqueRoomCount(io, room);
+  socket.on('join_room', ({ room, userId }) => {
+    if (!room || !userId) return;
+
+    socket.join(room);
+    socket.currentRoom = room;
+    socket.userId = userId;
+
+    if (!roomConnections.has(room)) {
+      roomConnections.set(room, new Set());
+    }
+    roomConnections.get(room).add(userId);
+
+    
+    io.to(room).emit('active_users_count', roomConnections.get(room).size);
+  });
+
+  socket.on('send_message', async (data) => {
+    const { room, userId, userName, content, imageUrl } = data;
+    if (!room || !content) return;
+
+    try {
+      
+      const { data: savedMessage, error } = await supabase
+        .from('messages')
+        .insert([{ 
+          room_id: room, 
+          user_id: userId, 
+          user_name: userName, 
+          content, 
+          image_url: imageUrl 
+        }])
+        .select()
+        .single();
+
+      if (!error && savedMessage) {
+        
+        io.to(room).emit('receive_message', savedMessage);
       }
-    }
-    io.emit('all_rooms_counts', counts);
-  };
-
-  socket.on('request_all_rooms_counts', () => {
-    broadcastRoomCounts();
-  });
-
-  socket.on('join_room', (data) => {
-    if (data.userId) {
-      socketUsers.set(socket.id, data.userId);
-    }
-
-    const currentRoomCount = getUniqueRoomCount(io, data.room);
-
-    if (currentRoomCount >= 200 && !socket.rooms.has(data.room)) {
-      socket.emit('room_full_error', { message: 'A sala atingiu o limite máximo de 200 membros.' });
-      return;
-    }
-
-    socket.join(data.room);
-    console.log(`Usuário com ID: ${socket.id} entrou na sala: ${data.room}`);
-    const newCount = getUniqueRoomCount(io, data.room);
-    io.to(data.room).emit('active_users_count', newCount);
-    broadcastRoomCounts();
-  });
-
-  socket.on('send_message', (data) => {
-    socket.to(data.room).emit('receive_message', data);
-  });
-
-  socket.on('read_message', (data) => {
-    socket.to(data.room).emit('message_read', data);
-  });
-
-  socket.on('delete_message', (data) => {
-    socket.to(data.room).emit('message_deleted', data);
-  });
-
-  socket.on('edit_message', (data) => {
-    socket.to(data.room).emit('message_edited', data);
-  });
-
-  socket.on('toggle_like', (data) => {
-    socket.to(data.room).emit('like_toggled', data);
-  });
-
-  socket.on('private_invite', (data) => {
-    let targetSocketId = null;
-    for (const [sid, uid] of socketUsers.entries()) {
-      if (uid === data.to) {
-        targetSocketId = sid;
-        break;
-      }
-    }
-    if (targetSocketId) {
-      io.to(targetSocketId).emit('receive_private_invite', data);
-    }
-  });
-
-  socket.on('disconnecting', () => {
-    for (const room of socket.rooms) {
-      if (room !== socket.id) {
-        const socketsInRoom = io.sockets.adapter.rooms.get(room);
-        let newCount = 0;
-        if (socketsInRoom) {
-          const uniqueUsers = new Set();
-          for (const sid of socketsInRoom) {
-            if (sid !== socket.id) {
-              uniqueUsers.add(socketUsers.get(sid) || sid);
-            }
-          }
-          newCount = uniqueUsers.size;
-        }
-        io.to(room).emit('active_users_count', newCount);
-      }
+    } catch (err) {
+      console.error('Falha ao processar mensagem via WebSocket:', err);
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('Usuário se desconectou:', socket.id);
-    socketUsers.delete(socket.id);
-    broadcastRoomCounts();
+    const room = socket.currentRoom;
+    const userId = socket.userId;
+
+    if (room && userId && roomConnections.has(room)) {
+      const usersInRoom = roomConnections.get(room);
+      usersInRoom.delete(userId);
+
+      if (usersInRoom.size === 0) {
+        roomConnections.delete(room);
+      } else {
+        io.to(room).emit('active_users_count', usersInRoom.size);
+      }
+    }
   });
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+
+if (process.env.NODE_ENV !== 'test') {
+  server.listen(PORT, () => {
+    console.log(`[SERVER] Rodando na porta ${PORT}`);
+  });
+}
+
+module.exports = { app, server };
