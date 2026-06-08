@@ -12,6 +12,8 @@ console.log("[API] SUPABASE_URL carregada:", !!supabaseUrl);
 console.log("[API] SUPABASE_KEY carregada:", !!supabaseKey);
 
 const supabase = createClient(
+  // process.env.SUPABASE_URL || 'http://placeholder',
+  // process.env.SUPABASE_KEY || 'placeholder'
   supabaseUrl || 'http://placeholder',
   supabaseKey || 'placeholder'
 );
