@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { socket } from '../socket';
 import { FaSearch, FaSlidersH, FaCommentAlt, FaUsers, FaExclamationTriangle, FaPlus, FaHashtag, FaStar } from 'react-icons/fa';
+import { apiRequest } from '../services/api';
 
 const defaultRooms = [
     { title: "Geral", description: "Um espaço para discussões amplas e variadas.", roomParam: "general", category: "Casual", status: "Ativa", members: 245, date: "12 Jan, 2024" },
@@ -202,14 +203,33 @@ const Rooms = () => {
     const [newRoomCategory, setNewRoomCategory] = useState('Casual');
 
     useEffect(() => {
-        const savedRooms = localStorage.getItem('chat_customRooms');
-        if (savedRooms) {
+        const fetchRooms = async () => {
             try {
-                setCustomRooms(JSON.parse(savedRooms));
-            } catch (e) {
-                console.error("Erro ao carregar salas customizadas");
+                const apiRooms = await apiRequest('/rooms');
+                const mappedRooms = apiRooms.map(room => ({
+                    id: room.id,
+                    title: room.name,
+                    description: room.description || "Sem descrição",
+                    roomParam: room.id.toString(),
+                    category: "Custom",
+                    status: "Ativa",
+                    members: 0,
+                    date: new Date(room.created_at).toLocaleDateString('pt-BR')
+                }));
+                setCustomRooms(mappedRooms);
+            } catch (error) {
+                console.error("Erro ao carregar salas da API:", error);
+                const savedRooms = localStorage.getItem('chat_customRooms');
+                if (savedRooms) {
+                    try {
+                        setCustomRooms(JSON.parse(savedRooms));
+                    } catch (e) {
+                        console.error("Erro ao carregar salas customizadas");
+                    }
+                }
             }
-        }
+        };
+        fetchRooms();
 
         const savedFavorites = localStorage.getItem('chat_favorites');
         if (savedFavorites) {
@@ -231,30 +251,40 @@ const Rooms = () => {
         };
     }, []);
 
-    const handleCreateRoom = (e) => {
+    const handleCreateRoom = async (e) => {
         e.preventDefault();
         if (newRoomTitle.trim() === '') return;
 
-        const roomParam = newRoomTitle.toLowerCase().replace(/\s+/g, '-');
-        const newRoom = {
-            title: newRoomTitle,
-            description: newRoomDesc || "Sala personalizada.",
-            roomParam: roomParam,
-            category: newRoomCategory,
-            status: "Ativa",
-            members: 1,
-            date: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-        };
+        try {
+            const savedRoom = await apiRequest('/rooms', {
+                method: 'POST',
+                body: JSON.stringify({ name: newRoomTitle, description: newRoomDesc })
+            });
 
-        const updatedRooms = [...customRooms, newRoom];
-        setCustomRooms(updatedRooms);
-        localStorage.setItem('chat_customRooms', JSON.stringify(updatedRooms));
+            const roomParam = savedRoom.id.toString();
+            const newRoom = {
+                id: savedRoom.id,
+                title: savedRoom.name,
+                description: savedRoom.description || "Sala personalizada.",
+                roomParam: roomParam,
+                category: newRoomCategory,
+                status: "Ativa",
+                members: 1,
+                date: new Date(savedRoom.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+            };
 
-        setIsModalOpen(false);
-        setNewRoomTitle('');
-        setNewRoomDesc('');
+            const updatedRooms = [...customRooms, newRoom];
+            setCustomRooms(updatedRooms);
 
-        navigate(`/chat?room=${roomParam}`);
+            setIsModalOpen(false);
+            setNewRoomTitle('');
+            setNewRoomDesc('');
+
+            navigate(`/chat?room=${roomParam}`);
+        } catch (error) {
+            console.error("Erro ao criar sala:", error);
+            alert("Erro ao criar sala: " + error.message);
+        }
     };
 
     const allRooms = [...defaultRooms, ...customRooms].map(room => ({

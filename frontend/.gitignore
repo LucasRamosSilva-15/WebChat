@@ -14,7 +14,7 @@ dist-ssr
 *.local
 .env
 *.txt
-
+.env.example
 # Editor de arquivos e pastas
 .vscode/*
 !.vscode/extensions.json

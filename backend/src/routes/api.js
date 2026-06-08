@@ -5,9 +5,15 @@ const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
 
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+console.log("[API] SUPABASE_URL carregada:", !!supabaseUrl);
+console.log("[API] SUPABASE_KEY carregada:", !!supabaseKey);
+
 const supabase = createClient(
-  process.env.SUPABASE_URL || 'http://placeholder',
-  process.env.SUPABASE_KEY || 'placeholder'
+  supabaseUrl || 'http://placeholder',
+  supabaseKey || 'placeholder'
 );
 
 
@@ -42,7 +48,14 @@ router.post('/auth/register', async (req, res) => {
       token
     });
   } catch (err) {
-    return res.status(500).json({ error: 'Erro interno no servidor.' });
+    console.error('[API] Erro interno no cadastro:', err.message || err);
+    if (!supabaseUrl) {
+      return res.status(500).json({ error: 'Falta variável SUPABASE_URL no servidor.' });
+    }
+    if (err.message && err.message.includes('fetch failed')) {
+      return res.status(502).json({ error: 'Falha de conexão com o Supabase. Verifique a URL do banco.' });
+    }
+    return res.status(500).json({ error: 'Erro interno no servidor ao tentar cadastrar.' });
   }
 });
 
@@ -76,7 +89,14 @@ router.post('/auth/login', async (req, res) => {
       token
     });
   } catch (err) {
-    return res.status(500).json({ error: 'Erro interno no servidor.' });
+    console.error('[API] Erro interno no login:', err.message || err);
+    if (!supabaseUrl) {
+      return res.status(500).json({ error: 'Falta variável SUPABASE_URL no servidor.' });
+    }
+    if (err.message && err.message.includes('fetch failed')) {
+      return res.status(502).json({ error: 'Falha de conexão com o Supabase. Verifique a URL do banco.' });
+    }
+    return res.status(500).json({ error: 'Erro interno no servidor ao tentar logar.' });
   }
 });
 

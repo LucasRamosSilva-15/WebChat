@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
 
 const Navbar = () => {
@@ -147,6 +148,8 @@ const Navbar = () => {
                                     <button onClick={() => {
                                         localStorage.removeItem('chat_isLoggedIn');
                                         localStorage.removeItem('chat_displayName');
+                                        localStorage.removeItem('chat_uniqueUserId');
+                                        removeAuthToken();
                                         window.dispatchEvent(new Event('profileUpdated'));
                                         setIsMenuOpen(false);
                                         window.location.href = '/login';

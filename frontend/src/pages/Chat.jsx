@@ -4,6 +4,7 @@ import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
 import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { socket } from '../socket';
+import { apiRequest } from '../services/api';
 import ChatSidebar from '../components/ChatSidebar';
 import MembersSidebar from '../components/MembersSidebar';
 import UserAvatar from '../components/UserAvatar';
@@ -350,21 +351,46 @@ const Chat = () => {
     });
 
     useEffect(() => {
-        const savedMessages = localStorage.getItem(`chat_messages_${room}`);
-        if (savedMessages) {
+        const fetchMessages = async () => {
             try {
-                setMessages(JSON.parse(savedMessages));
-            } catch (e) {
-                console.error("Erro ao carregar mensagens:", e);
-                setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                const apiMessages = await apiRequest(`/rooms/${room}/messages`);
+                const mappedMessages = apiMessages.map(msg => ({
+                    messageId: msg.id,
+                    text: msg.content,
+                    sender: msg.user_name || 'Usuário',
+                    isMe: msg.user_id === currentUserId,
+                    time: msg.created_at,
+                    image: msg.image_url || null,
+                    avatar: null,
+                    likes: [],
+                    isFavorite: false,
+                    isEdited: false
+                }));
+
+                if (mappedMessages.length > 0) {
+                    setMessages(mappedMessages);
+                } else {
+                    setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar mensagens da API:", error);
+                const savedMessages = localStorage.getItem(`chat_messages_${room}`);
+                if (savedMessages) {
+                    try {
+                        setMessages(JSON.parse(savedMessages));
+                    } catch (e) {
+                        console.error("Erro ao fazer parse de mensagens locais:", e);
+                        setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                    }
+                } else {
+                    setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                }
             }
-        } else {
-            setMessages([
-                { text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }
-            ]);
-        }
+        };
+
+        fetchMessages();
         currentRoomRef.current = room;
-    }, [room]);
+    }, [room, currentUserId]);
 
     useEffect(() => {
         if (currentRoomRef.current === room && messages.length > 0) {

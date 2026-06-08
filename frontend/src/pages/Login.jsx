@@ -1,19 +1,39 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
+import { apiRequest, setAuthToken } from '../services/api';
 
 const Login = () => {
     const navigate = useNavigate();
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (username.trim() !== "" && password.trim() !== "") {
-            localStorage.setItem('chat_isLoggedIn', 'true');
-            localStorage.setItem('chat_displayName', username);
-            window.dispatchEvent(new Event('profileUpdated'));
-            navigate('/rooms');
+        setError(null);
+        
+        if (email.trim() !== "" && password.trim() !== "") {
+            setLoading(true);
+            try {
+                const data = await apiRequest('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+
+                setAuthToken(data.token);
+                localStorage.setItem('chat_isLoggedIn', 'true');
+                localStorage.setItem('chat_displayName', data.user.name);
+                localStorage.setItem('chat_uniqueUserId', data.user.id);
+                
+                window.dispatchEvent(new Event('profileUpdated'));
+                navigate('/rooms');
+            } catch (err) {
+                setError(err.message || 'Erro ao fazer login.');
+            } finally {
+                setLoading(false);
+            }
         }
     };
     return (
@@ -26,9 +46,14 @@ const Login = () => {
                     Digite os dados da sua conta
                 </p>
                 <form className="space-y-6 text-left" onSubmit={handleLogin}>
+                    {error && (
+                        <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm font-medium border border-red-200 dark:border-red-800">
+                            {error}
+                        </div>
+                    )}
                     <div className="input-group">
-                        <input type="text" id="username" placeholder="Username" required
-                            value={username} onChange={(e) => setUsername(e.target.value)}
+                        <input type="email" id="email" placeholder="E-mail" required
+                            value={email} onChange={(e) => setEmail(e.target.value)}
                             className="skeuo-input w-full px-4 py-3" />
                     </div>
                     <div className="input-group">
@@ -36,8 +61,8 @@ const Login = () => {
                             value={password} onChange={(e) => setPassword(e.target.value)}
                             className="skeuo-input w-full px-4 py-3" />
                     </div>
-                    <button type="submit" className="skeuo-btn w-full py-3 text-[17px] mt-4">
-                        Continuar
+                    <button type="submit" className="skeuo-btn w-full py-3 text-[17px] mt-4" disabled={loading}>
+                        {loading ? 'Entrando...' : 'Continuar'}
                     </button>
 
                     <div className="flex items-center mt-8 mb-6">

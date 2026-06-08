@@ -29,13 +29,21 @@ const io = new Server(server, {
   }
 });
 
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+console.log("[SERVER] SUPABASE_URL carregada:", !!supabaseUrl);
+console.log("[SERVER] SUPABASE_KEY carregada:", !!supabaseKey);
+
 const supabase = createClient(
-  process.env.SUPABASE_URL || 'http://placeholder',
-  process.env.SUPABASE_KEY || 'placeholder'
+  // process.env.SUPABASE_URL || 'http://placeholder',
+  // process.env.SUPABASE_KEY || 'placeholder'
+  supabaseUrl || 'http://placeholder',
+  supabaseKey || 'placeholder'
 );
 
 
-const roomConnections = new Map(); 
+const roomConnections = new Map();
 
 io.on('connection', (socket) => {
 
@@ -51,7 +59,7 @@ io.on('connection', (socket) => {
     }
     roomConnections.get(room).add(userId);
 
-    
+
     io.to(room).emit('active_users_count', roomConnections.get(room).size);
   });
 
@@ -60,21 +68,21 @@ io.on('connection', (socket) => {
     if (!room || !content) return;
 
     try {
-      
+
       const { data: savedMessage, error } = await supabase
         .from('messages')
-        .insert([{ 
-          room_id: room, 
-          user_id: userId, 
-          user_name: userName, 
-          content, 
-          image_url: imageUrl 
+        .insert([{
+          room_id: room,
+          user_id: userId,
+          user_name: userName,
+          content,
+          image_url: imageUrl
         }])
         .select()
         .single();
 
       if (!error && savedMessage) {
-        
+
         io.to(room).emit('receive_message', savedMessage);
       }
     } catch (err) {
