@@ -11,14 +11,15 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY ||
 console.log("[API] SUPABASE_URL carregada:", !!supabaseUrl);
 console.log("[API] SUPABASE_KEY carregada:", !!supabaseKey);
 
-const supabase = createClient(
-  // process.env.SUPABASE_URL || 'http://placeholder',
-  // process.env.SUPABASE_KEY || 'placeholder'
-  supabaseUrl || 'http://placeholder',
-  supabaseKey || 'placeholder'
-);
+if (!supabaseUrl) {
+  throw new Error("SUPABASE_URL não configurada no backend.");
+}
 
+if (!supabaseKey) {
+  throw new Error("Chave do Supabase não configurada no backend.");
+}
 
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.post('/auth/register', async (req, res) => {
   const { name, email, password } = req.body;
@@ -32,7 +33,7 @@ router.post('/auth/register', async (req, res) => {
 
     const { data, error } = await supabase
       .from('users')
-      .insert([{ name, email, password: hashedPassword }])
+      .insert([{ name, email, password_hash: hashedPassword }])
       .select()
       .single();
 
@@ -79,7 +80,7 @@ router.post('/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }

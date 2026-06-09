@@ -1,7 +1,7 @@
 # Lista de recursos que falta no frontend:
 # alguns recursos não são obrigatórios implementar, apenas se a gente conseguir implementar.
 # Data:19/05/2026
-# Ultima autalização: 04/06/2026
+# Ultima autalização: 9/06/2026
 # Status: Em desenvolvimento
 
 # Na Chat.jsx
@@ -81,6 +81,8 @@
 - [X] adicionar um sistema de escolha de cores do fundo  
 - [ ] adicionar um sistema de notificações 
 - [ ] criar uma aba de notificações
+- [ ] adicionar criptografia nos usuarios, nas mensagens, nas senhas e nos emails (e etc)
+
 # Em Login.jsx
 
 - [ ] fazer um sistema de login funcional (vou precisa da minha equipe do backend para adicionar isso)

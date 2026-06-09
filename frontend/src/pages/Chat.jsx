@@ -170,6 +170,8 @@ const Chat = () => {
     const queryParams = new URLSearchParams(location.search);
     const room = queryParams.get('room') || 'general';
 
+    const [currentRoom, setCurrentRoom] = useState(null);
+    const [roomLoading, setRoomLoading] = useState(true);
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
@@ -351,6 +353,19 @@ const Chat = () => {
     });
 
     useEffect(() => {
+        const fetchRoomData = async () => {
+            setRoomLoading(true);
+            try {
+                const roomData = await apiRequest(`/rooms/${room}`);
+                setCurrentRoom(roomData);
+            } catch (err) {
+                console.error("Erro ao carregar detalhes da sala:", err);
+                setCurrentRoom({ name: room }); // Fallback
+            } finally {
+                setRoomLoading(false);
+            }
+        };
+
         const fetchMessages = async () => {
             try {
                 const apiMessages = await apiRequest(`/rooms/${room}/messages`);
@@ -367,28 +382,31 @@ const Chat = () => {
                     isEdited: false
                 }));
 
+                const roomDisplayName = currentRoom ? currentRoom.name : room;
+
                 if (mappedMessages.length > 0) {
                     setMessages(mappedMessages);
                 } else {
-                    setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                    setMessages([{ text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
                 }
             } catch (error) {
                 console.error("Erro ao carregar mensagens da API:", error);
                 const savedMessages = localStorage.getItem(`chat_messages_${room}`);
+                const roomDisplayName = currentRoom ? currentRoom.name : room;
                 if (savedMessages) {
                     try {
                         setMessages(JSON.parse(savedMessages));
                     } catch (e) {
                         console.error("Erro ao fazer parse de mensagens locais:", e);
-                        setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                        setMessages([{ text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
                     }
                 } else {
-                    setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                    setMessages([{ text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
                 }
             }
         };
 
-        fetchMessages();
+        fetchRoomData().then(() => fetchMessages());
         currentRoomRef.current = room;
     }, [room, currentUserId]);
 
@@ -496,42 +514,23 @@ const Chat = () => {
         });
 
         socket.on("receive_message", (data) => {
-            try {
-                // Código de descriptografia
-                // Provisório! deve ser mudado para JWT e bcrypt no futuro
-                const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
-                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+            setMessages((list) => {
+                if (list.some(m => m.messageId === data.id)) return list;
 
-                // Código de descriptografia
-                // Provisório! deve ser mudado para JWT e bcrypt no futuro
-                let text = decryptedString;
-                let image = null;
-                // Código de descriptografia
-                // Provisório! deve ser mudado para JWT e bcrypt no futuro
-                if (decryptedString) {
-                    try {
-                        const parsed = JSON.parse(decryptedString);
-                        if (parsed.text !== undefined || parsed.image !== undefined) {
-                            text = parsed.text || "";
-                            image = parsed.image || null;
-                        }
-                    } catch (e) {
-
-                    }
-
-                    setMessages((list) => [...list, { messageId: data.messageId, text: text, image: image, sender: data.sender, userId: data.userId, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
-
-                    const currentReader = localStorage.getItem('chat_displayName') || "Usuário";
-                    if (data.messageId) {
-                        socket.emit("read_message", { room: data.room, messageId: data.messageId, reader: currentReader });
-                    }
-                } else {
-                    setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, userId: data.userId, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
-                }
-            } catch (error) {
-                console.error("Erro ao descriptografar mensagem:", error);
-                setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, userId: data.userId, isMe: false, time: data.time, readBy: [], likes: [] }]);
-            }
+                return [...list, {
+                    messageId: data.id,
+                    text: data.content,
+                    image: data.image_url,
+                    sender: data.user_name || 'Usuário',
+                    userId: data.user_id,
+                    avatar: null,
+                    status: "Disponível",
+                    isMe: data.user_id === currentUserId,
+                    time: data.created_at,
+                    readBy: [],
+                    likes: []
+                }];
+            });
         });
 
 
@@ -598,24 +597,16 @@ const Chat = () => {
                 setImagePreview(null);
                 setEditingMessageId(null);
             } else {
-                const payload = JSON.stringify({ text: currentMessage, image: imagePreview });
-                const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
-
-                const messageId = Date.now().toString() + Math.random().toString(36).substring(7);
-
                 const messageData = {
                     room: room,
-                    messageId: messageId,
-                    sender: currentSender,
                     userId: currentUserId,
-                    avatar: currentPhoto,
-                    status: currentStatus,
-                    message: encryptedMessage,
-                    time: new Date().toISOString()
+                    userName: currentSender,
+                    content: currentMessage,
+                    imageUrl: imagePreview || null
                 };
 
-                await socket.emit("send_message", messageData);
-                setMessages((list) => [...list, { messageId: messageId, text: currentMessage, image: imagePreview, sender: currentSender, userId: currentUserId, avatar: currentPhoto, status: currentStatus, isMe: true, time: messageData.time, readBy: [], likes: [] }]);
+                socket.emit("send_message", messageData);
+
                 setCurrentMessage("");
                 setImagePreview(null);
             }
@@ -630,7 +621,7 @@ const Chat = () => {
                         <FaSignOutAlt />
                     </div>
                     <h1 className="hero-title text-[28px] font-semibold mb-2">
-                        {room.toUpperCase()}
+                        {roomLoading ? "Carregando sala..." : (currentRoom ? currentRoom.name : "Sala não encontrada")}
                     </h1>
 
                     {roomFullError ? (
@@ -775,7 +766,9 @@ const Chat = () => {
                                 <FaCommentAlt size={12} />
                             </div>
                             <div className="flex flex-col justify-center">
-                                <h2 className="font-bold text-[#1d1d1f] text-[15px] leading-tight">{room.toUpperCase()}</h2>
+                                <h2 className="font-bold text-[#1d1d1f] text-[15px] leading-tight">
+                                    {roomLoading ? "Carregando..." : (currentRoom ? currentRoom.name : "Sala não encontrada")}
+                                </h2>
                                 <p className="text-[11px] text-[#86868b] flex items-center gap-1.5 mt-0.5">
                                     <span className="flex items-center gap-1 font-medium">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
