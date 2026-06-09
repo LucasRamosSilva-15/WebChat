@@ -189,4 +189,27 @@ router.get('/rooms/:id/messages', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/rooms/:id/messages/search', authMiddleware, async (req, res) => {
+  const { q } = req.query;
+  const roomId = req.params.id;
+
+  if (!q) {
+    return res.status(400).json({ error: 'Termo de busca é obrigatório.' });
+  }
+
+  try {
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('room_id', roomId)
+      .ilike('content', `%${q}%`)
+      .order('created_at', { ascending: true });
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(messages);
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao buscar mensagens.' });
+  }
+});
+
 module.exports = router;

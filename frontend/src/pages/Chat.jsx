@@ -179,17 +179,37 @@ const Chat = () => {
     const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
     const messageRefs = useRef({});
 
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState("");
+
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-    // FUTURO: Esta busca local poderá ser substituída por um endpoint.
-    // Ex: GET /rooms/:roomId/messages/search?q=termo
-    const searchResults = messages
-        .map((message, index) => ({ message, index }))
-        .filter(({ message }) => {
-            if (!normalizedSearchTerm) return false;
-            const text = message.content || message.text || message.body || "";
-            return text.toLowerCase().includes(normalizedSearchTerm);
-        });
+    useEffect(() => {
+        if (!searchTerm.trim()) {
+            setSearchResults([]);
+            setSearchError("");
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(async () => {
+            setSearchLoading(true);
+            setSearchError("");
+            try {
+                const results = await apiRequest(`/rooms/${room}/messages/search?q=${encodeURIComponent(searchTerm.trim())}`);
+                setSearchResults(results.map(r => ({ id: r.id })));
+                setCurrentSearchIndex(0);
+            } catch (error) {
+                console.error("Erro na busca:", error);
+                setSearchError("Não foi possível buscar mensagens.");
+                setSearchResults([]);
+            } finally {
+                setSearchLoading(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, room]);
 
     useEffect(() => {
         setCurrentSearchIndex(0);
@@ -197,12 +217,12 @@ const Chat = () => {
 
     useEffect(() => {
         if (searchOpen && searchResults.length > 0) {
-            const msgIndex = searchResults[currentSearchIndex]?.index;
-            if (msgIndex !== undefined && messageRefs.current[msgIndex]) {
-                messageRefs.current[msgIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const resultMsg = searchResults[currentSearchIndex];
+            if (resultMsg && messageRefs.current[resultMsg.id]) {
+                messageRefs.current[resultMsg.id].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
-    }, [searchOpen, currentSearchIndex, searchResults.length]);
+    }, [searchOpen, currentSearchIndex, searchResults]);
 
     const handleNextSearch = () => {
         if (searchResults.length === 0) return;
@@ -834,6 +854,10 @@ const Chat = () => {
                                         </button>
                                     </div>
                                 </div>
+                            ) : searchLoading ? (
+                                <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">Buscando...</span>
+                            ) : searchError ? (
+                                <span className="text-[11px] font-medium text-red-500 whitespace-nowrap">{searchError}</span>
                             ) : searchTerm ? (
                                 <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
                                     Nenhuma mensagem encontrada
@@ -880,12 +904,12 @@ const Chat = () => {
 
                         {messages.map((msg, index) => {
                             if (showFavoritesOnly && !msg.isFavorite) return null;
-                            const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.index === index;
+                            const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.id === msg.messageId;
                             return (
                                 <MessageBubble
                                     key={index}
                                     msg={msg}
-                                    innerRef={(el) => messageRefs.current[index] = el}
+                                    innerRef={(el) => messageRefs.current[msg.messageId] = el}
                                     onAvatarClick={setSelectedUser}
                                     onImageClick={setSelectedImage}
                                     onToggleFavorite={() => toggleFavorite(index)}
