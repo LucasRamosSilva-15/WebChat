@@ -168,28 +168,10 @@ const Chat = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
-    const room = queryParams.get('room');
+    const room = queryParams.get('room') || 'general';
 
     const [currentRoom, setCurrentRoom] = useState(null);
     const [roomLoading, setRoomLoading] = useState(true);
-    
-    const [hasJoined, setHasJoined] = useState(() => {
-        try {
-            const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
-            return joinedRooms.includes(room);
-        } catch {
-            return false;
-        }
-    });
-
-    useEffect(() => {
-        try {
-            const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
-            setHasJoined(joinedRooms.includes(room));
-        } catch {
-            setHasJoined(false);
-        }
-    }, [room]);
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
@@ -647,20 +629,6 @@ const Chat = () => {
         }
     };
 
-    if (!room) {
-        return (
-            <main className="reveal flex-grow flex items-center justify-center px-6">
-                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center">
-                    <h1 className="hero-title text-[28px] font-semibold mb-2">Sala inválida</h1>
-                    <p className="text-[#86868b] text-[15px] mb-8">Nenhuma sala foi informada.</p>
-                    <button onClick={() => navigate('/rooms')} className="skeuo-btn px-8 py-3 w-full text-[15px]">
-                        Voltar para Salas
-                    </button>
-                </div>
-            </main>
-        );
-    }
-
     if (roomLoading) {
         return (
             <main className="reveal flex-grow flex items-center justify-center px-6">
@@ -695,378 +663,375 @@ const Chat = () => {
         );
     }
 
-    if (!hasJoined && !roomFullError) {
-        return (
-            <main className="reveal flex-grow flex items-center justify-center px-6">
-                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center animate-fade-in-up">
-                    <div className="w-20 h-20 bg-[#f4f5f7] text-[#86868b] rounded-full mx-auto flex items-center justify-center border border-black/5 mb-6 shadow-inner text-[36px]">
-                        <FaSignOutAlt />
-                    </div>
+    {
+        roomFullError ? (
+            <p className="text-[15px] font-medium text-[#ef4444] mb-8 tracking-tight leading-snug p-3 bg-[#fee2e2] rounded-[12px]">
+                {roomFullError}
+            </p>
+        ) : (
+            <p className="text-[15px] font-normal text-[#86868b] mb-8 tracking-tight leading-snug">
+                Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?
+            </p>
+        )
+    }
 
-                    <h1 className="hero-title text-[28px] font-semibold mb-2">
-                        Entrar na Sala
-                    </h1>
-
-                    <p className="text-[15px] font-normal text-[#86868b] mb-8 tracking-tight leading-snug">
-                        Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?
-                    </p>
-
-                    <div className="flex flex-col gap-3">
-                        <button
-                            onClick={() => {
-                                const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
-                                if (!joinedRooms.includes(room)) {
-                                    joinedRooms.push(room);
-                                    localStorage.setItem('chat_joinedRooms', JSON.stringify(joinedRooms));
-                                }
-                                setHasJoined(true);
-                            }}
-                            className="skeuo-btn w-full py-3 text-[16px] font-medium"
-                        >
-                            Entrar na Sala
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setRoomFullError(false);
-                                navigate('/rooms');
-                            }}
-                            className="w-full py-3 text-[16px] font-medium text-[#ef4444] hover:bg-[#fee2e2] rounded-[12px] transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-            </main>
+    <div className="flex flex-col gap-3">
+        {!roomFullError && (
+            <button
+                onClick={() => {
+                    const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+                    if (!joinedRooms.includes(room)) {
+                        joinedRooms.push(room);
+                        localStorage.setItem('chat_joinedRooms', JSON.stringify(joinedRooms));
+                    }
+                    setHasJoined(true);
+                }}
+                className="skeuo-btn w-full py-3 text-[16px] font-medium"
+            >
+                Entrar na Sala
+            </button>
+        )}
+        <button
+            onClick={() => {
+                setRoomFullError(false);
+                navigate('/rooms');
+            }}
+            className="w-full py-3 text-[16px] font-medium text-[#ef4444] hover:bg-[#fee2e2] rounded-[12px] transition-colors"
+        >
+            {roomFullError ? "Voltar para Salas" : "Cancelar"}
+        </button>
+    </div>
+                </div >
+            </main >
         );
     }
 
-    return (
-        <>
-            {selectedImage && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setSelectedImage(null)}>
-                    <button onClick={() => setSelectedImage(null)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
-                        <FaTimes size={20} />
-                    </button>
-                    <img src={selectedImage} alt="Full Screen" className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-sm" onClick={(e) => e.stopPropagation()} />
-                </div>
-            )}
+return (
+    <>
+        {selectedImage && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setSelectedImage(null)}>
+                <button onClick={() => setSelectedImage(null)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+                    <FaTimes size={20} />
+                </button>
+                <img src={selectedImage} alt="Full Screen" className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-sm" onClick={(e) => e.stopPropagation()} />
+            </div>
+        )}
 
-            {selectedUser && selectedUser.sender !== "Sistema" && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedUser(null)}>
-                    <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
-                        <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="mx-auto mb-4 border-2 border-white shadow-md" />
-                        <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
-                            {selectedUser.sender}
-                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="bg-amber-100 text-amber-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-amber-200 shadow-sm flex items-center gap-1">👑 Dono</span>}
-                            {mockRoles[selectedUser.sender] === 'Moderador' && <span className="bg-blue-100 text-blue-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-blue-200 shadow-sm flex items-center gap-1">🛡️ Mod</span>}
-                        </h3>
-                        <p className="text-[15px] text-[#86868b] mb-6">{selectedUser.status || "Sem recado"}</p>
+        {selectedUser && selectedUser.sender !== "Sistema" && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedUser(null)}>
+                <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
+                    <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="mx-auto mb-4 border-2 border-white shadow-md" />
+                    <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
+                        {selectedUser.sender}
+                        {mockRoles[selectedUser.sender] === 'Dono' && <span className="bg-amber-100 text-amber-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-amber-200 shadow-sm flex items-center gap-1">👑 Dono</span>}
+                        {mockRoles[selectedUser.sender] === 'Moderador' && <span className="bg-blue-100 text-blue-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-blue-200 shadow-sm flex items-center gap-1">🛡️ Mod</span>}
+                    </h3>
+                    <p className="text-[15px] text-[#86868b] mb-6">{selectedUser.status || "Sem recado"}</p>
 
-                        <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 dark:border-white/5 shadow-inner">
-                            <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-2">Cargos e Moderação</label>
-                            <select
-                                value={mockRoles[selectedUser.sender] || 'Usuário'}
-                                onChange={(e) => handleRoleChange(selectedUser.sender, e.target.value)}
-                                className="skeuo-input w-full px-3 py-2 text-[14px] bg-white dark:bg-[#1e293b] cursor-pointer mb-3"
-                            >
-                                <option value="Usuário">👤 Usuário Comum</option>
-                                <option value="Moderador">🛡️ Moderador da Sala</option>
-                                <option value="Dono">👑 Dono da Sala</option>
-                            </select>
+                    <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 dark:border-white/5 shadow-inner">
+                        <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-2">Cargos e Moderação</label>
+                        <select
+                            value={mockRoles[selectedUser.sender] || 'Usuário'}
+                            onChange={(e) => handleRoleChange(selectedUser.sender, e.target.value)}
+                            className="skeuo-input w-full px-3 py-2 text-[14px] bg-white dark:bg-[#1e293b] cursor-pointer mb-3"
+                        >
+                            <option value="Usuário">👤 Usuário Comum</option>
+                            <option value="Moderador">🛡️ Moderador da Sala</option>
+                            <option value="Dono">👑 Dono da Sala</option>
+                        </select>
 
-                            <div className="flex gap-2 flex-wrap">
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Silenciar (Em breve)</button>
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Banir (Em breve)</button>
-                            </div>
+                        <div className="flex gap-2 flex-wrap">
+                            <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Silenciar (Em breve)</button>
+                            <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Banir (Em breve)</button>
                         </div>
+                    </div>
 
-                        <div className="flex flex-col gap-3 mt-4">
-                            {selectedUser.sender !== (localStorage.getItem('chat_displayName') || 'Usuário') && (
-                                <button onClick={() => {
-                                    const currentUser = localStorage.getItem('chat_displayName') || 'Usuário';
-                                    const targetId = selectedUser.userId || selectedUser.sender;
-                                    const privateRoomName = `privado-${[currentUserId, targetId].sort().join('-')}`;
+                    <div className="flex flex-col gap-3 mt-4">
+                        {selectedUser.sender !== (localStorage.getItem('chat_displayName') || 'Usuário') && (
+                            <button onClick={() => {
+                                const currentUser = localStorage.getItem('chat_displayName') || 'Usuário';
+                                const targetId = selectedUser.userId || selectedUser.sender;
+                                const privateRoomName = `privado-${[currentUserId, targetId].sort().join('-')}`;
 
-                                    const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
-                                    if (!savedRooms.find(r => r.roomParam === privateRoomName)) {
-                                        savedRooms.push({
-                                            title: `Chat Privado: ${selectedUser.sender}`,
-                                            description: `Mensagens diretas.`,
-                                            roomParam: privateRoomName,
-                                            category: "Privado",
-                                            status: "Ativa",
-                                            members: 2,
-                                            date: new Date().toLocaleDateString('pt-BR')
-                                        });
-                                        localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
-                                    }
-
-                                    socket.emit("private_invite", {
-                                        to: targetId,
-                                        from: currentUser,
-                                        room: privateRoomName,
-                                        senderId: currentUserId
+                                const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
+                                if (!savedRooms.find(r => r.roomParam === privateRoomName)) {
+                                    savedRooms.push({
+                                        title: `Chat Privado: ${selectedUser.sender}`,
+                                        description: `Mensagens diretas.`,
+                                        roomParam: privateRoomName,
+                                        category: "Privado",
+                                        status: "Ativa",
+                                        members: 2,
+                                        date: new Date().toLocaleDateString('pt-BR')
                                     });
+                                    localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
+                                }
 
-                                    navigate(`/chat?room=${privateRoomName}`);
-                                    setSelectedUser(null);
-                                }} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff]">
-                                    <FaCommentAlt size={12} /> Mensagem Privada
-                                </button>
-                            )}
-                            <div className="flex gap-3">
-                                <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="btn-secondary-glossy flex-1 py-2 flex items-center justify-center gap-2 text-[#ef4444] hover:bg-[#fee2e2]">
-                                    <FaFlag size={12} /> Denunciar
-                                </button>
-                                <button onClick={() => setSelectedUser(null)} className="skeuo-btn flex-1 py-2">Fechar</button>
-                            </div>
+                                socket.emit("private_invite", {
+                                    to: targetId,
+                                    from: currentUser,
+                                    room: privateRoomName,
+                                    senderId: currentUserId
+                                });
+
+                                navigate(`/chat?room=${privateRoomName}`);
+                                setSelectedUser(null);
+                            }} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff]">
+                                <FaCommentAlt size={12} /> Mensagem Privada
+                            </button>
+                        )}
+                        <div className="flex gap-3">
+                            <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="btn-secondary-glossy flex-1 py-2 flex items-center justify-center gap-2 text-[#ef4444] hover:bg-[#fee2e2]">
+                                <FaFlag size={12} /> Denunciar
+                            </button>
+                            <button onClick={() => setSelectedUser(null)} className="skeuo-btn flex-1 py-2">Fechar</button>
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
+        )}
 
-            {reportModalData && (
-                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setReportModalData(null)}>
-                </div>
-            )}
+        {reportModalData && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setReportModalData(null)}>
+            </div>
+        )}
 
-            <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden">
-                <ChatSidebar />
-                <main className="flex-1 min-w-0 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
+        <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden">
+            <ChatSidebar />
+            <main className="flex-1 min-w-0 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
 
-                    <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] shrink-0">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)] border border-sky-500">
-                                <FaCommentAlt size={12} />
-                            </div>
-                            <div className="flex flex-col justify-center">
-                                <h2 className="font-bold text-[#1d1d1f] text-[15px] leading-tight">
-                                    {roomLoading ? "Carregando..." : (currentRoom ? currentRoom.name : "Sala não encontrada")}
-                                </h2>
-                                <p className="text-[11px] text-[#86868b] flex items-center gap-1.5 mt-0.5">
-                                    <span className="flex items-center gap-1 font-medium">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
-                                        {Number.isFinite(onlinePresence?.count) ? onlinePresence.count : 0} online
-                                    </span>
-                                </p>
-                            </div>
+                <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)] border border-sky-500">
+                            <FaCommentAlt size={12} />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setSearchOpen(!searchOpen)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${searchOpen ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
-                                title="Buscar mensagens"
-                            >
-                                <FaSearch size={14} className={searchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
-                            </button>
-                            <button
-                                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
-                                title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
-                            >
-                                <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
-                            </button>
-                            <button
-                                onClick={() => navigate('/rooms')}
-                                className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-900/40 dark:hover:to-rose-900/60 hover:text-rose-600 dark:hover:text-rose-400"
-                                title="Sair da sala"
-                            >
-                                <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
-                            </button>
-                        </div>
-                    </div>
-
-                    {searchOpen && (
-                        <div className="px-4 py-2 border-b border-[#d2d2d7] dark:border-white/5 bg-[#f5f5f7]/90 dark:bg-[#1e293b]/90 backdrop-blur-md flex items-center gap-3 shrink-0 z-10 shadow-sm animate-fade-in-up">
-                            <div className="relative flex-1">
-                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b] dark:text-slate-400" size={12} />
-                                <input
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Buscar mensagens..."
-                                    className="w-full pl-8 pr-8 py-1.5 rounded-full text-[13px] skeuo-input"
-                                    autoFocus
-                                />
-                                {searchTerm && (
-                                    <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
-                                        <FaTimes size={12} />
-                                    </button>
-                                )}
-                            </div>
-                            {searchResults.length > 0 ? (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
-                                        {currentSearchIndex + 1} de {searchResults.length}
-                                    </span>
-                                    <div className="flex items-center border border-[#d2d2d7] dark:border-white/10 rounded-full overflow-hidden shadow-sm">
-                                        <button onClick={handlePrevSearch} className="px-2 py-1 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-[#86868b] border-r border-[#d2d2d7] dark:border-white/10 transition-colors" title="Resultado anterior">
-                                            <FaChevronUp size={10} />
-                                        </button>
-                                        <button onClick={handleNextSearch} className="px-2 py-1 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-[#86868b] transition-colors" title="Próximo resultado">
-                                            <FaChevronDown size={10} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : searchLoading ? (
-                                <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">Buscando...</span>
-                            ) : searchError ? (
-                                <span className="text-[11px] font-medium text-red-500 whitespace-nowrap">{searchError}</span>
-                            ) : searchTerm ? (
-                                <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
-                                    Nenhuma mensagem encontrada
+                        <div className="flex flex-col justify-center">
+                            <h2 className="font-bold text-[#1d1d1f] text-[15px] leading-tight">
+                                {roomLoading ? "Carregando..." : (currentRoom ? currentRoom.name : "Sala não encontrada")}
+                            </h2>
+                            <p className="text-[11px] text-[#86868b] flex items-center gap-1.5 mt-0.5">
+                                <span className="flex items-center gap-1 font-medium">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
+                                    {onlineUsers} online
                                 </span>
-                            ) : null}
-                            <button onClick={() => { setSearchOpen(false); setSearchTerm(''); }} className="text-[12px] font-medium text-[var(--primary-main)] hover:underline whitespace-nowrap transition-colors">
-                                Fechar
-                            </button>
+                            </p>
                         </div>
-                    )}
-
-                    {pinnedMessage && (
-                        <div className="px-4 pt-3 shrink-0">
-                            <div className="relative bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/40 dark:to-amber-900/20 rounded-lg border border-amber-200/80 dark:border-amber-700/50 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] flex items-start gap-3">
-                                <div className="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300 dark:border-amber-500">
-                                    <FaThumbtack className="w-2.5 h-2.5 text-white" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-0.5">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200">{pinnedMessage.sender}</span>
-                                        </div>
-                                        <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full hover:bg-amber-100 dark:hover:bg-amber-800/50 transition-colors shrink-0">
-                                            <FaTimes size={10} className="text-amber-700/50 dark:text-amber-400/50 hover:text-amber-700 dark:hover:text-amber-300" />
-                                        </button>
-                                    </div>
-                                    <p className="text-[12.5px] text-amber-800 dark:text-amber-100 leading-snug">{pinnedMessage.text}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div ref={chatContainerRef} className="flex-grow overflow-y-auto space-y-0.5 mb-2 pr-2 pt-2 chat-container">
-
-                        {messages.length === 0 && !showFavoritesOnly && (
-                            <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4 animate-fade-in-up opacity-80">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-b from-gray-50 to-gray-200 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)] flex items-center justify-center mb-4 text-[#86868b]">
-                                    <FaComments size={24} className="drop-shadow-sm text-[#0071e3]/60" />
-                                </div>
-                                <h3 className="text-[15px] font-semibold text-[#1d1d1f] mb-1">Nenhuma mensagem ainda</h3>
-                                <p className="text-[13px] text-[#86868b]">Seja o primeiro a conversar nesta sala.</p>
-                            </div>
-                        )}
-
-                        {messages.map((msg, index) => {
-                            if (showFavoritesOnly && !msg.isFavorite) return null;
-                            const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.id === msg.messageId;
-                            return (
-                                <MessageBubble
-                                    key={index}
-                                    msg={msg}
-                                    innerRef={(el) => messageRefs.current[msg.messageId] = el}
-                                    onAvatarClick={setSelectedUser}
-                                    onImageClick={setSelectedImage}
-                                    onToggleFavorite={() => toggleFavorite(index)}
-                                    onDeleteMessage={deleteMessage}
-                                    onEditClick={handleEditClick}
-                                    onToggleLike={toggleLike}
-                                    currentUserId={currentUserId}
-                                    mockRoles={mockRoles}
-                                    onReportClick={setReportModalData}
-                                    searchTerm={normalizedSearchTerm}
-                                    isCurrentSearch={isCurrentSearch}
-                                />
-                            );
-                        })}
-
-                        {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
-                            <div className="text-center text-[#86868b] mt-10 text-[14px]">
-                                Você ainda não tem nenhuma mensagem favorita nesta sala.
-                            </div>
-                        )}
-
                     </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setSearchOpen(!searchOpen)}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${searchOpen ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
+                            title="Buscar mensagens"
+                        >
+                            <FaSearch size={14} className={searchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
+                        </button>
+                        <button
+                            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
+                            title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
+                        >
+                            <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
+                        </button>
+                        <button
+                            onClick={() => navigate('/rooms')}
+                            className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-900/40 dark:hover:to-rose-900/60 hover:text-rose-600 dark:hover:text-rose-400"
+                            title="Sair da sala"
+                        >
+                            <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
+                        </button>
+                    </div>
+                </div>
 
-                    <footer className="shrink-0 relative p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-t border-[#d2d2d7] dark:border-white/5">
-                        {imagePreview && !editingMessageId && (
-                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up shadow-lg">
-                                <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
-                                <button type="button" onClick={clearImagePreview} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
-                                    <FaTimes size={12} />
-                                </button>
-                            </div>
-                        )}
-                        {editingMessageId && (
-                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 px-4 flex items-center gap-2 z-10 animate-fade-in-up text-[#86868b] text-sm font-medium shadow-lg">
-                                <FaPencilAlt /> Editando mensagem...
-                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="ml-2 p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
-                                    <FaTimes size={12} />
-                                </button>
-                            </div>
-                        )}
-                        <form onSubmit={sendMessage} className="flex gap-2">
-                            <label className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-[#86868b] dark:text-slate-300 border border-gray-200 dark:border-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-50 hover:to-gray-200 hover:text-[#1d1d1f] dark:hover:from-slate-600 dark:hover:to-slate-700 dark:hover:text-white cursor-pointer transition-all shrink-0">
-                                <FaCamera size={14} className="drop-shadow-sm" />
-                                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                            </label>
+                {searchOpen && (
+                    <div className="px-4 py-2 border-b border-[#d2d2d7] dark:border-white/5 bg-[#f5f5f7]/90 dark:bg-[#1e293b]/90 backdrop-blur-md flex items-center gap-3 shrink-0 z-10 shadow-sm animate-fade-in-up">
+                        <div className="relative flex-1">
+                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b] dark:text-slate-400" size={12} />
                             <input
                                 type="text"
-                                className="skeuo-input w-full px-4 py-2 flex-grow"
-                                placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
-                                value={currentMessage}
-                                onChange={(e) => setCurrentMessage(e.target.value)}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Buscar mensagens..."
+                                className="w-full pl-8 pr-8 py-1.5 rounded-full text-[13px] skeuo-input"
+                                autoFocus
                             />
-                            <button
-                                type="submit"
-                                disabled={!currentMessage.trim() && !imagePreview}
-                                className={`w-10 h-10 shrink-0 rounded-full shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center transition-all ${(currentMessage.trim() || imagePreview) ? 'hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed grayscale'}`}
-                                title={editingMessageId ? "Salvar Edição" : "Enviar Mensagem"}
-                            >
-                                <FaPaperPlane size={12} className="ml-[-2px]" />
-                            </button>
-                        </form>
-                    </footer>
-                </main>
-                <MembersSidebar
-                    roomId={room}
-                    currentUserId={currentUserId}
-                    onlineUsers={onlinePresence.users}
-                    onlineCount={onlinePresence.count}
-                />
-            </div>
-
-            {privateInvite && (
-                <div className="fixed bottom-6 right-6 z-[200] skeuo-panel p-4 animate-fade-in-up border-l-4 border-[#0071e3] shadow-2xl w-80">
-                    <h4 className="text-[14px] font-bold text-[#1d1d1f] mb-1">Convite de Chat Privado</h4>
-                    <p className="text-[13px] text-[#86868b] mb-4">
-                        <strong className="text-[#1d1d1f]">{privateInvite.from}</strong> quer conversar com você no privado.
-                    </p>
-                    <div className="flex gap-2">
-                        <button onClick={() => {
-                            const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
-                            if (!savedRooms.find(r => r.roomParam === privateInvite.room)) {
-                                savedRooms.push({
-                                    title: `Chat Privado: ${privateInvite.from}`,
-                                    description: `Mensagens diretas.`,
-                                    roomParam: privateInvite.room,
-                                    category: "Privado",
-                                    status: "Ativa",
-                                    members: 2,
-                                    date: new Date().toLocaleDateString('pt-BR')
-                                });
-                                localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
-                            }
-                            navigate(`/chat?room=${privateInvite.room}`);
-                            setPrivateInvite(null);
-                        }} className="skeuo-btn flex-1 py-1.5 text-[12px]">Aceitar</button>
-                        <button onClick={() => setPrivateInvite(null)} className="btn-secondary-glossy flex-1 py-1.5 text-[12px]">Recusar</button>
+                            {searchTerm && (
+                                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+                                    <FaTimes size={12} />
+                                </button>
+                            )}
+                        </div>
+                        {searchResults.length > 0 ? (
+                            <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
+                                    {currentSearchIndex + 1} de {searchResults.length}
+                                </span>
+                                <div className="flex items-center border border-[#d2d2d7] dark:border-white/10 rounded-full overflow-hidden shadow-sm">
+                                    <button onClick={handlePrevSearch} className="px-2 py-1 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-[#86868b] border-r border-[#d2d2d7] dark:border-white/10 transition-colors" title="Resultado anterior">
+                                        <FaChevronUp size={10} />
+                                    </button>
+                                    <button onClick={handleNextSearch} className="px-2 py-1 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-[#86868b] transition-colors" title="Próximo resultado">
+                                        <FaChevronDown size={10} />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : searchLoading ? (
+                            <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">Buscando...</span>
+                        ) : searchError ? (
+                            <span className="text-[11px] font-medium text-red-500 whitespace-nowrap">{searchError}</span>
+                        ) : searchTerm ? (
+                            <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
+                                Nenhuma mensagem encontrada
+                            </span>
+                        ) : null}
+                        <button onClick={() => { setSearchOpen(false); setSearchTerm(''); }} className="text-[12px] font-medium text-[var(--primary-main)] hover:underline whitespace-nowrap transition-colors">
+                            Fechar
+                        </button>
                     </div>
+                )}
+
+                {pinnedMessage && (
+                    <div className="px-4 pt-3 shrink-0">
+                        <div className="relative bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/40 dark:to-amber-900/20 rounded-lg border border-amber-200/80 dark:border-amber-700/50 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] flex items-start gap-3">
+                            <div className="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300 dark:border-amber-500">
+                                <FaThumbtack className="w-2.5 h-2.5 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-0.5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200">{pinnedMessage.sender}</span>
+                                    </div>
+                                    <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full hover:bg-amber-100 dark:hover:bg-amber-800/50 transition-colors shrink-0">
+                                        <FaTimes size={10} className="text-amber-700/50 dark:text-amber-400/50 hover:text-amber-700 dark:hover:text-amber-300" />
+                                    </button>
+                                </div>
+                                <p className="text-[12.5px] text-amber-800 dark:text-amber-100 leading-snug">{pinnedMessage.text}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div ref={chatContainerRef} className="flex-grow overflow-y-auto space-y-0.5 mb-2 pr-2 pt-2 chat-container">
+
+                    {messages.length === 0 && !showFavoritesOnly && (
+                        <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4 animate-fade-in-up opacity-80">
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-b from-gray-50 to-gray-200 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)] flex items-center justify-center mb-4 text-[#86868b]">
+                                <FaComments size={24} className="drop-shadow-sm text-[#0071e3]/60" />
+                            </div>
+                            <h3 className="text-[15px] font-semibold text-[#1d1d1f] mb-1">Nenhuma mensagem ainda</h3>
+                            <p className="text-[13px] text-[#86868b]">Seja o primeiro a conversar nesta sala.</p>
+                        </div>
+                    )}
+
+                    {messages.map((msg, index) => {
+                        if (showFavoritesOnly && !msg.isFavorite) return null;
+                        const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.id === msg.messageId;
+                        return (
+                            <MessageBubble
+                                key={index}
+                                msg={msg}
+                                innerRef={(el) => messageRefs.current[msg.messageId] = el}
+                                onAvatarClick={setSelectedUser}
+                                onImageClick={setSelectedImage}
+                                onToggleFavorite={() => toggleFavorite(index)}
+                                onDeleteMessage={deleteMessage}
+                                onEditClick={handleEditClick}
+                                onToggleLike={toggleLike}
+                                currentUserId={currentUserId}
+                                mockRoles={mockRoles}
+                                onReportClick={setReportModalData}
+                                searchTerm={normalizedSearchTerm}
+                                isCurrentSearch={isCurrentSearch}
+                            />
+                        );
+                    })}
+
+                    {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
+                        <div className="text-center text-[#86868b] mt-10 text-[14px]">
+                            Você ainda não tem nenhuma mensagem favorita nesta sala.
+                        </div>
+                    )}
+
                 </div>
-            )}
-        </>
-    );
+
+                <footer className="shrink-0 relative p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-t border-[#d2d2d7] dark:border-white/5">
+                    {imagePreview && !editingMessageId && (
+                        <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up shadow-lg">
+                            <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
+                            <button type="button" onClick={clearImagePreview} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                                <FaTimes size={12} />
+                            </button>
+                        </div>
+                    )}
+                    {editingMessageId && (
+                        <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 px-4 flex items-center gap-2 z-10 animate-fade-in-up text-[#86868b] text-sm font-medium shadow-lg">
+                            <FaPencilAlt /> Editando mensagem...
+                            <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="ml-2 p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                                <FaTimes size={12} />
+                            </button>
+                        </div>
+                    )}
+                    <form onSubmit={sendMessage} className="flex gap-2">
+                        <label className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-[#86868b] dark:text-slate-300 border border-gray-200 dark:border-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-50 hover:to-gray-200 hover:text-[#1d1d1f] dark:hover:from-slate-600 dark:hover:to-slate-700 dark:hover:text-white cursor-pointer transition-all shrink-0">
+                            <FaCamera size={14} className="drop-shadow-sm" />
+                            <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                        </label>
+                        <input
+                            type="text"
+                            className="skeuo-input w-full px-4 py-2 flex-grow"
+                            placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
+                            value={currentMessage}
+                            onChange={(e) => setCurrentMessage(e.target.value)}
+                        />
+                        <button
+                            type="submit"
+                            disabled={!currentMessage.trim() && !imagePreview}
+                            className={`w-10 h-10 shrink-0 rounded-full shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center transition-all ${(currentMessage.trim() || imagePreview) ? 'hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed grayscale'}`}
+                            title={editingMessageId ? "Salvar Edição" : "Enviar Mensagem"}
+                        >
+                            <FaPaperPlane size={12} className="ml-[-2px]" />
+                        </button>
+                    </form>
+                </footer>
+            </main>
+            <MembersSidebar
+                roomId={room}
+                currentUserId={currentUserId}
+                onlineUsers={onlinePresence.users}
+                onlineCount={onlinePresence.count}
+            />
+        </div>
+
+        {privateInvite && (
+            <div className="fixed bottom-6 right-6 z-[200] skeuo-panel p-4 animate-fade-in-up border-l-4 border-[#0071e3] shadow-2xl w-80">
+                <h4 className="text-[14px] font-bold text-[#1d1d1f] mb-1">Convite de Chat Privado</h4>
+                <p className="text-[13px] text-[#86868b] mb-4">
+                    <strong className="text-[#1d1d1f]">{privateInvite.from}</strong> quer conversar com você no privado.
+                </p>
+                <div className="flex gap-2">
+                    <button onClick={() => {
+                        const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
+                        if (!savedRooms.find(r => r.roomParam === privateInvite.room)) {
+                            savedRooms.push({
+                                title: `Chat Privado: ${privateInvite.from}`,
+                                description: `Mensagens diretas.`,
+                                roomParam: privateInvite.room,
+                                category: "Privado",
+                                status: "Ativa",
+                                members: 2,
+                                date: new Date().toLocaleDateString('pt-BR')
+                            });
+                            localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
+                        }
+                        navigate(`/chat?room=${privateInvite.room}`);
+                        setPrivateInvite(null);
+                    }} className="skeuo-btn flex-1 py-1.5 text-[12px]">Aceitar</button>
+                    <button onClick={() => setPrivateInvite(null)} className="btn-secondary-glossy flex-1 py-1.5 text-[12px]">Recusar</button>
+                </div>
+            </div>
+        )}
+    </>
+);
 };
 
 export default Chat;

@@ -4,14 +4,7 @@ import { socket } from '../socket';
 import { FaSearch, FaSlidersH, FaCommentAlt, FaUsers, FaExclamationTriangle, FaPlus, FaHashtag, FaStar } from 'react-icons/fa';
 import { apiRequest } from '../services/api';
 
-const defaultRooms = [
-    { title: "Geral", description: "Um espaço para discussões amplas e variadas.", roomParam: "general", category: "Casual", status: "Ativa", members: 245, date: "12 Jan, 2024" },
-    { title: "Tecnologia", description: "Discuta as últimas inovações e tendências.", roomParam: "tech", category: "Tecnologia", status: "Ativa", members: 144, date: "05 Fev, 2024" },
-    { title: "Games", description: "O ponto de encontro para jogadores de todas as plataformas.", roomParam: "gaming", category: "Jogos", status: "Ativa", members: 132, date: "18 Fev, 2024" },
-    { title: "Clube da Música", description: "Discussões sobre música e áudio.", roomParam: "cm", category: "Arte", status: "Arquivada", members: 0, date: "10 Mar, 2024" },
-    { title: "Dev Web", description: "Desenvolvimento Frontend e Backend.", roomParam: "web", category: "Tecnologia", status: "Ativa", members: 112, date: "22 Mar, 2024" },
-    { title: "Computação Gráfica", description: "Discuta sobre computação gráfica e animação.", roomParam: "cg", category: "Tecnologia", status: "Ativa", members: 200, date: "22 Mar, 2024" }
-];
+
 
 const StatCard = ({ title, value, subtext, icon: Icon, colorClass }) => (
     <div className="skeuo-panel p-6 flex flex-col justify-between h-full hover:scale-[1.02] transition-transform duration-300">
@@ -125,7 +118,7 @@ const CreateRoomModal = ({
     );
 };
 
-const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
+const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
     <tr className="border-b border-[#d2d2d7]/30 hover:bg-black/[0.02] transition-colors">
         <td className="px-6 py-4">
             <div className="flex items-center gap-4">
@@ -178,9 +171,9 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite }) => (
                         Lotada
                     </span>
                 ) : (
-                    <Link to={`/chat?room=${room.roomParam}`} className="btn-secondary-glossy px-4 py-1.5 text-[13px]">
+                    <button onClick={() => onJoinRoom(room.roomParam)} className="btn-secondary-glossy px-4 py-1.5 text-[13px]">
                         Entrar
-                    </Link>
+                    </button>
                 )
             )}
         </td>
@@ -194,13 +187,21 @@ const Rooms = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('Todas');
-    const [onlineUsers, setOnlineUsers] = useState("...");
     const [favorites, setFavorites] = useState([]);
-    const [roomCounts, setRoomCounts] = useState({});
 
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const [newRoomDesc, setNewRoomDesc] = useState('');
     const [newRoomCategory, setNewRoomCategory] = useState('Casual');
+
+    const handleJoinRoom = async (roomId) => {
+        try {
+            await apiRequest(`/rooms/${roomId}/join`, { method: 'POST' });
+            navigate(`/chat?room=${roomId}`);
+        } catch (error) {
+            console.error("Erro ao entrar na sala:", error);
+            alert("Não foi possível entrar na sala: " + (error.message || "Erro desconhecido"));
+        }
+    };
 
     useEffect(() => {
         const fetchRooms = async () => {
@@ -211,9 +212,9 @@ const Rooms = () => {
                     title: room.name,
                     description: room.description || "Sem descrição",
                     roomParam: room.id.toString(),
-                    category: "Custom",
+                    category: room.category || "Custom",
                     status: "Ativa",
-                    members: 0,
+                    members: room.members_count || 0,
                     date: new Date(room.created_at).toLocaleDateString('pt-BR')
                 }));
                 setCustomRooms(mappedRooms);
@@ -238,17 +239,7 @@ const Rooms = () => {
             } catch (e) { }
         }
 
-        socket.on('all_rooms_counts', (counts) => {
-            setRoomCounts(counts);
-            const total = Object.values(counts).reduce((a, b) => a + b, 0);
-            setOnlineUsers(total);
-        });
-
-        socket.emit('request_all_rooms_counts');
-
-        return () => {
-            socket.off('all_rooms_counts');
-        };
+        // Socket global presence can be implemented here later
     }, []);
 
     const handleCreateRoom = async (e) => {
@@ -269,7 +260,7 @@ const Rooms = () => {
                 roomParam: roomParam,
                 category: newRoomCategory,
                 status: "Ativa",
-                members: 1,
+                members: savedRoom.members_count || 1,
                 date: new Date(savedRoom.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
             };
 
@@ -287,10 +278,7 @@ const Rooms = () => {
         }
     };
 
-    const allRooms = [...defaultRooms, ...customRooms].map(room => ({
-        ...room,
-        members: roomCounts[room.roomParam] || 0
-    }));
+    const allRooms = customRooms;
 
     const filteredRooms = allRooms.filter(room => {
         const matchesSearch = room.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -378,9 +366,9 @@ const Rooms = () => {
                         colorClass="bg-[#e6f0ff] dark:bg-blue-900/40 text-[#0071e3] dark:text-blue-400 shadow-inner"
                     />
                     <StatCard
-                        title="Usuários Online"
-                        value={onlineUsers}
-                        subtext={<><span className="text-green-500 font-medium">↗ Atualizado em tempo real</span></>}
+                        title="Usuários (Total)"
+                        value={customRooms.reduce((acc, room) => acc + (room.members || 0), 0)}
+                        subtext={<><span className="text-[#86868b] dark:text-[#94a3b8]">Soma de membros</span></>}
                         icon={FaUsers}
                         colorClass="bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 shadow-inner"
                     />
@@ -419,17 +407,18 @@ const Rooms = () => {
                             <tbody>
                                 {sortedRooms.map((room, i) => (
                                     <RoomRow
-                                        key={i}
+                                        key={room.roomParam}
                                         room={room}
                                         isFavorite={favorites.includes(room.roomParam)}
                                         onToggleFavorite={toggleFavorite}
+                                        onJoinRoom={handleJoinRoom}
                                     />
                                 ))}
 
                                 {sortedRooms.length === 0 && (
                                     <tr>
                                         <td colSpan="5" className="px-6 py-12 text-center text-[#86868b] text-[15px]">
-                                            Nenhuma sala encontrada com o termo "{searchQuery}".
+                                            {searchQuery ? `Nenhuma sala encontrada com o termo "${searchQuery}".` : "Nenhuma sala criada ainda."}
                                         </td>
                                     </tr>
                                 )}

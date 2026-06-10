@@ -43,24 +43,71 @@ const supabase = createClient(
 );
 
 
-const roomConnections = new Map();
+const roomPresence = new Map();
 
 io.on('connection', (socket) => {
 
-  socket.on('join_room', ({ room, userId }) => {
-    if (!room || !userId) return;
+  const handleLeaveOrDisconnect = (socketId, roomId, userId) => {
+    if (!roomId || !userId) return;
+    
+    if (roomPresence.has(roomId)) {
+      const roomUsers = roomPresence.get(roomId);
+      if (roomUsers.has(userId)) {
+        const userData = roomUsers.get(userId);
+        userData.socketIds.delete(socketId);
 
-    socket.join(room);
-    socket.currentRoom = room;
-    socket.userId = userId;
+        if (userData.socketIds.size === 0) {
+          roomUsers.delete(userId);
+        }
+      }
 
-    if (!roomConnections.has(room)) {
-      roomConnections.set(room, new Set());
+      if (roomUsers.size === 0) {
+        roomPresence.delete(roomId);
+      } else {
+        const onlineUsers = Array.from(roomUsers.values()).map(u => ({ id: u.id, name: u.name, online: true }));
+        io.to(roomId).emit('roomPresenceUpdated', {
+          roomId,
+          onlineUsers,
+          onlineCount: onlineUsers.length
+        });
+      }
     }
-    roomConnections.get(room).add(userId);
+  };
 
+  socket.on('joinRoom', ({ roomId, user }) => {
+    if (!roomId || !user || !user.id) return;
 
-    io.to(room).emit('active_users_count', roomConnections.get(room).size);
+    socket.join(roomId);
+    socket.currentRoom = roomId;
+    socket.userId = user.id;
+
+    if (!roomPresence.has(roomId)) {
+      roomPresence.set(roomId, new Map());
+    }
+    const roomUsers = roomPresence.get(roomId);
+
+    if (!roomUsers.has(user.id)) {
+      roomUsers.set(user.id, {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        socketIds: new Set([socket.id])
+      });
+    } else {
+      roomUsers.get(user.id).socketIds.add(socket.id);
+    }
+
+    const onlineUsers = Array.from(roomUsers.values()).map(u => ({ id: u.id, name: u.name, online: true }));
+    io.to(roomId).emit('roomPresenceUpdated', {
+      roomId,
+      onlineUsers,
+      onlineCount: onlineUsers.length
+    });
+  });
+
+  socket.on('leaveRoom', ({ roomId, userId }) => {
+    socket.leave(roomId);
+    handleLeaveOrDisconnect(socket.id, roomId, userId);
   });
 
   socket.on('send_message', async (data) => {
@@ -91,19 +138,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    const room = socket.currentRoom;
-    const userId = socket.userId;
-
-    if (room && userId && roomConnections.has(room)) {
-      const usersInRoom = roomConnections.get(room);
-      usersInRoom.delete(userId);
-
-      if (usersInRoom.size === 0) {
-        roomConnections.delete(room);
-      } else {
-        io.to(room).emit('active_users_count', usersInRoom.size);
-      }
-    }
+    handleLeaveOrDisconnect(socket.id, socket.currentRoom, socket.userId);
   });
 });
 

@@ -130,7 +130,19 @@ router.get('/rooms', authMiddleware, async (req, res) => {
       .order('created_at', { ascending: true });
 
     if (error) return res.status(500).json({ error: error.message });
-    return res.json(rooms);
+
+    const { data: members } = await supabase.from('room_members').select('room_id');
+    const countMap = {};
+    if (members) {
+      members.forEach(m => { countMap[m.room_id] = (countMap[m.room_id] || 0) + 1; });
+    }
+
+    const roomsWithCount = rooms.map(r => ({
+      ...r,
+      members_count: countMap[r.id] || 0
+    }));
+
+    return res.json(roomsWithCount);
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao listar salas.' });
   }
@@ -146,12 +158,19 @@ router.post('/rooms', authMiddleware, async (req, res) => {
   try {
     const { data: room, error } = await supabase
       .from('rooms')
-      .insert([{ name, description }])
+      .insert([{ name, description, owner_id: req.userId }])
       .select()
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-    return res.status(201).json(room);
+
+    await supabase.from('room_members').insert([{
+      room_id: room.id,
+      user_id: req.userId,
+      role: 'owner'
+    }]);
+
+    return res.status(201).json({ ...room, members_count: 1, current_user_role: 'owner' });
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao criar sala.' });
   }
@@ -166,7 +185,41 @@ router.get('/rooms/:id', authMiddleware, async (req, res) => {
       .single();
 
     if (error || !room) return res.status(404).json({ error: 'Sala não encontrada.' });
-    return res.json(room);
+
+    const { count } = await supabase.from('room_members').select('*', { count: 'exact', head: true }).eq('room_id', room.id);
+    const { data: member } = await supabase.from('room_members').select('role').eq('room_id', room.id).eq('user_id', req.userId).single();
+
+    return res.json({
+      ...room,
+      members_count: count || 0,
+      is_member: !!member,
+      current_user_role: member ? member.role : null
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao buscar sala.' });
+  }
+});
+
+router.post('/rooms/:id/join', authMiddleware, async (req, res) => {
+  const roomId = req.params.id;
+  const userId = req.userId;
+
+  try {
+    const { data: room, error: roomError } = await supabase.from('rooms').select('id, max_users').eq('id', roomId).single();
+    if (roomError || !room) return res.status(404).json({ error: 'Sala não encontrada' });
+
+    const { data: existingMember } = await supabase.from('room_members').select('*').eq('room_id', roomId).eq('user_id', userId).single();
+    if (existingMember) return res.json({ success: true, member: existingMember });
+
+    const { count } = await supabase.from('room_members').select('*', { count: 'exact', head: true }).eq('room_id', roomId);
+    if (room.max_users && count >= room.max_users) {
+        return res.status(400).json({ error: 'A sala já está cheia' });
+    }
+
+    const { data: newMember, error: insertError } = await supabase.from('room_members').insert([{ room_id: roomId, user_id: userId, role: 'user' }]).select().single();
+    if (insertError) return res.status(500).json({ error: insertError.message });
+    
+    return res.json({ success: true, member: newMember });
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao buscar sala.' });
   }
@@ -186,6 +239,30 @@ router.get('/rooms/:id/messages', authMiddleware, async (req, res) => {
     return res.json(messages);
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao carregar histórico.' });
+  }
+});
+
+router.get('/rooms/:id/members', authMiddleware, async (req, res) => {
+  try {
+    const { data: members, error } = await supabase
+      .from('room_members')
+      .select('role, joined_at, users(id, name, email)')
+      .eq('room_id', req.params.id);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    const formattedMembers = members.map(m => ({
+      id: m.users.id,
+      name: m.users.name,
+      email: m.users.email,
+      role: m.role,
+      joined_at: m.joined_at,
+      online: false
+    }));
+
+    return res.json(formattedMembers);
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao buscar membros da sala.' });
   }
 });
 
