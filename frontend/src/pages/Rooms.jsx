@@ -188,6 +188,7 @@ const Rooms = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('Todas');
     const [favorites, setFavorites] = useState([]);
+    const [stats, setStats] = useState({ active_rooms: 0, unique_users: 0, total_room_memberships: 0 });
 
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const [newRoomDesc, setNewRoomDesc] = useState('');
@@ -232,6 +233,16 @@ const Rooms = () => {
         };
         fetchRooms();
 
+        const fetchStats = async () => {
+            try {
+                const apiStats = await apiRequest('/stats');
+                setStats(apiStats);
+            } catch (err) {
+                console.error("Erro ao carregar estatísticas:", err);
+            }
+        };
+        fetchStats();
+
         const savedFavorites = localStorage.getItem('chat_favorites');
         if (savedFavorites) {
             try {
@@ -239,7 +250,6 @@ const Rooms = () => {
             } catch (e) { }
         }
 
-        // Socket global presence can be implemented here later
     }, []);
 
     const handleCreateRoom = async (e) => {
@@ -367,8 +377,8 @@ const Rooms = () => {
                     />
                     <StatCard
                         title="Usuários (Total)"
-                        value={customRooms.reduce((acc, room) => acc + (room.members || 0), 0)}
-                        subtext={<><span className="text-[#86868b] dark:text-[#94a3b8]">Soma de membros</span></>}
+                        value={stats.unique_users}
+                        subtext={<><span className="text-[#86868b] dark:text-[#94a3b8]">A quantidade de usuários no total</span></>}
                         icon={FaUsers}
                         colorClass="bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 shadow-inner"
                     />

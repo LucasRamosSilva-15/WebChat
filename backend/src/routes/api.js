@@ -289,4 +289,34 @@ router.get('/rooms/:id/messages/search', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/stats', authMiddleware, async (req, res) => {
+  try {
+    const { count: active_rooms } = await supabase
+      .from('rooms')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: total_room_memberships } = await supabase
+      .from('room_members')
+      .select('*', { count: 'exact', head: true });
+
+    const { data: members } = await supabase
+      .from('room_members')
+      .select('user_id');
+      
+    let unique_users = 0;
+    if (members) {
+      const uniqueIds = new Set(members.map(m => m.user_id));
+      unique_users = uniqueIds.size;
+    }
+
+    return res.json({
+      active_rooms: active_rooms || 0,
+      unique_users,
+      total_room_memberships: total_room_memberships || 0
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao carregar estatísticas.' });
+  }
+});
+
 module.exports = router;
