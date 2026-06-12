@@ -64,6 +64,12 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - 🔴 Sistema de envio de áudio
 - 🔴 Sistema de envio de gifs
 - 🔴 Sistema de envio de emojis
+- ⚠️ Mostrar o sidebar direito e o esquerdo para mobile com botão de mostrar/ocultar.
+- ✅ Tela de Confirmação de Entrada — pergunta se o usuário deseja entrar na sala e bloqueia a conexão via WebSocket até a aprovação.
+- ✅ Tela de erro de "Sala Cheia" — exibe erro específico barrando a renderização do chat quando a sala bate a capacidade máxima.
+- ✅ Telas de erro de conexão — exibe mensagem caso não consiga conectar ao backend ou a sala não for encontrada.
+- 🟡 Componente UserAvatar — usado no chat para renderizar as fotos ou iniciais, mas o status de online ainda precisa aprimoramento em tempo real.
+- ⚠️ Melhorar o sistema de chat privado
 
 ### Rooms.jsx
 
@@ -83,6 +89,9 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - 🔴 Botão de denunciar sala
 - 🔵 Criar um sistema profundo de denúncias
 - ⚠️ Melhorar contador de usuários online (correção de contagem incorreta)
+- ✅ Modal de Criação de Sala — overlay interativo com formulário para definir nome, capacidade e categoria da nova sala.
+- ✅ Barra de pesquisa por texto — barra interativa que filtra as salas criadas em tempo real ao digitar.
+  - ⚪ **Observação:** A busca atualmente funciona filtrando as salas em memória (no frontend). Caso hajam centenas de salas futuras, precisará virar uma busca via API.
 
 ### Login.jsx & Register.jsx
 
@@ -93,6 +102,18 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - 🟡 Opção de login/registro via Google (interface criada)
 - 🔵 Sistema de recuperação de senha
 - 🔵 Sistema de confirmação de e-mail
+- ✅ Tratamento visual de erros — exibe mensagens de erro em balões de alerta vermelhos se a autenticação falhar.
+- ✅ Loader visual nos botões — botões de login e registro ficam desabilitados e mostram "Entrando..." durante o carregamento da API.
+- ✅ Autenticação com JWT — salva o token e gerencia o login global comunicando a interface com eventos locais (`profileUpdated`).
+
+### Custom.jsx (Perfil)
+
+*Status: Página desenvolvida e testada para gerenciar as personalizações locais da conta do usuário.*
+
+- ✅ Customização de Perfil — permite alterar foto, nome de exibição e recado/status.
+  - ⚪ **Observação:** Atualmente salva os dados apenas no armazenamento local do navegador (`localStorage`), aguardando persistência definitiva no banco de dados.
+- ✅ Preview de avatar em tempo real — a imagem da foto escolhida via input file é processada (FileReader) e exibida na tela antes de ser salva.
+- ✅ Feedback de sucesso (Toast) — exibe uma notificação rápida no rodapé da página após salvar as alterações.
 
 ### About.jsx
 
@@ -112,6 +133,9 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - ✅ Adicionar ícones consistentes
 - 🔴 Sistema de alteração de idioma
 - 🔴 Ícone e sistema de notificações recebidas na barra
+- ✅ Menu Mobile / Dropdown Animado — menu interativo com transições suaves para navegação em telas pequenas.
+- ✅ Painel de Perfil Rápido — exibe miniatura do avatar e nome do usuário diretamente na navegação se estiver logado.
+- ✅ Sistema de Logout — desloga o usuário limpando credenciais e disparando atualizações sem necessidade de recarregar a página (reload forçado).
 
 ### NotFound.jsx (Erros)
 
@@ -155,7 +179,7 @@ As seguintes páginas, módulos e documentos representam ideias de longo prazo e
 - 🟣 **Settings.jsx:** Página dedicada inteiramente para as configurações do usuário.
 - 🟣 **ServerStatus.jsx:** Página contendo os status em tempo real do backend, ping, imagens e informações de queda de servidor.
 - 🟣 **RoomConfig.jsx:** Página aprofundada de configurações internas e regras que gerem uma sala específica.
-- 🟣 **Feedback.jsx:** Página interativa com botões de limpar, enviar e cancelar, para coletar feedback sobre a plataforma.
+- 🟣 **Feedback.jsx:** Página interativa com botões de limpar, enviar e cancelar, com a opção de escolher o tipo do feedback e colocar uma imagem no feedback (que é opcional), para coletar feedback sobre a plataforma.
 - 🟣 **Suporte.jsx:** Tela mostrando salas banidas, denúncias ativas, e um FAQ interativo.
 
 ### Documentações
