@@ -149,26 +149,48 @@ router.get('/rooms', authMiddleware, async (req, res) => {
 });
 
 router.post('/rooms', authMiddleware, async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, category } = req.body;
+  const normalizedName = name?.trim();
 
-  if (!name) {
+  if (!normalizedName) {
     return res.status(400).json({ error: 'O nome da sala é obrigatório.' });
   }
 
   try {
+    const { data: existingRooms, error: existingError } = await supabase
+      .from('rooms')
+      .select('id, name, owner_id')
+      .eq('owner_id', req.userId)
+      .ilike('name', normalizedName);
+
+    if (existingError) {
+      return res.status(500).json({ error: existingError.message });
+    }
+
+    const alreadyExists = existingRooms?.some(
+      room => room.name.trim().toLowerCase() === normalizedName.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      return res.status(409).json({ error: "Você já criou uma sala com esse nome." });
+    }
+
+    const insertData = { name: normalizedName, description: description?.trim(), owner_id: req.userId };
+    if (category) insertData.category = category;
+
     const { data: room, error } = await supabase
       .from('rooms')
-      .insert([{ name, description, owner_id: req.userId }])
+      .insert([insertData])
       .select()
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
 
-    await supabase.from('room_members').insert([{
+    await supabase.from('room_members').upsert([{
       room_id: room.id,
       user_id: req.userId,
       role: 'owner'
-    }]);
+    }], { onConflict: 'room_id,user_id' });
 
     return res.status(201).json({ ...room, members_count: 1, current_user_role: 'owner' });
   } catch (err) {
@@ -213,12 +235,12 @@ router.post('/rooms/:id/join', authMiddleware, async (req, res) => {
 
     const { count } = await supabase.from('room_members').select('*', { count: 'exact', head: true }).eq('room_id', roomId);
     if (room.max_users && count >= room.max_users) {
-        return res.status(400).json({ error: 'A sala já está cheia' });
+      return res.status(400).json({ error: 'A sala já está cheia' });
     }
 
     const { data: newMember, error: insertError } = await supabase.from('room_members').insert([{ room_id: roomId, user_id: userId, role: 'user' }]).select().single();
     if (insertError) return res.status(500).json({ error: insertError.message });
-    
+
     return res.json({ success: true, member: newMember });
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao buscar sala.' });
@@ -302,7 +324,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
     const { data: members } = await supabase
       .from('room_members')
       .select('user_id');
-      
+
     let unique_users = 0;
     if (members) {
       const uniqueIds = new Set(members.map(m => m.user_id));

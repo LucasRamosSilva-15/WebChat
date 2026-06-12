@@ -8,6 +8,7 @@ import { apiRequest } from '../services/api';
 import ChatSidebar from '../components/ChatSidebar';
 import MembersSidebar from '../components/MembersSidebar';
 import UserAvatar from '../components/UserAvatar';
+import SkeuoLoading from '../components/SkeuoLoading';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
@@ -395,20 +396,19 @@ const Chat = () => {
             try {
                 const roomData = await apiRequest(`/rooms/${room}`);
                 setCurrentRoom(roomData);
-                roomDisplayName = roomData.name || room;
+                roomDisplayName = roomData?.name || room;
             } catch (err) {
                 console.error("Erro ao carregar detalhes da sala:", err);
                 setCurrentRoom({ name: room });
-            } finally {
-                setRoomLoading(false);
             }
 
             try {
                 const apiMessages = await apiRequest(`/rooms/${room}/messages`);
-                const mappedMessages = apiMessages.map(msg => ({
+                const mappedMessages = Array.isArray(apiMessages) ? apiMessages.map(msg => ({
                     messageId: msg.id,
                     text: msg.content,
                     sender: msg.user_name || 'Usuário',
+                    userId: msg.user_id,
                     isMe: msg.user_id === currentUserId,
                     time: msg.created_at,
                     image: msg.image_url || null,
@@ -416,12 +416,12 @@ const Chat = () => {
                     likes: [],
                     isFavorite: false,
                     isEdited: false
-                }));
+                })) : [];
 
                 if (mappedMessages.length > 0) {
                     setMessages(mappedMessages);
                 } else {
-                    setMessages([{ text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                    setMessages([{ messageId: "system-welcome", text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
                 }
             } catch (error) {
                 console.error("Erro ao carregar mensagens da API:", error);
@@ -431,11 +431,13 @@ const Chat = () => {
                         setMessages(JSON.parse(savedMessages));
                     } catch (e) {
                         console.error("Erro ao fazer parse de mensagens locais:", e);
-                        setMessages([{ text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                        setMessages([{ messageId: "system-error", text: "Não foi possível carregar as mensagens agora.", sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
                     }
                 } else {
-                    setMessages([{ text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                    setMessages([{ messageId: "system-error", text: "Não foi possível carregar as mensagens agora.", sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
                 }
+            } finally {
+                setRoomLoading(false);
             }
         };
 
@@ -663,16 +665,11 @@ const Chat = () => {
 
     if (roomLoading) {
         return (
-            <main className="reveal flex-grow flex items-center justify-center px-6">
-                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center animate-fade-in-up">
-                    <div className="w-20 h-20 bg-[#f4f5f7] text-[#86868b] rounded-full mx-auto flex items-center justify-center border border-black/5 mb-6 shadow-inner text-[36px]">
-                        <FaSignOutAlt />
-                    </div>
-                    <h1 className="hero-title text-[28px] font-semibold mb-2">
-                        Carregando sala...
-                    </h1>
-                </div>
-            </main>
+            <SkeuoLoading
+                title="Carregando conversa..."
+                subtitle="Sincronizando sala, mensagens e membros."
+                variant="chat"
+            />
         );
     }
 

@@ -70,6 +70,7 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - ✅ Telas de erro de conexão — exibe mensagem caso não consiga conectar ao backend ou a sala não for encontrada.
 - 🟡 Componente UserAvatar — usado no chat para renderizar as fotos ou iniciais, mas o status de online ainda precisa aprimoramento em tempo real.
 - ⚠️ Melhorar o sistema de chat privado
+- ✅ Adicionar uma tela de carregamento
 
 ### Rooms.jsx
 
@@ -92,6 +93,11 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - ✅ Modal de Criação de Sala — overlay interativo com formulário para definir nome, capacidade e categoria da nova sala.
 - ✅ Barra de pesquisa por texto — barra interativa que filtra as salas criadas em tempo real ao digitar.
   - ⚪ **Observação:** A busca atualmente funciona filtrando as salas em memória (no frontend). Caso hajam centenas de salas futuras, precisará virar uma busca via API.
+- ⚠️ Corrigir erro de duplicação de salas quando cria uma sala
+- 🔴 Fazer o sistema de busca funcionar direto na API
+- 🔴 Fazer os botões de administração da sala
+- 🔴 Fazer o sistema de cargos
+- 🔴 Fazer o sistema de denúncias
 
 ### Login.jsx & Register.jsx
 
@@ -166,6 +172,7 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - 🔴 Duas nuvens de background laterais para enfeite visual
 - 🔴 Sistema e aba central de notificações
 - 🔴 Seleção e suporte multi-idiomas
+- 🔴 Ajeitar o visual do botão primário no modo escuro
 
 ---
 

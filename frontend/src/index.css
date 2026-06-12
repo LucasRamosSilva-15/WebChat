@@ -566,3 +566,15 @@ html.dark .hover\:bg-\[\#fee2e2\]:hover {
 html.dark .hover\:bg-\[\#e6f0ff\]:hover {
     background-color: rgba(59, 130, 246, 0.1) !important;
 }
+
+@keyframes loading-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(120%);
+  }
+  100% {
+    transform: translateX(360%);
+  }
+}

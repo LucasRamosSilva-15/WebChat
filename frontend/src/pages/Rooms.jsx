@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { socket } from '../socket';
 import { FaSearch, FaSlidersH, FaCommentAlt, FaUsers, FaExclamationTriangle, FaPlus, FaHashtag, FaStar } from 'react-icons/fa';
 import { apiRequest } from '../services/api';
+import SkeuoLoading from '../components/SkeuoLoading';
 
 
 
@@ -45,7 +46,8 @@ const CreateRoomModal = ({
     setNewRoomCategory,
     newRoomDesc,
     setNewRoomDesc,
-    onSubmit
+    onSubmit,
+    isCreatingRoom
 }) => {
     if (!isOpen) return null;
 
@@ -107,9 +109,10 @@ const CreateRoomModal = ({
                         </button>
                         <button
                             type="submit"
-                            className="skeuo-btn w-full py-3 text-[16px]"
+                            disabled={isCreatingRoom}
+                            className="skeuo-btn w-full py-3 text-[16px] disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            Criar Sala
+                            {isCreatingRoom ? "Criando..." : "Criar Sala"}
                         </button>
                     </div>
                 </form>
@@ -183,6 +186,9 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
 const Rooms = () => {
     const navigate = useNavigate();
 
+    const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+    const [roomsLoading, setRoomsLoading] = useState(true);
+    const [roomsError, setRoomsError] = useState("");
     const [customRooms, setCustomRooms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -206,6 +212,8 @@ const Rooms = () => {
 
     useEffect(() => {
         const fetchRooms = async () => {
+            setRoomsLoading(true);
+            setRoomsError("");
             try {
                 const apiRooms = await apiRequest('/rooms');
                 const mappedRooms = apiRooms.map(room => ({
@@ -221,6 +229,7 @@ const Rooms = () => {
                 setCustomRooms(mappedRooms);
             } catch (error) {
                 console.error("Erro ao carregar salas da API:", error);
+                setRoomsError("Não foi possível carregar as salas.");
                 const savedRooms = localStorage.getItem('chat_customRooms');
                 if (savedRooms) {
                     try {
@@ -229,6 +238,8 @@ const Rooms = () => {
                         console.error("Erro ao carregar salas customizadas");
                     }
                 }
+            } finally {
+                setRoomsLoading(false);
             }
         };
         fetchRooms();
@@ -254,12 +265,20 @@ const Rooms = () => {
 
     const handleCreateRoom = async (e) => {
         e.preventDefault();
+        
+        if (isCreatingRoom) return;
         if (newRoomTitle.trim() === '') return;
+
+        setIsCreatingRoom(true);
 
         try {
             const savedRoom = await apiRequest('/rooms', {
                 method: 'POST',
-                body: JSON.stringify({ name: newRoomTitle, description: newRoomDesc })
+                body: JSON.stringify({ 
+                    name: newRoomTitle.trim(), 
+                    description: newRoomDesc.trim(),
+                    category: newRoomCategory
+                })
             });
 
             const roomParam = savedRoom.id.toString();
@@ -274,8 +293,12 @@ const Rooms = () => {
                 date: new Date(savedRoom.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
             };
 
-            const updatedRooms = [...customRooms, newRoom];
-            setCustomRooms(updatedRooms);
+            setCustomRooms(prev => {
+                if (prev.some(room => room.id === newRoom.id)) {
+                    return prev;
+                }
+                return [...prev, newRoom];
+            });
 
             setIsModalOpen(false);
             setNewRoomTitle('');
@@ -284,7 +307,13 @@ const Rooms = () => {
             navigate(`/chat?room=${roomParam}`);
         } catch (error) {
             console.error("Erro ao criar sala:", error);
-            alert("Erro ao criar sala: " + error.message);
+            if (error.message && error.message.includes('Você já criou uma sala com esse nome')) {
+                alert("Você já criou uma sala com esse nome.");
+            } else {
+                alert("Erro ao criar sala: " + error.message);
+            }
+        } finally {
+            setIsCreatingRoom(false);
         }
     };
 
@@ -314,6 +343,30 @@ const Rooms = () => {
         });
     };
 
+    if (roomsLoading) {
+        return (
+            <SkeuoLoading
+                title="Carregando salas..."
+                subtitle="Buscando salas, membros e estatísticas no banco de dados."
+            />
+        );
+    }
+
+    if (roomsError && customRooms.length === 0) {
+        return (
+            <main className="reveal max-w-[1200px] mx-auto p-4 md:p-8 w-full relative space-y-8 flex items-center justify-center min-h-[50vh]">
+                <div className="skeuo-panel p-8 text-center max-w-[420px] w-full">
+                    <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full mx-auto flex items-center justify-center border border-red-100 mb-6 shadow-inner text-[24px]">
+                        <FaExclamationTriangle />
+                    </div>
+                    <h2 className="text-[22px] font-semibold text-[#1d1d1f] mb-2">Erro de Conexão</h2>
+                    <p className="text-[#86868b] text-[15px] mb-6">{roomsError}</p>
+                    <button onClick={() => window.location.reload()} className="skeuo-btn px-6 py-2.5 text-[15px]">Tentar Novamente</button>
+                </div>
+            </main>
+        );
+    }
+
     return (
         <>
             <CreateRoomModal
@@ -326,6 +379,7 @@ const Rooms = () => {
                 newRoomDesc={newRoomDesc}
                 setNewRoomDesc={setNewRoomDesc}
                 onSubmit={handleCreateRoom}
+                isCreatingRoom={isCreatingRoom}
             />
 
             <main className="reveal max-w-[1200px] mx-auto p-4 md:p-8 w-full relative space-y-8">
