@@ -7,7 +7,7 @@ const Home = () => {
         <main className="reveal flex-grow flex items-center justify-center px-6">
             <div className="skeuo-card p-10 max-w-[500px] w-full text-center">
                 <h1 className="hero-title text-[56px] md:text-[70px] font-semibold mb-4">
-                    WebChat
+                    SkyRipple
                 </h1>
                 {isLoggedIn ? (
                     <>

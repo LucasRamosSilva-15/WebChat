@@ -118,3 +118,77 @@ Cada controle interativo é desenhado como um widget mecânico que responde fisi
 3. **NÃO** omitir o chanfro brilhante interno (`inset 0 1px 0 white`) na parte superior de botões, painéis ou balões. Ele é a principal prova de que há luz batendo no topo do objeto.
 4. **NÃO** desenhar badges/chips informativos (ex: tags de status ou cargos) como elementos rasos de cor sólida. Eles devem possuir contornos físicos finos (bordas), sombras projetadas sutis e preenchimento de cor ligeiramente complexo (ou texturizado).
 5. **NÃO** desenhar inputs sem sombras internas (`inset`). Sem elas, as caixas de texto parecerão sobrepostas (como adesivos) em vez de fendas esculpidas na carcaça do aparelho.
+6. **Texto principal solto diretamente no background:** Todo hero ou título vital precisa de um painel de anteparo (`.skeuo-panel`) para que o conteúdo não se perca ou polua o fundo texturizado.
+7. **Palavra destacada com borda/sombra na mesma cor do fundo:** Usar efeitos ou contornos da mesma cor da textura circundante cria um efeito fantasma, prejudicando a leitura. A palavra de destaque precisa de cor sólida contrastante e sombras diretas.
+8. **Desalinhamento de Mockups e Heros:** O card visual ou representação do chat não pode ficar flutuando solto longe do texto em páginas de apresentação; ele deve estar envolto pela mesma superfície do painel Hero para formar um bloco visual coeso.
+9. **Inconsistência de Botões:** Ter dois botões em um grupo primário (ex: "Começar" e "Saiba Mais") com tamanhos verticais, larguras, paddings ou classes de alinhamento discrepantes, criando a percepção de erro de template.
+10. **Textos Genéricos (Landing Page de SaaS genérica):** Usar copy excessivamente frio, empresarial, jargão de B2B e ignorar o tom orgânico, leve e lúdico que o SkyRipple exige. Textos longos e sem respiro devem ser evitados.
+11. **Repetição Redundante da Temática "Céu":** Colocar ícones de nuvens excessivamente lado a lado quando a atmosfera de "céu" já está sendo transmitida pelos gradientes, cores e fluidez das sombras na tela.
+
+---
+
+## 9. Páginas Institucionais e Apresentação (Home, About, Profile)
+Ao projetar páginas informativas e institucionais como `About.jsx`, `Home.jsx` e telas de configuração, a estrutura deve garantir que o conteúdo tenha presença tátil:
+* **Uso de Painéis (`.skeuo-panel`):** Todo o conteúdo central, incluindo o "Hero", chamadas principais e formulários, deve ser agrupado e envolvido em painéis (plástico ou acrílico translúcido). Isso evita que o texto fique vulnerável diretamente sobre os padrões ou gradientes do background.
+* **Organização em Cards:** Utilize componentes de cartões com profundidade para separar visualmente as seções e categorias de informação da página.
+* **Chamadas Finais:** Seções de encerramento e CTAs principais ("Pronto para conversar?") devem habitar blocos próprios com aparência de interface física que chame para a interação.
+
+---
+
+## 10. Estrutura de Hero Sections
+As "Hero Sections" (seções de destaque no topo) definem a primeira impressão da aplicação SkyRipple. O padrão de construção deve conter:
+* **Painel Único Unificado:** O Hero deve ser constituído por um painel grande e envelopante que englobe o título principal, textos auxiliares, botões e elementos visuais ilustrativos juntos.
+* **Duas Colunas no Desktop:** O layout deve dividir o espaço harmonicamente (ex: coluna de textos e botões à esquerda, e um card representativo/mockup do chat ancorado à direita).
+* **Empilhamento Perfeito no Mobile:** Em telas pequenas, o conteúdo deve flexionar para um empilhamento ordenado e limpo (primeiro textos, depois o elemento de mockup visual), sempre dentro da mesma moldura.
+* **O Efeito de Palavras de Destaque:** Para focar uma frase (ex: "fluírem livremente"), aposte em um contraste elevado. Evite strokes/linhas que mascarem a palavra com o background. Utilize tons sólidos marcantes (Azul-claro, Ciano sólido) aliados a sombras diretas limpas (`text-shadow: 0 1px 1px rgba(255, 255, 255, 1)`) que criam efeito de encavo ou tinta alto-relevo de material durável.
+
+---
+
+## 11. Cards Informativos e Listagens
+Os cartões usados para exibir diferenciais ou elencar informações (como os de `About.jsx`) não podem ter a aparência de cartões bidimensionais/flat comuns do ecossistema Material Design.
+* **Fundo e Gradiente:** O fundo deve possuir um gradiente de clareamento (ex: de branco fosco a um leve prateado translúcido `bg-white/90`), protegendo o material das distorções do ambiente.
+* **Tratamento de Luzes e Sombras:** O card necessita de uma sombra externa sutil para flutuação (`0 8px 25px rgba(...)`) e um brilho interior que imite reflexo acrílico (`inset 0 0 20px rgba(255, 255, 255, 0.5)`).
+* **Ícones Físicos:** Ícones não devem estar chapados na tela, mas alocados dentro de "caixinhas/widgets" próprios (usando paddings menores e gradientes arredondados) que possuem seu próprio micro-relevo e chanfro.
+* **Texto Humano e Conciso:** Cards devem apresentar descrições rápidas, naturais e objetivas, evitando blocos gigantes de texto sem espaço (respiro) ou sem margens generosas.
+
+---
+
+## 12. Geometria e Layout de Botões Lado a Lado
+Quando a interface reunir múltiplos botões formandos grupos (especialmente no Hero ou barras de confirmação), o rigor geométrico se faz necessário:
+* **Padronização de Volume:** Botões do mesmo grupo visual **devem ter altura consistente** (preferivelmente uma base como `min-h-[48px]`).
+* **Uso de Flexbox:** Utilize propriedades fixas estruturais como `inline-flex`, `items-center` e `justify-center` de forma padronizada.
+* **Equilíbrio de Peso Visual:** Em duplas primárias e secundárias, o peso visual deve ser harmonioso. Utilize `.skeuo-btn` (gel cilíndrico forte) e `.btn-secondary-glossy` (material claro cromado/fosco), mas mantenha paddings e dimensões iguais.
+* **Comportamento Mobile:** Em resoluções mobile, garanta que os botões possam ocupar a largura total do container (`w-full`) e empilhem-se um sobre o outro graciosamente, mantendo o estiramento exato de ambos e o peso simétrico do painel.
+
+---
+
+## 13. Textos e Legibilidade em Backgrounds Complexos
+O SkyRipple aposta em texturas ricas de fundo e uso de gradientes e letterpresses de época. Siga as orientações para não perder o contraste na escrita:
+* Evite que as áreas úteis (que lecionam texto) fiquem em repouso estrito sobre os artefatos de fundo (linhas radiais, scanlines ou luzes de céu azuis puras). Um anteparo de plástico branco/translúcido emula painéis de comunicação tátil, resgatando a leitura e a temática central ao mesmo tempo.
+* Use o *Efeito Letterpress* (uma leve sombra paralela, clara sobre branco/cinza, preta sobre backgrounds escuros). Lembre-se que aplicar letterpress em textos contínuos muito grandes diminui a legibilidade. Restrinja-os para cabeçalhos (Headings).
+* Para contornos textuais, um relevo direto limpo sobre um gradiente é sempre mais preferível a usar linhas grossas de stroke em cores quase transparentes.
+
+---
+
+## 14. A Identidade "SkyRipple" (Linguagem Visual)
+O projeto deixou o escopo de "simples painéis de vidro flat" para mergulhar em uma interface tangível banhada por céus abertos, fluidez, conversas abertas e nostalgia refinada.
+* **Vocabulário Aprovado:** Use os termos como **Visual Clássico, Interface Tátil, Web 2.0 Clássica, Estética Aqua, Skeuomorfismo, Botões em Relevo, Cartões com Profundidade** e **Design Orgânico**.
+* **Como Descrever o App:** O SkyRipple exala "leveza", com ondulações e uma atmosfera etérea/orgânica, sempre com a âncora nos azuis, cianos e bancos iluminados.
+* **Terminologias a Evitar (O que o design NÃO é):** Evite chamar a interface estritamente de "Glassmorphism puro" ou "Dashboard SaaS genérica". Mesmo onde as técnicas de vidro são usadas (como `backdrop-blur`), elas funcionam como simulacros de **placas táteis grossas de acrílico ou resina**, reforçando botões mecânicos e chanfros visíveis, diferente das simples membranas bidimensionais fantasmagóricas vistas nas vertentes de design glassmorphism usuais em IAs genéricas.
+
+---
+
+## 15. Exemplos de Fraseologia, Contexto e Copywriting
+Quando escrever o conteúdo ou se referir às características da plataforma, alinhe a voz do SkyRipple ao design do SkyRipple.
+
+**Tom Recomendado (Exemplos Positivos):**
+* “Visual clássico e tátil, com foco na fluidez da conversa.”
+* “Interface inspirada na web dos anos 2000, onde os botões pedem para serem clicados.”
+* “Uma experiência leve, cheia de botões em relevo, cartões com profundidade e sombras suaves.”
+* “Entre e encontre seu espaço. O clima está perfeito hoje.”
+
+**O Que Evitar a Todo Custo (Exemplos Negativos):**
+* “A plataforma B2B plana para melhor agilidade de conversão corporativa.”
+* “O aplicativo utiliza glassmorphism de painel de vidro limpo para apresentar tabelas abstratas.”
+* Despachar a experiência mecânica da interface com tons extremamente corporativos e burocráticos.
+
