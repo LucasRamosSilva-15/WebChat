@@ -1,177 +1,164 @@
-# Lista de recursos que falta no frontend:
-# alguns recursos não são obrigatórios implementar, apenas se a gente conseguir implementar.
-# Data:19/05/2026
-# Ultima autalização: 9/06/2026
-# Status: Em desenvolvimento
+# SkyRipple - Recursos e Funcionalidades (Frontend)
 
-# Na Chat.jsx
+**Data inicial:** 19/05/2026  
+**Última atualização:** 12/06/2026  
+**Status geral:** Em desenvolvimento  
 
-- [X] adicionar um limite de quantas pessoas podem ter uma sala ativa
-- [X] (Parcialmente) adicionar chat privado entre usuarios, onde somente os usuarios possam ver
-- [ ] adicionar botão para deletar sala (apenas o admin ou o dono da sala) (vou precisa da minha equipe do backend para adicionar isso)
-- [X] (Parcialmente) adicionar botão para silenciar usuário (apenas admin e dono) (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] adicionar botão para banir usuário (apenas admin, dono e moderador) (vou precisa da minha equipe do backend para adicionar isso)
-- [X] (Parcialmente) adicionar botão para denunciar usuário (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] adicionar botão para denunciar sala (vou precisa da minha equipe do backend para adicionar isso)
-- [X] adicionar botão para marcar mensagem como favorita (faltar adicionar no futuro um filtro que mostrar somente as mensagens favoritas)
-- [X] adicionar um filtro que mostrar somente as mensagens favoritas
-- [X] adicionar a data da mensagem (se foi hoje mostrar so hora, se foi ontem mostrar ontem, se foi em outro dia mostrar dia, mes e ano)
-- [X] adicionar botão para sair da sala
-- [X] (Parcialmente) adicionar um sistema de administração da sala (vou precisa da minha equipe do backend para adicionar isso)
-- [X] (Parcialmente) adicionar sistema de cargo para usuarios (dono, moderador, usuario) (vou precisa da minha equipe do backend para adicionar isso)
-- [X] mostrar quantidade de usuarios onlines na sala
-- [X] (Parcialmente) mostrar os usuários que estão dentro da sala (Painel lateral direito MembersSidebar adicionado)
-- [X] adicionar a opção de apagar as mensagens enviada pelo usuário em um intervalo de 24 horas
-- [X] sistema de armazenamento de mensagens
-- [X] adicionar sistema de envio de imagens
-- [X] adicionar um sistema de edição das mensagens enviada pelo usuário
-- [X] ( Parcialmente ) ter um sistema de fixar mensagem (apenas admin) (vou precisa da minha equipe do backend para adicionar isso - UI base implementada)
-- [X] adicionar um sistema de curtir mensagem (e mostrar a quantidade de curtida)
-- [X] ter um sistema de envio de mensagens em tempo real
-- [X] arrumar bugs visuais
-- [ ] adicionar sistema de envio de áudio
-- [ ] adicionar sistema de envio de gifs
-- [ ] adicionar sistema de envio de emojis
-- [X] refinamento visual ou redesign (Chat.jsx totalmente reestilizado para Web 2.0 / Skeuomorphism)
-- [X] implementar novo layout de 3 colunas (Sidebar de Navegação, Chat Central e Painel de Membros)
-- [X] adicionar estado vazio (Empty State) intuitivo para salas sem mensagens
-- [X] adicionar suporte a mensagens exclusivas do sistema (System Messages)
-- [X] corrigir botões que não faz nada
-- [X] ( Parcialmente ) adicionar uma busca de mensagens ou as mensagens de um determinado usuario
-# Na Rooms.jsx
+**Nota:** Este arquivo (`Recursos.md`) é usado para documentar os recursos próximos da versão atual do projeto, listando o que já foi feito e o que está pendente no escopo principal. Ideias mais distantes e novas páginas planejadas foram separadas na seção de **Ideias Futuras**, e também podem ser encontradas no arquivo `Planos_Futuros.md`.
 
-- [X] arrumar bugs visuais
-- [X] fazer a caixinha que mostra quantidade de usuarios funcionar corretamente
-- [X] fazer a caixinha que mostra a data da sala funcionar corretamente
-- [ ] fazer a caixinha de denuncias funcionar corretamente
-- [X] mostrar a quantidade de usuários que tem uma sala
-- [X] adicionar botão para favoritar sala 
-- [X] implementar filtro por categoria
-- [ ] adicionar um botão de denunciar sala
-- [ ] criar um sistema de denuncias
-- [X] adicionar um sistema de sala cheia
-- [X] mostrar as salas criadas
-- [X] mostrar quantas salas foram criadas
-- [X] mostrar quantidade de usuários 
-- [ ] melhorar o sistema que mostra os usuários onlines (o sistema atual tá muito errado, pois mostra que tem 6 usuários onlines, sendo que tem apenas 1)
-# Na Suporte.jsx (ideia de pagina) (vou precisa da minha equipe do backend para adicionar isso)
+---
 
-- [ ] mostrar salas que foram denunciadas
-- [ ] mostrar usuários que foram denunciados
-- [ ] mostrar salas que foram banidas
-- [ ] mostrar as suas denuncias
-- [ ] ter uma seção de perguntas mais frequentes (FAQ)
-- [ ] refinamento visual
-# Em Geral
+## Legenda de Status
 
-- [ ] adicionar duas nuvens grande no fundo, uma do lado direito e outra do lado esquerdo para dar efeito visual melhor
-- [X] ter um sistema login e logout parcialmente funcional
-- [X] ter uma navegação funcional
-- [X] deixar as paginas Chat.jsx, Rooms.jsx, Custom.jsx, Suporte.jsx e etc somente acessivel para usuarios 
-- [X] padronizar avatar sem foto em Navbar, Chat, MembersSidebar e Profile;
-- [ ] adicionar que paginas de administração são acessivel com um usuário que tem id espécifico (que são: o admin da sala ou moderador, admin do site ou moderador e pode ser a equipe do site)
-- [X] (Parcialmente) refinamento visual ou redesign de algumas paginas (Chat.jsx e componentes satélites totalmente refeitos)
-- [X] testar novos layouts (LayoutDemo1 validado e aplicado no Chat principal)
-- [X] adicionar uma identidade visual mais unica (Identidade clássica retrô-moderna Web 2.0 definida)
-- [X] corrigir o tema escuro e os bugs visuais
-- [ ] corrigir o sistema de contador de usuários onlines
-- [X] o usuário teve logado em Home.jsx mudar a mensagem principal e botão para entrar em escolher uma sala
-- [ ] adicionar um sistema de escolha de idiomas
-- [X] adicionar um sistema de escolha de cores
-- [X] adicionar um sistema de escolha de cores do fundo  
-- [ ] adicionar um sistema de notificações 
-- [ ] criar uma aba de notificações
-- [ ] adicionar criptografia nos usuarios, nas mensagens, nas senhas e nos emails (e etc)
+- ✅ **Concluído:** Totalmente finalizado no frontend.
+- 🟡 **Parcialmente implementado:** A interface/UI está pronta, mas faltam detalhes ou integração.
+- 🔴 **Pendente:** Ainda não iniciado ou faltando fazer.
+- 🔵 **Depende do backend:** A lógica exige desenvolvimento ou suporte da equipe do backend.
+- 🟣 **Ideia futura:** Planejado para o futuro, sem prioridade no momento.
+- ⚠️ **Precisa revisar / bug:** Implementado, mas apresenta erros e precisa de correções.
+- ⚪ **Observação:** Teve que mudar umas coisas para conseguir fazer funcionar ou implementar.
 
-# Em Login.jsx
+---
 
-- [ ] fazer um sistema de login funcional (vou precisa da minha equipe do backend para adicionar isso)
-- [X] ter um sistema de login parcialmente funcional
-- [X] adicionar uma opção de fazer o login com a conta google (ainda vamos implementar o sistema no futuro)
-- [ ] adicionar um sistema de recuperação de senha (vou precisa da minha equipe do backend para adicionar isso)
+## Resumo Geral
 
-# Em Register.jsx
+A base estrutural do frontend está muito bem encaminhada com uma identidade visual clara (Skeuomorfismo). O sistema de roteamento, personalização de temas, layout principal das salas e painéis de navegação estão **Concluídos**. As funções de moderação (silenciar, banir, denunciar) e a persistência real de autenticação estão em estado **Parcial** ou **Dependendo do Backend**. Existem alguns detalhes **Pendentes** relacionados a envio de mídias (áudio, gifs) e suporte multi-idioma.
 
-- [ ] fazer um sistema de registro funcional (vou precisa da minha equipe do backend para adicionar isso)
-- [X] ter um sistema de registro parcialmente funcional
-- [X] adicionar uma opção de fazer o registro com a conta google (ainda vamos implementar o sistema no futuro)
-- [ ] implementar sistema de confirmação de email (vou precisa da minha equipe do backend para adicionar isso)
+---
 
-# Na About.jsx
+## Recursos por Página
 
-- [X] Atualizar a caixinha A Hospedagem
-- [X] Informações sobre o site e o projeto 
-- [ ] refinamento visual
-- [ ] atualizar layout para um novo layout melhor
-# Na Navbar.jsx
+### Chat.jsx
 
-- [X] adicionar sistema de modo escuro e claro
-- [ ] adicionar sistema de idioma
-- [X] adicionar a opção de configurações
-- [X] Corrigir bugs visuais
-- [X] adicionar icones consistentes
-- [ ] criar um sistema de notificação e mostrar um icone na navbarque mostrar as notificações recebidas (no futuro vou criar uma aba de notificações)
+*Status: A interface principal está construída e estilizada. As interações básicas funcionam, restando pendências de mídia e moderação avançada.*
 
-# Na Admin.jsx (ideia de pagina) (ideia de sala de administração)
+- ✅ Adicionar um limite de pessoas por sala ativa
+- ✅ Marcar mensagem como favorita
+- ✅ Filtro para mostrar somente mensagens favoritas
+- ✅ Data e hora dinâmica nas mensagens
+- ✅ Botão para sair da sala
+- ✅ Mostrar quantidade de usuários online na sala
+- ✅ Opção de apagar mensagens próprias (intervalo 24h)
+- ✅ Sistema de armazenamento de mensagens
+- ✅ Sistema de envio de imagens
+- ✅ Sistema de edição de mensagens próprias
+- ✅ Sistema de curtir mensagem e ver quantidade de curtidas
+- ✅ Envio de mensagens em tempo real
+- ✅ Arrumar bugs visuais
+- ✅ Refinamento visual/redesign (Web 2.0 / Skeuomorfismo)
+- ✅ Novo layout de 3 colunas (Sidebar, Chat Central e Painel de Membros)
+- ✅ Estado vazio (Empty State) para salas sem mensagens
+- ✅ Suporte a mensagens exclusivas do sistema (System Messages)
+- ✅ Corrigir botões sem ação
+- 🟡 Chat privado entre usuários
+- 🟡 Botão para silenciar usuário (UI pronta, depende do backend)
+- 🟡 Botão para denunciar usuário (UI pronta)
+- 🟡 Sistema de administração da sala
+- 🟡 Sistema de cargos para usuários (dono, moderador, usuário)
+- 🟡 Mostrar os usuários presentes (MembersSidebar adicionado)
+- 🟡 Sistema de fixar mensagem (UI base implementada, restrito admin)
+- 🟡 Busca de mensagens (geral ou por usuário)
+- 🔵 Botão para deletar sala (admin/dono)
+- 🔵 Botão para banir usuário
+- 🔵 Botão para denunciar sala
+- 🔴 Sistema de envio de áudio
+- 🔴 Sistema de envio de gifs
+- 🔴 Sistema de envio de emojis
 
-- [ ] implementar sistema de administração (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] implementar sistema de banimento de salas (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] implementar sistema de banimento de usuarios (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] implementar sistema de moderação de salas (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] implementar sistema de moderação de usuários (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] adicionar um caixinha grande contendo uma listas contendo as denuncias de salas e usuarios (vou precisa da minha equipe do backend para adicionar isso)
+### Rooms.jsx
 
-# Em Settings.jsx (ideia de pagina) (ideia de configurações)
+*Status: Listagem, filtros e apresentação consolidadas. Pendências concentradas em moderação de salas.*
 
-- [ ] criar pagina de configurações (vou precisa da minha equipe do backend para adicionar isso)
+- ✅ Arrumar bugs visuais
+- ✅ Caixinha que mostra a quantidade de usuários
+- ✅ Caixinha que mostra a data da criação da sala
+- ✅ Mostrar quantidade total de membros na sala
+- ✅ Botão para favoritar sala
+- ✅ Implementar filtro por categoria
+- ✅ Sistema visual de sala cheia
+- ✅ Mostrar a lista de salas criadas
+- ✅ Mostrar quantidade total de salas criadas
+- ✅ Mostrar quantidade total de usuários globais
+- 🔴 Fazer a caixinha de denúncias funcionar
+- 🔴 Botão de denunciar sala
+- 🔵 Criar um sistema profundo de denúncias
+- ⚠️ Melhorar contador de usuários online (correção de contagem incorreta)
 
-# Em NotFound.jsx (vai vários erros) (ideia de pagina) (ideia de página de erro 404)
+### Login.jsx & Register.jsx
 
-- [X] criar pagina de erro 404
-- [ ] adicionar outros tipos de erros
-- [ ] mostrar tipo de erro
-- [ ] mostrar uma imagem relacionada ao erro
-- [ ] mostrar uma mensagem relacionada ao erro
-- [ ] mostrar um botão de voltar para pagina inicial
+*Status: Telas criadas e parcialmente funcionais, dependendo da finalização da API para autenticação real.*
 
-# Em ServerStatus.jsx (vai vários status) (ideia de pagina) (ideia de página de status do servidor)
+- ✅ Login funcional (frontend e backend)
+- ✅ Registro funcional (frontend e backend)
+- 🟡 Opção de login/registro via Google (interface criada)
+- 🔵 Sistema de recuperação de senha
+- 🔵 Sistema de confirmação de e-mail
 
-- [ ] criar pagina de status do servidor (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] mostrar tipo de status
-- [ ] mostrar uma imagem relacionada ao status
-- [ ] mostrar uma mensagem relacionada ao status
-- [ ] mostrar um botão de voltar para pagina inicial
+### About.jsx
 
-# Em RoomConfig.jsx (ideia de pagina) (ideia de configurações da sala)
+*Status: Página recriada e alinhada à nova identidade visual.*
 
-- [ ] criar pagina de configurações da sala (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] mostrar um botão de voltar para pagina inicial
+- ✅ Atualizar a caixinha "A Hospedagem"
+- ✅ Inserir informações sobre o site e o projeto
+- ✅ Refinamento visual aplicado (novo layout Skeuomórfico completo)
 
-# Em Feedback.jsx (ideia de pagina) (ideia de feedback)
+### Navbar.jsx
 
-- [ ] criar pagina de feedback (vou precisa da minha equipe do backend para adicionar isso)
-- [ ] mostrar um botão de voltar para pagina inicial
-- [ ] mostrar um botão de enviar feedback
-- [ ] mostrar um botão de cancelar
-- [ ] mostrar um botão de limpar
-- [ ] mostrar um botão de confirmar
-- [ ] mostrar um botão de cancelar
+*Status: Estrutura, botões de ação e temas estão sólidos. Faltam idiomas e notificações globais.*
 
-# Criar um README.md para o projeto
+- ✅ Sistema de modo escuro e claro
+- ✅ Adicionar opção de configurações
+- ✅ Corrigir bugs visuais
+- ✅ Adicionar ícones consistentes
+- 🔴 Sistema de alteração de idioma
+- 🔴 Ícone e sistema de notificações recebidas na barra
 
-- [ ] criar pagina de informações sobre o projeto
+### NotFound.jsx (Erros)
 
-# Criar várias documentações
+*Status: Página básica 404 criada, precisa evoluir para capturar falhas variadas.*
 
-- [ ] criar documentação sobre o projeto
-- [ ] criar documentação sobre o código
-- [ ] criar documentação sobre a API
-- [ ] criar documentação sobre os testes
-- [ ] criar documentação sobre as tecnologias
-- [ ] criar documentação sobre o segurança
-- [ ] criar documentação sobre o design
-- [ ] criar documentação sobre o banco de dados
-- [ ] criar documentação sobre o backend
-- [ ] criar documentação sobre o frontend
-- [ ] criar documentação sobre o deploy
-- [ ] criar documentação sobre o uso
+- ✅ Criar página de erro 404
+- 🔴 Adicionar tratamento para outros tipos de erros
+- 🟡 Mostrar código do tipo de erro
+- ✅ Mostrar imagem relacionada ao erro
+- 🟡 Mostrar mensagem explicativa
+- ✅ Adicionar botão de voltar para a página inicial
+
+### 🌐 Geral (Estilo, Infraestrutura e Layout)
+
+- ✅ Navegação funcional do sistema
+- ✅ Proteger rotas (Chat, Rooms, Custom restritos a logados)
+- ✅ Padronizar avatar sem foto nos painéis
+- ✅ Refinamento visual de diversas páginas
+- ✅ Testar novos layouts estruturais
+- ✅ Identidade visual única estabelecida (Clássica/Retrô-Moderna Web 2.0)
+- ✅ Corrigir modo escuro global
+- ✅ Se logado na Home, alterar chamada para "Escolher uma sala"
+- ✅ Sistema central de escolha de cores do tema
+- ✅ Sistema central de escolha do background
+- ✅ Sistema de autenticação (login/logout) básico
+- 🔵 Controle de acesso via ID para páginas administrativas
+- 🔵 Criptografia ponta-a-ponta (senhas, emails e mensagens)
+- 🔴 Duas nuvens de background laterais para enfeite visual
+- 🔴 Sistema e aba central de notificações
+- 🔴 Seleção e suporte multi-idiomas
+
+---
+
+## 🔮 Ideias Futuras (Planos_Futuros.md)
+
+As seguintes páginas, módulos e documentos representam ideias de longo prazo e foram movidas logicamente para o planejamento futuro. Não são prioridades na versão atual.
+
+### Páginas e Telas
+
+- 🟣 **Admin.jsx:** Sala de administração global. Painel central com banimento de usuários, moderação e lista gigante de denúncias, e uma aba que mostrar os feedbacks dos usuários.
+- 🟣 **Settings.jsx:** Página dedicada inteiramente para as configurações do usuário.
+- 🟣 **ServerStatus.jsx:** Página contendo os status em tempo real do backend, ping, imagens e informações de queda de servidor.
+- 🟣 **RoomConfig.jsx:** Página aprofundada de configurações internas e regras que gerem uma sala específica.
+- 🟣 **Feedback.jsx:** Página interativa com botões de limpar, enviar e cancelar, para coletar feedback sobre a plataforma.
+- 🟣 **Suporte.jsx:** Tela mostrando salas banidas, denúncias ativas, e um FAQ interativo.
+
+### Documentações
+
+- 🟣 **README.md Principal:** Apresentação oficial para a raiz do repositório.
+- 🟣 **Manuais:** Criar documentações sobre o código, a API, os testes, as tecnologias empregadas, os protocolos de segurança, design system (além do atual), diagramas de banco de dados, fluxos de backend/frontend, processos de deploy e um guia de uso final.
