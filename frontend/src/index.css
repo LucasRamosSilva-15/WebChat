@@ -5,6 +5,7 @@
 @import "./styles/text.css";
 @import "./styles/loading.css";
 @import "./styles/home.css";
+@import "./styles/about.css";
 
 @variant dark (&:where(.dark, .dark *));
 
