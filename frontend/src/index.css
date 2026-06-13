@@ -8,6 +8,7 @@
 @import "./styles/about.css";
 @import "./styles/auth.css";
 @import "./styles/avatar.css";
+@import "./styles/layout.css";
 
 @variant dark (&:where(.dark, .dark *));
 

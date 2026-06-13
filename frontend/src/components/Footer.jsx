@@ -5,8 +5,8 @@ const Footer = () => {
     if (location.pathname === '/chat') return null;
 
     return (
-        <footer className="py-10 text-center mt-auto relative z-10">
-            <p className="text-[12px] text-black/40 dark:text-white/40 font-normal">
+        <footer className="app-footer">
+            <p className="app-footer-text">
                 Copyright © 2026 SkyRipple Inc. Todos os direitos reservados.
             </p>
         </footer>
