@@ -1,55 +1,26 @@
 import React from 'react';
 
 const UserAvatar = ({ src, name = '?', size = 'md', showStatus = false, status = 'online', onClick, className = '' }) => {
-    const sizes = {
-        xs: 'w-6 h-6 text-[10px]',
-        sm: 'w-8 h-8 text-[12px]',
-        md: 'w-10 h-10 text-[14px]',
-        lg: 'w-14 h-14 text-[18px]',
-        xl: 'w-16 h-16 text-[20px]',
-        '2xl': 'w-24 h-24 text-[32px]'
-    };
-
-    const statusSizes = {
-        xs: 'w-2 h-2',
-        sm: 'w-2.5 h-2.5',
-        md: 'w-3 h-3',
-        lg: 'w-3.5 h-3.5',
-        xl: 'w-4 h-4',
-        '2xl': 'w-5 h-5'
-    };
-
-    const sizeClass = sizes[size] || sizes.md;
-    const statusClass = statusSizes[size] || statusSizes.md;
+    const validSize = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'].includes(size) ? size : 'md';
+    const validStatus = ['online', 'offline', 'busy', 'away'].includes(status) ? status : 'online';
     const initial = name ? name.charAt(0).toUpperCase() : '?';
-
-    const statusColors = {
-        online: 'from-emerald-400 to-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]',
-        offline: 'from-gray-400 to-gray-500 shadow-[0_0_6px_rgba(156,163,175,0.5)]',
-        busy: 'from-red-400 to-red-500 shadow-[0_0_6px_rgba(239,68,68,0.5)]',
-        away: 'from-amber-400 to-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]'
-    };
-
-    const currentStatusColor = statusColors[status] || statusColors.online;
-
-    const pClass = (size === '2xl') ? 'p-[3px]' : 'p-[2px]';
 
     return (
         <div
-            className={`relative inline-flex shrink-0 ${onClick ? 'cursor-pointer transition-all duration-300 hover:scale-105' : ''} ${className}`}
+            className={`avatar-wrapper ${onClick ? 'avatar-wrapper-clickable' : ''} ${className}`}
             onClick={onClick}
         >
-            <div className={`${sizeClass} rounded-full ${pClass} bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-700 dark:to-sky-900 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]`}>
+            <div className={`avatar-${validSize} avatar-ring avatar-ring-${validSize}`}>
                 <div className="webchat-avatar-inner">
                     {src ? (
-                        <img src={src} alt={name} className="w-full h-full object-cover" />
+                        <img src={src} alt={name} className="avatar-image" />
                     ) : (
                         <span>{initial}</span>
                     )}
                 </div>
             </div>
             {showStatus && (
-                <span className={`absolute bottom-0 right-0 ${statusClass} bg-gradient-to-b ${currentStatusColor} rounded-full border-2 border-white dark:border-[#0f172a]`} />
+                <span className={`avatar-status avatar-status-${validSize} avatar-status-${validStatus}`} />
             )}
         </div>
     );
