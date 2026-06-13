@@ -60,9 +60,9 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     if (msg.isMe) {
         return (
-            <div ref={innerRef} className="flex justify-end px-3 py-[2px] group animate-fade-in-up">
-                <div className="flex flex-col items-end max-w-[80%] group/msg">
-                    <div className={`skeuo-bubble-sent rounded-[14px] rounded-tr-sm px-3 py-1.5 flex flex-col relative transition-all duration-300 ${matchClass}`}>
+            <div ref={innerRef} className="message-bubble-row message-bubble-row-own group animate-fade-in-up">
+                <div className="message-bubble-wrapper message-bubble-wrapper-own group/msg">
+                    <div className={`message-bubble-card message-bubble-card-own skeuo-bubble-sent ${matchClass}`}>
                         <div className="absolute top-2 right-full mr-2 group/menu z-10">
                             <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -89,14 +89,14 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         {msg.image && (
                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-white/20 shadow-sm" />
                         )}
-                        {msg.text && <p className="text-[13px] leading-tight">{msg.text}</p>}
+                        {msg.text && <p className="message-bubble-text">{msg.text}</p>}
                     </div>
-                    <div className="flex items-center justify-end gap-2 mt-0.5 px-1 w-full">
+                    <div className="message-bubble-footer message-bubble-footer-own">
                         <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-gray-200' : ''}`}>
                             {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                             {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                         </button>
-                        <span className="text-[10px] text-[#86868b] font-medium flex items-center gap-1.5">
+                        <span className="message-bubble-time">
                             {mockRoles && mockRoles[msg.sender] === 'Dono' && (
                                 <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
                                     <FaCrown size={8} /> DONO
@@ -116,10 +116,10 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
     }
 
     return (
-        <div ref={innerRef} className="flex gap-2 px-3 py-[2px] group animate-fade-in-up">
+        <div ref={innerRef} className="message-bubble-row message-bubble-row-other group animate-fade-in-up">
             <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 hover:opacity-80 transition-opacity" />
-            <div className="flex flex-col items-start max-w-[80%] group/msg">
-                <span className="text-[11.5px] text-[#1d1d1f] font-bold flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
+            <div className="message-bubble-wrapper message-bubble-wrapper-other group/msg">
+                <span className="message-bubble-author">
                     {msg.sender}
                     {mockRoles && mockRoles[msg.sender] === 'Dono' && (
                         <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
@@ -132,7 +132,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </span>
                     )}
                 </span>
-                <div className={`skeuo-bubble-received rounded-[14px] rounded-tl-sm px-3 py-1.5 flex flex-col relative transition-all duration-300 ${matchClass}`}>
+                <div className={`message-bubble-card message-bubble-card-other skeuo-bubble-received ${matchClass}`}>
                     <div className="absolute top-2 left-full ml-2 group/menu z-10">
                         <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -151,10 +151,10 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     {msg.image && (
                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-black/5 dark:border-white/5 shadow-sm" />
                     )}
-                    {msg.text && <p className="text-[13px] text-[#1d1d1f] dark:text-[#f8fafc] leading-tight">{msg.text}</p>}
+                    {msg.text && <p className="message-bubble-text">{msg.text}</p>}
                 </div>
-                <div className="flex items-center justify-start gap-2 mt-0.5 ml-1 px-1 w-full">
-                    <span className="text-[10px] text-[#86868b] font-medium">{msgTime} {msg.isEdited && "(editada)"}</span>
+                <div className="message-bubble-footer message-bubble-footer-other">
+                    <span className="message-bubble-time">{msgTime} {msg.isEdited && "(editada)"}</span>
                     <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-gray-200' : ''}`}>
                         {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                         {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
