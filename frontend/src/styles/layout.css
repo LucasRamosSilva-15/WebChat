@@ -1,5 +1,4 @@
 @layer components {
-    /* FOOTER */
     .app-footer {
         padding-top: 2.5rem;
         padding-bottom: 2.5rem;
@@ -17,7 +16,6 @@
         color: rgba(255, 255, 255, 0.4);
     }
 
-    /* DROPDOWNS */
     .app-dropdown-panel {
         position: absolute;
         right: 0;
@@ -85,7 +83,6 @@
         cursor: not-allowed;
     }
 
-    /* SETTINGS MODAL */
     .app-settings-overlay {
         position: fixed;
         inset: 0;

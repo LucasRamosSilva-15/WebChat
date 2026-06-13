@@ -651,11 +651,11 @@ const Chat = () => {
 
     if (!room) {
         return (
-            <main className="reveal flex-grow flex items-center justify-center px-6">
-                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center">
-                    <h1 className="hero-title text-[28px] font-semibold mb-2">Sala inválida</h1>
-                    <p className="text-[#86868b] text-[15px] mb-8">Nenhuma sala foi informada.</p>
-                    <button onClick={() => navigate('/rooms')} className="skeuo-btn px-8 py-3 w-full text-[15px]">
+            <main className="reveal chat-state-page">
+                <div className="skeuo-panel chat-state-panel">
+                    <h1 className="hero-title chat-error-title">Sala inválida</h1>
+                    <p className="chat-error-desc">Nenhuma sala foi informada.</p>
+                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn">
                         Voltar para Salas
                     </button>
                 </div>
@@ -675,18 +675,18 @@ const Chat = () => {
 
     if (roomFullError) {
         return (
-            <main className="reveal flex-grow flex items-center justify-center px-6">
-                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center animate-fade-in-up">
-                    <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full mx-auto flex items-center justify-center border border-red-100 mb-6 shadow-inner text-[36px]">
+            <main className="reveal chat-state-page">
+                <div className="skeuo-panel chat-state-panel animate-fade-in-up">
+                    <div className="chat-error-icon chat-error-icon-red">
                         <FaSignOutAlt />
                     </div>
-                    <h1 className="hero-title text-[28px] font-semibold mb-2 text-[#1d1d1f]">
+                    <h1 className="hero-title chat-error-title text-[#1d1d1f] dark:text-[#f8fafc]">
                         Acesso Negado
                     </h1>
-                    <p className="text-[#86868b] text-[15px] mb-8 leading-relaxed">
+                    <p className="chat-error-desc leading-relaxed">
                         {roomFullError}
                     </p>
-                    <button onClick={() => navigate('/rooms')} className="skeuo-btn px-8 py-3 w-full text-[15px]">Voltar para Salas</button>
+                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn">Voltar para Salas</button>
                 </div>
             </main>
         );
@@ -694,21 +694,21 @@ const Chat = () => {
 
     if (!hasJoined && !roomFullError) {
         return (
-            <main className="reveal flex-grow flex items-center justify-center px-6">
-                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center animate-fade-in-up">
-                    <div className="w-20 h-20 bg-[#f4f5f7] text-[#86868b] rounded-full mx-auto flex items-center justify-center border border-black/5 mb-6 shadow-inner text-[36px]">
+            <main className="reveal chat-state-page">
+                <div className="skeuo-panel chat-state-panel animate-fade-in-up">
+                    <div className="chat-error-icon chat-error-icon-gray">
                         <FaSignOutAlt />
                     </div>
 
-                    <h1 className="hero-title text-[28px] font-semibold mb-2">
+                    <h1 className="hero-title chat-error-title">
                         Entrar na Sala
                     </h1>
 
-                    <p className="text-[15px] font-normal text-[#86868b] mb-8 tracking-tight leading-snug">
+                    <p className="chat-error-desc tracking-tight leading-snug">
                         Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?
                     </p>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="chat-confirm-actions">
                         <button
                             onClick={() => {
                                 const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
@@ -718,7 +718,7 @@ const Chat = () => {
                                 }
                                 setHasJoined(true);
                             }}
-                            className="skeuo-btn w-full py-3 text-[16px] font-medium"
+                            className="skeuo-btn chat-state-btn font-medium"
                         >
                             Entrar na Sala
                         </button>
@@ -728,7 +728,7 @@ const Chat = () => {
                                 setRoomFullError(false);
                                 navigate('/rooms');
                             }}
-                            className="w-full py-3 text-[16px] font-medium text-[#ef4444] hover:bg-[#fee2e2] rounded-[12px] transition-colors"
+                            className="chat-confirm-cancel-btn"
                         >
                             Cancelar
                         </button>
@@ -828,9 +828,9 @@ const Chat = () => {
                 </div>
             )}
 
-            <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden animate-chat-shell">
+            <div className="chat-shell animate-chat-shell">
                 <ChatSidebar />
-                <main className="flex-1 min-w-0 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative animate-chat-panel-main">
+                <main className="chat-main animate-chat-panel-main">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
 
                     <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] shrink-0">
