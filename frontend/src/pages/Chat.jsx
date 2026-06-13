@@ -940,15 +940,15 @@ const Chat = () => {
                         </div>
                     )}
 
-                    <div ref={chatContainerRef} className="flex-grow overflow-y-auto space-y-0.5 mb-2 pr-2 pt-2 chat-container">
+                    <div ref={chatContainerRef} className="chat-messages-area chat-container">
 
                         {messages.length === 0 && !showFavoritesOnly && (
-                            <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4 animate-fade-in-up opacity-80">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-b from-gray-50 to-gray-200 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)] flex items-center justify-center mb-4 text-[#86868b]">
+                            <div className="chat-messages-empty animate-fade-in-up">
+                                <div className="chat-messages-empty-icon">
                                     <FaComments size={24} className="drop-shadow-sm text-[#0071e3]/60" />
                                 </div>
-                                <h3 className="text-[15px] font-semibold text-[#1d1d1f] mb-1">Nenhuma mensagem ainda</h3>
-                                <p className="text-[13px] text-[#86868b]">Seja o primeiro a conversar nesta sala.</p>
+                                <h3 className="chat-messages-empty-title">Nenhuma mensagem ainda</h3>
+                                <p className="chat-messages-empty-desc">Seja o primeiro a conversar nesta sala.</p>
                             </div>
                         )}
 
@@ -976,7 +976,7 @@ const Chat = () => {
                         })}
 
                         {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
-                            <div className="text-center text-[#86868b] mt-10 text-[14px]">
+                            <div className="chat-messages-empty-fav">
                                 Você ainda não tem nenhuma mensagem favorita nesta sala.
                             </div>
                         )}
