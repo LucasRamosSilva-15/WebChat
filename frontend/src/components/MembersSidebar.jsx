@@ -79,7 +79,7 @@ const MembersSidebar = ({ roomId, currentUserId, onlineUsers = [], onlineCount =
     const displayOnlineCount = isSocketOnline ? Math.max(onlineCount, finalOnlineMembers.length) : finalOnlineMembers.length;
 
     return (
-        <div className="w-[220px] h-[calc(100vh-48px)] sticky top-[48px] bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-l border-[#d2d2d7] dark:border-white/5 shadow-[inset_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_1px_0_0_rgba(255,255,255,0.02)] hidden xl:flex flex-col shrink-0 overflow-y-auto">
+        <div className="w-[220px] h-[calc(100vh-48px)] sticky top-[48px] bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-l border-[#d2d2d7] dark:border-white/5 shadow-[inset_1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_1px_0_0_rgba(255,255,255,0.02)] hidden xl:flex flex-col shrink-0 overflow-y-auto animate-chat-panel-right">
             {loading ? (
                 <div className="p-4 text-center text-[12px] text-[#86868b]">Carregando membros...</div>
             ) : error ? (

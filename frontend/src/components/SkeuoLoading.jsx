@@ -6,10 +6,10 @@ const SkeuoLoading = ({ title = "Carregando...", subtitle = "Buscando informa√ß√
       ? "flex-1 min-w-0 flex items-center justify-center h-full bg-[#f8fafc] dark:bg-[#020617] px-6"
       : "reveal flex-grow flex items-center justify-center px-6 py-12"
     }>
-      <div className="skeuo-panel p-8 max-w-[420px] w-full text-center animate-fade-in-up relative overflow-hidden">
+      <div className="skeuo-panel p-8 max-w-[420px] w-full text-center animate-loading-panel relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-[1px] bg-white/90 dark:bg-white/10" />
 
-        <div className="mx-auto mb-6 relative w-20 h-20 rounded-full bg-gradient-to-b from-sky-100 via-white to-sky-200 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 border border-sky-200/70 dark:border-white/10 shadow-[inset_0_2px_3px_rgba(255,255,255,0.9),inset_0_-3px_8px_rgba(14,165,233,0.18),0_6px_16px_rgba(14,165,233,0.18)] flex items-center justify-center">
+        <div className="mx-auto mb-6 relative w-20 h-20 rounded-full bg-gradient-to-b from-sky-100 via-white to-sky-200 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 border border-sky-200/70 dark:border-white/10 flex items-center justify-center animate-loading-orb">
           <div className="absolute inset-2 rounded-full border-[3px] border-sky-300/40 border-t-sky-500 animate-spin" />
           <FaCloud className="relative z-10 text-sky-500 drop-shadow-sm" size={26} />
         </div>
@@ -23,7 +23,7 @@ const SkeuoLoading = ({ title = "Carregando...", subtitle = "Buscando informa√ß√
         </p>
 
         <div className="mt-6 h-2 rounded-full bg-white/70 dark:bg-black/20 border border-black/5 dark:border-white/10 shadow-inner overflow-hidden">
-          <div className="h-full w-1/3 rounded-full bg-gradient-to-b from-sky-300 to-sky-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_0_8px_rgba(14,165,233,0.4)] animate-[loading-slide_1.4s_ease-in-out_infinite]" />
+          <div className="h-full w-1/3 rounded-full bg-gradient-to-b from-sky-300 to-sky-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_0_8px_rgba(14,165,233,0.4)] animate-loading-shine" />
         </div>
       </div>
     </main>

@@ -20,7 +20,7 @@ const ChatSidebar = () => {
     ];
 
     return (
-        <div className="w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex flex-col bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-r border-[#d2d2d7] dark:border-white/5 shadow-[inset_-1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.02)] hidden lg:flex shrink-0">
+        <div className="w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex flex-col bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-r border-[#d2d2d7] dark:border-white/5 shadow-[inset_-1px_0_0_rgba(255,255,255,0.8)] dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.02)] hidden lg:flex shrink-0 animate-chat-panel-left">
             <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
                 <div className="text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3 ml-2 mt-2">Navegação</div>
                 {navItems.map(item => (

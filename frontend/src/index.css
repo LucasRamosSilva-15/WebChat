@@ -567,14 +567,76 @@ html.dark .hover\:bg-\[\#e6f0ff\]:hover {
     background-color: rgba(59, 130, 246, 0.1) !important;
 }
 
-@keyframes loading-slide {
-  0% {
-    transform: translateX(-120%);
+@keyframes chat-shell {
+  0% { opacity: 0; filter: blur(3px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+.animate-chat-shell {
+  animation: chat-shell 260ms ease-out both;
+}
+
+@keyframes chat-panel-enter {
+  0% { opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.animate-chat-panel-left {
+  animation: chat-panel-enter 340ms ease-out both;
+  animation-delay: 40ms;
+}
+.animate-chat-panel-main {
+  animation: chat-panel-enter 340ms ease-out both;
+  animation-delay: 90ms;
+}
+.animate-chat-panel-right {
+  animation: chat-panel-enter 340ms ease-out both;
+  animation-delay: 140ms;
+}
+
+@keyframes loading-panel {
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); filter: blur(4px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.animate-loading-panel {
+  animation: loading-panel 360ms ease-out both;
+}
+
+@keyframes loading-orb {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 2px 3px rgba(255,255,255,0.9),
+      inset 0 -3px 8px rgba(14,165,233,0.18),
+      0 6px 16px rgba(14,165,233,0.18);
   }
   50% {
-    transform: translateX(120%);
+    transform: scale(1.04);
+    box-shadow:
+      inset 0 2px 3px rgba(255,255,255,0.95),
+      inset 0 -4px 10px rgba(14,165,233,0.24),
+      0 8px 22px rgba(14,165,233,0.25);
   }
-  100% {
-    transform: translateX(360%);
+}
+.animate-loading-orb {
+  animation: loading-orb 1.8s ease-in-out infinite;
+}
+
+@keyframes loading-shine {
+  0% { transform: translateX(-120%); }
+  50% { transform: translateX(120%); }
+  100% { transform: translateX(360%); }
+}
+.animate-loading-shine {
+  animation: loading-shine 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-chat-shell,
+  .animate-chat-panel-left,
+  .animate-chat-panel-main,
+  .animate-chat-panel-right,
+  .animate-loading-panel,
+  .animate-loading-orb,
+  .animate-loading-shine {
+    animation: none !important;
   }
 }

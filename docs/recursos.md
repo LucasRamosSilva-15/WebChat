@@ -173,6 +173,8 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - 🔴 Sistema e aba central de notificações
 - 🔴 Seleção e suporte multi-idiomas
 - 🔴 Ajeitar o visual do botão primário no modo escuro
+- 🔵 Adicionar animações suaves em várias partes do site e também em ações feitas na página
+- 🔵 Colocar o site no ar usando domínio próprio (ex: <www.skyripple.com.br>)
 
 ---
 

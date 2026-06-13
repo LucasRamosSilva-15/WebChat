@@ -828,9 +828,9 @@ const Chat = () => {
                 </div>
             )}
 
-            <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden">
+            <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden animate-chat-shell">
                 <ChatSidebar />
-                <main className="flex-1 min-w-0 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative">
+                <main className="flex-1 min-w-0 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative animate-chat-panel-main">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
 
                     <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] shrink-0">
@@ -875,8 +875,10 @@ const Chat = () => {
                         </div>
                     </div>
 
-                    {searchOpen && (
-                        <div className="px-4 py-2 border-b border-[#d2d2d7] dark:border-white/5 bg-[#f5f5f7]/90 dark:bg-[#1e293b]/90 backdrop-blur-md flex items-center gap-3 shrink-0 z-10 shadow-sm animate-fade-in-up">
+                    <div
+                        className={`overflow-hidden bg-[#f5f5f7]/90 dark:bg-[#1e293b]/90 backdrop-blur-md transition-all duration-300 ease-out shrink-0 z-10 shadow-sm ${searchOpen ? 'max-h-20 opacity-100 translate-y-0 py-2 border-b border-[#d2d2d7] dark:border-white/5' : 'max-h-0 opacity-0 -translate-y-2 py-0 border-none pointer-events-none'}`}
+                    >
+                        <div className="px-4 flex items-center gap-3">
                             <div className="relative flex-1">
                                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b] dark:text-slate-400" size={12} />
                                 <input
@@ -885,7 +887,6 @@ const Chat = () => {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     placeholder="Buscar mensagens..."
                                     className="w-full pl-8 pr-8 py-1.5 rounded-full text-[13px] skeuo-input"
-                                    autoFocus
                                 />
                                 {searchTerm && (
                                     <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
@@ -920,7 +921,7 @@ const Chat = () => {
                                 Fechar
                             </button>
                         </div>
-                    )}
+                    </div>
 
                     {pinnedMessage && (
                         <div className="px-4 pt-3 shrink-0">
