@@ -983,31 +983,31 @@ const Chat = () => {
 
                     </div>
 
-                    <footer className="shrink-0 relative p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-t border-[#d2d2d7] dark:border-white/5">
+                    <footer className="chat-input-footer">
                         {imagePreview && !editingMessageId && (
-                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up shadow-lg">
-                                <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
-                                <button type="button" onClick={clearImagePreview} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                            <div className="chat-input-panel skeuo-panel animate-fade-in-up">
+                                <img src={imagePreview} alt="Preview" className="chat-input-preview-image" />
+                                <button type="button" onClick={clearImagePreview} className="chat-input-preview-remove">
                                     <FaTimes size={12} />
                                 </button>
                             </div>
                         )}
                         {editingMessageId && (
-                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 px-4 flex items-center gap-2 z-10 animate-fade-in-up text-[#86868b] text-sm font-medium shadow-lg">
+                            <div className="chat-input-panel chat-input-editing-bar skeuo-panel animate-fade-in-up">
                                 <FaPencilAlt /> Editando mensagem...
-                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="ml-2 p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="chat-input-cancel-edit-btn">
                                     <FaTimes size={12} />
                                 </button>
                             </div>
                         )}
-                        <form onSubmit={sendMessage} className="flex gap-2">
-                            <label className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-[#86868b] dark:text-slate-300 border border-gray-200 dark:border-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-50 hover:to-gray-200 hover:text-[#1d1d1f] dark:hover:from-slate-600 dark:hover:to-slate-700 dark:hover:text-white cursor-pointer transition-all shrink-0">
+                        <form onSubmit={sendMessage} className="chat-input-form">
+                            <label className="chat-input-attach-btn">
                                 <FaCamera size={14} className="drop-shadow-sm" />
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                             </label>
                             <input
                                 type="text"
-                                className="skeuo-input w-full px-4 py-2 flex-grow"
+                                className="chat-input-field skeuo-input"
                                 placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
                                 value={currentMessage}
                                 onChange={(e) => setCurrentMessage(e.target.value)}
@@ -1015,7 +1015,7 @@ const Chat = () => {
                             <button
                                 type="submit"
                                 disabled={!currentMessage.trim() && !imagePreview}
-                                className={`w-10 h-10 shrink-0 rounded-full shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center transition-all ${(currentMessage.trim() || imagePreview) ? 'hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed grayscale'}`}
+                                className="chat-input-send-btn"
                                 title={editingMessageId ? "Salvar Edição" : "Enviar Mensagem"}
                             >
                                 <FaPaperPlane size={12} className="ml-[-2px]" />
