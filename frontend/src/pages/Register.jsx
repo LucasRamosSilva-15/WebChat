@@ -38,59 +38,59 @@ const Register = () => {
         }
     };
     return (
-        <main className="reveal flex-grow flex items-center justify-center px-6 py-12">
-            <div className="skeuo-card p-10 max-w-[500px] w-full text-center">
-                <h1 className="hero-title text-[40px] font-semibold mb-2">
+        <main className="reveal auth-page auth-page-register">
+            <div className="skeuo-card auth-panel auth-panel-register">
+                <h1 className="hero-title auth-title">
                     Crie sua conta
                 </h1>
-                <p className="text-[17px] font-normal text-[#86868b] mb-10 tracking-tight">
+                <p className="auth-subtitle">
                     Preencha os dados para criar sua conta.
                 </p>
                 
-                <form className="space-y-4 text-left" onSubmit={handleRegister}>
+                <form className="auth-form auth-form-register" onSubmit={handleRegister}>
                     {error && (
-                        <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm font-medium border border-red-200 dark:border-red-800">
+                        <div className="auth-error">
                             {error}
                         </div>
                     )}
                     <div className="input-group">
                         <input type="text" id="username" placeholder="Nome de usuário" required 
                                value={username} onChange={(e) => setUsername(e.target.value)}
-                               className="skeuo-input w-full px-4 py-3" />
+                               className="skeuo-input auth-input" />
                     </div>
                     <div className="input-group">
                         <input type="email" id="email" placeholder="E-mail" required 
                                value={email} onChange={(e) => setEmail(e.target.value)}
-                               className="skeuo-input w-full px-4 py-3" />
+                               className="skeuo-input auth-input" />
                     </div>
                     <div className="input-group">
                         <input type="password" id="password" placeholder="Senha" required 
                                value={password} onChange={(e) => setPassword(e.target.value)}
-                               className="skeuo-input w-full px-4 py-3" />
+                               className="skeuo-input auth-input" />
                     </div>
                     
-                    <button type="submit" className="skeuo-btn w-full py-3 text-[17px] mt-6" disabled={loading}>
+                    <button type="submit" className="skeuo-btn auth-submit auth-submit-register" disabled={loading}>
                         {loading ? 'Cadastrando...' : 'Cadastrar'}
                     </button>
 
-                    <div className="flex items-center mt-8 mb-6">
-                        <div className="flex-grow border-t border-[#d2d2d7] dark:border-white/10"></div>
-                        <span className="px-4 text-[12px] text-[#86868b] font-medium uppercase tracking-wider">ou continue com</span>
-                        <div className="flex-grow border-t border-[#d2d2d7] dark:border-white/10"></div>
+                    <div className="auth-divider">
+                        <div className="auth-divider-line"></div>
+                        <span className="auth-divider-text">ou continue com</span>
+                        <div className="auth-divider-line"></div>
                     </div>
 
                     <button 
                         type="button" 
-                        className="btn-secondary-glossy w-full py-3 text-[15px] font-medium flex items-center justify-center gap-3 opacity-50 cursor-not-allowed" 
+                        className="btn-secondary-glossy auth-secondary-btn" 
                         disabled
                     >
-                        <FcGoogle className="w-5 h-5 shrink-0" />
+                        <FcGoogle className="auth-icon" />
                         Cadastrar com Google (Em breve)
                     </button>
                 </form>
 
-                <div className="mt-8">
-                    <Link to="/login" className="text-[14px] text-[#0066cc] hover:underline">
+                <div className="auth-footer">
+                    <Link to="/login" className="auth-link">
                         Já tem uma conta? Entrar ›
                     </Link>
                 </div>

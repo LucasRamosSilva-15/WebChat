@@ -6,6 +6,7 @@
 @import "./styles/loading.css";
 @import "./styles/home.css";
 @import "./styles/about.css";
+@import "./styles/auth.css";
 
 @variant dark (&:where(.dark, .dark *));
 
