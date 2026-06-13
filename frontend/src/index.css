@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "./webchat-components.css";
+@import "./styles/skeuo.css";
+@import "./styles/animations.css";
 
 @variant dark (&:where(.dark, .dark *));
 
