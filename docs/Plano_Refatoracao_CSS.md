@@ -102,3 +102,65 @@ A implementação se dá estritamente na branch secundária já criada (`refacto
    - Testar `:active` (O botão afunda como teclado físico?).
    - Testar Focus Rings navegando via teclado (`TAB`).
 3. **Pêndulo de Temas:** Na Navbar, usar o menu de Configurações para ciclar bruscamente entre "Modo Claro" e "Modo Escuro". Classes CSS recém-criadas devem reagir simultaneamente, sem piscar cores erradas durante a transição de estado.
+
+## Versão 6.5.0 – Documentada refatoração visual do projeto
+
+### 1. Status geral
+
+- Refatoração visual modular concluída.
+- Build validado.
+- Navbar preservada e congelada.
+- `Chat.jsx` refatorado em fases.
+- Modais sensíveis do Chat mantidos sem refatoração profunda por decisão técnica.
+
+### 2. Arquivos CSS criados ou consolidados
+
+- `skeuo.css`
+- `animations.css`
+- `text.css`
+- `loading.css`
+- `home.css`
+- `about.css`
+- `auth.css`
+- `avatar.css`
+- `layout.css`
+- `sidebar.css`
+- `rooms.css`
+- `chat.css`
+
+### 3. Responsabilidade de cada CSS
+
+- **skeuo.css**: materiais visuais globais, painéis, cards, botões, badges e superfícies.
+- **animations.css**: keyframes e animações globais.
+- **text.css**: títulos, subtítulos, labels, links e textos auxiliares.
+- **loading.css**: componente `SkeuoLoading`.
+- **home.css**: página Home.
+- **about.css**: página About.
+- **auth.css**: Login e Register.
+- **avatar.css**: `UserAvatar`.
+- **layout.css**: Footer e layout compartilhado seguro.
+- **sidebar.css**: `ChatSidebar` e `MembersSidebar`.
+- **rooms.css**: página Rooms.
+- **chat.css**: página Chat e `MessageBubble`.
+
+### 4. Componentes/páginas refatorados
+
+- `SkeuoLoading.jsx`
+- `Home.jsx`
+- `About.jsx`
+- `Login.jsx`
+- `Register.jsx`
+- `UserAvatar.jsx`
+- `Footer.jsx`
+- `ChatSidebar.jsx`
+- `MembersSidebar.jsx`
+- `Rooms.jsx`
+- `Chat.jsx`
+
+### 5. Decisões técnicas importantes
+
+- `Navbar.jsx` ficou congelada após regressão visual em tentativa de refatoração.
+- Tailwind CSS 4 continua sendo usado para estrutura pontual e utilitários pequenos.
+- CSS semântico modular passou a concentrar identidade visual.
+- Comentários não devem ser adicionados em código/CSS.
+- Modais sensíveis do Chat não foram refatorados profundamente por risco de z-index, eventos e lógica condicional.
