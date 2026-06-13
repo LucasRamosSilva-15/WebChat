@@ -150,4 +150,7 @@
         letter-spacing: 0.1em;
         margin-bottom: 0.75rem;
     }
+    html.dark .app-settings-label {
+        color: #94a3b8;
+    }
 }

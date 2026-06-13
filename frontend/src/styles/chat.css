@@ -65,18 +65,26 @@
     html.dark .chat-error-icon-gray {
         background-color: #1e293b;
         border-color: rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
     }
 
     .chat-error-title {
         font-size: 28px;
         font-weight: 600;
         margin-bottom: 0.5rem;
+        color: #1d1d1f;
+    }
+    html.dark .chat-error-title {
+        color: #f8fafc;
     }
 
     .chat-error-desc {
         color: #86868b;
         font-size: 15px;
         margin-bottom: 2rem;
+    }
+    html.dark .chat-error-desc {
+        color: #94a3b8;
     }
 
     .chat-state-btn {
@@ -179,6 +187,9 @@
         align-items: center;
         gap: 0.375rem;
         margin-top: 0.125rem;
+    }
+    html.dark .chat-header-subtitle {
+        color: #94a3b8;
     }
 
     .chat-header-online {
@@ -330,6 +341,9 @@
     .chat-search-clear-btn:hover {
         color: #1d1d1f;
     }
+    html.dark .chat-search-clear-btn {
+        color: #94a3b8;
+    }
     html.dark .chat-search-clear-btn:hover {
         color: white;
     }
@@ -345,6 +359,9 @@
         font-weight: 500;
         color: #86868b;
         white-space: nowrap;
+    }
+    html.dark .chat-search-result-count {
+        color: #94a3b8;
     }
 
     .chat-search-navigation {
@@ -370,6 +387,7 @@
     }
     html.dark .chat-search-nav-btn {
         background-color: #1e293b;
+        color: #94a3b8;
     }
     html.dark .chat-search-nav-btn:hover {
         background-color: #334155;
@@ -388,12 +406,18 @@
         white-space: nowrap;
         color: #86868b;
     }
+    html.dark .chat-search-empty {
+        color: #94a3b8;
+    }
 
     .chat-search-error {
         font-size: 11px;
         font-weight: 500;
         white-space: nowrap;
         color: #ef4444;
+    }
+    html.dark .chat-search-error {
+        color: #f87171;
     }
 
     .chat-search-close-btn {
@@ -532,6 +556,9 @@
         font-size: 0.875rem;
         font-weight: 500;
     }
+    html.dark .chat-input-editing-bar {
+        color: #94a3b8;
+    }
 
     .chat-input-preview-image {
         height: 4rem;
@@ -664,6 +691,9 @@
         margin-bottom: 1rem;
         color: #86868b;
     }
+    html.dark .chat-messages-empty-icon {
+        color: #94a3b8;
+    }
 
     .chat-messages-empty-title {
         font-size: 15px;
@@ -671,10 +701,16 @@
         color: #1d1d1f;
         margin-bottom: 0.25rem;
     }
+    html.dark .chat-messages-empty-title {
+        color: #f8fafc;
+    }
 
     .chat-messages-empty-desc {
         font-size: 13px;
         color: #86868b;
+    }
+    html.dark .chat-messages-empty-desc {
+        color: #94a3b8;
     }
 
     .chat-messages-empty-fav {
@@ -682,6 +718,9 @@
         color: #86868b;
         margin-top: 2.5rem;
         font-size: 14px;
+    }
+    html.dark .chat-messages-empty-fav {
+        color: #94a3b8;
     }
 
     .message-bubble-row {
@@ -740,6 +779,9 @@
         margin-left: 0.25rem;
         line-height: 1;
     }
+    html.dark .message-bubble-author {
+        color: #f8fafc;
+    }
 
     .message-bubble-text {
         font-size: 13px;
@@ -777,6 +819,9 @@
         align-items: center;
         gap: 0.375rem;
     }
+    html.dark .message-bubble-time {
+        color: #94a3b8;
+    }
 
     .message-bubble-actions {
         position: absolute;
@@ -804,6 +849,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+    html.dark .message-bubble-more-btn {
+        color: #94a3b8;
     }
     .message-bubble-wrapper:hover .message-bubble-more-btn {
         opacity: 1;
@@ -858,6 +906,9 @@
         cursor: pointer;
         transition: background-color 150ms;
     }
+    html.dark .message-bubble-menu-item {
+        color: #f8fafc;
+    }
 
     .message-role-badge {
         display: inline-flex;
@@ -909,6 +960,9 @@
     .message-bubble-menu-item-danger {
         color: #ef4444;
     }
+    html.dark .message-bubble-menu-item-danger {
+        color: #f87171;
+    }
     .message-bubble-menu-item-danger:hover {
         background-color: #fee2e2;
     }
@@ -936,12 +990,18 @@
         border: 1px solid transparent;
         cursor: pointer;
     }
+    html.dark .message-bubble-like-btn {
+        color: #94a3b8;
+    }
     .message-bubble-wrapper:hover .message-bubble-like-btn {
         opacity: 1;
     }
     .message-bubble-like-btn:hover {
         background-color: rgba(0, 0, 0, 0.05);
         color: #1d1d1f;
+    }
+    html.dark .message-bubble-like-btn:hover {
+        color: #f8fafc;
     }
     .message-bubble-like-btn-visible {
         opacity: 1;
@@ -955,5 +1015,8 @@
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
         border: 1px solid #fee2e2 !important;
         opacity: 1 !important;
+    }
+    html.dark .message-bubble-like-btn-active {
+        color: #f87171 !important;
     }
 }

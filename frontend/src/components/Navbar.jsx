@@ -197,25 +197,25 @@ const Navbar = () => {
             </header>
 
             <div
-                className={`fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all duration-300 ease-out ${isSettingsOpen ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'}`}
+                className={`navbar-settings-overlay ${isSettingsOpen ? 'navbar-settings-overlay-open' : 'navbar-settings-overlay-closed'}`}
                 onClick={() => setIsSettingsOpen(false)}
             >
                 <div
-                    className={`skeuo-panel p-8 max-w-[500px] w-full relative transition-all duration-300 ease-out transform origin-center ${isSettingsOpen ? 'translate-y-0 scale-100' : '-translate-y-2 scale-95'}`}
+                    className={`skeuo-panel navbar-settings-panel ${isSettingsOpen ? 'navbar-settings-panel-open' : 'navbar-settings-panel-closed'}`}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-[24px] font-semibold text-[#1d1d1f] dark:text-[#f8fafc] text-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:text-shadow-[0_1px_0_rgba(0,0,0,0.8)]">Configurações</h2>
-                        <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 border border-gray-300 dark:border-slate-600 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-200 hover:to-gray-300 dark:hover:from-slate-600 dark:hover:to-slate-700 transition-all">
-                            <FaTimes className="text-[#86868b]" size={14} />
+                    <div className="navbar-settings-header">
+                        <h2 className="navbar-settings-title">Configurações</h2>
+                        <button onClick={() => setIsSettingsOpen(false)} className="navbar-settings-close-btn">
+                            <FaTimes className="navbar-settings-close-icon" size={14} />
                         </button>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
-                            <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Cor Principal</label>
+                    <div className="navbar-settings-content">
+                        <div className="navbar-settings-section">
+                            <label className="navbar-settings-label">Cor Principal</label>
                             <div className="space-y-2">
-                                <div className="flex flex-wrap gap-3">
+                                <div className="navbar-settings-color-grid">
                                     {[
                                         { id: 'blue', color: 'bg-blue-500', name: 'Azul' },
                                         { id: 'green', color: 'bg-emerald-500', name: 'Verde' },
@@ -226,12 +226,12 @@ const Navbar = () => {
                                         <button
                                             key={colorOpt.id}
                                             onClick={() => setPrimaryColor(colorOpt.id)}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${colorOpt.color} ${primaryColor === colorOpt.id ? 'ring-2 ring-offset-2 ring-black/20 dark:ring-white/20 dark:ring-offset-[#1e293b] scale-110 shadow-lg' : 'opacity-80 hover:opacity-100 hover:scale-105 shadow-md border border-white/20'}`}
+                                            className={`navbar-settings-color-btn ${colorOpt.color} ${primaryColor === colorOpt.id ? 'navbar-settings-color-btn-active' : 'navbar-settings-color-btn-inactive'}`}
                                             title={colorOpt.name}
                                             aria-label={`Selecionar cor ${colorOpt.name}`}
                                         >
                                             {primaryColor === colorOpt.id && (
-                                                <div className="w-3 h-3 bg-white rounded-full shadow-inner"></div>
+                                                <div className="navbar-settings-color-dot"></div>
                                             )}
                                         </button>
                                     ))}
@@ -239,96 +239,96 @@ const Navbar = () => {
                             </div>
                         </div>
 
-                        <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
-                            <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Modo de Cor</label>
-                            <div className="space-y-3">
-                                <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'light' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                        <div className="navbar-settings-section">
+                            <label className="navbar-settings-label">Modo de Cor</label>
+                            <div className="navbar-settings-options">
+                                <label className={`navbar-settings-option ${colorMode === 'light' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
                                     <input
                                         type="radio"
                                         name="colorMode"
                                         checked={colorMode === 'light'}
                                         onChange={() => setColorMode('light')}
-                                        className="w-4 h-4 accent-[var(--primary-main)]"
+                                        className="navbar-settings-radio"
                                     />
-                                    <div className="flex flex-col">
-                                        <span className="text-[14px] font-medium text-[#1d1d1f]">Modo Claro</span>
-                                        <span className="text-[12px] text-[#86868b]">Cores claras, fundo branco clássico.</span>
+                                    <div className="navbar-settings-option-text">
+                                        <span className="navbar-settings-option-title">Modo Claro</span>
+                                        <span className="navbar-settings-option-desc">Cores claras, fundo branco clássico.</span>
                                     </div>
                                 </label>
 
-                                <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${colorMode === 'dark' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                                <label className={`navbar-settings-option ${colorMode === 'dark' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
                                     <input
                                         type="radio"
                                         name="colorMode"
                                         checked={colorMode === 'dark'}
                                         onChange={() => setColorMode('dark')}
-                                        className="w-4 h-4 accent-[var(--primary-main)]"
+                                        className="navbar-settings-radio"
                                     />
-                                    <div className="flex flex-col">
-                                        <span className="text-[14px] font-medium text-[#1d1d1f]">Modo Escuro</span>
-                                        <span className="text-[12px] text-[#86868b]">Cores escuras para conforto visual noturno.</span>
+                                    <div className="navbar-settings-option-text">
+                                        <span className="navbar-settings-option-title">Modo Escuro</span>
+                                        <span className="navbar-settings-option-desc">Cores escuras para conforto visual noturno.</span>
                                     </div>
                                 </label>
                             </div>
                         </div>
 
                         {colorMode === 'light' && (
-                            <div className="bg-black/5 dark:bg-black/20 p-4 rounded-[16px] border border-black/5 dark:border-white/5 shadow-inner text-left">
-                                <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-3">Fundo da Aplicação</label>
-                                <div className="space-y-3">
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'neutral' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                            <div className="navbar-settings-section">
+                                <label className="navbar-settings-label">Fundo da Aplicação</label>
+                                <div className="navbar-settings-options">
+                                    <label className={`navbar-settings-option ${bgColor === 'neutral' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'neutral'}
                                             onChange={() => setBgColor('neutral')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
+                                            className="navbar-settings-radio"
                                         />
-                                        <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Ardósia Padrão</span>
-                                            <span className="text-[12px] text-[#86868b]">Fundo cinza-azulado suave original.</span>
+                                        <div className="navbar-settings-option-text">
+                                            <span className="navbar-settings-option-title">Ardósia Padrão</span>
+                                            <span className="navbar-settings-option-desc">Fundo cinza-azulado suave original.</span>
                                         </div>
                                     </label>
 
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'classic_blue' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                                    <label className={`navbar-settings-option ${bgColor === 'classic_blue' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'classic_blue'}
                                             onChange={() => setBgColor('classic_blue')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
+                                            className="navbar-settings-radio"
                                         />
-                                        <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Azul Clássico</span>
-                                            <span className="text-[12px] text-[#86868b]">Gradiente listrado inspirado no clássico.</span>
+                                        <div className="navbar-settings-option-text">
+                                            <span className="navbar-settings-option-title">Azul Clássico</span>
+                                            <span className="navbar-settings-option-desc">Gradiente listrado inspirado no clássico.</span>
                                         </div>
                                     </label>
 
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'smooth_gradient' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                                    <label className={`navbar-settings-option ${bgColor === 'smooth_gradient' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'smooth_gradient'}
                                             onChange={() => setBgColor('smooth_gradient')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
+                                            className="navbar-settings-radio"
                                         />
-                                        <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Gradiente Suave</span>
-                                            <span className="text-[12px] text-[#86868b]">Tons muito sutis de cinza prateado.</span>
+                                        <div className="navbar-settings-option-text">
+                                            <span className="navbar-settings-option-title">Gradiente Suave</span>
+                                            <span className="navbar-settings-option-desc">Tons muito sutis de cinza prateado.</span>
                                         </div>
                                     </label>
 
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-[12px] border transition-all ${bgColor === 'clean_light' ? 'bg-white dark:bg-[#1e293b] border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'bg-white dark:bg-[#1e293b] border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
+                                    <label className={`navbar-settings-option ${bgColor === 'clean_light' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'clean_light'}
                                             onChange={() => setBgColor('clean_light')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
+                                            className="navbar-settings-radio"
                                         />
-                                        <div className="flex flex-col">
-                                            <span className="text-[14px] font-medium text-[#1d1d1f]">Claro Limpo</span>
-                                            <span className="text-[12px] text-[#86868b]">Fundo minimalista acinzentado sólido.</span>
+                                        <div className="navbar-settings-option-text">
+                                            <span className="navbar-settings-option-title">Claro Limpo</span>
+                                            <span className="navbar-settings-option-desc">Fundo minimalista acinzentado sólido.</span>
                                         </div>
                                     </label>
                                 </div>
@@ -336,8 +336,8 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    <div className="mt-6">
-                        <button onClick={() => setIsSettingsOpen(false)} className="skeuo-btn w-full py-3 text-[16px] font-medium">Salvar e Fechar</button>
+                    <div className="navbar-settings-footer">
+                        <button onClick={() => setIsSettingsOpen(false)} className="skeuo-btn navbar-settings-save-btn">Salvar e Fechar</button>
                     </div>
                 </div>
             </div>

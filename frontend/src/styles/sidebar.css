@@ -41,6 +41,9 @@
         margin-left: 0.5rem;
         margin-top: 0.5rem;
     }
+    html.dark .sidebar-title {
+        color: #94a3b8;
+    }
 
     .chat-sidebar-item {
         width: 100%;
@@ -80,6 +83,9 @@
         opacity: 0.5;
         cursor: not-allowed;
         color: #86868b;
+    }
+    html.dark .chat-sidebar-item-disabled {
+        color: #94a3b8;
     }
 
     .chat-sidebar-item-icon {
@@ -225,12 +231,18 @@
         font-size: 12px;
         color: #86868b;
     }
+    html.dark .members-sidebar-empty {
+        color: #94a3b8;
+    }
     
     .members-sidebar-error {
         padding: 1rem;
         text-align: center;
         font-size: 12px;
         color: #ef4444;
+    }
+    html.dark .members-sidebar-error {
+        color: #f87171;
     }
 
     .members-sidebar-header {
@@ -256,6 +268,9 @@
         text-transform: uppercase;
         letter-spacing: 0.1em;
         margin-bottom: 0.25rem;
+    }
+    html.dark .members-sidebar-title {
+        color: #94a3b8;
     }
 
     .members-list {
@@ -320,6 +335,9 @@
         text-overflow: ellipsis;
         margin-top: 0.125rem;
         line-height: 1;
+    }
+    html.dark .member-status-text {
+        color: #94a3b8;
     }
 
     

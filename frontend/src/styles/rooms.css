@@ -26,6 +26,9 @@
         letter-spacing: 0.1em;
         margin-left: 0.25rem;
     }
+    html.dark .rooms-label {
+        color: #94a3b8;
+    }
 
     
     .rooms-page {
@@ -93,6 +96,9 @@
         font-size: 15px;
         margin-bottom: 1.5rem;
     }
+    html.dark .rooms-error-desc {
+        color: #94a3b8;
+    }
 
     
     .rooms-header {
@@ -127,6 +133,9 @@
         font-size: 16px;
         color: #86868b;
         margin-top: 0.25rem;
+    }
+    html.dark .rooms-subtitle {
+        color: #94a3b8;
     }
 
     .rooms-toolbar {
@@ -180,6 +189,9 @@
         color: #86868b;
         text-transform: uppercase;
         letter-spacing: 0.1em;
+    }
+    html.dark .rooms-stat-title {
+        color: #94a3b8;
     }
 
     .rooms-stat-icon-wrapper {
@@ -275,12 +287,18 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
+    html.dark .rooms-table-th {
+        color: #94a3b8;
+    }
 
     .rooms-empty {
         padding: 3rem 1.5rem;
         text-align: center;
         color: #86868b;
         font-size: 15px;
+    }
+    html.dark .rooms-empty {
+        color: #94a3b8;
     }
 
     .rooms-pagination {
@@ -296,6 +314,7 @@
     html.dark .rooms-pagination {
         background-color: rgba(255, 255, 255, 0.02);
         border-top-color: rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
     }
 
     
@@ -348,6 +367,9 @@
     .rooms-row-date {
         color: #86868b;
         font-size: 13px;
+    }
+    html.dark .rooms-row-date {
+        color: #94a3b8;
     }
 
     .rooms-row-category {
@@ -537,6 +559,9 @@
     }
     .rooms-search-icon {
         color: #86868b;
+    }
+    html.dark .rooms-search-icon {
+        color: #94a3b8;
     }
     .rooms-filter-icon {
         color: #0071e3;

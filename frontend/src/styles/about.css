@@ -300,6 +300,9 @@
         font-size: 11px;
         color: #86868b;
     }
+    html.dark .about-chat-status-text {
+        color: #94a3b8;
+    }
 
     .about-window-controls {
         margin-left: auto;
@@ -399,6 +402,9 @@
         align-items: center;
         gap: 0.25rem;
     }
+    html.dark .about-typing-text {
+        color: #38bdf8;
+    }
 
     .about-chat-inputbar {
         padding: 0.75rem;
@@ -424,6 +430,7 @@
     }
     html.dark .about-chat-input {
         background-color: #0f172a;
+        color: #cbd5e1;
     }
 
     .about-send-btn {

@@ -29,6 +29,9 @@
         margin-right: auto;
         line-height: 1.25;
     }
+    html.dark .home-hero-subtitle {
+        color: #94a3b8;
+    }
 
     .home-actions-single {
         display: flex;
