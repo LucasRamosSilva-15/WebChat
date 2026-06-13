@@ -99,7 +99,7 @@ const Navbar = () => {
         <>
             <header className="skeuo-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
                 <nav className="max-w-[980px] w-full flex justify-between items-center px-4 relative">
-                    <span className="font-bold tracking-tight text-[17px] text-shadow-sm">SkyRipple</span>
+                    <span className="font-bold tracking-tight text-[17px] text-shadow-sm dark:text-[#f8fafc]">SkyRipple</span>
 
                     <div className="flex items-center gap-4">
                         <div className="relative" ref={menuRef}>

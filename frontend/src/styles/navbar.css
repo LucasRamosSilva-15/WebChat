@@ -80,7 +80,7 @@
         color: #ff3b30;
     }
     html.dark .navbar-dropdown-item-danger {
-        color: #ff3b30;
+        color: #f87171;
     }
     .navbar-dropdown-item-danger:hover {
         background-image: linear-gradient(to right, #fee2e2, transparent);
@@ -92,8 +92,14 @@
     .navbar-dropdown-icon {
         color: #86868b;
     }
+    html.dark .navbar-dropdown-icon {
+        color: #94a3b8;
+    }
     .navbar-dropdown-icon-danger {
         color: #ff3b30;
+    }
+    html.dark .navbar-dropdown-icon-danger {
+        color: #f87171;
     }
 
     .navbar-profile-trigger {
@@ -130,6 +136,9 @@
         white-space: nowrap;
         max-width: 180px;
     }
+    html.dark .navbar-profile-name {
+        color: #f8fafc;
+    }
     @media (min-width: 768px) {
         .navbar-profile-name {
             max-width: 240px;
@@ -143,6 +152,9 @@
         letter-spacing: 0.1em;
         margin-top: 2px;
         font-weight: 700;
+    }
+    html.dark .navbar-profile-status {
+        color: #4ade80;
     }
 
     .navbar-profile-panel {
@@ -304,6 +316,9 @@
     .navbar-settings-close-icon {
         color: #86868b;
     }
+    html.dark .navbar-settings-close-icon {
+        color: #94a3b8;
+    }
 
     .navbar-settings-content > * + * {
         margin-top: 1.5rem;
@@ -330,6 +345,9 @@
         text-transform: uppercase;
         letter-spacing: 0.1em;
         margin-bottom: 0.75rem;
+    }
+    html.dark .navbar-settings-label {
+        color: #94a3b8;
     }
 
     .navbar-settings-color-grid {
@@ -431,10 +449,16 @@
         font-weight: 500;
         color: #1d1d1f;
     }
+    html.dark .navbar-settings-option-title {
+        color: #f8fafc;
+    }
 
     .navbar-settings-option-desc {
         font-size: 12px;
         color: #86868b;
+    }
+    html.dark .navbar-settings-option-desc {
+        color: #94a3b8;
     }
 
     .navbar-settings-footer {
