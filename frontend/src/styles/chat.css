@@ -858,6 +858,48 @@
         cursor: pointer;
         transition: background-color 150ms;
     }
+
+    .message-role-badge {
+        display: inline-flex;
+        align-items: center;
+        font-size: 8px;
+        padding: 0.125rem 0.25rem;
+        gap: 0.125rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        text-transform: uppercase;
+        tracking-wide: 0.05em;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 2px rgba(0,0,0,0.15);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .message-role-badge-owner {
+        background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+        color: #b45309;
+    }
+    .message-role-badge-mod {
+        background: linear-gradient(to bottom, #7c3aed, #6d28d9);
+        color: #fff;
+    }
+
+    .message-bubble-image {
+        max-width: 200px;
+        max-width: 240px;
+        border-radius: 6px;
+        margin-bottom: 0.25rem;
+        margin-top: 0.125rem;
+        object-fit: cover;
+        cursor: pointer;
+        transition: opacity 150ms;
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 0 0 0 rgba(0,0,0,0);
+    }
+    .message-bubble-image:hover {
+        opacity: 0.9;
+    }
+    .dark .message-bubble-image {
+        border-color: rgba(255,255,255,0.05);
+    }
+
     .message-bubble-menu-item:hover {
         background-color: rgba(0, 0, 0, 0.05);
     }

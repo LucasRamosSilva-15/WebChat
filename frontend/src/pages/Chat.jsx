@@ -87,7 +87,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                             </div>
                         </div>
                         {msg.image && (
-                            <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-white/20 shadow-sm" />
+                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image" />
                         )}
                         {msg.text && <p className="message-bubble-text">{msg.text}</p>}
                     </div>
@@ -98,12 +98,12 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </button>
                         <span className="message-bubble-time">
                             {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                                <span className="message-role-badge message-role-badge-owner">
                                     <FaCrown size={8} /> DONO
                                 </span>
                             )}
                             {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-violet-400 to-violet-600 text-white rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                                <span className="message-role-badge message-role-badge-mod">
                                     <FaShieldAlt size={8} /> MOD
                                 </span>
                             )}
@@ -122,12 +122,12 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                 <span className="message-bubble-author">
                     {msg.sender}
                     {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                        <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                        <span className="message-role-badge message-role-badge-owner">
                             <FaCrown size={8} /> DONO
                         </span>
                     )}
                     {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                        <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-violet-400 to-violet-600 text-white rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                        <span className="message-role-badge message-role-badge-mod">
                             <FaShieldAlt size={8} /> MOD
                         </span>
                     )}
@@ -149,7 +149,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </div>
                     </div>
                     {msg.image && (
-                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-black/5 dark:border-white/5 shadow-sm" />
+                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image" />
                     )}
                     {msg.text && <p className="message-bubble-text">{msg.text}</p>}
                 </div>
@@ -755,7 +755,7 @@ const Chat = () => {
                         <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="mx-auto mb-4 border-2 border-white shadow-md" />
                         <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
-                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="bg-amber-100 text-amber-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-amber-200 shadow-sm flex items-center gap-1">👑 Dono</span>}
+                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="message-role-badge message-role-badge-owner">👑 Dono</span>}
                             {mockRoles[selectedUser.sender] === 'Moderador' && <span className="bg-blue-100 text-blue-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-blue-200 shadow-sm flex items-center gap-1">🛡️ Mod</span>}
                         </h3>
                         <p className="text-[15px] text-[#86868b] mb-6">{selectedUser.status || "Sem recado"}</p>
