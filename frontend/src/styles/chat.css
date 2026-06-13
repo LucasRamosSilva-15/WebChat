@@ -108,4 +108,145 @@
     html.dark .chat-confirm-cancel-btn:hover {
         background-color: rgba(127, 29, 29, 0.4);
     }
+
+    .chat-header-divider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 0.25rem;
+        background-image: linear-gradient(to right, #38bdf8, #0ea5e9, #38bdf8);
+        box-shadow: 0 1px 2px rgba(14, 165, 233, 0.3);
+        z-index: 10;
+    }
+    html.dark .chat-header-divider {
+        background-image: linear-gradient(to right, #0284c7, #0369a1, #0284c7);
+    }
+
+    .chat-header {
+        padding: 0.625rem 1rem;
+        border-bottom: 1px solid #d2d2d7;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-image: linear-gradient(to bottom, #f5f5f7, #ebebed);
+        flex-shrink: 0;
+    }
+    html.dark .chat-header {
+        border-bottom-color: rgba(255, 255, 255, 0.05);
+        background-image: linear-gradient(to bottom, #1e293b, #0f172a);
+    }
+
+    .chat-header-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chat-header-icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-image: linear-gradient(to bottom, #38bdf8, #0284c7);
+        color: white;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+        border: 1px solid #0ea5e9;
+    }
+
+    .chat-header-title-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .chat-header-title {
+        font-weight: 700;
+        color: #1d1d1f;
+        font-size: 15px;
+        line-height: 1.25;
+    }
+    html.dark .chat-header-title {
+        color: #f8fafc;
+    }
+
+    .chat-header-subtitle {
+        font-size: 11px;
+        color: #86868b;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        margin-top: 0.125rem;
+    }
+
+    .chat-header-online {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-weight: 500;
+    }
+
+    .chat-header-online-dot {
+        width: 0.375rem;
+        height: 0.375rem;
+        border-radius: 9999px;
+        background-color: #10b981;
+        box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+    }
+
+    .chat-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chat-header-btn {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(229, 231, 235, 0.5);
+        transition: all 150ms;
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-image: linear-gradient(to bottom, #ffffff, #f3f4f6);
+        color: #4b5563;
+    }
+    .chat-header-btn:hover {
+        background-image: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+        color: #0284c7;
+    }
+
+    html.dark .chat-header-btn {
+        border-color: rgba(71, 85, 105, 0.5);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 4px rgba(0, 0, 0, 0.3);
+        background-image: linear-gradient(to bottom, #334155, #1e293b);
+        color: #cbd5e1;
+    }
+    html.dark .chat-header-btn:hover {
+        background-image: linear-gradient(to bottom, #475569, #334155);
+    }
+
+    .chat-header-btn-active {
+        background-image: linear-gradient(to bottom, #38bdf8, #0284c7) !important;
+        color: white !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        border-color: transparent !important;
+    }
+    html.dark .chat-header-btn-active {
+        background-image: linear-gradient(to bottom, #0284c7, #075985) !important;
+    }
+
+    .chat-header-btn-exit:hover {
+        background-image: linear-gradient(to bottom, #fff1f2, #ffe4e6);
+        color: #e11d48;
+    }
+    html.dark .chat-header-btn-exit:hover {
+        background-image: linear-gradient(to bottom, rgba(136, 19, 55, 0.4), rgba(136, 19, 55, 0.6));
+        color: #fb7185;
+    }
 }

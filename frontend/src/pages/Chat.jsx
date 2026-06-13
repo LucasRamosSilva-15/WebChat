@@ -831,43 +831,43 @@ const Chat = () => {
             <div className="chat-shell animate-chat-shell">
                 <ChatSidebar />
                 <main className="chat-main animate-chat-panel-main">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
+                    <div className="chat-header-divider" />
 
-                    <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] shrink-0">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)] border border-sky-500">
+                    <div className="chat-header">
+                        <div className="chat-header-info">
+                            <div className="chat-header-icon">
                                 <FaCommentAlt size={12} />
                             </div>
-                            <div className="flex flex-col justify-center">
-                                <h2 className="font-bold text-[#1d1d1f] text-[15px] leading-tight">
+                            <div className="chat-header-title-wrapper">
+                                <h2 className="chat-header-title">
                                     {roomLoading ? "Carregando..." : (currentRoom ? currentRoom.name : "Sala não encontrada")}
                                 </h2>
-                                <p className="text-[11px] text-[#86868b] flex items-center gap-1.5 mt-0.5">
-                                    <span className="flex items-center gap-1 font-medium">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
+                                <p className="chat-header-subtitle">
+                                    <span className="chat-header-online">
+                                        <span className="chat-header-online-dot" />
                                         {Number.isFinite(onlinePresence?.count) ? onlinePresence.count : 0} online
                                     </span>
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="chat-header-actions">
                             <button
                                 onClick={() => setSearchOpen(!searchOpen)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${searchOpen ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
+                                className={`chat-header-btn ${searchOpen ? 'chat-header-btn-active' : ''}`}
                                 title="Buscar mensagens"
                             >
                                 <FaSearch size={14} className={searchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
+                                className={`chat-header-btn ${showFavoritesOnly ? 'chat-header-btn-active' : ''}`}
                                 title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
                             >
                                 <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => navigate('/rooms')}
-                                className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-900/40 dark:hover:to-rose-900/60 hover:text-rose-600 dark:hover:text-rose-400"
+                                className="chat-header-btn chat-header-btn-exit"
                                 title="Sair da sala"
                             >
                                 <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
