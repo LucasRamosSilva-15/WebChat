@@ -4,6 +4,7 @@
 @import "./styles/animations.css";
 @import "./styles/text.css";
 @import "./styles/loading.css";
+@import "./styles/home.css";
 
 @variant dark (&:where(.dark, .dark *));
 

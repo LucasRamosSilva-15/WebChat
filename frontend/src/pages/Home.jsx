@@ -4,32 +4,32 @@ const Home = () => {
     const isLoggedIn = localStorage.getItem('chat_isLoggedIn') === 'true';
 
     return (
-        <main className="reveal flex-grow flex items-center justify-center px-6">
-            <div className="skeuo-card p-10 max-w-[500px] w-full text-center">
-                <h1 className="hero-title text-[56px] md:text-[70px] font-semibold mb-4">
+        <main className="reveal home-page">
+            <div className="skeuo-card home-hero-panel">
+                <h1 className="hero-title text-[56px] md:text-[70px] home-hero-title">
                     SkyRipple
                 </h1>
                 {isLoggedIn ? (
                     <>
-                        <p className="text-[21px] md:text-[24px] font-normal text-[#86868b] mb-10 max-w-[500px] mx-auto leading-tight">
+                        <p className="home-hero-subtitle text-[21px] md:text-[24px]">
                             Entre em uma sala para começar a conversar em tempo real.
                         </p>
-                        <div className="flex justify-center items-center">
-                            <Link to="/rooms" className="skeuo-btn px-8 h-[50px] text-[17px] font-normal flex items-center justify-center">
+                        <div className="home-actions-single">
+                            <Link to="/rooms" className="skeuo-btn home-action-btn">
                                 Entrar em uma sala
                             </Link>
                         </div>
                     </>
                 ) : (
                     <>
-                        <p className="text-[21px] md:text-[24px] font-normal text-[#86868b] mb-10 max-w-[500px] mx-auto leading-tight">
+                        <p className="home-hero-subtitle text-[21px] md:text-[24px]">
                             Crie uma conta para conversar em tempo real.
                         </p>
-                        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                            <Link to="/login" className="skeuo-btn px-8 h-[50px] text-[17px] font-normal flex items-center justify-center">
+                        <div className="home-actions">
+                            <Link to="/login" className="skeuo-btn home-action-btn">
                                 Entrar
                             </Link>
-                            <Link to="/register" className="btn-secondary-glossy px-8 h-[50px] text-[17px] font-normal flex items-center justify-center gap-1">
+                            <Link to="/register" className="btn-secondary-glossy home-action-btn gap-1">
                                 Criar conta <span className="text-[14px]">›</span>
                             </Link>
                         </div>

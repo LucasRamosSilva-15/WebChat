@@ -1,0 +1,63 @@
+@layer components {
+    .home-page {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .home-hero-panel {
+        padding: 2.5rem;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .home-hero-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .home-hero-subtitle {
+        font-weight: 400;
+        color: #86868b;
+        margin-bottom: 2.5rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.25;
+    }
+
+    .home-actions-single {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .home-actions {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .home-actions {
+            flex-direction: row;
+        }
+    }
+
+    .home-action-btn {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        height: 50px;
+        font-size: 17px;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
