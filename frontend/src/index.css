@@ -9,6 +9,7 @@
 @import "./styles/auth.css";
 @import "./styles/avatar.css";
 @import "./styles/layout.css";
+@import "./styles/sidebar.css";
 
 @variant dark (&:where(.dark, .dark *));
 
