@@ -181,4 +181,31 @@
         color: #f8fafc;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
     }
+
+    .skeuo-loading-orb {
+        background: linear-gradient(to bottom, #e0f2fe 0%, #ffffff 50%, #bae6fd 100%);
+        border: 1px solid rgba(186, 230, 253, 0.7);
+    }
+    
+    html.dark .skeuo-loading-orb {
+        background: linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 100%);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .skeuo-progress-track {
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    html.dark .skeuo-progress-track {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .skeuo-progress-fill {
+        background: linear-gradient(to bottom, #7dd3fc 0%, #0284c7 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 8px rgba(14, 165, 233, 0.4);
+    }
 }
