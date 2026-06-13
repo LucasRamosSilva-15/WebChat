@@ -12,6 +12,7 @@
 @import "./styles/sidebar.css";
 @import "./styles/rooms.css";
 @import "./styles/chat.css";
+@import "./styles/navbar.css";
 
 @variant dark (&:where(.dark, .dark *));
 

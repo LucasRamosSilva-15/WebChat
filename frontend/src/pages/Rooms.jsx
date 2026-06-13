@@ -28,9 +28,9 @@ const RoomIconWithTooltip = ({ description }) => (
             <FaHashtag size={18} />
         </div>
 
-        <div className="rooms-tooltip">
-            <div className="rooms-tooltip-arrow"></div>
-            <div className="skeuo-panel rooms-tooltip-content">
+        <div className="skeuo-tooltip rooms-tooltip">
+            <div className="skeuo-tooltip-arrow rooms-tooltip-arrow"></div>
+            <div className="skeuo-panel skeuo-tooltip-content rooms-tooltip-content">
                 {description || "Sem descrição disponível."}
             </div>
         </div>
@@ -53,7 +53,7 @@ const CreateRoomModal = ({
 
     return (
         <div
-            className="rooms-modal-overlay animate-fade-in"
+            className="skeuo-modal-overlay animate-fade-in"
             onClick={onClose}
         >
             <div

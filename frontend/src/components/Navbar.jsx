@@ -113,36 +113,35 @@ const Navbar = () => {
                                 <div className={`absolute bg-black/80 dark:bg-white/80 transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-0 scale-50 w-5 h-[2px]' : 'translate-y-[6px] opacity-100 scale-100 w-5 h-[2px] rounded-sm'}`}></div>
                             </button>
                             <div
-                                className={`absolute right-0 top-[48px] w-52 skeuo-panel !rounded-[16px] !p-0 overflow-hidden transition-all duration-300 origin-top-right ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
-                                    }`}
+                                className={`navbar-dropdown-panel skeuo-panel ${isMenuOpen ? 'navbar-dropdown-panel-open' : 'navbar-dropdown-panel-closed'}`}
                             >
-                                <div className="flex flex-col py-2">
-                                    <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors flex items-center gap-3">
-                                        <FaHome className="text-[#86868b]" size={16} /> Início
+                                <div className="navbar-dropdown-list">
+                                    <Link to="/" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item">
+                                        <FaHome className="navbar-dropdown-icon" size={16} /> Início
                                     </Link>
-                                    <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
-                                        <FaComments className="text-[#86868b]" size={16} /> Salas
+                                    <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaComments className="navbar-dropdown-icon" size={16} /> Salas
                                     </Link>
-                                    <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
-                                        <FaEnvelope className="text-[#86868b]" size={16} /> Diretas
+                                    <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaEnvelope className="navbar-dropdown-icon" size={16} /> Diretas
                                     </Link>
-                                    <span className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3 opacity-50 cursor-not-allowed">
-                                        <FaStar className="text-[#86868b]" size={16} /> Favoritos (Em breve)
+                                    <span className="navbar-dropdown-item navbar-dropdown-item-bordered navbar-dropdown-item-disabled">
+                                        <FaStar className="navbar-dropdown-icon" size={16} /> Favoritos (Em breve)
                                     </span>
-                                    <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
-                                        <FaUser className="text-[#86868b]" size={16} /> Perfil
+                                    <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaUser className="navbar-dropdown-icon" size={16} /> Perfil
                                     </Link>
                                     <button
                                         onClick={() => {
                                             setIsSettingsOpen(true);
                                             setIsMenuOpen(false);
                                         }}
-                                        className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 text-left w-full flex items-center gap-3"
+                                        className="navbar-dropdown-item navbar-dropdown-item-bordered"
                                     >
-                                        <FaCog className="text-[#86868b]" size={16} /> Ajustes
+                                        <FaCog className="navbar-dropdown-icon" size={16} /> Ajustes
                                     </button>
-                                    <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-gradient-to-r hover:from-[#e8f4ff] dark:hover:from-[#334155] hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 flex items-center gap-3">
-                                        <FaInfoCircle className="text-[#86868b]" size={16} /> Sobre
+                                    <Link to="/about" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaInfoCircle className="navbar-dropdown-icon" size={16} /> Sobre
                                     </Link>
                                     {isLoggedIn && (
                                         <button onClick={() => {
@@ -153,8 +152,8 @@ const Navbar = () => {
                                             window.dispatchEvent(new Event('profileUpdated'));
                                             setIsMenuOpen(false);
                                             window.location.href = '/login';
-                                        }} className="px-5 py-3 text-[15px] font-medium text-[#ff3b30] hover:bg-gradient-to-r hover:from-[#fee2e2] dark:hover:from-[#7f1d1d]/40 hover:to-transparent transition-colors border-t border-[#e5e5e5] dark:border-white/5 text-left w-full flex items-center gap-3">
-                                            <FaSignOutAlt className="text-[#ff3b30]" size={16} /> Sair
+                                        }} className="navbar-dropdown-item navbar-dropdown-item-bordered navbar-dropdown-item-danger">
+                                            <FaSignOutAlt className="navbar-dropdown-icon-danger" size={16} /> Sair
                                         </button>
                                     )}
                                 </div>
@@ -165,31 +164,30 @@ const Navbar = () => {
                             <div className="relative" ref={profileRef}>
                                 <div
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                    className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80"
+                                    className="navbar-profile-trigger"
                                 >
                                     <UserAvatar src={profilePhoto} name={profileName} size="sm" showStatus={false} />
-                                    <div className="flex flex-col items-start hidden sm:flex">
+                                    <div className="navbar-profile-info">
                                         <span
-                                            className="text-[13px] font-semibold text-[#1d1d1f] leading-none truncate max-w-[180px] md:max-w-[240px]"
+                                            className="navbar-profile-name"
                                             title={profileName}
                                         >
                                             {profileName}
                                         </span>
-                                        <span className="text-[10px] text-green-600 uppercase tracking-widest mt-[2px] font-bold">Online</span>
+                                        <span className="navbar-profile-status">Online</span>
                                     </div>
                                 </div>
 
                                 <div
-                                    className={`absolute right-0 top-[48px] w-[260px] skeuo-panel !rounded-[16px] !p-0 overflow-hidden transition-all duration-300 origin-top-right ${isProfileOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
-                                        }`}
+                                    className={`navbar-profile-panel skeuo-panel ${isProfileOpen ? 'navbar-profile-panel-open' : 'navbar-profile-panel-closed'}`}
                                 >
-                                    <div className="flex flex-col text-center p-5 items-center">
+                                    <div className="navbar-profile-card">
                                         <UserAvatar src={profilePhoto} name={profileName} size="xl" className="mb-3" showStatus={false} />
-                                        <h3 className="text-[18px] font-semibold text-[#1d1d1f] dark:text-[#f8fafc] mb-1 leading-tight">{profileName}</h3>
-                                        <p className="text-[13px] text-[#86868b] dark:text-[#94a3b8] leading-snug">{profileDesc}</p>
+                                        <h3 className="navbar-profile-title">{profileName}</h3>
+                                        <p className="navbar-profile-desc">{profileDesc}</p>
                                     </div>
-                                    <div className="p-3 bg-gradient-to-b from-[#f0f0f0] to-[#e5e5e5] dark:from-[#0f172a] dark:to-[#020617] border-t border-[#d2d2d7] dark:border-white/5">
-                                        <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy w-full py-2 block text-center text-[13px]">Editar Perfil</Link>
+                                    <div className="navbar-profile-footer">
+                                        <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy navbar-profile-edit-btn">Editar Perfil</Link>
                                     </div>
                                 </div>
                             </div>
