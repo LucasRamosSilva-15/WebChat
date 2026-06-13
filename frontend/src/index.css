@@ -10,6 +10,7 @@
 @import "./styles/avatar.css";
 @import "./styles/layout.css";
 @import "./styles/sidebar.css";
+@import "./styles/rooms.css";
 
 @variant dark (&:where(.dark, .dark *));
 
