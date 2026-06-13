@@ -2,15 +2,18 @@
 
 ## 1. Diagnóstico do Problema Atual
 
-Atualmente, o projeto utiliza a flexibilidade do Tailwind CSS extensivamente. No entanto, devido à natureza rica e complexa do design escolhido (Skeuomórfico / Web 2.0 Clássico), estamos enfrentando a **síndrome das classes gigantes**. 
+Atualmente, o projeto utiliza a flexibilidade do Tailwind CSS extensivamente. No entanto, devido à natureza rica e complexa do design escolhido (Skeuomórfico / Web 2.0 Clássico), estamos enfrentando a **síndrome das classes gigantes**.
 
 Um botão ou painel simples acaba acumulando dezenas de utilitários que definem gradientes complexos para modos claro e escuro, sombras múltiplas interpoladas (inset e drop shadows), bordas translúcidas e hover states.
 
 **Exemplo real encontrado no projeto (botão de ícone na Navbar):**
+
 ```jsx
 className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 border border-gray-300 dark:border-slate-600 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-200 hover:to-gray-300 dark:hover:from-slate-600 dark:hover:to-slate-700 transition-all"
 ```
+
 **Consequências:**
+
 - Dificuldade na leitura do código JSX (poluição visual extrema).
 - Inconsistência visual: desenvolvedores podem copiar/colar gradientes ou sombras com pequenas diferenças em arquivos distintos.
 - Manutenção dolorosa: se precisarmos alterar o tom do `dark mode` ou a intensidade das sombras (`inset_0_1px...`), será necessário rodar um find/replace massivo em dezenas de arquivos.
@@ -24,6 +27,7 @@ O Tailwind CSS é fenomenal para posicionamento e micro-ajustes estruturais, mas
 A refatoração dividirá as responsabilidades rigorosamente:
 
 ### O que FICA no Tailwind CSS (Estrutura e Posicionamento)
+
 - `flex`, `grid`, `items-center`, `justify-between`, `flex-1`, `flex-col`
 - `p-4`, `m-2`, `mt-6`, `gap-3` (Espaçamentos internos e externos)
 - `w-full`, `h-full`, `max-w-[500px]`, `w-8`, `h-8` (Dimensões físicas)
@@ -32,6 +36,7 @@ A refatoração dividirá as responsabilidades rigorosamente:
 - `animate-fade-in` e classes de keyframes (`animate-chat-shell`).
 
 ### O que VAI para o CSS Customizado (Aparência, Textura e Materiais)
+
 - Cores de fundo contínuas e texturas (`bg-gradient-to-b...`)
 - Efeitos tridimensionais, relevos e brilhos (`shadow-[inset...]`)
 - Bordas coloridas e contornos complexos (`border`, `border-white/20`)
@@ -45,11 +50,13 @@ A refatoração dividirá as responsabilidades rigorosamente:
 Estas classes encapsularão a complexidade visual. No JSX, elas serão mescladas com o Tailwind estrutural. Por exemplo: `<button className="skeuo-icon-btn w-10 h-10 ml-2">`
 
 ### Materiais Base
+
 - `.skeuo-panel`: Cartões de destaque, modais e containers brancos brilhantes. (Já existe, será refinado).
 - `.skeuo-card`: Variante para pequenos itens de lista ou grids (fundo levemente prateado translúcido).
 - `.skeuo-modal-overlay`: Abstração do fundo `bg-black/40 backdrop-blur-sm` usado atrás de popups e painéis abertos.
 
 ### Controles de Interface
+
 - `.skeuo-btn`: Botão de ação primária (estilo gel Aqua, já existe).
 - `.skeuo-btn-danger`: Variante vermelha para deletar/sair da sala.
 - `.btn-secondary-glossy`: Botão metálico cinza (já existe).
@@ -58,6 +65,7 @@ Estas classes encapsularão a complexidade visual. No JSX, elas serão mescladas
 - `.skeuo-badge`: Pílulas coloridas de status (Online, Admin, Dono) com texto em relevo.
 
 ### Partes do Layout Específicas
+
 - `.skeuo-topbar`: Substitui a bagunça dos gradientes prateados em cabeçalhos (Navbar e topo do Chat).
 - `.skeuo-sidebar`: O gradiente suave usado na MembersSidebar e ChatSidebar, com a divisória (border) embutida na sombra interna.
 
@@ -68,6 +76,7 @@ Estas classes encapsularão a complexidade visual. No JSX, elas serão mescladas
 Não faremos um "Big Bang". O processo deve ser progressivo, começando da "periferia" do projeto (componentes isolados) para o "coração" (as telas de alta complexidade).
 
 **Fase 1: Preparação do Terreno**
+
 1. Consolidar o arquivo `index.css` (ou criar um novo arquivo dedicado e importá-lo) definindo todas as abstrações propostas via seletores CSS normais.
 
 **Fase 2: Componentes Isolados (Baixo Risco)**
@@ -97,7 +106,7 @@ Não faremos um "Big Bang". O processo deve ser progressivo, começando da "peri
 A implementação se dá estritamente na branch secundária já criada (`refactor-css-visual-system`). Durante o processo:
 
 1. **Teste Pareado (Visualização Dinâmica):** A cada tela da ordem de execução, abra a versão na main (em uma guia/servidor separado, se possível, ou através de prints antigos) e compare os milímetros de sombra com a refatorada em live reload (`npm run dev`).
-2. **Homologação Tridimensional:** Os componentes devem ser postos em teste de uso. 
+2. **Homologação Tridimensional:** Os componentes devem ser postos em teste de uso.
    - Testar `:hover` (O brilho suaviza?).
    - Testar `:active` (O botão afunda como teclado físico?).
    - Testar Focus Rings navegando via teclado (`TAB`).
@@ -164,3 +173,19 @@ A implementação se dá estritamente na branch secundária já criada (`refacto
 - CSS semântico modular passou a concentrar identidade visual.
 - Comentários não devem ser adicionados em código/CSS.
 - Modais sensíveis do Chat não foram refatorados profundamente por risco de z-index, eventos e lógica condicional.
+
+### 6. Decisão sobre paridade visual com a branch main
+
+A branch main continua sendo referência para layout, espaçamento, responsividade, hierarquia visual e modo claro.
+A branch main não será usada como referência cega para cores de texto no modo escuro quando houver problemas de contraste.
+As diferenças de computed color no modo escuro entre main e refactor-css-visual-system são aceitas quando melhoram legibilidade.
+Overrides html.dark adicionados em CSS semântico são considerados correções de acessibilidade visual, não regressões.
+Não restaurar textos escuros/ilegíveis apenas para atingir paridade 1:1.
+Se uma diferença de cor no dark mode for estética demais ou fugir da identidade visual, ela deve ser avaliada caso a caso.
+O critério final é: modo claro igual à main, layout igual à main, dark mode legível e consistente.
+
+Exemplos aceitos:
+- #86868b para #94a3b8 em textos secundários.
+- #1d1d1f para #f8fafc em textos principais.
+- #0066cc para #60a5fa em links no modo escuro.
+- #16a34a para #4ade80 em status online no modo escuro.
