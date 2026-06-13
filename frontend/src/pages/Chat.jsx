@@ -920,21 +920,21 @@ const Chat = () => {
                     </div>
 
                     {pinnedMessage && (
-                        <div className="px-4 pt-3 shrink-0">
-                            <div className="relative bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/40 dark:to-amber-900/20 rounded-lg border border-amber-200/80 dark:border-amber-700/50 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] flex items-start gap-3">
-                                <div className="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300 dark:border-amber-500">
+                        <div className="chat-pinned-wrapper">
+                            <div className="chat-pinned-message">
+                                <div className="chat-pinned-icon">
                                     <FaThumbtack className="w-2.5 h-2.5 text-white" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-0.5">
+                                <div className="chat-pinned-content">
+                                    <div className="chat-pinned-header">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200">{pinnedMessage.sender}</span>
+                                            <span className="chat-pinned-author">{pinnedMessage.sender}</span>
                                         </div>
-                                        <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full hover:bg-amber-100 dark:hover:bg-amber-800/50 transition-colors shrink-0">
-                                            <FaTimes size={10} className="text-amber-700/50 dark:text-amber-400/50 hover:text-amber-700 dark:hover:text-amber-300" />
+                                        <button onClick={() => setPinnedMessage(null)} className="chat-pinned-close">
+                                            <FaTimes size={10} />
                                         </button>
                                     </div>
-                                    <p className="text-[12.5px] text-amber-800 dark:text-amber-100 leading-snug">{pinnedMessage.text}</p>
+                                    <p className="chat-pinned-text">{pinnedMessage.text}</p>
                                 </div>
                             </div>
                         </div>
