@@ -64,22 +64,22 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                 <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-own items-end group/msg">
                     <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-own skeuo-bubble-sent ${matchClass}`}>
                         <div className="message-bubble-actions message-bubble-actions-own">
-                            <button className="message-bubble-more-btn">
+                            <button className="message-bubble-more-btn p-1 flex items-center justify-center">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
                             </button>
 
-                            <div className="message-bubble-menu">
-                                <button onClick={onToggleFavorite} className="message-bubble-menu-item">
+                            <div className="message-bubble-menu flex flex-col overflow-hidden">
+                                <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                     <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                                 </button>
                                 {canDelete && (
                                     <>
-                                        <div className="message-bubble-menu-divider"></div>
-                                        <button onClick={() => onEditClick(msg)} className="message-bubble-menu-item message-bubble-menu-item-edit">
+                                        <div className="message-bubble-menu-divider h-[1px] w-full"></div>
+                                        <button onClick={() => onEditClick(msg)} className="message-bubble-menu-item message-bubble-menu-item-edit px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                             <FaPencilAlt size={10} className="text-[#0071e3] drop-shadow-sm" /> Editar
                                         </button>
-                                        <div className="message-bubble-menu-divider"></div>
-                                        <button onClick={() => onDeleteMessage(msg.messageId)} className="message-bubble-menu-item message-bubble-menu-item-danger">
+                                        <div className="message-bubble-menu-divider h-[1px] w-full"></div>
+                                        <button onClick={() => onDeleteMessage(msg.messageId)} className="message-bubble-menu-item message-bubble-menu-item-danger px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                             <FaTrash size={10} className="drop-shadow-sm" /> Apagar
                                         </button>
                                     </>
@@ -92,7 +92,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         {msg.text && <p className="message-bubble-text text-[13px] leading-[1.25] break-words whitespace-pre-wrap">{msg.text}</p>}
                     </div>
                     <div className="message-bubble-footer flex items-center gap-2 mt-0.5 px-1 w-full message-bubble-footer-own justify-end">
-                        <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
+                        <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn flex items-center gap-1 text-[10px] px-1.5 py-0.5 ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
                             {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                             {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                         </button>
@@ -134,16 +134,16 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                 </span>
                 <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-other skeuo-bubble-received ${matchClass}`}>
                     <div className="message-bubble-actions message-bubble-actions-other">
-                        <button className="message-bubble-more-btn">
+                        <button className="message-bubble-more-btn p-1 flex items-center justify-center">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
                         </button>
 
-                        <div className="message-bubble-menu">
-                            <button onClick={onToggleFavorite} className="message-bubble-menu-item">
+                        <div className="message-bubble-menu flex flex-col overflow-hidden">
+                            <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                 <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                             </button>
-                            <div className="message-bubble-menu-divider"></div>
-                            <button onClick={() => onReportClick({ type: 'message', target: msg })} className="message-bubble-menu-item message-bubble-menu-item-danger">
+                            <div className="message-bubble-menu-divider h-[1px] w-full"></div>
+                            <button onClick={() => onReportClick({ type: 'message', target: msg })} className="message-bubble-menu-item message-bubble-menu-item-danger px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                 <FaFlag size={10} className="drop-shadow-sm" /> Denunciar
                             </button>
                         </div>
@@ -155,7 +155,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                 </div>
                 <div className="message-bubble-footer flex items-center gap-2 mt-0.5 px-1 w-full message-bubble-footer-other justify-start ml-1">
                     <span className="message-bubble-time text-[10px] font-medium flex items-center gap-1.5">{msgTime} {msg.isEdited && "(editada)"}</span>
-                    <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
+                    <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn flex items-center gap-1 text-[10px] px-1.5 py-0.5 ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
                         {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                         {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                     </button>
