@@ -751,7 +751,7 @@ const Chat = () => {
 
             {selectedUser && selectedUser.sender !== "Sistema" && (
                 <div className="chat-user-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelectedUser(null)}>
-                    <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
+                    <div className="skeuo-panel chat-user-modal-enter p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
                         <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="chat-user-modal-avatar mx-auto mb-4" />
                         <h3 className="chat-user-modal-name text-[22px] font-semibold mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
