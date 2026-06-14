@@ -574,6 +574,10 @@
     .message-bubble-menu-item-edit:hover {
         background-color: #e0f2fe;
     }
+    .message-edit-menu-icon {
+        color: #0071e3;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
+    }
     .message-bubble-menu-item-danger {
         color: #ef4444;
     }

@@ -76,7 +76,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                                     <>
                                         <div className="message-bubble-menu-divider h-[1px] w-full"></div>
                                         <button onClick={() => onEditClick(msg)} className="message-bubble-menu-item message-bubble-menu-item-edit px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
-                                            <FaPencilAlt size={10} className="text-[#0071e3] drop-shadow-sm" /> Editar
+                                            <FaPencilAlt size={10} className="message-edit-menu-icon" /> Editar
                                         </button>
                                         <div className="message-bubble-menu-divider h-[1px] w-full"></div>
                                         <button onClick={() => onDeleteMessage(msg.messageId)} className="message-bubble-menu-item message-bubble-menu-item-danger px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
