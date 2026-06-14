@@ -731,6 +731,12 @@
         color: #1d4ed8;
         border-color: #bfdbfe;
     }
+.chat-user-modal-select {
+    background-color: #ffffff;
+}
+html.dark .chat-user-modal-select {
+    background-color: #1e293b;
+}
 }
 
 

@@ -765,7 +765,7 @@ const Chat = () => {
                             <select
                                 value={mockRoles[selectedUser.sender] || 'Usuário'}
                                 onChange={(e) => handleRoleChange(selectedUser.sender, e.target.value)}
-                                className="skeuo-input w-full px-3 py-2 text-[14px] bg-white dark:bg-[#1e293b] cursor-pointer mb-3"
+                                className="chat-user-modal-select skeuo-input w-full px-3 py-2 text-[14px] cursor-pointer mb-3"
                             >
                                 <option value="Usuário">👤 Usuário Comum</option>
                                 <option value="Moderador">🛡️ Moderador da Sala</option>
