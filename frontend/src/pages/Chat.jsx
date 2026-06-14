@@ -808,12 +808,12 @@ const Chat = () => {
 
                                     navigate(`/chat?room=${privateRoomName}`);
                                     setSelectedUser(null);
-                                }} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff]">
+                                }} className="chat-user-modal-private-btn btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2">
                                     <FaCommentAlt size={12} /> Mensagem Privada
                                 </button>
                             )}
                             <div className="flex gap-3">
-                                <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="btn-secondary-glossy flex-1 py-2 flex items-center justify-center gap-2 text-[#ef4444] hover:bg-[#fee2e2]">
+                                <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="chat-user-modal-report-btn btn-secondary-glossy flex-1 py-2 flex items-center justify-center gap-2">
                                     <FaFlag size={12} /> Denunciar
                                 </button>
                                 <button onClick={() => setSelectedUser(null)} className="skeuo-btn flex-1 py-2">Fechar</button>

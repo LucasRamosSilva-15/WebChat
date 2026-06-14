@@ -711,5 +711,21 @@
         opacity: 0.5;
         cursor: not-allowed;
     }
+    .chat-user-modal-private-btn {
+        color: #0071e3;
+    }
+
+    .chat-user-modal-private-btn:hover {
+        background-color: #e6f0ff;
+    }
+
+    .chat-user-modal-report-btn {
+        color: #ef4444;
+    }
+
+    .chat-user-modal-report-btn:hover {
+        background-color: #fee2e2;
+    }
 }
+
 
