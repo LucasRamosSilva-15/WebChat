@@ -753,12 +753,12 @@ const Chat = () => {
                 <div className="chat-user-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelectedUser(null)}>
                     <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
                         <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="chat-user-modal-avatar mx-auto mb-4" />
-                        <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
+                        <h3 className="chat-user-modal-name text-[22px] font-semibold mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
-                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="message-role-badge message-role-badge-owner">👑 Dono</span>}
+                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="chat-user-modal-role-badge chat-user-modal-role-badge-owner">👑 Dono</span>}
                             {mockRoles[selectedUser.sender] === 'Moderador' && <span className="bg-blue-100 text-blue-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-blue-200 shadow-sm flex items-center gap-1">🛡️ Mod</span>}
                         </h3>
-                        <p className="text-[15px] text-[#86868b] mb-6">{selectedUser.status || "Sem recado"}</p>
+                        <p className="chat-user-modal-status text-[15px] mb-6">{selectedUser.status || "Sem recado"}</p>
 
                         <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 dark:border-white/5 shadow-inner">
                             <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-2">Cargos e Moderação</label>
