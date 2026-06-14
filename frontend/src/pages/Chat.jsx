@@ -755,8 +755,18 @@ const Chat = () => {
                         <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="chat-user-modal-avatar mx-auto mb-4" />
                         <h3 className="chat-user-modal-name text-[22px] font-semibold mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
-                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="chat-user-modal-role-badge chat-user-modal-role-badge-owner inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-none font-bold uppercase tracking-wide">👑 Dono</span>}
-                            {mockRoles[selectedUser.sender] === 'Moderador' && <span className="chat-user-modal-role-badge chat-user-modal-role-badge-mod inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-none font-bold uppercase tracking-wide">🛡️ Mod</span>}
+                            {mockRoles[selectedUser.sender] === 'Dono' && (
+                                <span className="chat-user-modal-role-badge chat-user-modal-role-badge-owner inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-none font-bold uppercase tracking-wide">
+                                    <FaCrown size={10} className="shrink-0" aria-hidden="true" />
+                                    Dono
+                                </span>
+                            )}
+                            {mockRoles[selectedUser.sender] === 'Moderador' && (
+                                <span className="chat-user-modal-role-badge chat-user-modal-role-badge-mod inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-none font-bold uppercase tracking-wide">
+                                    <FaShieldAlt size={10} className="shrink-0" aria-hidden="true" />
+                                    Mod
+                                </span>
+                            )}
                         </h3>
                         <p className="chat-user-modal-status text-[15px] mb-6">{selectedUser.status || "Sem recado"}</p>
 
