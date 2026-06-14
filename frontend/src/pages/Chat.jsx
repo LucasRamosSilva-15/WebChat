@@ -651,11 +651,11 @@ const Chat = () => {
 
     if (!room) {
         return (
-            <main className="reveal chat-state-page">
-                <div className="skeuo-panel chat-state-panel">
-                    <h1 className="hero-title chat-error-title">Sala inválida</h1>
-                    <p className="chat-error-desc">Nenhuma sala foi informada.</p>
-                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn">
+            <main className="reveal chat-state-page flex-grow flex items-center justify-center px-6">
+                <div className="skeuo-panel chat-state-panel p-10 max-w-[400px] w-full text-center">
+                    <h1 className="hero-title chat-error-title text-[28px] font-semibold mb-2">Sala inválida</h1>
+                    <p className="chat-error-desc text-[15px] mb-8">Nenhuma sala foi informada.</p>
+                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn w-full py-3 text-[15px]">
                         Voltar para Salas
                     </button>
                 </div>
@@ -675,18 +675,18 @@ const Chat = () => {
 
     if (roomFullError) {
         return (
-            <main className="reveal chat-state-page">
-                <div className="skeuo-panel chat-state-panel animate-fade-in-up">
-                    <div className="chat-error-icon chat-error-icon-red">
+            <main className="reveal chat-state-page flex-grow flex items-center justify-center px-6">
+                <div className="skeuo-panel chat-state-panel animate-fade-in-up p-10 max-w-[400px] w-full text-center">
+                    <div className="chat-error-icon chat-error-icon-red w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-[36px]">
                         <FaSignOutAlt />
                     </div>
-                    <h1 className="hero-title chat-error-title text-[#1d1d1f] dark:text-[#f8fafc]">
+                    <h1 className="hero-title chat-error-title text-[#1d1d1f] dark:text-[#f8fafc] text-[28px] font-semibold mb-2">
                         Acesso Negado
                     </h1>
-                    <p className="chat-error-desc leading-relaxed">
+                    <p className="chat-error-desc leading-relaxed text-[15px] mb-8">
                         {roomFullError}
                     </p>
-                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn">Voltar para Salas</button>
+                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn w-full py-3 text-[15px]">Voltar para Salas</button>
                 </div>
             </main>
         );
@@ -694,21 +694,21 @@ const Chat = () => {
 
     if (!hasJoined && !roomFullError) {
         return (
-            <main className="reveal chat-state-page">
-                <div className="skeuo-panel chat-state-panel animate-fade-in-up">
-                    <div className="chat-error-icon chat-error-icon-gray">
+            <main className="reveal chat-state-page flex-grow flex items-center justify-center px-6">
+                <div className="skeuo-panel chat-state-panel animate-fade-in-up p-10 max-w-[400px] w-full text-center">
+                    <div className="chat-error-icon chat-error-icon-gray w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-[36px]">
                         <FaSignOutAlt />
                     </div>
 
-                    <h1 className="hero-title chat-error-title">
+                    <h1 className="hero-title chat-error-title text-[28px] font-semibold mb-2">
                         Entrar na Sala
                     </h1>
 
-                    <p className="chat-error-desc tracking-tight leading-snug">
+                    <p className="chat-error-desc tracking-tight leading-snug text-[15px] mb-8">
                         Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?
                     </p>
 
-                    <div className="chat-confirm-actions">
+                    <div className="chat-confirm-actions flex flex-col gap-3">
                         <button
                             onClick={() => {
                                 const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
@@ -718,7 +718,7 @@ const Chat = () => {
                                 }
                                 setHasJoined(true);
                             }}
-                            className="skeuo-btn chat-state-btn font-medium"
+                            className="skeuo-btn chat-state-btn font-medium w-full py-3 text-[15px]"
                         >
                             Entrar na Sala
                         </button>
@@ -728,7 +728,7 @@ const Chat = () => {
                                 setRoomFullError(false);
                                 navigate('/rooms');
                             }}
-                            className="chat-confirm-cancel-btn"
+                            className="chat-confirm-cancel-btn w-full py-3 text-base font-medium"
                         >
                             Cancelar
                         </button>
@@ -828,46 +828,46 @@ const Chat = () => {
                 </div>
             )}
 
-            <div className="chat-shell animate-chat-shell">
+            <div className="chat-shell animate-chat-shell flex w-full h-[calc(100vh-48px)] overflow-hidden">
                 <ChatSidebar />
-                <main className="chat-main animate-chat-panel-main">
-                    <div className="chat-header-divider" />
+                <main className="chat-main animate-chat-panel-main flex-1 min-w-0 flex flex-col h-full relative">
+                    <div className="chat-header-divider absolute top-0 left-0 right-0 h-1 z-10" />
 
-                    <div className="chat-header">
-                        <div className="chat-header-info">
-                            <div className="chat-header-icon">
+                    <div className="chat-header px-4 py-2.5 flex items-center justify-between shrink-0">
+                        <div className="chat-header-info flex items-center gap-3">
+                            <div className="chat-header-icon w-8 h-8 rounded-full flex items-center justify-center">
                                 <FaCommentAlt size={12} />
                             </div>
-                            <div className="chat-header-title-wrapper">
-                                <h2 className="chat-header-title">
+                            <div className="chat-header-title-wrapper flex flex-col justify-center">
+                                <h2 className="chat-header-title font-bold text-[15px] leading-tight">
                                     {roomLoading ? "Carregando..." : (currentRoom ? currentRoom.name : "Sala não encontrada")}
                                 </h2>
-                                <p className="chat-header-subtitle">
-                                    <span className="chat-header-online">
-                                        <span className="chat-header-online-dot" />
+                                <p className="chat-header-subtitle text-[11px] flex items-center gap-1.5 mt-0.5">
+                                    <span className="chat-header-online flex items-center gap-1 font-medium">
+                                        <span className="chat-header-online-dot w-1.5 h-1.5 rounded-full" />
                                         {Number.isFinite(onlinePresence?.count) ? onlinePresence.count : 0} online
                                     </span>
                                 </p>
                             </div>
                         </div>
-                        <div className="chat-header-actions">
+                        <div className="chat-header-actions flex items-center gap-2">
                             <button
                                 onClick={() => setSearchOpen(!searchOpen)}
-                                className={`chat-header-btn ${searchOpen ? 'chat-header-btn-active' : ''}`}
+                                className={`chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${searchOpen ? 'chat-header-btn-active' : ''}`}
                                 title="Buscar mensagens"
                             >
                                 <FaSearch size={14} className={searchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                                className={`chat-header-btn ${showFavoritesOnly ? 'chat-header-btn-active' : ''}`}
+                                className={`chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${showFavoritesOnly ? 'chat-header-btn-active' : ''}`}
                                 title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
                             >
                                 <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => navigate('/rooms')}
-                                className="chat-header-btn chat-header-btn-exit"
+                                className="chat-header-btn chat-header-btn-exit w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
                                 title="Sair da sala"
                             >
                                 <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
