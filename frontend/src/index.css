@@ -327,7 +327,7 @@ html.dark .skeuo-btn {
     background: 
         linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 51%, rgba(0, 0, 0, 0.5) 100%),
         var(--primary-main) !important;
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid #005bb5 !important;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 
@@ -335,7 +335,7 @@ html.dark .skeuo-btn:hover {
     background: 
         linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(0, 0, 0, 0.1) 51%, rgba(0, 0, 0, 0.4) 100%),
         var(--primary-main) !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
+    border-color: #005bb5 !important;
 }
 
 html.dark .skeuo-btn:active {
