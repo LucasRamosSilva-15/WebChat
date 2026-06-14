@@ -1,59 +1,13 @@
 @layer components {
-    .not-found-page {
-        flex: 1 1 0%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        width: 100%;
-        max-width: 980px;
-        margin-left: auto;
-        margin-right: auto;
-        min-height: calc(100vh - 160px);
-    }
-    @media (min-width: 768px) {
-        .not-found-page {
-            padding: 1.5rem;
-        }
-    }
-
     .not-found-panel {
-        width: 100%;
-        max-width: 560px;
-        padding: 2rem;
-        text-align: center;
         border-radius: 28px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    @media (min-width: 768px) {
-        .not-found-panel {
-            max-width: 600px;
-            padding: 3rem;
-        }
     }
 
     .not-found-orb {
-        width: 5rem;
-        height: 5rem;
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 1.5rem;
         border-radius: 9999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         background-image: linear-gradient(to bottom, #ffffff, #f9fafb);
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 1);
         border: 1px solid #e5e7eb;
-    }
-    @media (min-width: 768px) {
-        .not-found-orb {
-            width: 6rem;
-            height: 6rem;
-        }
     }
     html.dark .not-found-orb {
         background-image: linear-gradient(to bottom, #2a2a2c, #1e1e20);
@@ -62,109 +16,35 @@
     }
 
     .not-found-icon {
-        font-size: 2.25rem;
-        line-height: 2.5rem;
         color: rgba(59, 130, 246, 0.8);
         filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05));
-    }
-    @media (min-width: 768px) {
-        .not-found-icon {
-            font-size: 3rem;
-            line-height: 1;
-        }
     }
     html.dark .not-found-icon {
         color: rgba(96, 165, 250, 0.8);
     }
 
     .not-found-code {
-        font-size: 72px;
         font-weight: 700;
         letter-spacing: -0.04em;
         color: #cbd5e1;
-        margin-bottom: 0;
-        line-height: 1;
-    }
-    @media (min-width: 768px) {
-        .not-found-code {
-            font-size: 88px;
-        }
     }
     html.dark .not-found-code {
         color: #475569;
     }
 
     .not-found-title {
-        font-size: 1.5rem;
-        line-height: 2rem;
         font-weight: 600;
-        margin-bottom: 0.75rem;
-        margin-top: 0.5rem;
-    }
-    @media (min-width: 768px) {
-        .not-found-title {
-            font-size: 1.875rem;
-            line-height: 2.25rem;
-        }
     }
 
     .not-found-desc {
         color: #6b7280;
-        margin-bottom: 2rem;
-        max-width: 420px;
-        margin-left: auto;
-        margin-right: auto;
-        line-height: 1.625;
-        font-size: 0.875rem;
-    }
-    @media (min-width: 768px) {
-        .not-found-desc {
-            font-size: 1rem;
-        }
     }
     html.dark .not-found-desc {
         color: #94a3b8;
     }
 
-    .not-found-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        width: 100%;
-    }
-    @media (min-width: 640px) {
-        .not-found-actions {
-            flex-direction: row;
-            width: auto;
-        }
-    }
-
-    .not-found-btn {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
-    }
-    @media (min-width: 640px) {
-        .not-found-btn {
-            width: auto;
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-        }
-    }
-
     .not-found-note {
-        font-size: 0.75rem;
-        line-height: 1rem;
         color: #9ca3af;
-        margin-top: 1.5rem;
         font-weight: 500;
     }
     html.dark .not-found-note {
