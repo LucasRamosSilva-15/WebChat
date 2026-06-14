@@ -218,15 +218,19 @@
         
     }
 
-    .rooms-icon {
-        background: linear-gradient(to bottom right, #4da4ff, #0071e3);
-        color: white;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
-        border: 1px solid #005bb5;
+    .rooms-icon-tile {
+        background: linear-gradient(to bottom, #e0f2fe, #f0f9ff);
+        border: 1px solid rgba(14, 165, 233, 0.18);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 4px 10px rgba(14, 165, 233, 0.12);
         cursor: help;
         transition: transform 200ms;
     }
-    .group:hover .rooms-icon {
+    html.dark .rooms-icon-tile {
+        background: linear-gradient(to bottom, rgba(14, 165, 233, 0.22), rgba(15, 23, 42, 0.9));
+        border-color: rgba(56, 189, 248, 0.22);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+    .group:hover .rooms-icon-tile {
         transform: scale(1.05);
     }
 
@@ -456,32 +460,23 @@
     }
 
     .rooms-stat-icon-blue {
-        background: #e6f0ff;
         color: #0071e3;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
     }
     html.dark .rooms-stat-icon-blue {
-        background: rgba(30, 58, 138, 0.4);
         color: #60a5fa;
     }
 
     .rooms-stat-icon-green {
-        background: #dcfce7;
         color: #16a34a;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
     }
     html.dark .rooms-stat-icon-green {
-        background: rgba(20, 83, 45, 0.4);
         color: #4ade80;
     }
 
     .rooms-stat-icon-red {
-        background: #fee2e2;
         color: #ef4444;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
     }
     html.dark .rooms-stat-icon-red {
-        background: rgba(127, 29, 29, 0.4);
         color: #f87171;
     }
 

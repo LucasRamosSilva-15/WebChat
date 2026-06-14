@@ -11,7 +11,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, iconVariant = "blue" }) =
     <div className="skeuo-panel rooms-stat-card p-6 flex flex-col justify-between h-full">
         <div className="flex justify-between items-start mb-4">
             <h3 className="rooms-stat-title text-[13px]">{title}</h3>
-            <div className={`rooms-stat-icon-wrapper w-10 h-10 rounded-full flex items-center justify-center text-lg rooms-stat-icon-${iconVariant}`}>
+            <div className={`rooms-icon-tile w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 rooms-stat-icon-${iconVariant}`}>
                 <Icon />
             </div>
         </div>
@@ -24,7 +24,7 @@ const StatCard = ({ title, value, subtext, icon: Icon, iconVariant = "blue" }) =
 
 const RoomIconWithTooltip = ({ description }) => (
     <div className="relative group">
-        <div className="rooms-icon w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+        <div className="rooms-icon-tile w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
             <FaHashtag size={18} />
         </div>
 
