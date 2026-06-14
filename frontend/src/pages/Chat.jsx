@@ -70,7 +70,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
                             <div className="message-bubble-menu flex flex-col overflow-hidden">
                                 <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
-                                    <FaStar size={10} className={`message-favorite-menu-icon drop-shadow-sm ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                    <FaStar size={10} className={`message-favorite-menu-icon ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                                 </button>
                                 {canDelete && (
                                     <>
