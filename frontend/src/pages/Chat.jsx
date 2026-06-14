@@ -920,21 +920,21 @@ const Chat = () => {
                     </div>
 
                     {pinnedMessage && (
-                        <div className="chat-pinned-wrapper">
-                            <div className="chat-pinned-message">
-                                <div className="chat-pinned-icon">
+                        <div className="chat-pinned-wrapper px-4 pt-3 shrink-0">
+                            <div className="chat-pinned-message relative p-2.5 flex items-start gap-3">
+                                <div className="chat-pinned-icon shrink-0 mt-0.5 w-6 h-6 rounded-full flex items-center justify-center">
                                     <FaThumbtack className="w-2.5 h-2.5 text-white" />
                                 </div>
-                                <div className="chat-pinned-content">
-                                    <div className="chat-pinned-header">
+                                <div className="chat-pinned-content flex-1 min-w-0">
+                                    <div className="chat-pinned-header flex items-center justify-between mb-0.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="chat-pinned-author">{pinnedMessage.sender}</span>
+                                            <span className="chat-pinned-author text-[11px]">{pinnedMessage.sender}</span>
                                         </div>
-                                        <button onClick={() => setPinnedMessage(null)} className="chat-pinned-close">
+                                        <button onClick={() => setPinnedMessage(null)} className="chat-pinned-close p-0.5 rounded-full shrink-0 flex items-center justify-center">
                                             <FaTimes size={10} />
                                         </button>
                                     </div>
-                                    <p className="chat-pinned-text">{pinnedMessage.text}</p>
+                                    <p className="chat-pinned-text text-[12.5px] leading-[1.375]">{pinnedMessage.text}</p>
                                 </div>
                             </div>
                         </div>
