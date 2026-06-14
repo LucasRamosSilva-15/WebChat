@@ -609,4 +609,8 @@
     html.dark .message-bubble-like-btn-active {
         color: #f87171 !important;
     }
+
+    .message-read-indicator {
+        color: #0ea5e9;
+    }
 }

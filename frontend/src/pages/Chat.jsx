@@ -107,7 +107,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                                     <FaShieldAlt size={8} /> MOD
                                 </span>
                             )}
-                            {msgTime} {msg.isEdited && "(editada)"} <span className="text-sky-500 text-[10px] ml-0.5">✓✓</span>
+                            {msgTime} {msg.isEdited && "(editada)"} <span className="message-read-indicator text-[10px] ml-0.5">✓✓</span>
                         </span>
                     </div>
                 </div>
