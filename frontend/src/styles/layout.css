@@ -1,14 +1,5 @@
 @layer components {
-    .app-footer {
-        padding-top: 2.5rem;
-        padding-bottom: 2.5rem;
-        text-align: center;
-        margin-top: auto;
-        position: relative;
-        z-index: 10;
-    }
     .app-footer-text {
-        font-size: 12px;
         font-weight: 400;
         color: rgba(0, 0, 0, 0.4);
     }
