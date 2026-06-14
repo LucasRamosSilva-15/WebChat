@@ -756,7 +756,7 @@ const Chat = () => {
                         <h3 className="chat-user-modal-name text-[22px] font-semibold mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
                             {mockRoles[selectedUser.sender] === 'Dono' && <span className="chat-user-modal-role-badge chat-user-modal-role-badge-owner">👑 Dono</span>}
-                            {mockRoles[selectedUser.sender] === 'Moderador' && <span className="bg-blue-100 text-blue-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-blue-200 shadow-sm flex items-center gap-1">🛡️ Mod</span>}
+                            {mockRoles[selectedUser.sender] === 'Moderador' && <span className="chat-user-modal-role-badge chat-user-modal-role-badge-mod">🛡️ Mod</span>}
                         </h3>
                         <p className="chat-user-modal-status text-[15px] mb-6">{selectedUser.status || "Sem recado"}</p>
 

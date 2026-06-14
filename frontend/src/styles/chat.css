@@ -726,6 +726,12 @@
     .chat-user-modal-report-btn:hover {
         background-color: #fee2e2;
     }
+    .chat-user-modal-role-badge-mod {
+        background: linear-gradient(to bottom, #bfdbfe, #dbeafe);
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+    }
 }
+
 
 
