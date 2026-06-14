@@ -8,28 +8,28 @@ import SkeuoLoading from '../components/SkeuoLoading';
 
 
 const StatCard = ({ title, value, subtext, icon: Icon, iconVariant = "blue" }) => (
-    <div className="skeuo-panel rooms-stat-card">
+    <div className="skeuo-panel rooms-stat-card p-6 flex flex-col justify-between h-full">
         <div className="flex justify-between items-start mb-4">
-            <h3 className="rooms-stat-title">{title}</h3>
-            <div className={`rooms-stat-icon-wrapper rooms-stat-icon-${iconVariant}`}>
+            <h3 className="rooms-stat-title text-[13px]">{title}</h3>
+            <div className={`rooms-stat-icon-wrapper w-10 h-10 rounded-full flex items-center justify-center text-lg rooms-stat-icon-${iconVariant}`}>
                 <Icon />
             </div>
         </div>
         <div>
-            <div className="rooms-stat-value">{value}</div>
-            <div className="rooms-stat-subtext">{subtext}</div>
+            <div className="rooms-stat-value text-[32px] mb-1">{value}</div>
+            <div className="rooms-stat-subtext text-sm flex items-center gap-1">{subtext}</div>
         </div>
     </div>
 );
 
 const RoomIconWithTooltip = ({ description }) => (
     <div className="relative group">
-        <div className="rooms-icon">
+        <div className="rooms-icon w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
             <FaHashtag size={18} />
         </div>
 
-        <div className="skeuo-tooltip rooms-tooltip">
-            <div className="skeuo-tooltip-arrow rooms-tooltip-arrow"></div>
+        <div className="skeuo-tooltip rooms-tooltip left-[calc(100%+10px)] top-1/2 -translate-y-1/2 -translate-x-2">
+            <div className="skeuo-tooltip-arrow rooms-tooltip-arrow -mr-1.5"></div>
             <div className="skeuo-panel skeuo-tooltip-content rooms-tooltip-content">
                 {description || "Sem descrição disponível."}
             </div>
@@ -57,29 +57,29 @@ const CreateRoomModal = ({
             onClick={onClose}
         >
             <div
-                className="skeuo-panel rooms-modal-panel"
+                className="skeuo-panel rooms-modal-panel p-8 w-full max-w-[450px] relative"
                 onClick={e => e.stopPropagation()}
             >
-                <h2 className="rooms-modal-title">Criar Nova Sala</h2>
+                <h2 className="rooms-modal-title text-2xl mb-6">Criar Nova Sala</h2>
 
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div className="space-y-1">
-                        <label className="rooms-label">Nome da Sala</label>
+                        <label className="rooms-label block text-xs ml-1">Nome da Sala</label>
                         <input
                             type="text"
                             required
                             value={newRoomTitle}
                             onChange={(e) => setNewRoomTitle(e.target.value)}
-                            className="skeuo-input rooms-modal-input"
+                            className="skeuo-input rooms-modal-input w-full px-4 py-3"
                         />
                     </div>
 
                     <div className="space-y-1">
-                        <label className="rooms-label">Categoria</label>
+                        <label className="rooms-label block text-xs ml-1">Categoria</label>
                         <select
                             value={newRoomCategory}
                             onChange={(e) => setNewRoomCategory(e.target.value)}
-                            className="skeuo-input rooms-modal-input rooms-modal-select"
+                            className="skeuo-input rooms-modal-input rooms-modal-select w-full px-4 py-3"
                         >
                             <option>Casual</option>
                             <option>Tecnologia</option>
@@ -90,27 +90,27 @@ const CreateRoomModal = ({
                     </div>
 
                     <div className="space-y-1">
-                        <label className="rooms-label">Descrição</label>
+                        <label className="rooms-label block text-xs ml-1">Descrição</label>
                         <input
                             type="text"
                             value={newRoomDesc}
                             onChange={(e) => setNewRoomDesc(e.target.value)}
-                            className="skeuo-input rooms-modal-input"
+                            className="skeuo-input rooms-modal-input w-full px-4 py-3"
                         />
                     </div>
 
-                    <div className="rooms-modal-actions">
+                    <div className="rooms-modal-actions flex gap-3 pt-4">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="btn-secondary-glossy rooms-modal-btn"
+                            className="btn-secondary-glossy rooms-modal-btn w-full py-3"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={isCreatingRoom}
-                            className="skeuo-btn rooms-modal-btn rooms-modal-btn-submit"
+                            className="skeuo-btn rooms-modal-btn rooms-modal-btn-submit w-full py-3 text-base"
                         >
                             {isCreatingRoom ? "Criando..." : "Criar Sala"}
                         </button>
@@ -123,58 +123,58 @@ const CreateRoomModal = ({
 
 const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
     <tr className="rooms-table-row">
-        <td className="rooms-table-td">
+        <td className="rooms-table-td px-6 py-4">
             <div className="flex items-center gap-4">
                 <RoomIconWithTooltip description={room.description} />
                 <div>
-                    <div className="rooms-row-title">{room.title}</div>
-                    <div className="rooms-row-date">Criada em {room.date || "Recente"}</div>
+                    <div className="rooms-row-title text-base">{room.title}</div>
+                    <div className="rooms-row-date text-[13px]">Criada em {room.date || "Recente"}</div>
                 </div>
             </div>
         </td>
 
-        <td className="rooms-table-td rooms-row-category">
+        <td className="rooms-table-td rooms-row-category px-6 py-4 text-[15px]">
             {room.category || "Casual"}
         </td>
 
-        <td className="rooms-table-td">
+        <td className="rooms-table-td px-6 py-4">
             {room.status === "Arquivada" ? (
-                <span className="rooms-badge rooms-badge-archived">
-                    <span className="rooms-badge-dot rooms-badge-dot-archived"></span>
+                <span className="rooms-badge rooms-badge-archived inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px]">
+                    <span className="rooms-badge-dot rooms-badge-dot-archived w-2 h-2 rounded-full"></span>
                     Arquivada
                 </span>
             ) : room.members >= 200 ? (
-                <span className="rooms-badge rooms-badge-full">
-                    <span className="rooms-badge-dot rooms-badge-dot-full"></span>
+                <span className="rooms-badge rooms-badge-full inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px]">
+                    <span className="rooms-badge-dot rooms-badge-dot-full w-2 h-2 rounded-full"></span>
                     Cheia
                 </span>
             ) : (
-                <span className="rooms-badge rooms-badge-active">
-                    <span className="rooms-badge-dot rooms-badge-dot-active"></span>
+                <span className="rooms-badge rooms-badge-active inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px]">
+                    <span className="rooms-badge-dot rooms-badge-dot-active w-2 h-2 rounded-full"></span>
                     Ativa
                 </span>
             )}
         </td>
 
-        <td className="rooms-table-td rooms-row-members">
+        <td className="rooms-table-td rooms-row-members px-6 py-4 text-[15px] whitespace-nowrap">
             {room.members} / 200
         </td>
 
-        <td className="rooms-table-td flex gap-2 items-center">
+        <td className="rooms-table-td px-6 py-4 flex gap-2 items-center">
             <button
                 onClick={() => onToggleFavorite(room.roomParam)}
-                className={`rooms-favorite-btn ${isFavorite ? 'rooms-favorite-btn-active' : 'rooms-favorite-btn-inactive'}`}
+                className={`rooms-favorite-btn p-2 rounded-full flex items-center justify-center ${isFavorite ? 'rooms-favorite-btn-active' : 'rooms-favorite-btn-inactive'}`}
                 title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
             >
                 <FaStar size={14} />
             </button>
             {room.status !== "Arquivada" && (
                 room.members >= 200 ? (
-                    <span className="btn-secondary-glossy rooms-action-btn rooms-full-btn">
+                    <span className="btn-secondary-glossy rooms-action-btn rooms-full-btn px-4 py-1.5 text-[13px]">
                         Lotada
                     </span>
                 ) : (
-                    <button onClick={() => onJoinRoom(room.roomParam)} className="btn-secondary-glossy rooms-action-btn rooms-join-btn">
+                    <button onClick={() => onJoinRoom(room.roomParam)} className="btn-secondary-glossy rooms-action-btn rooms-join-btn px-4 py-1.5 text-[13px]">
                         Entrar
                     </button>
                 )
@@ -354,14 +354,14 @@ const Rooms = () => {
 
     if (roomsError && customRooms.length === 0) {
         return (
-            <main className="reveal rooms-page rooms-page-error">
-                <div className="skeuo-panel rooms-error-panel">
-                    <div className="rooms-error-icon">
+            <main className="reveal rooms-page rooms-page-error flex items-center justify-center min-h-[50vh]">
+                <div className="skeuo-panel rooms-error-panel p-8 text-center w-full max-w-[420px]">
+                    <div className="rooms-error-icon w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl">
                         <FaExclamationTriangle />
                     </div>
-                    <h2 className="rooms-error-title">Erro de Conexão</h2>
-                    <p className="rooms-error-desc">{roomsError}</p>
-                    <button onClick={() => window.location.reload()} className="skeuo-btn rooms-retry-btn">Tentar Novamente</button>
+                    <h2 className="rooms-error-title text-[22px] mb-2">Erro de Conexão</h2>
+                    <p className="rooms-error-desc text-[15px] mb-6">{roomsError}</p>
+                    <button onClick={() => window.location.reload()} className="skeuo-btn rooms-retry-btn px-6 py-2.5 text-[15px]">Tentar Novamente</button>
                 </div>
             </main>
         );
@@ -410,29 +410,29 @@ const Rooms = () => {
                 isCreatingRoom={isCreatingRoom}
             />
 
-            <main className="reveal rooms-page">
+            <main className="reveal rooms-page w-full max-w-[1200px] mx-auto p-4 md:p-8 relative space-y-8">
 
-                <div className="skeuo-panel rooms-header">
-                    <div className="rooms-header-content">
-                        <h1 className="rooms-title">Gerenciamento de Salas</h1>
-                        <p className="rooms-subtitle">Administre salas, moderadores e atividades da comunidade.</p>
+                <div className="skeuo-panel rooms-header flex flex-col md:flex-row justify-between gap-4 mt-4 md:items-center">
+                    <div className="rooms-header-content p-6">
+                        <h1 className="rooms-title text-[28px] md:text-[32px]">Gerenciamento de Salas</h1>
+                        <p className="rooms-subtitle text-base mt-1">Administre salas, moderadores e atividades da comunidade.</p>
                     </div>
-                    <div className="rooms-toolbar">
-                        <div className="rooms-search-wrapper">
-                            <FaSearch className="rooms-search-icon" size={16} />
+                    <div className="rooms-toolbar flex items-center gap-3 pr-6">
+                        <div className="rooms-search-wrapper relative w-full md:w-[280px]">
+                            <FaSearch className="rooms-search-icon absolute left-3 top-1/2 -translate-y-1/2" size={16} />
                             <input
                                 type="text"
                                 placeholder="Buscar salas..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="skeuo-input rooms-search-input"
+                                className="skeuo-input rooms-search-input w-full pl-10 pr-4 py-2 text-[15px]"
                             />
                         </div>
-                        <div className="rooms-filter-wrapper">
+                        <div className="rooms-filter-wrapper relative">
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="skeuo-input rooms-filter-select"
+                                className="skeuo-input rooms-filter-select w-[240px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
                             >
                                 <option value="Todas">Todas as Categorias</option>
                                 <option value="Casual">Casual</option>
@@ -441,41 +441,41 @@ const Rooms = () => {
                                 <option value="Arte">Arte</option>
                                 <option value="Estudos">Estudos</option>
                             </select>
-                            <FaSlidersH className="rooms-filter-icon" size={16} />
-                            <div className="rooms-filter-arrow">
+                            <FaSlidersH className="rooms-filter-icon absolute left-3 top-1/2 -translate-y-1/2" size={16} />
+                            <div className="rooms-filter-arrow absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="#86868b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="rooms-stats-grid">
+                <div className="rooms-stats-grid grid grid-cols-1 md:grid-cols-3 gap-6">
                     {statsCards.map((card) => (
                         <StatCard key={card.title} {...card} />
                     ))}
                 </div>
 
-                <div className="skeuo-panel rooms-list-panel">
-                    <div className="rooms-list-header">
-                        <h2 className="rooms-list-title">Diretório de Salas</h2>
+                <div className="skeuo-panel rooms-list-panel p-0 overflow-hidden">
+                    <div className="rooms-list-header flex flex-col md:flex-row justify-between items-center p-6 md:px-8 md:py-6 gap-4">
+                        <h2 className="rooms-list-title text-[22px]">Diretório de Salas</h2>
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="skeuo-btn rooms-create-room-btn"
+                            className="skeuo-btn rooms-create-room-btn px-6 py-2.5 text-[15px] inline-flex items-center gap-2"
                         >
                             <FaPlus size={14} />
                             Criar Sala
                         </button>
                     </div>
 
-                    <div className="rooms-table-wrapper">
-                        <table className="rooms-table">
+                    <div className="rooms-table-wrapper overflow-x-auto">
+                        <table className="rooms-table w-full text-left">
                             <thead>
                                 <tr className="rooms-table-header-row">
-                                    <th className="rooms-table-th">Nome da Sala</th>
-                                    <th className="rooms-table-th">Categoria</th>
-                                    <th className="rooms-table-th">Status</th>
-                                    <th className="rooms-table-th">Membros</th>
-                                    <th className="rooms-table-th">Ações</th>
+                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Nome da Sala</th>
+                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Categoria</th>
+                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Status</th>
+                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Membros</th>
+                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -491,7 +491,7 @@ const Rooms = () => {
 
                                 {sortedRooms.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" className="rooms-empty">
+                                        <td colSpan="5" className="rooms-empty py-12 px-6 text-center text-[15px]">
                                             {searchQuery ? `Nenhuma sala encontrada com o termo "${searchQuery}".` : "Nenhuma sala criada ainda."}
                                         </td>
                                     </tr>
@@ -500,12 +500,12 @@ const Rooms = () => {
                         </table>
                     </div>
 
-                    <div className="rooms-pagination">
+                    <div className="rooms-pagination p-6 flex items-center justify-between text-sm">
                         <div>Mostrando 1 a {filteredRooms.length} de {allRooms.length} salas</div>
-                        <div className="rooms-pagination-actions">
-                            <button className="rooms-pagination-btn" disabled>&lt;</button>
-                            <button className="rooms-pagination-btn rooms-pagination-btn-active">1</button>
-                            <button className="rooms-pagination-btn" disabled>&gt;</button>
+                        <div className="rooms-pagination-actions flex gap-1">
+                            <button className="rooms-pagination-btn w-8 h-8 flex items-center justify-center rounded-full" disabled>&lt;</button>
+                            <button className="rooms-pagination-btn rooms-pagination-btn-active w-8 h-8 flex items-center justify-center rounded-full">1</button>
+                            <button className="rooms-pagination-btn w-8 h-8 flex items-center justify-center rounded-full" disabled>&gt;</button>
                         </div>
                     </div>
                 </div>
