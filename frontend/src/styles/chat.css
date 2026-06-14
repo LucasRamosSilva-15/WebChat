@@ -613,4 +613,39 @@
     .message-read-indicator {
         color: #0ea5e9;
     }
+
+    .message-favorite-menu-icon {
+        color: #86868b;
+    }
+
+    .message-favorite-menu-icon-active {
+        color: #f59e0b;
+    }
+
+    .chat-image-lightbox {
+        background-color: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(12px);
+    }
+
+    .chat-image-lightbox-close {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+        transition: background-color 150ms;
+    }
+
+    .chat-image-lightbox-close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-user-modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+    }
+
+    .chat-user-modal-avatar {
+        border: 2px solid #ffffff;
+        border-radius: 9999px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    }
 }

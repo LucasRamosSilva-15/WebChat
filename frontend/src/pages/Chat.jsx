@@ -70,7 +70,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
                             <div className="message-bubble-menu flex flex-col overflow-hidden">
                                 <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
-                                    <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                    <FaStar size={10} className={`message-favorite-menu-icon drop-shadow-sm ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                                 </button>
                                 {canDelete && (
                                     <>
@@ -140,7 +140,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
                         <div className="message-bubble-menu flex flex-col overflow-hidden">
                             <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
-                                <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                <FaStar size={10} className={`message-favorite-menu-icon drop-shadow-sm ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                             </button>
                             <div className="message-bubble-menu-divider h-[1px] w-full"></div>
                             <button onClick={() => onReportClick({ type: 'message', target: msg })} className="message-bubble-menu-item message-bubble-menu-item-danger px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
@@ -741,8 +741,8 @@ const Chat = () => {
     return (
         <>
             {selectedImage && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setSelectedImage(null)}>
-                    <button onClick={() => setSelectedImage(null)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+                <div className="chat-image-lightbox fixed inset-0 z-[200] flex items-center justify-center animate-fade-in" onClick={() => setSelectedImage(null)}>
+                    <button onClick={() => setSelectedImage(null)} className="chat-image-lightbox-close absolute top-6 right-6 rounded-full p-2">
                         <FaTimes size={20} />
                     </button>
                     <img src={selectedImage} alt="Full Screen" className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-sm" onClick={(e) => e.stopPropagation()} />
@@ -750,9 +750,9 @@ const Chat = () => {
             )}
 
             {selectedUser && selectedUser.sender !== "Sistema" && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedUser(null)}>
+                <div className="chat-user-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelectedUser(null)}>
                     <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
-                        <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="mx-auto mb-4 border-2 border-white shadow-md" />
+                        <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="chat-user-modal-avatar mx-auto mb-4" />
                         <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
                             {mockRoles[selectedUser.sender] === 'Dono' && <span className="message-role-badge message-role-badge-owner">👑 Dono</span>}
