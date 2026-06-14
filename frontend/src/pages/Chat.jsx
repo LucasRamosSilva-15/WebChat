@@ -875,45 +875,45 @@ const Chat = () => {
                         </div>
                     </div>
 
-                    <div className={`chat-search-panel ${searchOpen ? 'chat-search-panel-open' : 'chat-search-panel-closed'}`}>
-                        <div className="chat-search-inner">
-                            <div className="chat-search-input-wrapper">
-                                <FaSearch className="chat-search-icon" size={12} />
+                    <div className={`chat-search-panel overflow-hidden shrink-0 z-10 transition-all duration-300 ease-out ${searchOpen ? 'chat-search-panel-open max-h-20 py-2' : 'chat-search-panel-closed max-h-0 py-0 pointer-events-none'}`}>
+                        <div className="chat-search-inner px-4 flex items-center gap-3">
+                            <div className="chat-search-input-wrapper relative flex-1">
+                                <FaSearch className="chat-search-icon absolute left-3 top-1/2 -translate-y-1/2" size={12} />
                                 <input
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     placeholder="Buscar mensagens..."
-                                    className="chat-search-input skeuo-input"
+                                    className="chat-search-input skeuo-input w-full px-8 py-1.5 text-[13px] rounded-full"
                                 />
                                 {searchTerm && (
-                                    <button onClick={() => setSearchTerm('')} className="chat-search-clear-btn">
+                                    <button onClick={() => setSearchTerm('')} className="chat-search-clear-btn absolute right-3 top-1/2 -translate-y-1/2">
                                         <FaTimes size={12} />
                                     </button>
                                 )}
                             </div>
                             {searchResults.length > 0 ? (
-                                <div className="chat-search-results">
-                                    <span className="chat-search-result-count">
+                                <div className="chat-search-results flex items-center gap-2">
+                                    <span className="chat-search-result-count text-[11px] whitespace-nowrap">
                                         {currentSearchIndex + 1} de {searchResults.length}
                                     </span>
-                                    <div className="chat-search-navigation">
-                                        <button onClick={handlePrevSearch} className="chat-search-nav-btn" title="Resultado anterior">
+                                    <div className="chat-search-navigation flex items-center overflow-hidden">
+                                        <button onClick={handlePrevSearch} className="chat-search-nav-btn px-2 py-1" title="Resultado anterior">
                                             <FaChevronUp size={10} />
                                         </button>
-                                        <button onClick={handleNextSearch} className="chat-search-nav-btn" title="Próximo resultado">
+                                        <button onClick={handleNextSearch} className="chat-search-nav-btn px-2 py-1" title="Próximo resultado">
                                             <FaChevronDown size={10} />
                                         </button>
                                     </div>
                                 </div>
                             ) : searchLoading ? (
-                                <span className="chat-search-empty">Buscando...</span>
+                                <span className="chat-search-empty text-[11px] whitespace-nowrap">Buscando...</span>
                             ) : searchError ? (
-                                <span className="chat-search-error">{searchError}</span>
+                                <span className="chat-search-error text-[11px] whitespace-nowrap">{searchError}</span>
                             ) : searchTerm ? (
-                                <span className="chat-search-empty">Nenhuma mensagem encontrada</span>
+                                <span className="chat-search-empty text-[11px] whitespace-nowrap">Nenhuma mensagem encontrada</span>
                             ) : null}
-                            <button onClick={() => { setSearchOpen(false); setSearchTerm(''); }} className="chat-search-close-btn">
+                            <button onClick={() => { setSearchOpen(false); setSearchTerm(''); }} className="chat-search-close-btn text-xs whitespace-nowrap">
                                 Fechar
                             </button>
                         </div>
