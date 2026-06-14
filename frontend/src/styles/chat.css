@@ -421,6 +421,22 @@
         color: #94a3b8;
     }
 
+    .chat-message-enter {
+        animation: chat-message-enter 220ms ease-out both;
+    }
+
+    @keyframes chat-message-enter {
+        from {
+            opacity: 0;
+            transform: translateY(6px) scale(0.985);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
     .message-bubble-card {
         transition: all 300ms;
         border-radius: 14px;

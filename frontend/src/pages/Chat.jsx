@@ -966,22 +966,23 @@ const Chat = () => {
                             if (showFavoritesOnly && !msg.isFavorite) return null;
                             const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.id === msg.messageId;
                             return (
-                                <MessageBubble
-                                    key={index}
-                                    msg={msg}
-                                    innerRef={(el) => messageRefs.current[msg.messageId] = el}
-                                    onAvatarClick={setSelectedUser}
-                                    onImageClick={setSelectedImage}
-                                    onToggleFavorite={() => toggleFavorite(index)}
-                                    onDeleteMessage={deleteMessage}
-                                    onEditClick={handleEditClick}
-                                    onToggleLike={toggleLike}
-                                    currentUserId={currentUserId}
-                                    mockRoles={mockRoles}
-                                    onReportClick={setReportModalData}
-                                    searchTerm={normalizedSearchTerm}
-                                    isCurrentSearch={isCurrentSearch}
-                                />
+                                <div key={index} className="chat-message-enter">
+                                    <MessageBubble
+                                        msg={msg}
+                                        innerRef={(el) => messageRefs.current[msg.messageId] = el}
+                                        onAvatarClick={setSelectedUser}
+                                        onImageClick={setSelectedImage}
+                                        onToggleFavorite={() => toggleFavorite(index)}
+                                        onDeleteMessage={deleteMessage}
+                                        onEditClick={handleEditClick}
+                                        onToggleLike={toggleLike}
+                                        currentUserId={currentUserId}
+                                        mockRoles={mockRoles}
+                                        onReportClick={setReportModalData}
+                                        searchTerm={normalizedSearchTerm}
+                                        isCurrentSearch={isCurrentSearch}
+                                    />
+                                </div>
                             );
                         })}
 
