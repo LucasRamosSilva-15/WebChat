@@ -87,7 +87,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                             </div>
                         </div>
                         {msg.image && (
-                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
+                            <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
                         )}
                         {msg.text && <p className="message-bubble-text text-[13px] leading-[1.25] break-words whitespace-pre-wrap">{msg.text}</p>}
                     </div>
@@ -149,7 +149,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </div>
                     </div>
                     {msg.image && (
-                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
+                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
                     )}
                     {msg.text && <p className="message-bubble-text text-[13px] leading-[1.25] break-words whitespace-pre-wrap">{msg.text}</p>}
                 </div>
@@ -173,7 +173,7 @@ const Chat = () => {
 
     const [currentRoom, setCurrentRoom] = useState(null);
     const [roomLoading, setRoomLoading] = useState(true);
-    
+
     const [hasJoined, setHasJoined] = useState(() => {
         try {
             const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');

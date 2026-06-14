@@ -1,21 +1,9 @@
 @layer components {
-    .chat-shell {
-        
-    }
-
     .chat-main {
         background-color: #f8fafc;
     }
     html.dark .chat-main {
         background-color: #020617; 
-    }
-
-    .chat-state-page {
-        
-    }
-
-    .chat-state-panel {
-        
     }
 
     .chat-error-icon {
@@ -57,14 +45,6 @@
         color: #94a3b8;
     }
 
-    .chat-state-btn {
-        
-    }
-
-    .chat-confirm-actions {
-        
-    }
-
     .chat-confirm-cancel-btn {
         color: #ef4444;
         border-radius: 12px;
@@ -94,19 +74,11 @@
         background-image: linear-gradient(to bottom, #1e293b, #0f172a);
     }
 
-    .chat-header-info {
-        
-    }
-
     .chat-header-icon {
         background-image: linear-gradient(to bottom, #38bdf8, #0284c7);
         color: white;
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
         border: 1px solid #0ea5e9;
-    }
-
-    .chat-header-title-wrapper {
-        
     }
 
     .chat-header-title {
@@ -123,17 +95,9 @@
         color: #94a3b8;
     }
 
-    .chat-header-online {
-        
-    }
-
     .chat-header-online-dot {
         background-color: #10b981;
         box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
-    }
-
-    .chat-header-actions {
-        
     }
 
     .chat-header-btn {
@@ -206,23 +170,11 @@
         border-bottom-color: rgba(255, 255, 255, 0);
     }
 
-    .chat-search-inner {
-        
-    }
-
-    .chat-search-input-wrapper {
-        
-    }
-
     .chat-search-icon {
         color: #86868b;
     }
     html.dark .chat-search-icon {
         color: #94a3b8;
-    }
-
-    .chat-search-input {
-        
     }
 
     .chat-search-clear-btn {
@@ -237,10 +189,6 @@
     }
     html.dark .chat-search-clear-btn:hover {
         color: white;
-    }
-
-    .chat-search-results {
-        
     }
 
     .chat-search-result-count {
@@ -308,10 +256,6 @@
         text-decoration: underline;
     }
 
-    .chat-pinned-wrapper {
-        
-    }
-
     .chat-pinned-message {
         background-image: linear-gradient(to right, #fffbeb, #fefce8);
         border-radius: 0.5rem;
@@ -332,14 +276,6 @@
     html.dark .chat-pinned-icon {
         background-image: linear-gradient(to bottom, #d97706, #b45309);
         border-color: #f59e0b;
-    }
-
-    .chat-pinned-content {
-        
-    }
-
-    .chat-pinned-header {
-        
     }
 
     .chat-pinned-author {
@@ -408,14 +344,6 @@
         background-color: #d1d5db;
     }
     
-    .chat-input-cancel-edit-btn {
-        
-    }
-
-    .chat-input-form {
-        
-    }
-
     .chat-input-attach-btn {
         border-radius: 9999px;
         background-image: linear-gradient(to bottom, #ffffff, #f3f4f6);
@@ -439,10 +367,6 @@
         color: white;
     }
 
-    .chat-input-field {
-        
-    }
-
     .chat-input-send-btn {
         border-radius: 9999px;
         box-shadow: 0 2px 4px rgba(14, 165, 233, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -460,13 +384,6 @@
         opacity: 0.5;
         cursor: not-allowed;
         filter: grayscale(100%);
-    }
-
-    .chat-messages-area {
-        
-    }
-    .chat-messages-area > :not([hidden]) ~ :not([hidden]) {
-        
     }
 
     .chat-messages-empty {
@@ -504,26 +421,6 @@
         color: #94a3b8;
     }
 
-    .message-bubble-row {
-        
-    }
-    .message-bubble-row-own {
-        
-    }
-    .message-bubble-row-other {
-        
-    }
-
-    .message-bubble-wrapper {
-        
-    }
-    .message-bubble-wrapper-own {
-        
-    }
-    .message-bubble-wrapper-other {
-        
-    }
-
     .message-bubble-card {
         transition: all 300ms;
         border-radius: 14px;
@@ -543,24 +440,11 @@
         color: #f8fafc;
     }
 
-    .message-bubble-text {
-        
-    }
     .message-bubble-card-other .message-bubble-text {
         color: #1d1d1f;
     }
     html.dark .message-bubble-card-other .message-bubble-text {
         color: #f8fafc;
-    }
-
-    .message-bubble-footer {
-        
-    }
-    .message-bubble-footer-own {
-        
-    }
-    .message-bubble-footer-other {
-        
     }
 
     .message-bubble-time {
