@@ -745,7 +745,7 @@ const Chat = () => {
                     <button onClick={() => setSelectedImage(null)} className="chat-image-lightbox-close absolute top-6 right-6 rounded-full p-2">
                         <FaTimes size={20} />
                     </button>
-                    <img src={selectedImage} alt="Full Screen" className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-sm" onClick={(e) => e.stopPropagation()} />
+                    <img src={selectedImage} alt="Full Screen" className="chat-image-lightbox-image max-w-[90vw] max-h-[90vh] object-contain" onClick={(e) => e.stopPropagation()} />
                 </div>
             )}
 

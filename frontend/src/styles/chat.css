@@ -499,6 +499,23 @@
         transition: all 200ms;
         min-width: 140px;
     }
+    html.dark .message-bubble-menu {
+        background-color: #1e293b;
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -2px rgba(0, 0, 0, 0.35);
+    }
+    html.dark .message-bubble-menu-item:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    html.dark .message-bubble-menu-item-edit:hover {
+        background-color: rgba(14, 165, 233, 0.16);
+    }
+    html.dark .message-bubble-menu-item-danger:hover {
+        background-color: rgba(239, 68, 68, 0.16);
+    }
+    html.dark .message-bubble-menu-divider {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
     .message-bubble-actions:hover .message-bubble-menu {
         opacity: 1;
         visibility: visible;
@@ -736,6 +753,10 @@
 }
 html.dark .chat-user-modal-select {
     background-color: #1e293b;
+.chat-image-lightbox-image {
+    border-radius: 0.125rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
 }
 }
 

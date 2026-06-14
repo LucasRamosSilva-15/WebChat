@@ -112,7 +112,7 @@ io.on('connection', (socket) => {
 
   socket.on('send_message', async (data) => {
     const { room, userId, userName, content, imageUrl } = data;
-    if (!room || !content) return;
+    if (!room || (!content && !imageUrl)) return;
 
     try {
 
