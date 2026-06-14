@@ -760,8 +760,8 @@ const Chat = () => {
                         </h3>
                         <p className="chat-user-modal-status text-[15px] mb-6">{selectedUser.status || "Sem recado"}</p>
 
-                        <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 dark:border-white/5 shadow-inner">
-                            <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-2">Cargos e Moderação</label>
+                        <div className="chat-user-modal-role-panel p-4 rounded-[12px] mb-6 text-left border">
+                            <label className="chat-user-modal-role-label block text-[11px] font-bold uppercase tracking-widest mb-2">Cargos e Moderação</label>
                             <select
                                 value={mockRoles[selectedUser.sender] || 'Usuário'}
                                 onChange={(e) => handleRoleChange(selectedUser.sender, e.target.value)}
