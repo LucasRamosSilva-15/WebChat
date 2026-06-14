@@ -773,8 +773,8 @@ const Chat = () => {
                             </select>
 
                             <div className="flex gap-2 flex-wrap">
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Silenciar (Em breve)</button>
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Banir (Em breve)</button>
+                                <button className="chat-user-modal-disabled-action flex-1 btn-secondary-glossy py-1.5 text-[12px] whitespace-nowrap" disabled>Silenciar (Em breve)</button>
+                                <button className="chat-user-modal-disabled-action flex-1 btn-secondary-glossy py-1.5 text-[12px] whitespace-nowrap" disabled>Banir (Em breve)</button>
                             </div>
                         </div>
 

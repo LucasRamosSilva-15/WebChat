@@ -706,4 +706,10 @@
         color: #94a3b8;
     }
 
+    .chat-user-modal-disabled-action {
+        color: #ef4444;
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 }
+
