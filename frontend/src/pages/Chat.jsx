@@ -60,9 +60,9 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     if (msg.isMe) {
         return (
-            <div ref={innerRef} className="message-bubble-row message-bubble-row-own group animate-fade-in-up">
-                <div className="message-bubble-wrapper message-bubble-wrapper-own group/msg">
-                    <div className={`message-bubble-card message-bubble-card-own skeuo-bubble-sent ${matchClass}`}>
+            <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-own justify-end group animate-fade-in-up">
+                <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-own items-end group/msg">
+                    <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-own skeuo-bubble-sent ${matchClass}`}>
                         <div className="message-bubble-actions message-bubble-actions-own">
                             <button className="message-bubble-more-btn">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -87,23 +87,23 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                             </div>
                         </div>
                         {msg.image && (
-                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image" />
+                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
                         )}
-                        {msg.text && <p className="message-bubble-text">{msg.text}</p>}
+                        {msg.text && <p className="message-bubble-text text-[13px] leading-[1.25] break-words whitespace-pre-wrap">{msg.text}</p>}
                     </div>
-                    <div className="message-bubble-footer message-bubble-footer-own">
+                    <div className="message-bubble-footer flex items-center gap-2 mt-0.5 px-1 w-full message-bubble-footer-own justify-end">
                         <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
                             {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                             {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                         </button>
-                        <span className="message-bubble-time">
+                        <span className="message-bubble-time text-[10px] font-medium flex items-center gap-1.5">
                             {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                                <span className="message-role-badge message-role-badge-owner">
+                                <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-owner">
                                     <FaCrown size={8} /> DONO
                                 </span>
                             )}
                             {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                                <span className="message-role-badge message-role-badge-mod">
+                                <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-mod">
                                     <FaShieldAlt size={8} /> MOD
                                 </span>
                             )}
@@ -116,23 +116,23 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
     }
 
     return (
-        <div ref={innerRef} className="message-bubble-row message-bubble-row-other group animate-fade-in-up">
+        <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-other justify-start gap-2 group animate-fade-in-up">
             <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 hover:opacity-80 transition-opacity" />
-            <div className="message-bubble-wrapper message-bubble-wrapper-other group/msg">
-                <span className="message-bubble-author">
+            <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-other items-start group/msg">
+                <span className="message-bubble-author text-[11.5px] flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
                     {msg.sender}
                     {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                        <span className="message-role-badge message-role-badge-owner">
+                        <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-owner">
                             <FaCrown size={8} /> DONO
                         </span>
                     )}
                     {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                        <span className="message-role-badge message-role-badge-mod">
+                        <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-mod">
                             <FaShieldAlt size={8} /> MOD
                         </span>
                     )}
                 </span>
-                <div className={`message-bubble-card message-bubble-card-other skeuo-bubble-received ${matchClass}`}>
+                <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-other skeuo-bubble-received ${matchClass}`}>
                     <div className="message-bubble-actions message-bubble-actions-other">
                         <button className="message-bubble-more-btn">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
@@ -149,12 +149,12 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         </div>
                     </div>
                     {msg.image && (
-                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image" />
+                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
                     )}
-                    {msg.text && <p className="message-bubble-text">{msg.text}</p>}
+                    {msg.text && <p className="message-bubble-text text-[13px] leading-[1.25] break-words whitespace-pre-wrap">{msg.text}</p>}
                 </div>
-                <div className="message-bubble-footer message-bubble-footer-other">
-                    <span className="message-bubble-time">{msgTime} {msg.isEdited && "(editada)"}</span>
+                <div className="message-bubble-footer flex items-center gap-2 mt-0.5 px-1 w-full message-bubble-footer-other justify-start ml-1">
+                    <span className="message-bubble-time text-[10px] font-medium flex items-center gap-1.5">{msgTime} {msg.isEdited && "(editada)"}</span>
                     <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
                         {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                         {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
