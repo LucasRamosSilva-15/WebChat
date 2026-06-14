@@ -20,28 +20,28 @@ const ChatSidebar = () => {
     ];
 
     return (
-        <div className="chat-sidebar animate-chat-panel-left">
-            <nav className="chat-sidebar-list">
-                <div className="sidebar-title">Navegação</div>
+        <div className="chat-sidebar animate-chat-panel-left hidden lg:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0">
+            <nav className="chat-sidebar-list flex-1 p-3 overflow-y-auto space-y-1">
+                <div className="sidebar-title text-[11px] mb-3 ml-2 mt-2">Navegação</div>
                 {navItems.map(item => (
                     item.disabled ? (
                         <span
                             key={item.id}
-                            className="chat-sidebar-item chat-sidebar-item-disabled"
+                            className="chat-sidebar-item chat-sidebar-item-disabled w-full flex items-center gap-3 px-3 py-2"
                         >
-                            <span className="chat-sidebar-item-icon">{item.icon}</span>
-                            <span className="chat-sidebar-item-label">{item.label} (Em breve)</span>
+                            <span className="chat-sidebar-item-icon flex items-center justify-center w-6 h-6">{item.icon}</span>
+                            <span className="chat-sidebar-item-label text-sm flex-1 text-left">{item.label} (Em breve)</span>
                         </span>
                     ) : (
                     <Link
                         key={item.id}
                         to={item.id}
-                        className={`chat-sidebar-item ${activeTab === item.id ? 'chat-sidebar-item-active' : ''}`}
+                        className={`chat-sidebar-item w-full flex items-center gap-3 px-3 py-2 ${activeTab === item.id ? 'chat-sidebar-item-active' : ''}`}
                     >
-                        <span className="chat-sidebar-item-icon">{item.icon}</span>
-                        <span className="chat-sidebar-item-label">{item.label}</span>
+                        <span className="chat-sidebar-item-icon flex items-center justify-center w-6 h-6">{item.icon}</span>
+                        <span className="chat-sidebar-item-label text-sm flex-1 text-left">{item.label}</span>
                         {item.badge && (
-                            <span className={`chat-sidebar-badge ${activeTab === item.id ? 'chat-sidebar-badge-active' : 'chat-sidebar-badge-inactive'}`}>
+                            <span className={`chat-sidebar-badge min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[10px] ${activeTab === item.id ? 'chat-sidebar-badge-active' : 'chat-sidebar-badge-inactive'}`}>
                                 {item.badge}
                             </span>
                         )}
@@ -50,14 +50,14 @@ const ChatSidebar = () => {
                 ))}
             </nav>
 
-            <div className="chat-sidebar-footer">
-                <Link to="/custom" className="chat-sidebar-profile">
+            <div className="chat-sidebar-footer p-3">
+                <Link to="/custom" className="chat-sidebar-profile flex items-center gap-3 p-2.5">
                     <UserAvatar src={profilePhoto} name={displayName} size="sm" showStatus={true} status="online" />
                     <div className="flex-1 min-w-0">
-                        <h4 className="chat-sidebar-profile-name">{displayName}</h4>
-                        <div className="chat-sidebar-profile-status-row">
-                            <span className="chat-sidebar-status-dot"></span>
-                            <span className="chat-sidebar-status-text">Online</span>
+                        <h4 className="chat-sidebar-profile-name text-[13px] truncate">{displayName}</h4>
+                        <div className="chat-sidebar-profile-status-row flex items-center gap-1.5 mt-0.5">
+                            <span className="chat-sidebar-status-dot w-1.5 h-1.5"></span>
+                            <span className="chat-sidebar-status-text text-[10px]">Online</span>
                         </div>
                     </div>
                 </Link>

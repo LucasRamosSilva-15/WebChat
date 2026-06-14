@@ -79,31 +79,31 @@ const MembersSidebar = ({ roomId, currentUserId, onlineUsers = [], onlineCount =
     const displayOnlineCount = isSocketOnline ? Math.max(onlineCount, finalOnlineMembers.length) : finalOnlineMembers.length;
 
     return (
-        <div className="members-sidebar animate-chat-panel-right">
+        <div className="members-sidebar animate-chat-panel-right hidden xl:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0 overflow-y-auto">
             {loading ? (
-                <div className="members-sidebar-empty">Carregando membros...</div>
+                <div className="members-sidebar-empty p-4 text-center text-xs">Carregando membros...</div>
             ) : error ? (
-                <div className="members-sidebar-error">{error}</div>
+                <div className="members-sidebar-error p-4 text-center text-xs">{error}</div>
             ) : members.length === 0 ? (
-                <div className="members-sidebar-empty">Nenhum membro encontrado</div>
+                <div className="members-sidebar-empty p-4 text-center text-xs">Nenhum membro encontrado</div>
             ) : (
                 <>
-                    <div className="members-sidebar-header">
-                        <h3 className="sidebar-title">
+                    <div className="members-sidebar-header p-4 pt-5">
+                        <h3 className="sidebar-title text-[11px] mb-3 ml-2 mt-2">
                             Online — {displayOnlineCount}
                         </h3>
                     </div>
-                    <div className="members-list">
+                    <div className="members-list px-3 space-y-1">
                         {finalOnlineMembers.map((member) => (
                             <MemberItem key={member.id} member={member} isMe={member.id === currentUserId} />
                         ))}
                     </div>
-                    <div className="members-sidebar-header-offline">
-                        <h3 className="sidebar-title">
+                    <div className="members-sidebar-header-offline p-4 mt-4">
+                        <h3 className="sidebar-title text-[11px] mb-3 ml-2 mt-2">
                             Offline — {finalOfflineMembers.length}
                         </h3>
                     </div>
-                    <div className="members-list-offline">
+                    <div className="members-list-offline px-3 space-y-1">
                         {finalOfflineMembers.map((member) => (
                             <MemberItem key={member.id} member={member} isMe={member.id === currentUserId} />
                         ))}
@@ -119,27 +119,27 @@ const MemberItem = ({ member, isMe }) => {
     const statusText = member.online ? 'Online' : 'Offline';
 
     return (
-        <div className="member-item">
+        <div className="member-item flex items-center gap-3 p-2">
             <UserAvatar name={displayName} size="sm" showStatus={true} status={member.online ? 'online' : 'offline'} />
-            <div className="member-info">
-                <span className="member-name">{displayName}</span>
+            <div className="member-info flex-1 min-w-0 flex flex-col justify-center">
+                <span className="member-name text-[13px] truncate leading-tight">{displayName}</span>
                 {member.role === 'owner' && (
-                    <span className="member-role member-role-owner">
+                    <span className="member-role member-role-[role] member-role-owner inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit">
                         <FaCrown size={8} /> DONO
                     </span>
                 )}
                 {member.role === 'admin' && (
-                    <span className="member-role member-role-admin">
+                    <span className="member-role member-role-[role] member-role-admin inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit">
                         <FaShieldAlt size={8} /> ADMIN
                     </span>
                 )}
                 {member.role === 'moderator' && (
-                    <span className="member-role member-role-moderator">
+                    <span className="member-role member-role-[role] member-role-moderator inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit">
                         <FaShieldAlt size={8} /> MOD
                     </span>
                 )}
                 {member.role === 'user' && (
-                    <p className="member-status-text">{statusText}</p>
+                    <p className="member-status-text text-[11px] truncate mt-0.5 leading-none">{statusText}</p>
                 )}
             </div>
         </div>
