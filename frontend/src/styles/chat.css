@@ -503,40 +503,20 @@
     }
 
     .chat-messages-area {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding-top: 0.5rem;
-        padding-right: 0.5rem;
-        margin-bottom: 0.5rem;
+        
     }
     .chat-messages-area > :not([hidden]) ~ :not([hidden]) {
-        margin-top: 0.125rem;
+        
     }
 
     .chat-messages-empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        min-height: 250px;
-        text-align: center;
-        padding-left: 1rem;
-        padding-right: 1rem;
         opacity: 0.8;
     }
 
     .chat-messages-empty-icon {
-        width: 4rem;
-        height: 4rem;
-        border-radius: 9999px;
         background-image: linear-gradient(to bottom, #f9fafb, #e5e7eb);
         border: 1px solid #d2d2d7;
         box-shadow: inset 0 2px 4px rgba(255, 255, 255, 1), 0 4px 10px rgba(0, 0, 0, 0.05);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
         color: #86868b;
     }
     html.dark .chat-messages-empty-icon {
@@ -544,17 +524,13 @@
     }
 
     .chat-messages-empty-title {
-        font-size: 15px;
-        font-weight: 600;
         color: #1d1d1f;
-        margin-bottom: 0.25rem;
     }
     html.dark .chat-messages-empty-title {
         color: #f8fafc;
     }
 
     .chat-messages-empty-desc {
-        font-size: 13px;
         color: #86868b;
     }
     html.dark .chat-messages-empty-desc {
@@ -562,10 +538,7 @@
     }
 
     .chat-messages-empty-fav {
-        text-align: center;
         color: #86868b;
-        margin-top: 2.5rem;
-        font-size: 14px;
     }
     html.dark .chat-messages-empty-fav {
         color: #94a3b8;

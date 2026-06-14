@@ -940,15 +940,15 @@ const Chat = () => {
                         </div>
                     )}
 
-                    <div ref={chatContainerRef} className="chat-messages-area chat-container">
+                    <div ref={chatContainerRef} className="chat-messages-area chat-container flex-grow overflow-y-auto pt-2 pr-2 mb-2 space-y-0.5">
 
                         {messages.length === 0 && !showFavoritesOnly && (
-                            <div className="chat-messages-empty animate-fade-in-up">
-                                <div className="chat-messages-empty-icon">
+                            <div className="chat-messages-empty animate-fade-in-up flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4">
+                                <div className="chat-messages-empty-icon w-16 h-16 rounded-full flex items-center justify-center mb-4">
                                     <FaComments size={24} className="drop-shadow-sm text-[#0071e3]/60" />
                                 </div>
-                                <h3 className="chat-messages-empty-title">Nenhuma mensagem ainda</h3>
-                                <p className="chat-messages-empty-desc">Seja o primeiro a conversar nesta sala.</p>
+                                <h3 className="chat-messages-empty-title text-[15px] font-semibold mb-1">Nenhuma mensagem ainda</h3>
+                                <p className="chat-messages-empty-desc text-[13px]">Seja o primeiro a conversar nesta sala.</p>
                             </div>
                         )}
 
@@ -976,7 +976,7 @@ const Chat = () => {
                         })}
 
                         {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
-                            <div className="chat-messages-empty-fav">
+                            <div className="chat-messages-empty-fav text-center mt-10 text-sm">
                                 Você ainda não tem nenhuma mensagem favorita nesta sala.
                             </div>
                         )}
