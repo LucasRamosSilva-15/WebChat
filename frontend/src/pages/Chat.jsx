@@ -983,31 +983,31 @@ const Chat = () => {
 
                     </div>
 
-                    <footer className="chat-input-footer">
+                    <footer className="chat-input-footer shrink-0 relative p-3">
                         {imagePreview && !editingMessageId && (
-                            <div className="chat-input-panel skeuo-panel animate-fade-in-up">
-                                <img src={imagePreview} alt="Preview" className="chat-input-preview-image" />
-                                <button type="button" onClick={clearImagePreview} className="chat-input-preview-remove">
+                            <div className="chat-input-panel absolute left-0 bottom-[calc(100%+10px)] p-2 flex items-center gap-2 z-10 skeuo-panel animate-fade-in-up">
+                                <img src={imagePreview} alt="Preview" className="chat-input-preview-image h-16 w-16 object-cover" />
+                                <button type="button" onClick={clearImagePreview} className="chat-input-preview-remove p-1.5 flex items-center justify-center">
                                     <FaTimes size={12} />
                                 </button>
                             </div>
                         )}
                         {editingMessageId && (
-                            <div className="chat-input-panel chat-input-editing-bar skeuo-panel animate-fade-in-up">
+                            <div className="chat-input-panel chat-input-editing-bar absolute left-0 bottom-[calc(100%+10px)] p-2 flex items-center gap-2 z-10 px-4 text-sm skeuo-panel animate-fade-in-up">
                                 <FaPencilAlt /> Editando mensagem...
-                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="chat-input-cancel-edit-btn">
+                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="chat-input-cancel-edit-btn p-1.5 flex items-center justify-center ml-2">
                                     <FaTimes size={12} />
                                 </button>
                             </div>
                         )}
-                        <form onSubmit={sendMessage} className="chat-input-form">
-                            <label className="chat-input-attach-btn">
+                        <form onSubmit={sendMessage} className="chat-input-form flex gap-2">
+                            <label className="chat-input-attach-btn w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer">
                                 <FaCamera size={14} className="drop-shadow-sm" />
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                             </label>
                             <input
                                 type="text"
-                                className="chat-input-field skeuo-input"
+                                className="chat-input-field skeuo-input w-full px-4 py-2 flex-grow"
                                 placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
                                 value={currentMessage}
                                 onChange={(e) => setCurrentMessage(e.target.value)}
@@ -1015,7 +1015,7 @@ const Chat = () => {
                             <button
                                 type="submit"
                                 disabled={!currentMessage.trim() && !imagePreview}
-                                className="chat-input-send-btn"
+                                className="chat-input-send-btn w-10 h-10 shrink-0 flex items-center justify-center"
                                 title={editingMessageId ? "Salvar Edição" : "Enviar Mensagem"}
                             >
                                 <FaPaperPlane size={12} className="ml-[-2px]" />
