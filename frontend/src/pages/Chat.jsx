@@ -117,7 +117,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     return (
         <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-other justify-start gap-2 group animate-fade-in-up">
-            <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 hover:opacity-80 transition-opacity" />
+            <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="message-avatar-interactive mt-1" />
             <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-other items-start group/msg">
                 <span className="message-bubble-author text-[11.5px] flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
                     {msg.sender}

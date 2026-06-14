@@ -670,6 +670,12 @@
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     }
+    .message-avatar-interactive {
+        transition: opacity 150ms;
+    }
+    .message-avatar-interactive:hover {
+        opacity: 0.8;
+    }
 
     .chat-user-modal-name {
         color: #1d1d1f;
