@@ -566,8 +566,9 @@
         color: #b45309;
     }
     .message-role-badge-mod {
-        background: linear-gradient(to bottom, #7c3aed, #6d28d9);
-        color: #fff;
+        background: linear-gradient(to bottom, #bfdbfe, #dbeafe);
+        color: #1d4ed8;
+        border-color: #bfdbfe;
     }
 
     .message-bubble-image {
