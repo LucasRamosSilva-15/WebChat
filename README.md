@@ -106,12 +106,10 @@ FRONTEND_URL=http://localhost:5173
 
 ## Imagens / Screenshots
 
-> Screenshots das telas das outras paginas do projeto serão adicionados aqui em breve.
-
-(docs/screenshots/Home.png)
-(docs/screenshots/Rooms.png)
-(docs/screenshots/Chat.png)
-(docs/screenshots/Profile.png)
+![Home](docs/screenshots/Home.png)
+![Salas](docs/screenshots/Room.png)
+![Chat](docs/screenshots/Chat.png)
+![Perfil](docs/screenshots/Profile.png)
 
 ## Funcionalidades
 
