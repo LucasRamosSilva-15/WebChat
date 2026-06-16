@@ -15,7 +15,7 @@ O SkyRipple funciona como um ponto de encontro virtual. De forma simples, ele pe
 
 ## Qual problema ele resolve
 
-Este projeto foi construído como um estudo prático para a disciplina de Programação Web II. Ele resolve o problema básico de comunicação em tempo real em grupos, servindo como um excelente laboratório para conectar conceitos avançados de desenvolvimento, tais como:
+Este projeto foi construído como um projeto prático para a disciplina de Programação Web II. Ele resolve o problema básico de comunicação em tempo real em grupos, servindo como um excelente laboratório para conectar conceitos avançados de desenvolvimento, tais como:
 
 * Criação de interfaces ricas e responsivas no frontend;
 * Construção de uma API robusta no backend;
@@ -108,12 +108,10 @@ FRONTEND_URL=http://localhost:5173
 
 > Screenshots das telas das outras paginas do projeto serão adicionados aqui em breve.
 
-```md
-docs/screenshots/Home.png
-docs/screenshots/Rooms.png
-docs/screenshots/Chat.png
-docs/screenshots/Profile.png
-```
+(docs/screenshots/Home.png)
+(docs/screenshots/Rooms.png)
+(docs/screenshots/Chat.png)
+(docs/screenshots/Profile.png)
 
 ## Funcionalidades
 
