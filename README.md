@@ -46,6 +46,7 @@ Este projeto foi construído como um estudo prático para a disciplina de Progra
 ### Ferramentas
 
 * Git / GitHub
+* Render (deploy do Backend)
 * Vercel (Deploy do Frontend)
 * npm
 
