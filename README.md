@@ -1,6 +1,6 @@
 # SkyRipple
 
-O SkyRipple é uma aplicação web de chat em tempo real onde os usuários podem se conectar, entrar em salas temáticas e trocar mensagens instantaneamente. O projeto foca em uma experiência rica e nostálgica, trazendo uma identidade visual inspirada no Web 2.0 (Skeuomorfismo/Frutiger Aero) aliada a tecnologias web modernas.
+O SkyRipple é uma aplicação web de chat em tempo real onde os usuários podem se conectar, entrar em salas temáticas e trocar mensagens instantaneamente. O projeto foca em uma experiência rica e nostálgica, trazendo uma estética clean com identidade visual inspirada no Web 2.0 Gloss (Skeuomorfismo e com influências do Frutiger Aero) aliada a tecnologias web modernas.
 
 ## O que o projeto faz
 
@@ -21,7 +21,7 @@ Este projeto foi construído como um estudo prático para a disciplina de Progra
 * Construção de uma API robusta no backend;
 * Autenticação e segurança com JWT e criptografia de senhas;
 * Comunicação bidirecional em tempo real usando WebSockets;
-* Arquitetura visual híbrida, combinando a agilidade do Tailwind CSS com o controle detalhado do CSS semântico tradicional.
+* Arquitetura visual híbrida, combinando a agilidade do Tailwind CSS com o controle detalhado do CSS para criar efeitos visuais.
 
 ## Tecnologias usadas
 
@@ -30,7 +30,7 @@ Este projeto foi construído como um estudo prático para a disciplina de Progra
 * React 19
 * Vite
 * Tailwind CSS 4
-* CSS Semântico/Híbrido (para efeitos glossy e profundidade)
+* CSS Híbrido (para efeitos com muitos detalhes, brilhos e profundidade)
 * React Router DOM
 * React Icons
 * Socket.IO Client
@@ -54,7 +54,7 @@ Este projeto foi construído como um estudo prático para a disciplina de Progra
 Para testar o projeto no seu computador, primeiro clone o repositório e entre na pasta:
 
 ```bash
-git clone https://github.com/LucasianoSomar/WebChat.git
+git clone https://github.com/LucasRamosSilva-15/WebChat.git
 cd WebChat
 ```
 
@@ -101,17 +101,17 @@ FRONTEND_URL=http://localhost:5173
 ## Link do deploy
 
 * **Frontend:** [https://web-chat-project-web2.vercel.app](https://web-chat-project-web2.vercel.app)
-* **Backend/API:** *Em desenvolvimento / Deploy pendente*
+* **Backend/API:** [https://webchat-9vqr.onrender.com](https://webchat-9vqr.onrender.com)
 
 ## Imagens / Screenshots
 
-> Screenshots das telas principais (Login, Salas, Chat, Perfil) serão adicionados aqui em breve.
+> Screenshots das telas das outras paginas do projeto serão adicionados aqui em breve.
 
 ```md
-docs/screenshots/home.png
-docs/screenshots/rooms.png
-docs/screenshots/chat.png
-docs/screenshots/profile.png
+docs/screenshots/Home.png
+docs/screenshots/Rooms.png
+docs/screenshots/Chat.png
+docs/screenshots/Profile.png
 ```
 
 ## Funcionalidades
@@ -127,6 +127,7 @@ docs/screenshots/profile.png
 * [x] Envio de imagens e armazenamento em nuvem (Storage)
 * [ ] Refinamentos na persistência e histórico longo de mensagens
 * [ ] Testes automatizados
+* [ ] Documentação
 * [ ] Sistema de criptografia de email, senhas, mensagens e etc
 * [ ] Página de Feedback
 * [ ] Administração do sistema (painel de controle)
@@ -181,11 +182,12 @@ Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais
 
 * Finalizar e polir a integração total entre o backend, frontend e Supabase.
 * Melhorar a persistência, paginação e carregamento otimizado de mensagens antigas.
-* Refinamentos na identidade visual e layout.
+* Refinamentos, melhorias e mudanças (não extremas) na identidade visual e layout.
 * Otimizar o Frontend, Backend e o Banco de dados.
 * Criar um sistema de administração do site (página do administrador com um panel de controle) e das salas
 * Criar novas paginas (como o Admin.jsx e Feedback.jsx)
 * Refinar a validação de dados em rotas do backend.
+* Adicionar testes automatizados
 * Capturar as telas finais e adicionar screenshots no README.
 
 ## Autor
