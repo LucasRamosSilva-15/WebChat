@@ -2,6 +2,7 @@
 
 O SkyRipple é uma aplicação web de chat em tempo real onde os usuários podem se conectar, entrar em salas temáticas e trocar mensagens instantaneamente. O projeto foca em uma experiência rica e nostálgica, trazendo uma estética clean com identidade visual inspirada no Web 2.0 Gloss (Skeuomorfismo e com influências do Frutiger Aero) aliada a tecnologias web modernas.
 
+Versão: 6.9.2
 ## O que o projeto faz
 
 O SkyRipple funciona como um ponto de encontro virtual. De forma simples, ele permite:
