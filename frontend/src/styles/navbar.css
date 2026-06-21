@@ -28,6 +28,24 @@
         flex-direction: column;
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .navbar-dropdown-list::-webkit-scrollbar {
+        width: 5px;
+    }
+    .navbar-dropdown-list::-webkit-scrollbar-track {
+        background: transparent;
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+    .navbar-dropdown-list::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+    }
+    html.dark .navbar-dropdown-list::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.15);
     }
 
     .navbar-dropdown-item {

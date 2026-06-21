@@ -3,12 +3,14 @@
 ## 1. Identificação do Projeto
 
 **Nome do Sistema:** SkyRipple  
-**Versão do Documento:** 6.9.2  
+**Versão do Documento:** 6.10.2  
 **Data:** 18/06/2026  
+**Original:** Levantamento de Requisitos.pdf (feito por Ruan Victor)  
 
 **Responsável pela Elaboração:** Wssihélio Medeiros, Lucas Ramos, Ruan Victor e Gustavo Lobão  
 
 **Stakeholders envolvidos:**  
+
 - **Usuários Finais** - Chat para entrar em salas, enviar mensagens e personalizar seu perfil
 - **Moderadores e Donos de Sala** - Usuários responsáveis por organizar as conversas e utilizar permissões especiais dentro das salas
 - **Desenvolvedores do Projeto** - Integrantes do grupo responsável pela implementação, manutenção e correção do sistema.
