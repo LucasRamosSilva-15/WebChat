@@ -129,10 +129,10 @@ Um exemplo de expansão futura é a criação de uma área administrativa, como 
   - **Dependência:** Frontend e Backend.
   - **Prioridade sugerida:** Média.
 
-- **Feedback.jsx:** Página contendo formulário detalhado e upload opcional de capturas de tela para envio de sugestões dos usuários.
+- **Feedback.jsx (Integração Backend):** A interface interativa já foi desenvolvida. O plano futuro agora é criar o endpoint no backend, configurar persistência em banco de dados e upload real de imagens.
   - **Motivo:** Facilitar a coleta de opiniões sobre bugs e sugestões de melhorias de forma direta.
-  - **Dependência:** Frontend e Backend/Banco de dados.
-  - **Prioridade sugerida:** Baixa.
+  - **Dependência:** Backend/Banco de dados e Supabase (Storage).
+  - **Prioridade sugerida:** Alta.
 
 - **Suporte.jsx:** Página voltada ao atendimento ao usuário com listagem de salas banidas, denúncias ativas e uma seção de FAQ interativa.
   - **Motivo:** Resolver dúvidas e fornecer transparência quanto a banimentos e processos de suporte.
@@ -197,10 +197,10 @@ Um exemplo de expansão futura é a criação de uma área administrativa, como 
 
 ## Documentações Futuras
 
-- **README.md Principal:** Criação de um manual oficial de apresentação na raiz do repositório.
+- **README.md Principal (Concluído):** O manual oficial de apresentação na raiz do repositório foi criado e completo com sucesso.
   - **Motivo:** Guiar novos desenvolvedores sobre como rodar o SkyRipple localmente, listar tecnologias e arquitetura.
-  - **Dependência:** Equipe.
-  - **Prioridade sugerida:** Média.
+  - **Dependência:** Nenhuma (Já finalizado).
+  - **Prioridade sugerida:** Concluído.
 
 - **Manuais de Desenvolvimento e Arquitetura:** Documentações avançadas de API, testes unitários e de integração, banco de dados, deploy, frontend/backend e segurança.
   - **Motivo:** Facilitar a expansão saudável e a manutenção do código sem perda de contexto técnico.

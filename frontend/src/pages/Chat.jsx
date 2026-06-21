@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown, FaBars, FaUsers } from 'react-icons/fa';
 import { socket } from '../socket';
 import { apiRequest } from '../services/api';
 import ChatSidebar from '../components/ChatSidebar';
@@ -173,6 +173,8 @@ const Chat = () => {
 
     const [currentRoom, setCurrentRoom] = useState(null);
     const [roomLoading, setRoomLoading] = useState(true);
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isMobileMembersOpen, setIsMobileMembersOpen] = useState(false);
 
     const [hasJoined, setHasJoined] = useState(() => {
         try {
@@ -839,13 +841,16 @@ const Chat = () => {
             )}
 
             <div className="chat-shell animate-chat-shell flex w-full h-[calc(100vh-48px)] overflow-hidden">
-                <ChatSidebar />
+                <ChatSidebar isMobileOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
                 <main className="chat-main animate-chat-panel-main flex-1 min-w-0 flex flex-col h-full relative">
                     <div className="chat-header-divider absolute top-0 left-0 right-0 h-1 z-10" />
 
                     <div className="chat-header px-4 py-2.5 flex items-center justify-between shrink-0">
                         <div className="chat-header-info flex items-center gap-3">
-                            <div className="chat-header-icon w-8 h-8 rounded-full flex items-center justify-center">
+                            <button onClick={() => setIsMobileSidebarOpen(true)} className="lg:hidden w-8 h-8 flex items-center justify-center text-[#86868b] dark:text-[#94a3b8] hover:text-[#0071e3] transition-colors rounded-full active:bg-black/5 dark:active:bg-white/5">
+                                <FaBars size={16} />
+                            </button>
+                            <div className="chat-header-icon w-8 h-8 rounded-full flex items-center justify-center hidden sm:flex">
                                 <FaCommentAlt size={12} />
                             </div>
                             <div className="chat-header-title-wrapper flex flex-col justify-center">
@@ -860,7 +865,10 @@ const Chat = () => {
                                 </p>
                             </div>
                         </div>
-                        <div className="chat-header-actions flex items-center gap-2">
+                        <div className="chat-header-actions flex items-center gap-1 sm:gap-2">
+                            <button onClick={() => setIsMobileMembersOpen(true)} className="xl:hidden chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer" title="Ver membros">
+                                <FaUsers size={14} className="text-gray-500 dark:text-slate-400" />
+                            </button>
                             <button
                                 onClick={() => setSearchOpen(!searchOpen)}
                                 className={`chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${searchOpen ? 'chat-header-btn-active' : ''}`}
@@ -1039,6 +1047,8 @@ const Chat = () => {
                     currentUserId={currentUserId}
                     onlineUsers={onlinePresence.users}
                     onlineCount={onlinePresence.count}
+                    isMobileOpen={isMobileMembersOpen}
+                    onClose={() => setIsMobileMembersOpen(false)}
                 />
             </div>
 

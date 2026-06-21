@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaCrown, FaShieldAlt } from 'react-icons/fa';
+import { FaCrown, FaShieldAlt, FaTimes } from 'react-icons/fa';
 import UserAvatar from './UserAvatar';
 import { apiRequest } from '../services/api';
 
-const MembersSidebar = ({ roomId, currentUserId, onlineUsers = [], onlineCount = 0 }) => {
+const MembersSidebar = ({ roomId, currentUserId, onlineUsers = [], onlineCount = 0, isMobileOpen, onClose }) => {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -79,7 +79,12 @@ const MembersSidebar = ({ roomId, currentUserId, onlineUsers = [], onlineCount =
     const displayOnlineCount = isSocketOnline ? Math.max(onlineCount, finalOnlineMembers.length) : finalOnlineMembers.length;
 
     return (
-        <div className="members-sidebar animate-chat-panel-right hidden xl:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0 overflow-y-auto">
+        <div className={`members-sidebar animate-chat-panel-right xl:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0 overflow-y-auto ${isMobileOpen ? 'flex fixed inset-y-0 right-0 z-40 bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-xl shadow-2xl h-[100vh] top-0 pt-12' : 'hidden'}`}>
+            {isMobileOpen && (
+                <button onClick={onClose} className="absolute top-3 right-3 text-[#86868b] dark:text-[#94a3b8] hover:text-[#0071e3] xl:hidden p-2">
+                    <FaTimes size={18} />
+                </button>
+            )}
             {loading ? (
                 <div className="members-sidebar-empty p-4 text-center text-xs">Carregando membros...</div>
             ) : error ? (

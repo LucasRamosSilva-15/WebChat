@@ -167,6 +167,7 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - ✅ Sistema central de escolha de cores do tema
 - ✅ Sistema central de escolha do background
 - ✅ Sistema de autenticação (login/logout) básico
+- ✅ Adaptação para telas menores (notebooks, celulares, etc)
 - 🔵 Controle de acesso via ID para páginas administrativas
 - 🔵 Criptografia ponta-a-ponta (senhas, emails e mensagens)
 - 🔴 Duas nuvens de background laterais para enfeite visual
@@ -189,10 +190,10 @@ As seguintes páginas, módulos e documentos representam ideias de longo prazo e
 - 🟣 **Settings.jsx:** Página dedicada inteiramente para as configurações do usuário.
 - 🟣 **ServerStatus.jsx:** Página contendo os status em tempo real do backend, ping, imagens e informações de queda de servidor.
 - 🟣 **RoomConfig.jsx:** Página aprofundada de configurações internas e regras que gerem uma sala específica.
-- 🟣 **Feedback.jsx:** Página interativa com botões de limpar, enviar e cancelar, com a opção de escolher o tipo do feedback e colocar uma imagem no feedback (que é opcional), para coletar feedback sobre a plataforma.
+- 🟡 **Feedback.jsx:** Página interativa implementada com botões, anexos e categorias (UI/Frontend pronto, falta integração com o backend).
 - 🟣 **Suporte.jsx:** Tela mostrando salas banidas, denúncias ativas, e um FAQ interativo.
 
 ### Documentações
 
-- 🟣 **README.md Principal:** Apresentação oficial para a raiz do repositório.
+- ✅ **README.md Principal:** Apresentação oficial para a raiz do repositório (Criado e completo).
 - 🟣 **Manuais:** Criar documentações sobre o código, a API, os testes, as tecnologias empregadas, os protocolos de segurança, design system (além do atual), diagramas de banco de dados, fluxos de backend/frontend, processos de deploy e um guia de uso final.

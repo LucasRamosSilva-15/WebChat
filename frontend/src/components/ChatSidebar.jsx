@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog } from 'react-icons/fa';
+import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaTimes } from 'react-icons/fa';
 import UserAvatar from './UserAvatar';
 
-const ChatSidebar = () => {
+const ChatSidebar = ({ isMobileOpen, onClose }) => {
     const location = useLocation();
     const activeTab = location.pathname;
 
@@ -20,7 +20,12 @@ const ChatSidebar = () => {
     ];
 
     return (
-        <div className="chat-sidebar animate-chat-panel-left hidden lg:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0">
+        <div className={`chat-sidebar animate-chat-panel-left lg:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0 ${isMobileOpen ? 'flex fixed inset-y-0 left-0 z-40 bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-xl shadow-2xl h-[100vh] top-0 pt-12' : 'hidden'}`}>
+            {isMobileOpen && (
+                <button onClick={onClose} className="absolute top-3 right-3 text-[#86868b] dark:text-[#94a3b8] hover:text-[#0071e3] lg:hidden p-2">
+                    <FaTimes size={18} />
+                </button>
+            )}
             <nav className="chat-sidebar-list flex-1 p-3 overflow-y-auto space-y-1">
                 <div className="sidebar-title text-[11px] mb-3 ml-2 mt-2">Navegação</div>
                 {navItems.map(item => (
