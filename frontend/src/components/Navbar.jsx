@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes, FaLightbulb } from 'react-icons/fa';
 import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
 
@@ -140,6 +140,9 @@ const Navbar = () => {
                                     >
                                         <FaCog className="navbar-dropdown-icon" size={16} /> Ajustes
                                     </button>
+                                    <Link to="/feedback" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaLightbulb className="navbar-dropdown-icon" size={16} /> Feedback
+                                    </Link>
                                     <Link to="/about" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
                                         <FaInfoCircle className="navbar-dropdown-icon" size={16} /> Sobre
                                     </Link>
