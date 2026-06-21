@@ -14,8 +14,9 @@ import PrivateRoute from './components/PrivateRoute';
 
 // Páginas que ainda vamos implementar
 
-// import Admin from './pages/Admin';
+import Admin from './pages/Admin';
 // import Suporte from './pages/Suporte';
+// import Settings from './pages/Settings';
 
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
           <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
           <Route path="/custom" element={<PrivateRoute><Custom /></PrivateRoute>} />
           <Route path="/feedback" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
           {/* <Route path="/layout-demo" element={<LayoutDemo />} /> */}
 
           <Route path="*" element={<NotFound />} />

@@ -16,7 +16,7 @@ A proposta deste documento não é transformar todas as ideias em obrigação im
 
 Os planos futuros representam funcionalidades e melhorias que podem tornar o SkyRipple mais completo, organizado e próximo de uma aplicação real de comunidade/chat. Entre essas possibilidades estão novas telas, novas permissões, melhorias administrativas, aprimoramentos visuais e recursos que exigem mais tempo de desenvolvimento.
 
-Um exemplo de expansão futura é a criação de uma área administrativa, como uma página `Admin.jsx`, que poderia permitir maior controle sobre usuários, salas, mensagens e configurações internas do sistema.
+Um exemplo de expansão futura é a criação de uma área administrativa, como a recém-criada página `Admin.jsx` (que começou como um plano futuro e agora já faz parte da versão atual do projeto, possuindo controle de denúncias, filtros e relatórios de evidências).
 
 ## Melhorias de Comunicação
 
@@ -209,7 +209,7 @@ Um exemplo de expansão futura é a criação de uma área administrativa, como 
 
 ## Itens que não fazem parte da versão atual
 
-- **Painel administrativo global (`Admin.jsx`):** O gerenciamento centralizado de denúncias e banimentos gerais da plataforma.
+- ~~**Painel administrativo global (`Admin.jsx`):**~~ (Concluído e integrado à versão atual) O gerenciamento centralizado de denúncias e banimentos gerais da plataforma.
 - **Criptografia avançada (ponta-a-ponta):** Proteção criptográfica direta entre clientes no envio de mensagens.
 - **Página de status da API/Servidores (`ServerStatus.jsx`):** Integração com infraestrutura externa de monitoramento.
 - **Configurações complexas e customizadas de salas (`RoomConfig.jsx`):** Senha de entrada nas salas, capacidades flutuantes e moderação avançada de cargos.

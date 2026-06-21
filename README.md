@@ -1,8 +1,16 @@
 # SkyRipple
 
-O SkyRipple é uma aplicação web de chat em tempo real onde os usuários podem se conectar, entrar em salas temáticas e trocar mensagens instantaneamente. O projeto foca em uma experiência rica e nostálgica, trazendo uma estética clean com identidade visual inspirada no Web 2.0 Gloss (Skeuomorfismo e com influências do Frutiger Aero) aliada a tecnologias web modernas.
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.10.2-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 
-Versão: 6.10.2
+O SkyRipple é uma aplicação web de chat em tempo real onde os usuários podem se conectar, entrar em salas temáticas e trocar mensagens instantaneamente. O projeto foca em uma experiência rica e nostálgica, trazendo uma estética clean com identidade visual inspirada no Web 2.0 Gloss (Skeuomorfismo e com influências do Frutiger Aero) aliada a tecnologias web modernas.
 
 ## O que o projeto faz
 
@@ -130,7 +138,7 @@ FRONTEND_URL=http://localhost:5173
 * [ ] Sistema de criptografia de email, senhas, mensagens e etc
 * [x] Página de Feedback (só falta a parte do backend)
 * [ ] Administração do sistema (painel de controle)
-* [ ] Sistema de administração das salas (moderação avançada, cargos, etc)
+* [ ] Sistema de administração das salas (moderação avançada, cargos, etc) (A pagina está pronta, só falta o backend)
 * [ ] Adaptação para telas menores (como notebooks e celulares e etc)
 
 ## Estrutura do projeto

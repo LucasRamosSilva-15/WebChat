@@ -186,7 +186,7 @@ As seguintes páginas, módulos e documentos representam ideias de longo prazo e
 
 ### Páginas e Telas
 
-- 🟣 **Admin.jsx:** Sala de administração global. Painel central com banimento de usuários, moderação e lista gigante de denúncias, e uma aba que mostrar os feedbacks dos usuários.
+- 🟡 **Admin.jsx:** Sala de administração global. Painel centralizado e concluído com banimento de usuários, moderação, filtros de data e gravidade, lista de denúncias e análise avançada de relatórios, evidências e logs de chat (UI/Frontend pronto, falta integração com o backend).
 - 🟣 **Settings.jsx:** Página dedicada inteiramente para as configurações do usuário.
 - 🟣 **ServerStatus.jsx:** Página contendo os status em tempo real do backend, ping, imagens e informações de queda de servidor.
 - 🟣 **RoomConfig.jsx:** Página aprofundada de configurações internas e regras que gerem uma sala específica.
