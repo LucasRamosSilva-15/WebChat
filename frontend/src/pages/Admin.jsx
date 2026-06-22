@@ -51,7 +51,7 @@ const Admin = () => {
         filteredData = filteredData.filter(item => {
             if (!item.date) return true;
             const itemDate = new Date(item.date);
-            
+
             if (filterTime === 'Hoje') {
                 return itemDate >= startOfToday;
             }
@@ -77,7 +77,7 @@ const Admin = () => {
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <h1 className="hero-title text-2xl md:text-3xl font-bold admin-hero-title">
-                                Painel Administrativo
+                                Painel Administrativo (Em Desenvolvimento)
                             </h1>
                             <span className="admin-badge-global text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
                                 Admin Global
@@ -174,7 +174,7 @@ const Admin = () => {
                             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
                                 <h3 className="text-[16px] font-bold admin-hero-title capitalize">Fila de {activeTab}</h3>
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <select 
+                                    <select
                                         value={filterTime}
                                         onChange={(e) => setFilterTime(e.target.value)}
                                         className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
@@ -184,8 +184,8 @@ const Admin = () => {
                                         <option value="Última Semana">Última Semana</option>
                                         <option value="Último Mês">Último Mês</option>
                                     </select>
-                                    
-                                    <select 
+
+                                    <select
                                         value={filterSeverity}
                                         onChange={(e) => setFilterSeverity(e.target.value)}
                                         className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
@@ -223,8 +223,8 @@ const Admin = () => {
                                     </thead>
                                     <tbody>
                                         {filteredData.length > 0 ? filteredData.map((report) => (
-                                            <tr 
-                                                key={report.id} 
+                                            <tr
+                                                key={report.id}
                                                 onClick={() => setSelectedItem(report)}
                                                 className={`admin-table-row cursor-pointer ${selectedItem?.id === report.id ? 'admin-empty-icon-bg' : ''}`}
                                             >
@@ -328,13 +328,13 @@ const Admin = () => {
                             </div>
                             <div className="mt-6 flex flex-col lg:flex-row justify-between items-center gap-3">
                                 <div className="flex w-full lg:w-auto items-center gap-2">
-                                    <button 
+                                    <button
                                         onClick={() => setShowMessageModal(true)}
                                         className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-blue-outline flex items-center justify-center gap-2"
                                     >
                                         <FaCommentDots size={10} /> Mensagem Original
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => { setCurrentImageIndex(0); setShowImageModal(true); }}
                                         className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-purple-outline flex items-center justify-center gap-2"
                                     >
@@ -374,13 +374,13 @@ const Admin = () => {
             {showMessageModal && selectedItem && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 admin-modal-overlay animate-fade-in-up-1">
                     <div className="skeuo-panel w-full max-w-lg p-6 flex flex-col gap-4 shadow-2xl relative">
-                        <button 
+                        <button
                             onClick={() => setShowMessageModal(false)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                         >
                             <FaTimes size={18} />
                         </button>
-                        
+
                         <div className="flex items-center gap-3 border-b admin-border-muted pb-4">
                             <div className="w-10 h-10 rounded-full admin-icon-box-blue flex items-center justify-center">
                                 <FaCommentDots className="text-blue-500" size={16} />
@@ -390,15 +390,15 @@ const Admin = () => {
                                 <p className="text-[12px] admin-text-muted">Enviada por <span className="font-bold">{selectedItem.user}</span></p>
                             </div>
                         </div>
-                        
+
                         <div className="admin-msg-box p-5 rounded-[12px] max-h-[300px] overflow-y-auto shadow-inner">
                             <p className="text-[14px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap italic">
                                 "{selectedItem.message || 'Nenhuma mensagem de texto registrada para este caso.'}"
                             </p>
                         </div>
-                        
+
                         <div className="flex justify-end mt-2">
-                            <button 
+                            <button
                                 onClick={() => setShowMessageModal(false)}
                                 className="skeuo-btn px-6 py-2 text-[13px] font-bold"
                             >
@@ -412,13 +412,13 @@ const Admin = () => {
             {showImageModal && selectedItem && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 admin-modal-overlay-dark animate-fade-in-up-1">
                     <div className="skeuo-panel w-full max-w-4xl p-6 flex flex-col gap-4 shadow-2xl relative admin-modal-panel">
-                        <button 
+                        <button
                             onClick={() => setShowImageModal(false)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors z-10"
                         >
                             <FaTimes size={18} />
                         </button>
-                        
+
                         <div className="flex items-center gap-3 border-b admin-border-muted pb-4">
                             <div className="w-10 h-10 rounded-full admin-icon-box-purple flex items-center justify-center">
                                 <FaImage className="text-purple-500" size={16} />
@@ -428,17 +428,17 @@ const Admin = () => {
                                 <p className="text-[12px] admin-text-muted">Anexadas na denúncia contra <span className="font-bold">{selectedItem.user}</span></p>
                             </div>
                         </div>
-                        
+
                         {selectedItem.images && selectedItem.images.length > 0 ? (
                             <div className="flex flex-col gap-4">
                                 <div className="w-full h-[50vh] min-h-[300px] admin-media-main rounded-[12px] overflow-hidden flex items-center justify-center">
                                     <img src={selectedItem.images[currentImageIndex]} alt="Evidência Principal" className="max-w-full max-h-full object-contain" />
                                 </div>
-                                
+
                                 <div className="flex gap-3 overflow-x-auto py-2 px-1">
                                     {selectedItem.images.map((img, idx) => (
-                                        <button 
-                                            key={idx} 
+                                        <button
+                                            key={idx}
                                             onClick={() => setCurrentImageIndex(idx)}
                                             className={`w-20 h-20 flex-shrink-0 rounded-[12px] overflow-hidden border-2 transition-all shadow-sm ${currentImageIndex === idx ? 'border-[#0ea5e9] scale-105 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
                                         >
@@ -452,9 +452,9 @@ const Admin = () => {
                                 <p className="text-[14px] admin-text-muted">Nenhuma imagem anexada a esta denúncia.</p>
                             </div>
                         )}
-                        
+
                         <div className="flex justify-end mt-2">
-                            <button 
+                            <button
                                 onClick={() => setShowImageModal(false)}
                                 className="skeuo-btn px-6 py-2 text-[13px] font-bold"
                             >

@@ -134,7 +134,7 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 *Status: Estrutura, botões de ação e temas estão sólidos. Faltam idiomas e notificações globais.*
 
 - ✅ Sistema de modo escuro e claro
-- ✅ Adicionar opção de configurações
+- ✅ Adicionar opção de configurações (Movido e expandido para a página dedicada Settings.jsx)
 - ✅ Corrigir bugs visuais
 - ✅ Adicionar ícones consistentes
 - 🔴 Sistema de alteração de idioma
@@ -173,7 +173,7 @@ A base estrutural do frontend está muito bem encaminhada com uma identidade vis
 - 🔴 Duas nuvens de background laterais para enfeite visual
 - 🔴 Sistema e aba central de notificações
 - 🔴 Seleção e suporte multi-idiomas
-- 🔴 Ajeitar o visual do botão primário no modo escuro
+- ✅ Ajeitar o visual do botão primário no modo escuro
 - 🔵 Refatorar as classes do tailwind css 4
 - 🔵 Adicionar animações suaves em várias partes do site e também em ações feitas na página
 - 🔵 Colocar o site no ar usando domínio próprio (ex: <www.skyripple.com.br>)
@@ -187,7 +187,7 @@ As seguintes páginas, módulos e documentos representam ideias de longo prazo e
 ### Páginas e Telas
 
 - 🟡 **Admin.jsx:** Sala de administração global. Painel centralizado e concluído com banimento de usuários, moderação, filtros de data e gravidade, lista de denúncias e análise avançada de relatórios, evidências e logs de chat (UI/Frontend pronto, falta integração com o backend).
-- 🟣 **Settings.jsx:** Página dedicada inteiramente para as configurações do usuário.
+- 🟡 **Settings.jsx:** Página dedicada inteiramente para as configurações do usuário (UI/Frontend pronto, falta integração com o backend).
 - 🟣 **ServerStatus.jsx:** Página contendo os status em tempo real do backend, ping, imagens e informações de queda de servidor.
 - 🟣 **RoomConfig.jsx:** Página aprofundada de configurações internas e regras que gerem uma sala específica.
 - 🟡 **Feedback.jsx:** Página interativa implementada com botões, anexos e categorias (UI/Frontend pronto, falta integração com o backend).

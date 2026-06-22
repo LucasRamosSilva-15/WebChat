@@ -114,10 +114,10 @@ Um exemplo de expansão futura é a criação de uma área administrativa, como 
   - **Dependência:** Frontend, Backend e Banco de dados.
   - **Prioridade sugerida:** Média.
 
-- **Settings.jsx:** Página dedicada inteiramente às configurações e preferências pessoais da conta do usuário.
+- ~~**Settings.jsx:**~~ (Concluído e integrado) Página dedicada inteiramente às configurações e preferências pessoais da conta do usuário.
   - **Motivo:** Retirar as configurações da barra lateral/Navbar e dar uma experiência focada de edição e personalização.
   - **Dependência:** Frontend.
-  - **Prioridade sugerida:** Média.
+  - **Prioridade sugerida:** Concluído.
 
 - **ServerStatus.jsx:** Página de status do sistema que exibe o tempo de atividade (uptime), ping e latência dos servidores.
   - **Motivo:** Dar transparência aos usuários caso ocorram instabilidades de rede ou manutenção.
@@ -210,6 +210,7 @@ Um exemplo de expansão futura é a criação de uma área administrativa, como 
 ## Itens que não fazem parte da versão atual
 
 - ~~**Painel administrativo global (`Admin.jsx`):**~~ (Concluído e integrado à versão atual) O gerenciamento centralizado de denúncias e banimentos gerais da plataforma.
+- ~~**Página de configurações (`Settings.jsx`):**~~ (Concluído e integrado à versão atual) Hub dedicado e completo para preferências de conta, tema, privacidade e chat.
 - **Criptografia avançada (ponta-a-ponta):** Proteção criptográfica direta entre clientes no envio de mensagens.
 - **Página de status da API/Servidores (`ServerStatus.jsx`):** Integração com infraestrutura externa de monitoramento.
 - **Configurações complexas e customizadas de salas (`RoomConfig.jsx`):** Senha de entrada nas salas, capacidades flutuantes e moderação avançada de cargos.
