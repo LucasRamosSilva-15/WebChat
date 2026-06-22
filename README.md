@@ -1,10 +1,6 @@
 # SkyRipple
 
-<<<<<<< HEAD
 ![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.12.0-blue?style=for-the-badge)
-=======
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.11.0-blue?style=for-the-badge)
->>>>>>> e52b7f1553969156d9bf545f3c8dd0628aba565a
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
