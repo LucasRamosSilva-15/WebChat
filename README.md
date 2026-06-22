@@ -1,6 +1,10 @@
 # SkyRipple
 
+<<<<<<< HEAD
 ![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.12.0-blue?style=for-the-badge)
+=======
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.11.0-blue?style=for-the-badge)
+>>>>>>> e52b7f1553969156d9bf545f3c8dd0628aba565a
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -111,7 +115,7 @@ FRONTEND_URL=http://localhost:5173
 
 ## Link do deploy
 
-* **Frontend:** [https://web-chat-project-web2.vercel.app](https://web-chat-project-web2.vercel.app)
+* **Frontend:** [https://web-chat-project-web2.vercel.app](skyripple-project-web2.vercel.app)
 * **Backend/API:** [https://webchat-9vqr.onrender.com](https://webchat-9vqr.onrender.com)
 
 ## Imagens / Screenshots
