@@ -37,6 +37,7 @@ const Settings = () => {
             document.body.classList.add(`color-${primaryColor}`);
         }
         localStorage.setItem('chat_primaryColor', primaryColor);
+        window.dispatchEvent(new Event('themeUpdated'));
     }, [primaryColor]);
 
     useEffect(() => {
@@ -46,6 +47,7 @@ const Settings = () => {
             document.documentElement.classList.remove('dark');
         }
         localStorage.setItem('chat_colorMode', colorMode);
+        window.dispatchEvent(new Event('themeUpdated'));
     }, [colorMode]);
 
     useEffect(() => {
@@ -58,7 +60,18 @@ const Settings = () => {
             document.body.classList.add('bg-clean-light');
         }
         localStorage.setItem('chat_bgColor', bgColor);
+        window.dispatchEvent(new Event('themeUpdated'));
     }, [bgColor]);
+
+    useEffect(() => {
+        const syncTheme = () => {
+            setPrimaryColor(localStorage.getItem('chat_primaryColor') || 'blue');
+            setColorMode(localStorage.getItem('chat_colorMode') || 'light');
+            setBgColor(localStorage.getItem('chat_bgColor') || 'neutral');
+        };
+        window.addEventListener('themeUpdated', syncTheme);
+        return () => window.removeEventListener('themeUpdated', syncTheme);
+    }, []);
 
     const tabs = [
         { id: 'Account', label: 'Account', icon: <FaUserCircle /> },
@@ -121,7 +134,7 @@ const Settings = () => {
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm w-full text-left settings-tab ${activeTab === tab.id ? 'settings-tab-active' : ''}`}
                             >
-                                <span className={activeTab === tab.id ? 'text-white' : 'text-gray-400 dark:text-gray-500'}>
+                                <span className={activeTab === tab.id ? '' : 'opacity-70'}>
                                     {tab.icon}
                                 </span>
                                 {tab.label}

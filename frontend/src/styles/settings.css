@@ -1,5 +1,5 @@
 .settings-page-bg {
-    background-color: rgba(249, 250, 251, 0.5);
+
 }
 html.dark .settings-page-bg {
     background-color: transparent;
@@ -20,10 +20,10 @@ html.dark .settings-text-muted {
 html.dark .settings-tab {
     color: #d1d5db;
 }
-.settings-tab:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+.settings-tab:not(.settings-tab-active):hover {
+    background-color: rgba(0, 0, 0, 0.05);
 }
-html.dark .settings-tab:hover {
+html.dark .settings-tab:not(.settings-tab-active):hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 

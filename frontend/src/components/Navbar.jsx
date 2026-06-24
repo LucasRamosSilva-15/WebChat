@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes, FaLightbulb } from 'react-icons/fa';
+import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes, FaLightbulb, FaLifeRing, FaSlidersH } from 'react-icons/fa';
 import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
 
@@ -25,6 +25,7 @@ const Navbar = () => {
             document.body.classList.add(`color-${primaryColor}`);
         }
         localStorage.setItem('chat_primaryColor', primaryColor);
+        window.dispatchEvent(new Event('themeUpdated'));
     }, [primaryColor]);
 
     useEffect(() => {
@@ -34,6 +35,7 @@ const Navbar = () => {
             document.documentElement.classList.remove('dark');
         }
         localStorage.setItem('chat_colorMode', colorMode);
+        window.dispatchEvent(new Event('themeUpdated'));
     }, [colorMode]);
 
     useEffect(() => {
@@ -46,6 +48,7 @@ const Navbar = () => {
             document.body.classList.add('bg-clean-light');
         }
         localStorage.setItem('chat_bgColor', bgColor);
+        window.dispatchEvent(new Event('themeUpdated'));
     }, [bgColor]);
 
     useEffect(() => {
@@ -62,16 +65,24 @@ const Navbar = () => {
 
             const savedPhoto = localStorage.getItem('chat_profilePhoto');
             setProfilePhoto(savedPhoto || null);
-
-            const savedDesc = localStorage.getItem('chat_status');
+            
+            const savedDesc = localStorage.getItem('chat_profileDesc');
             setProfileDesc(savedDesc || "Sem recado");
+        };
+
+        const syncTheme = () => {
+            setPrimaryColor(localStorage.getItem('chat_primaryColor') || 'blue');
+            setColorMode(localStorage.getItem('chat_colorMode') || 'light');
+            setBgColor(localStorage.getItem('chat_bgColor') || 'neutral');
         };
 
         loadProfile();
         window.addEventListener('profileUpdated', loadProfile);
+        window.addEventListener('themeUpdated', syncTheme);
 
         return () => {
             window.removeEventListener('profileUpdated', loadProfile);
+            window.removeEventListener('themeUpdated', syncTheme);
         };
     }, []);
 
@@ -138,10 +149,16 @@ const Navbar = () => {
                                         }}
                                         className="navbar-dropdown-item navbar-dropdown-item-bordered"
                                     >
-                                        <FaCog className="navbar-dropdown-icon" size={16} /> Ajustes
+                                        <FaCog className="navbar-dropdown-icon" size={16} /> Ajustes (Rápido)
                                     </button>
+                                    <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaSlidersH className="navbar-dropdown-icon" size={16} /> Configurações
+                                    </Link>
                                     <Link to="/feedback" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
                                         <FaLightbulb className="navbar-dropdown-icon" size={16} /> Feedback
+                                    </Link>
+                                    <Link to="/suporte" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaLifeRing className="navbar-dropdown-icon" size={16} /> Suporte
                                     </Link>
                                     <Link to="/about" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
                                         <FaInfoCircle className="navbar-dropdown-icon" size={16} /> Sobre

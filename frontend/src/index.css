@@ -8,7 +8,7 @@
 @import "./styles/about.css";
 @import "./styles/auth.css";
 @import "./styles/avatar.css";
-@import "./styles/layout.css";
+@import "./styles/footer.css";
 @import "./styles/sidebar.css";
 @import "./styles/rooms.css";
 @import "./styles/chat.css";
@@ -107,7 +107,9 @@ body.bg-classic-blue {
 body::before {
     content: '';
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
     background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 0px, transparent 4px);
     pointer-events: none;
     z-index: -1;

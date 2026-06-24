@@ -9,8 +9,17 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE']
+  origin: function (origin, callback) {
+    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin === process.env.FRONTEND_URL) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+  // origin: process.env.FRONTEND_URL || '*',
+  // methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 app.use(express.json());
 
@@ -24,8 +33,17 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || '*',
-    methods: ['GET', 'POST']
+    origin: function (origin, callback) {
+      if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin === process.env.FRONTEND_URL) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST'],
+    credentials: true
+    // origin: process.env.FRONTEND_URL || '*',
+    // methods: ['GET', 'POST']
   }
 });
 
@@ -49,7 +67,7 @@ io.on('connection', (socket) => {
 
   const handleLeaveOrDisconnect = (socketId, roomId, userId) => {
     if (!roomId || !userId) return;
-    
+
     if (roomPresence.has(roomId)) {
       const roomUsers = roomPresence.get(roomId);
       if (roomUsers.has(userId)) {

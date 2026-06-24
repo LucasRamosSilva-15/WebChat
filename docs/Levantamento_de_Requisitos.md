@@ -3,7 +3,7 @@
 ## 1. Identificação do Projeto
 
 **Nome do Sistema:** SkyRipple  
-**Versão do Documento:** 6.12.0  
+**Versão do Documento:** 6.13.0
 **Data:** 18/06/2026  
 **Original:** Levantamento de Requisitos.pdf (feito por Ruan Victor)  
 

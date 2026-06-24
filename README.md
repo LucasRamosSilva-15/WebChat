@@ -1,6 +1,6 @@
 # SkyRipple
 
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.12.0-blue?style=for-the-badge)
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.13.0-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -136,9 +136,12 @@ FRONTEND_URL=http://localhost:5173
 * [ ] Testes automatizados
 * [ ] Documentação
 * [ ] Sistema de criptografia de email, senhas, mensagens e etc
-* [x] Página de Feedback (só falta a parte do backend)
-* [ ] Administração do sistema (painel de controle)
-* [ ] Sistema de administração das salas (moderação avançada, cargos, etc) (A pagina está pronta, só falta o backend)
+* [ ] Otimizações no frontend, backend e banco de dados
+* [ ] Aumentar a segurança do sistema e do banco de dados
+* [ ] Página de Feedback (só falta a parte do backend)
+* [x] Administração do sistema (painel de controle) (só falta a parte do backend)
+* [ ] Sistema de administração das salas (moderação avançada, cargos, etc) (A página está pronta, só falta o backend)
+* [x] Página de suporte (só falta a parte do backend)
 * [ ] Adaptação para telas menores (como notebooks e celulares e etc)
 
 ## Estrutura do projeto
@@ -184,7 +187,7 @@ FRONTEND_URL=http://localhost:5173
 
 O projeto **SkyRipple** encontra-se em desenvolvimento ativo.
 O frontend já está bastante avançado, com a maioria das páginas construídas, responsividade implementada e a identidade visual skeuomórfica bem estruturada em modo claro e escuro. A estrutura base de WebSockets e comunicação em tempo real já ocorre com o backend.
-Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais de moderação nas salas e otimizações gerais do Frontend, Backend e Banco de Dados.
+Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais de moderação nas salas e otimizações gerais do Frontend, Backend, Banco de Dados, criação de novas páginas, testes automatizados e segurança.
 
 ## Próximos passos
 
@@ -193,7 +196,7 @@ Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais
 * Refinamentos, melhorias e mudanças (não extremas) na identidade visual e layout.
 * Otimizar o Frontend, Backend e o Banco de dados.
 * Criar um sistema de administração do site (página do administrador com um panel de controle) e das salas
-* Criar novas paginas (como o Admin.jsx e Feedback.jsx)
+* Criar novas páginas (como o Admin.jsx e Feedback.jsx)
 * Refinar a validação de dados em rotas do backend.
 * Adicionar testes automatizados
 * Capturar as telas finais e adicionar screenshots no README.
