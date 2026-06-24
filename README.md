@@ -1,6 +1,6 @@
 # SkyRipple
 
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.13.0-blue?style=for-the-badge)
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.13.1-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -51,7 +51,8 @@ Este projeto foi construído como um projeto prático para a disciplina de Progr
 * Express
 * Socket.IO
 * Supabase (banco de dados em nuvem)
-* Bibliotecas de segurança e utilidades (bcryptjs, jsonwebtoken, cors, dotenv)
+* Bibliotecas de segurança e utilidades (bcryptjs, jsonwebtoken, cors, dotenv, helmet e express-rate-limit)
+* Arquitetura de banco de dados centralizada no Node.js (Supabase RLS Desativado)
 
 ### Ferramentas
 

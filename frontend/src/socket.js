@@ -2,7 +2,12 @@ import io from 'socket.io-client';
 
 import { BACKEND_URL } from './services/api';
 
-export const socket = io(BACKEND_URL);
+export const socket = io(BACKEND_URL, {
+  auth: (cb) => {
+    const token = localStorage.getItem('token');
+    cb({ token });
+  }
+});
 
 socket.on('connect', () => {
     try {

@@ -3,10 +3,14 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const helmet = require('helmet');
+const jwt = require('jsonwebtoken');
 const apiRoutes = require('./src/routes/api');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
+
+app.use(helmet());
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -62,6 +66,19 @@ const supabase = createClient(
 
 
 const roomPresence = new Map();
+const messageRateLimits = new Map();
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) {
+    return next(new Error('Erro de Autenticação: Token não fornecido'));
+  }
+  jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, decoded) => {
+    if (err) return next(new Error('Erro de Autenticação: Token inválido'));
+    socket.user = decoded;
+    next();
+  });
+});
 
 io.on('connection', (socket) => {
 
@@ -131,6 +148,14 @@ io.on('connection', (socket) => {
   socket.on('send_message', async (data) => {
     const { room, userId, userName, content, imageUrl } = data;
     if (!room || (!content && !imageUrl)) return;
+
+    const now = Date.now();
+    const lastMessageTime = messageRateLimits.get(userId) || 0;
+    if (now - lastMessageTime < 500) {
+      socket.emit('rate_limit_error', { error: 'Você está enviando mensagens muito rápido. Aguarde um momento.' });
+      return;
+    }
+    messageRateLimits.set(userId, now);
 
     try {
 

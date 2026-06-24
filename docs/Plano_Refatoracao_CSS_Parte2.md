@@ -110,7 +110,32 @@ O arquivo `admin.css` isola os estilos visuais complexos da página de Administr
 
 ---
 
-## 7. Plano de Execução Passo a Passo (Workflow de Refatoração)
+## 7. Componentes Globais Independentes (`navbar.css`, `footer.css`, `sidebar.css`, etc.)
+
+Arquivos CSS que definem blocos estruturais reutilizáveis que ficam presentes em múltiplas rotas. Eles combinam Layout com a identidade visual skeuomórfica.
+
+- **`navbar.css`, `sidebar.css` e `footer.css`:** Mantêm o estilo e comportamento de vidro (`backdrop-filter`) ou degradês sólidos dos menus de navegação mestre. Não migrar posições complexas de *dropdowns* ou menus contextuais para o Tailwind puro.
+- **`loading.css`:** Concentra spinners (telas de carregamento) globais ou componentes isolados de espera (como *skeletons*). Pode usar utilitários para posicionamento, mas a animação do loader deve vir do CSS.
+- **`avatar.css`:** Lida com recortes de imagem (border-radius redondos complexos), overlays de status ("online/offline") e molduras, garantindo a consistência dos avatares no chat e no perfil.
+
+---
+
+## 8. CSS de Telas Específicas (Funcionalidades Isoladas)
+
+Assim como o `admin.css` e `feedback.css`, as páginas abaixo possuem seus próprios arquivos de estilo. Siga a regra de ouro: **Tudo que é visual (glass, gradiente, hover complexo) fica no CSS. Tudo que é estrutura (flex, grid, padding) migra para o Tailwind no `.jsx`.**
+
+- **`rooms.css` (Página Rooms.jsx):** Controla o layout dos cartões de salas. Efeitos de "vidro e brilho" nos cartões ficam aqui, mas as *grids* de exibição (`grid-cols-2`, `gap-4`) devem estar no JSX.
+- **`settings.css` (Página Settings.jsx):** Controla a navegação por abas lateral. Os estados de hover das abas inativas e cores de seleção da aba ativa pertencem a este CSS.
+- **`profile.css` (Página Profile.jsx):** Componentes de banner de perfil, sobreposições de imagens e cards de estatísticas do usuário.
+- **`suporte.css` (Página Suporte.jsx):** Visualização e espaçamentos finos dos formulários de tickets ou chats com atendentes/robôs.
+- **`about.css` (Páginas Institucionais):** Layout de textos longos (Termos de Uso, Documentação, Política de Privacidade). Apenas estilos únicos dos *cards* de apresentação ficam aqui.
+- **`auth.css` (Páginas Login/Register.jsx):** Formulários de autenticação. Os efeitos de foco dos inputs (`box-shadow`, transições) devem permanecer em CSS.
+- **`home.css` (Landing Page):** Elementos visuais únicos da página inicial para não pesar outras rotas do site.
+- **`not-found.css` (Página 404):** Estilos do erro de página não encontrada.
+
+---
+
+## 9. Plano de Execução Passo a Passo (Workflow de Refatoração)
 
 Para colocar essa arquitetura em prática nos arquivos atuais (ou em novas telas), siga a ordem abaixo, garantindo que o visual não quebre durante a transição:
 
