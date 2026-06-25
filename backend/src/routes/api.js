@@ -103,14 +103,7 @@ router.post('/auth/register', authLimiter, async (req, res) => {
       token
     });
   } catch (err) {
-    console.error('[API] Erro interno no cadastro:', err.message || err);
-    if (!supabaseUrl) {
-      return res.status(500).json({ error: 'Falta variável SUPABASE_URL no servidor.' });
-    }
-    if (err.message && err.message.includes('fetch failed')) {
-      return res.status(502).json({ error: 'Falha de conexão com o Supabase. Verifique a URL do banco.' });
-    }
-    return res.status(500).json({ error: 'Erro interno no servidor ao tentar cadastrar.' });
+    return res.status(500).json({ error: 'Erro interno no servidor ao registar.' });
   }
 });
 
@@ -218,8 +211,6 @@ router.get('/auth/me', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'Erro ao obter dados do usuário.' });
   }
 });
-
-
 
 /**
  * @swagger
@@ -413,8 +404,6 @@ router.post('/rooms/:id/join', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'Erro ao buscar sala.' });
   }
 });
-
-
 
 /**
  * @swagger

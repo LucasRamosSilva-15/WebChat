@@ -4,8 +4,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
-const path = require('path');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 const apiRoutes = require('./src/routes/api');
 const { createClient } = require('@supabase/supabase-js');
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -55,8 +55,6 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
-  // origin: process.env.FRONTEND_URL || '*',
-  // methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 app.use(express.json());
 
@@ -79,8 +77,6 @@ const io = new Server(server, {
     },
     methods: ['GET', 'POST'],
     credentials: true
-    // origin: process.env.FRONTEND_URL || '*',
-    // methods: ['GET', 'POST']
   }
 });
 
@@ -91,12 +87,9 @@ console.log("[SERVER] SUPABASE_URL carregada:", !!supabaseUrl);
 console.log("[SERVER] SUPABASE_KEY carregada:", !!supabaseKey);
 
 const supabase = createClient(
-  // process.env.SUPABASE_URL || 'http://placeholder',
-  // process.env.SUPABASE_KEY || 'placeholder'
   supabaseUrl || 'http://placeholder',
   supabaseKey || 'placeholder'
 );
-
 
 const roomPresence = new Map();
 const messageRateLimits = new Map();
@@ -191,7 +184,6 @@ io.on('connection', (socket) => {
     messageRateLimits.set(userId, now);
 
     try {
-
       const { data: savedMessage, error } = await supabase
         .from('messages')
         .insert([{
@@ -205,7 +197,6 @@ io.on('connection', (socket) => {
         .single();
 
       if (!error && savedMessage) {
-
         io.to(room).emit('receive_message', savedMessage);
       }
     } catch (err) {
