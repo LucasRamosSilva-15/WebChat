@@ -6,6 +6,17 @@ const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
 const rateLimit = require('express-rate-limit');
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Auth
+ *     description: Registo, login e dados do usuário autenticado
+ *   - name: Rooms
+ *     description: Criação e listagem de salas
+ *   - name: Messages
+ *     description: Histórico de mensagens de uma sala
+ */
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -28,6 +39,40 @@ if (!supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Registar novo usuário
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Wssi Helio
+ *               email:
+ *                 type: string
+ *                 example: wssihelio@email.com
+ *               password:
+ *                 type: string
+ *                 example: senhaSegura123
+ *     responses:
+ *       201:
+ *         description: Usuário criado com sucesso
+ *       400:
+ *         description: Campos faltando ou e-mail já registado
+ *       500:
+ *         description: Erro interno no servidor
+ */
 router.post('/auth/register', authLimiter, async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -69,6 +114,37 @@ router.post('/auth/register', authLimiter, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Autenticar usuario existente (Login)
+ *     description: Valida o e-mail informado e compara a senha.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: wssihelio@email.com
+ *               password:
+ *                 type: string
+ *                 example: senhaSegura123
+ *     responses:
+ *       200:
+ *         description: Login bem-sucedido
+ *       401:
+ *         description: Credenciais incorretas
+ *       500:
+ *         description: Erro interno no servidor
+ */
 router.post('/auth/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
 
@@ -110,6 +186,22 @@ router.post('/auth/login', authLimiter, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Obter dados do usuário autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dados do usuário retornados com sucesso
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro ao obter dados do usuário
+ */
 router.get('/auth/me', authMiddleware, async (req, res) => {
   try {
     const { data: user, error } = await supabase
@@ -129,6 +221,20 @@ router.get('/auth/me', authMiddleware, async (req, res) => {
 
 
 
+/**
+ * @swagger
+ * /rooms:
+ *   get:
+ *     summary: Listar todas as salas
+ *     tags: [Rooms]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de salas retornada com sucesso
+ *       500:
+ *         description: Erro ao listar salas
+ */
 router.get('/rooms', authMiddleware, async (req, res) => {
   try {
     const { data: rooms, error } = await supabase
@@ -155,6 +261,37 @@ router.get('/rooms', authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /rooms:
+ *   post:
+ *     summary: Criar nova sala
+ *     tags: [Rooms]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Sala Geral
+ *               description:
+ *                 type: string
+ *                 example: Sala para discussões gerais
+ *     responses:
+ *       201:
+ *         description: Sala criada com sucesso
+ *       400:
+ *         description: Nome da sala não informado
+ *       500:
+ *         description: Erro ao criar sala
+ */
 router.post('/rooms', authMiddleware, async (req, res) => {
   const { name, description, category } = req.body;
   const normalizedName = name?.trim();
@@ -205,6 +342,29 @@ router.post('/rooms', authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /rooms/{id}:
+ *   get:
+ *     summary: Buscar uma sala pelo ID
+ *     tags: [Rooms]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da sala
+ *     responses:
+ *       200:
+ *         description: Sala encontrada
+ *       404:
+ *         description: Sala não encontrada
+ *       500:
+ *         description: Erro ao buscar sala
+ */
 router.get('/rooms/:id', authMiddleware, async (req, res) => {
   try {
     const { data: room, error } = await supabase
@@ -256,6 +416,27 @@ router.post('/rooms/:id/join', authMiddleware, async (req, res) => {
 
 
 
+/**
+ * @swagger
+ * /rooms/{id}/messages:
+ *   get:
+ *     summary: Listar histórico de mensagens de uma sala
+ *     tags: [Messages]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da sala
+ *     responses:
+ *       200:
+ *         description: Lista de mensagens retornada com sucesso
+ *       500:
+ *         description: Erro ao carregar histórico
+ */
 router.get('/rooms/:id/messages', authMiddleware, async (req, res) => {
   try {
     const { data: messages, error } = await supabase
