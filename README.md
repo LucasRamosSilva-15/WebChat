@@ -190,6 +190,9 @@ O projeto **SkyRipple** encontra-se em desenvolvimento ativo.
 O frontend já está bastante avançado, com a maioria das páginas construídas, responsividade implementada e a identidade visual skeuomórfica bem estruturada em modo claro e escuro. A estrutura base de WebSockets e comunicação em tempo real já ocorre com o backend.
 Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais de moderação nas salas e otimizações gerais do Frontend, Backend, Banco de Dados, criação de novas páginas, testes automatizados e segurança.
 
+## link da documentação SWAGGER
+https://webchat-9vqr.onrender.com/api-docs/
+
 ## Próximos passos
 
 * Finalizar e polir a integração total entre o backend, frontend e Supabase.
