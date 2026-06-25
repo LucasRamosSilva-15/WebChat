@@ -4,7 +4,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
-<<<<<<< HEAD
  
 const supabase = createClient(
   process.env.SUPABASE_URL || 'http://placeholder',
@@ -57,33 +56,6 @@ const supabase = createClient(
  *         description: Erro interno no servidor
  */
 router.post('/auth/register', async (req, res) => {
-=======
-const rateLimit = require('express-rate-limit');
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { error: 'Muitas tentativas. Tente novamente mais tarde.' }
-});
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-console.log("[API] SUPABASE_URL carregada:", !!supabaseUrl);
-console.log("[API] SUPABASE_KEY carregada:", !!supabaseKey);
-
-if (!supabaseUrl) {
-  throw new Error("SUPABASE_URL não configurada no backend.");
-}
-
-if (!supabaseKey) {
-  throw new Error("Chave do Supabase não configurada no backend.");
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-router.post('/auth/register', authLimiter, async (req, res) => {
->>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
   const { name, email, password } = req.body;
  
   if (!name || !email || !password) {
@@ -123,7 +95,6 @@ router.post('/auth/register', authLimiter, async (req, res) => {
     return res.status(500).json({ error: 'Erro interno no servidor ao tentar cadastrar.' });
   }
 });
-<<<<<<< HEAD
  
 /**
  * @swagger
@@ -157,10 +128,6 @@ router.post('/auth/register', authLimiter, async (req, res) => {
  *         description: Erro interno no servidor
  */
 router.post('/auth/login', async (req, res) => {
-=======
-
-router.post('/auth/login', authLimiter, async (req, res) => {
->>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
   const { email, password } = req.body;
  
   if (!email || !password) {
@@ -177,13 +144,8 @@ router.post('/auth/login', authLimiter, async (req, res) => {
     if (error || !user) {
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }
-<<<<<<< HEAD
  
     const isValidPassword = await bcrypt.compare(password, user.password);
-=======
-
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
->>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }
@@ -311,16 +273,9 @@ router.get('/rooms', authMiddleware, async (req, res) => {
  *         description: Erro ao criar sala
  */
 router.post('/rooms', authMiddleware, async (req, res) => {
-<<<<<<< HEAD
   const { name, description } = req.body;
  
   if (!name) {
-=======
-  const { name, description, category } = req.body;
-  const normalizedName = name?.trim();
-
-  if (!normalizedName) {
->>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
     return res.status(400).json({ error: 'O nome da sala é obrigatório.' });
   }
  
@@ -473,86 +428,5 @@ router.get('/rooms/:id/messages', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'Erro ao carregar histórico.' });
   }
 });
-<<<<<<< HEAD
  
-=======
-
-router.get('/rooms/:id/members', authMiddleware, async (req, res) => {
-  try {
-    const { data: members, error } = await supabase
-      .from('room_members')
-      .select('role, joined_at, users(id, name, email)')
-      .eq('room_id', req.params.id);
-
-    if (error) return res.status(500).json({ error: error.message });
-
-    const formattedMembers = members.map(m => ({
-      id: m.users.id,
-      name: m.users.name,
-      email: m.users.email,
-      role: m.role,
-      joined_at: m.joined_at,
-      online: false
-    }));
-
-    return res.json(formattedMembers);
-  } catch (err) {
-    return res.status(500).json({ error: 'Erro ao buscar membros da sala.' });
-  }
-});
-
-router.get('/rooms/:id/messages/search', authMiddleware, async (req, res) => {
-  const { q } = req.query;
-  const roomId = req.params.id;
-
-  if (!q) {
-    return res.status(400).json({ error: 'Termo de busca é obrigatório.' });
-  }
-
-  try {
-    const { data: messages, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('room_id', roomId)
-      .ilike('content', `%${q}%`)
-      .order('created_at', { ascending: true });
-
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(messages);
-  } catch (err) {
-    return res.status(500).json({ error: 'Erro ao buscar mensagens.' });
-  }
-});
-
-router.get('/stats', authMiddleware, async (req, res) => {
-  try {
-    const { count: active_rooms } = await supabase
-      .from('rooms')
-      .select('*', { count: 'exact', head: true });
-
-    const { count: total_room_memberships } = await supabase
-      .from('room_members')
-      .select('*', { count: 'exact', head: true });
-
-    const { data: members } = await supabase
-      .from('room_members')
-      .select('user_id');
-
-    let unique_users = 0;
-    if (members) {
-      const uniqueIds = new Set(members.map(m => m.user_id));
-      unique_users = uniqueIds.size;
-    }
-
-    return res.json({
-      active_rooms: active_rooms || 0,
-      unique_users,
-      total_room_memberships: total_room_memberships || 0
-    });
-  } catch (err) {
-    return res.status(500).json({ error: 'Erro ao carregar estatísticas.' });
-  }
-});
-
->>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
 module.exports = router;
