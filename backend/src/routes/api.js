@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
+<<<<<<< HEAD
  
 const supabase = createClient(
   process.env.SUPABASE_URL || 'http://placeholder',
@@ -56,6 +57,33 @@ const supabase = createClient(
  *         description: Erro interno no servidor
  */
 router.post('/auth/register', async (req, res) => {
+=======
+const rateLimit = require('express-rate-limit');
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Muitas tentativas. Tente novamente mais tarde.' }
+});
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+console.log("[API] SUPABASE_URL carregada:", !!supabaseUrl);
+console.log("[API] SUPABASE_KEY carregada:", !!supabaseKey);
+
+if (!supabaseUrl) {
+  throw new Error("SUPABASE_URL não configurada no backend.");
+}
+
+if (!supabaseKey) {
+  throw new Error("Chave do Supabase não configurada no backend.");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+router.post('/auth/register', authLimiter, async (req, res) => {
+>>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
   const { name, email, password } = req.body;
  
   if (!name || !email || !password) {
@@ -67,7 +95,7 @@ router.post('/auth/register', async (req, res) => {
  
     const { data, error } = await supabase
       .from('users')
-      .insert([{ name, email, password: hashedPassword }])
+      .insert([{ name, email, password_hash: hashedPassword }])
       .select()
       .single();
  
@@ -85,9 +113,17 @@ router.post('/auth/register', async (req, res) => {
       token
     });
   } catch (err) {
-    return res.status(500).json({ error: 'Erro interno no servidor.' });
+    console.error('[API] Erro interno no cadastro:', err.message || err);
+    if (!supabaseUrl) {
+      return res.status(500).json({ error: 'Falta variável SUPABASE_URL no servidor.' });
+    }
+    if (err.message && err.message.includes('fetch failed')) {
+      return res.status(502).json({ error: 'Falha de conexão com o Supabase. Verifique a URL do banco.' });
+    }
+    return res.status(500).json({ error: 'Erro interno no servidor ao tentar cadastrar.' });
   }
 });
+<<<<<<< HEAD
  
 /**
  * @swagger
@@ -121,6 +157,10 @@ router.post('/auth/register', async (req, res) => {
  *         description: Erro interno no servidor
  */
 router.post('/auth/login', async (req, res) => {
+=======
+
+router.post('/auth/login', authLimiter, async (req, res) => {
+>>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
   const { email, password } = req.body;
  
   if (!email || !password) {
@@ -137,8 +177,13 @@ router.post('/auth/login', async (req, res) => {
     if (error || !user) {
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }
+<<<<<<< HEAD
  
     const isValidPassword = await bcrypt.compare(password, user.password);
+=======
+
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+>>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Credenciais inválidas.' });
     }
@@ -150,7 +195,14 @@ router.post('/auth/login', async (req, res) => {
       token
     });
   } catch (err) {
-    return res.status(500).json({ error: 'Erro interno no servidor.' });
+    console.error('[API] Erro interno no login:', err.message || err);
+    if (!supabaseUrl) {
+      return res.status(500).json({ error: 'Falta variável SUPABASE_URL no servidor.' });
+    }
+    if (err.message && err.message.includes('fetch failed')) {
+      return res.status(502).json({ error: 'Falha de conexão com o Supabase. Verifique a URL do banco.' });
+    }
+    return res.status(500).json({ error: 'Erro interno no servidor ao tentar logar.' });
   }
 });
  
@@ -209,7 +261,19 @@ router.get('/rooms', authMiddleware, async (req, res) => {
       .order('created_at', { ascending: true });
  
     if (error) return res.status(500).json({ error: error.message });
-    return res.json(rooms);
+
+    const { data: members } = await supabase.from('room_members').select('room_id');
+    const countMap = {};
+    if (members) {
+      members.forEach(m => { countMap[m.room_id] = (countMap[m.room_id] || 0) + 1; });
+    }
+
+    const roomsWithCount = rooms.map(r => ({
+      ...r,
+      members_count: countMap[r.id] || 0
+    }));
+
+    return res.json(roomsWithCount);
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao listar salas.' });
   }
@@ -247,21 +311,56 @@ router.get('/rooms', authMiddleware, async (req, res) => {
  *         description: Erro ao criar sala
  */
 router.post('/rooms', authMiddleware, async (req, res) => {
+<<<<<<< HEAD
   const { name, description } = req.body;
  
   if (!name) {
+=======
+  const { name, description, category } = req.body;
+  const normalizedName = name?.trim();
+
+  if (!normalizedName) {
+>>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
     return res.status(400).json({ error: 'O nome da sala é obrigatório.' });
   }
  
   try {
+    const { data: existingRooms, error: existingError } = await supabase
+      .from('rooms')
+      .select('id, name, owner_id')
+      .eq('owner_id', req.userId)
+      .ilike('name', normalizedName);
+
+    if (existingError) {
+      return res.status(500).json({ error: existingError.message });
+    }
+
+    const alreadyExists = existingRooms?.some(
+      room => room.name.trim().toLowerCase() === normalizedName.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      return res.status(409).json({ error: "Você já criou uma sala com esse nome." });
+    }
+
+    const insertData = { name: normalizedName, description: description?.trim(), owner_id: req.userId };
+    if (category) insertData.category = category;
+
     const { data: room, error } = await supabase
       .from('rooms')
-      .insert([{ name, description }])
+      .insert([insertData])
       .select()
       .single();
  
     if (error) return res.status(500).json({ error: error.message });
-    return res.status(201).json(room);
+
+    await supabase.from('room_members').upsert([{
+      room_id: room.id,
+      user_id: req.userId,
+      role: 'owner'
+    }], { onConflict: 'room_id,user_id' });
+
+    return res.status(201).json({ ...room, members_count: 1, current_user_role: 'owner' });
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao criar sala.' });
   }
@@ -299,7 +398,41 @@ router.get('/rooms/:id', authMiddleware, async (req, res) => {
       .single();
  
     if (error || !room) return res.status(404).json({ error: 'Sala não encontrada.' });
-    return res.json(room);
+
+    const { count } = await supabase.from('room_members').select('*', { count: 'exact', head: true }).eq('room_id', room.id);
+    const { data: member } = await supabase.from('room_members').select('role').eq('room_id', room.id).eq('user_id', req.userId).single();
+
+    return res.json({
+      ...room,
+      members_count: count || 0,
+      is_member: !!member,
+      current_user_role: member ? member.role : null
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao buscar sala.' });
+  }
+});
+
+router.post('/rooms/:id/join', authMiddleware, async (req, res) => {
+  const roomId = req.params.id;
+  const userId = req.userId;
+
+  try {
+    const { data: room, error: roomError } = await supabase.from('rooms').select('id, max_users').eq('id', roomId).single();
+    if (roomError || !room) return res.status(404).json({ error: 'Sala não encontrada' });
+
+    const { data: existingMember } = await supabase.from('room_members').select('*').eq('room_id', roomId).eq('user_id', userId).single();
+    if (existingMember) return res.json({ success: true, member: existingMember });
+
+    const { count } = await supabase.from('room_members').select('*', { count: 'exact', head: true }).eq('room_id', roomId);
+    if (room.max_users && count >= room.max_users) {
+      return res.status(400).json({ error: 'A sala já está cheia' });
+    }
+
+    const { data: newMember, error: insertError } = await supabase.from('room_members').insert([{ room_id: roomId, user_id: userId, role: 'user' }]).select().single();
+    if (insertError) return res.status(500).json({ error: insertError.message });
+
+    return res.json({ success: true, member: newMember });
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao buscar sala.' });
   }
@@ -340,5 +473,86 @@ router.get('/rooms/:id/messages', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'Erro ao carregar histórico.' });
   }
 });
+<<<<<<< HEAD
  
+=======
+
+router.get('/rooms/:id/members', authMiddleware, async (req, res) => {
+  try {
+    const { data: members, error } = await supabase
+      .from('room_members')
+      .select('role, joined_at, users(id, name, email)')
+      .eq('room_id', req.params.id);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    const formattedMembers = members.map(m => ({
+      id: m.users.id,
+      name: m.users.name,
+      email: m.users.email,
+      role: m.role,
+      joined_at: m.joined_at,
+      online: false
+    }));
+
+    return res.json(formattedMembers);
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao buscar membros da sala.' });
+  }
+});
+
+router.get('/rooms/:id/messages/search', authMiddleware, async (req, res) => {
+  const { q } = req.query;
+  const roomId = req.params.id;
+
+  if (!q) {
+    return res.status(400).json({ error: 'Termo de busca é obrigatório.' });
+  }
+
+  try {
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('room_id', roomId)
+      .ilike('content', `%${q}%`)
+      .order('created_at', { ascending: true });
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(messages);
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao buscar mensagens.' });
+  }
+});
+
+router.get('/stats', authMiddleware, async (req, res) => {
+  try {
+    const { count: active_rooms } = await supabase
+      .from('rooms')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: total_room_memberships } = await supabase
+      .from('room_members')
+      .select('*', { count: 'exact', head: true });
+
+    const { data: members } = await supabase
+      .from('room_members')
+      .select('user_id');
+
+    let unique_users = 0;
+    if (members) {
+      const uniqueIds = new Set(members.map(m => m.user_id));
+      unique_users = uniqueIds.size;
+    }
+
+    return res.json({
+      active_rooms: active_rooms || 0,
+      unique_users,
+      total_room_memberships: total_room_memberships || 0
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Erro ao carregar estatísticas.' });
+  }
+});
+
+>>>>>>> 833034090e01f2aee0ee2770b3a47384fb8be93b
 module.exports = router;

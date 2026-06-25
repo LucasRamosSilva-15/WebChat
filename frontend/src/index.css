@@ -1,5 +1,20 @@
 @import "tailwindcss";
 @import "./webchat-components.css";
+@import "./styles/skeuo.css";
+@import "./styles/animations.css";
+@import "./styles/text.css";
+@import "./styles/loading.css";
+@import "./styles/home.css";
+@import "./styles/about.css";
+@import "./styles/auth.css";
+@import "./styles/avatar.css";
+@import "./styles/footer.css";
+@import "./styles/sidebar.css";
+@import "./styles/rooms.css";
+@import "./styles/chat.css";
+@import "./styles/navbar.css";
+@import "./styles/not-found.css";
+@import "./styles/profile.css";
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -92,7 +107,9 @@ body.bg-classic-blue {
 body::before {
     content: '';
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
     background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 0px, transparent 4px);
     pointer-events: none;
     z-index: -1;
@@ -110,13 +127,6 @@ body.bg-smooth-gradient {
 body.bg-clean-light {
     background: #f8fafc;
     background-attachment: fixed;
-}
-
-.skeuo-panel {
-    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 22px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .skeuo-nav {
@@ -265,21 +275,6 @@ body.bg-clean-light {
     background: linear-gradient(to right, #a3a3a3, #8c8c8c);
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.reveal {
-    animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-}
 .pinned-title {
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
@@ -312,7 +307,7 @@ html.dark footer p {
     color: rgba(255, 255, 255, 0.4) !important;
 }
 
-html.dark .skeuo-panel, html.dark .skeuo-card {
+html.dark .skeuo-card {
     background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 2px rgba(0, 0, 0, 0.3) !important;
@@ -332,26 +327,29 @@ html.dark .hero-title {
 
 html.dark .skeuo-btn {
     background: 
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 51%, rgba(0, 0, 0, 0.5) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.4) 100%),
         var(--primary-main) !important;
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid var(--primary-darker) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
 html.dark .skeuo-btn:hover {
     background: 
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(0, 0, 0, 0.1) 51%, rgba(0, 0, 0, 0.4) 100%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.3) 100%),
         var(--primary-main) !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
+    border-color: var(--primary-darker) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
 }
 
 html.dark .skeuo-btn:active {
     background: 
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.5) 100%),
         var(--primary-main) !important;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
     border-color: rgba(0, 0, 0, 0.8) !important;
     border-top-color: #000 !important;
+    text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.8) !important;
 }
 
 html.dark .btn-secondary-glossy {
@@ -566,3 +564,4 @@ html.dark .hover\:bg-\[\#fee2e2\]:hover {
 html.dark .hover\:bg-\[\#e6f0ff\]:hover {
     background-color: rgba(59, 130, 246, 0.1) !important;
 }
+

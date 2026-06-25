@@ -3,7 +3,5 @@ node_modules/
 .env
 dist/
 .DS_Store
-docs/Levantamento_de_requisitos(Provisório).md
-frontend/src/testes(pro futuro)
 frontend/src/pages/LayoutDemo.jsx
 frontend/src/pages/LayoutDemo1.jsx

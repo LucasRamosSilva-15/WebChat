@@ -1,0 +1,97 @@
+@layer components {
+    .skeuo-loading-page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+        padding: 3rem 1.5rem;
+    }
+
+    .skeuo-loading-page-chat {
+        flex: 1 1 0%;
+        min-width: 0;
+        height: 100%;
+        padding: 0 1.5rem;
+        background: #f8fafc;
+    }
+
+    html.dark .skeuo-loading-page-chat {
+        background: #020617;
+    }
+
+    .skeuo-loading-panel {
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        padding: 2rem;
+    }
+
+    .skeuo-loading-highlight {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    html.dark .skeuo-loading-highlight {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .skeuo-loading-orb-shell {
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 1.5rem;
+        position: relative;
+        width: 5rem;
+        height: 5rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .skeuo-loading-spinner {
+        position: absolute;
+        inset: 0.5rem;
+        border-radius: 9999px;
+        border-width: 3px;
+        border-style: solid;
+        border-color: rgba(125, 211, 252, 0.4);
+        border-top-color: #0ea5e9;
+    }
+
+    .skeuo-loading-icon {
+        position: relative;
+        z-index: 10;
+        color: #0ea5e9;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+    }
+
+    .skeuo-loading-title {
+        font-size: 26px;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .skeuo-loading-subtitle {
+        font-size: 14px;
+        line-height: 1.625;
+    }
+
+    .skeuo-loading-progress {
+        margin-top: 1.5rem;
+        height: 0.5rem;
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+
+    .skeuo-loading-progress-fill {
+        height: 100%;
+        width: 33.333333%;
+        border-radius: 9999px;
+    }
+}

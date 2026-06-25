@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown, FaBars, FaUsers } from 'react-icons/fa';
 import { socket } from '../socket';
+import { apiRequest } from '../services/api';
 import ChatSidebar from '../components/ChatSidebar';
 import MembersSidebar from '../components/MembersSidebar';
 import UserAvatar from '../components/UserAvatar';
+import SkeuoLoading from '../components/SkeuoLoading';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
@@ -58,26 +60,26 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     if (msg.isMe) {
         return (
-            <div ref={innerRef} className="flex justify-end px-3 py-[2px] group animate-fade-in-up">
-                <div className="flex flex-col items-end max-w-[80%] group/msg">
-                    <div className={`skeuo-bubble-sent rounded-[14px] rounded-tr-sm px-3 py-1.5 flex flex-col relative transition-all duration-300 ${matchClass}`}>
-                        <div className="absolute top-2 right-full mr-2 group/menu z-10">
-                            <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
+            <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-own justify-end group animate-fade-in-up">
+                <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-own items-end group/msg">
+                    <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-own skeuo-bubble-sent ${matchClass}`}>
+                        <div className="message-bubble-actions message-bubble-actions-own">
+                            <button className="message-bubble-more-btn p-1 flex items-center justify-center">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
                             </button>
 
-                            <div className="absolute top-0 right-full mr-2 bg-[#f4f5f7] rounded-[12px] shadow-lg border border-black/5 flex flex-col overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 min-w-[140px]">
-                                <button onClick={onToggleFavorite} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2 text-[#1d1d1f]">
-                                    <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                            <div className="message-bubble-menu flex flex-col overflow-hidden">
+                                <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
+                                    <FaStar size={10} className={`message-favorite-menu-icon ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                                 </button>
                                 {canDelete && (
                                     <>
-                                        <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
-                                        <button onClick={() => onEditClick(msg)} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-[#e0f2fe] whitespace-nowrap flex items-center gap-2 text-[#1d1d1f]">
-                                            <FaPencilAlt size={10} className="text-[#0071e3] drop-shadow-sm" /> Editar
+                                        <div className="message-bubble-menu-divider h-[1px] w-full"></div>
+                                        <button onClick={() => onEditClick(msg)} className="message-bubble-menu-item message-bubble-menu-item-edit px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
+                                            <FaPencilAlt size={10} className="message-edit-menu-icon" /> Editar
                                         </button>
-                                        <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
-                                        <button onClick={() => onDeleteMessage(msg.messageId)} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2 text-[#ef4444]">
+                                        <div className="message-bubble-menu-divider h-[1px] w-full"></div>
+                                        <button onClick={() => onDeleteMessage(msg.messageId)} className="message-bubble-menu-item message-bubble-menu-item-danger px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                             <FaTrash size={10} className="drop-shadow-sm" /> Apagar
                                         </button>
                                     </>
@@ -85,27 +87,27 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                             </div>
                         </div>
                         {msg.image && (
-                            <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-white/20 shadow-sm" />
+                            <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
                         )}
-                        {msg.text && <p className="text-[13px] leading-tight">{msg.text}</p>}
+                        {msg.text && <p className="message-bubble-text text-[13px] leading-[1.25] break-words whitespace-pre-wrap">{msg.text}</p>}
                     </div>
-                    <div className="flex items-center justify-end gap-2 mt-0.5 px-1 w-full">
-                        <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-gray-200' : ''}`}>
+                    <div className="message-bubble-footer flex items-center gap-2 mt-0.5 px-1 w-full message-bubble-footer-own justify-end">
+                        <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn flex items-center gap-1 text-[10px] px-1.5 py-0.5 ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
                             {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                             {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                         </button>
-                        <span className="text-[10px] text-[#86868b] font-medium flex items-center gap-1.5">
+                        <span className="message-bubble-time text-[10px] font-medium flex items-center gap-1.5">
                             {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                                <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-owner">
                                     <FaCrown size={8} /> DONO
                                 </span>
                             )}
                             {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-violet-400 to-violet-600 text-white rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                                <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-mod">
                                     <FaShieldAlt size={8} /> MOD
                                 </span>
                             )}
-                            {msgTime} {msg.isEdited && "(editada)"} <span className="text-sky-500 text-[10px] ml-0.5">✓✓</span>
+                            {msgTime} {msg.isEdited && "(editada)"} <span className="message-read-indicator text-[10px] ml-0.5">✓✓</span>
                         </span>
                     </div>
                 </div>
@@ -114,46 +116,46 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
     }
 
     return (
-        <div ref={innerRef} className="flex gap-2 px-3 py-[2px] group animate-fade-in-up">
-            <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 hover:opacity-80 transition-opacity" />
-            <div className="flex flex-col items-start max-w-[80%] group/msg">
-                <span className="text-[11.5px] text-[#1d1d1f] font-bold flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
+        <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-other justify-start gap-2 group animate-fade-in-up">
+            <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="message-avatar-interactive mt-1" />
+            <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-other items-start group/msg">
+                <span className="message-bubble-author text-[11.5px] flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
                     {msg.sender}
                     {mockRoles && mockRoles[msg.sender] === 'Dono' && (
-                        <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                        <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-owner">
                             <FaCrown size={8} /> DONO
                         </span>
                     )}
                     {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
-                        <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 bg-gradient-to-b from-violet-400 to-violet-600 text-white rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20">
+                        <span className="message-role-badge inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide message-role-badge-mod">
                             <FaShieldAlt size={8} /> MOD
                         </span>
                     )}
                 </span>
-                <div className={`skeuo-bubble-received rounded-[14px] rounded-tl-sm px-3 py-1.5 flex flex-col relative transition-all duration-300 ${matchClass}`}>
-                    <div className="absolute top-2 left-full ml-2 group/menu z-10">
-                        <button className="p-1 rounded-full hover:bg-black/5 transition-all opacity-0 group-hover/msg:opacity-100 text-[#86868b]">
+                <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-other skeuo-bubble-received ${matchClass}`}>
+                    <div className="message-bubble-actions message-bubble-actions-other">
+                        <button className="message-bubble-more-btn p-1 flex items-center justify-center">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
                         </button>
 
-                        <div className="absolute top-0 left-full ml-2 bg-[#f4f5f7] rounded-[12px] shadow-lg border border-black/5 flex flex-col overflow-hidden opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all duration-200 min-w-[140px]">
-                            <button onClick={onToggleFavorite} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-black/5 whitespace-nowrap flex items-center gap-2 text-[#1d1d1f]">
-                                <FaStar size={10} className={`drop-shadow-sm ${msg.isFavorite ? 'text-[#f59e0b]' : 'text-[#86868b]'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                        <div className="message-bubble-menu flex flex-col overflow-hidden">
+                            <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
+                                <FaStar size={10} className={`message-favorite-menu-icon drop-shadow-sm ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                             </button>
-                            <div className="h-[1px] bg-[#d2d2d7]/50 w-full"></div>
-                            <button onClick={() => onReportClick({ type: 'message', target: msg })} className="px-3 py-2 text-left text-[12px] font-medium hover:bg-[#fee2e2] whitespace-nowrap flex items-center gap-2 text-[#ef4444]">
+                            <div className="message-bubble-menu-divider h-[1px] w-full"></div>
+                            <button onClick={() => onReportClick({ type: 'message', target: msg })} className="message-bubble-menu-item message-bubble-menu-item-danger px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                 <FaFlag size={10} className="drop-shadow-sm" /> Denunciar
                             </button>
                         </div>
                     </div>
                     {msg.image && (
-                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[200px] md:max-w-[240px] rounded-[6px] mb-1 mt-0.5 object-cover cursor-pointer hover:opacity-90 transition-opacity border border-black/5 dark:border-white/5 shadow-sm" />
+                        <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="message-bubble-image max-w-[240px] mb-1 mt-0.5 object-cover" />
                     )}
-                    {msg.text && <p className="text-[13px] text-[#1d1d1f] dark:text-[#f8fafc] leading-tight">{msg.text}</p>}
+                    {msg.text && <p className="message-bubble-text text-[13px] leading-[1.25] break-words whitespace-pre-wrap">{msg.text}</p>}
                 </div>
-                <div className="flex items-center justify-start gap-2 mt-0.5 ml-1 px-1 w-full">
-                    <span className="text-[10px] text-[#86868b] font-medium">{msgTime} {msg.isEdited && "(editada)"}</span>
-                    <button onClick={() => onToggleLike(msg.messageId)} className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-all ${(msg.likes && msg.likes.includes(currentUserId)) ? 'text-red-500 bg-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-red-100' : 'text-[#86868b] hover:bg-black/5 hover:text-[#1d1d1f] opacity-0 group-hover/msg:opacity-100'} ${(msg.likes && msg.likes.length > 0) || (msg.likes && msg.likes.includes(currentUserId)) ? 'opacity-100 bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] border border-gray-200' : ''}`}>
+                <div className="message-bubble-footer flex items-center gap-2 mt-0.5 px-1 w-full message-bubble-footer-other justify-start ml-1">
+                    <span className="message-bubble-time text-[10px] font-medium flex items-center gap-1.5">{msgTime} {msg.isEdited && "(editada)"}</span>
+                    <button onClick={() => onToggleLike(msg.messageId)} className={`message-bubble-like-btn flex items-center gap-1 text-[10px] px-1.5 py-0.5 ${(msg.likes && msg.likes.length > 0) ? 'message-bubble-like-btn-visible' : ''} ${(msg.likes && msg.likes.includes(currentUserId)) ? 'message-bubble-like-btn-active' : ''}`}>
                         {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-sm" /> : <FaRegHeart size={10} />}
                         {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                     </button>
@@ -167,8 +169,30 @@ const Chat = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
-    const room = queryParams.get('room') || 'general';
+    const room = queryParams.get('room');
 
+    const [currentRoom, setCurrentRoom] = useState(null);
+    const [roomLoading, setRoomLoading] = useState(true);
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isMobileMembersOpen, setIsMobileMembersOpen] = useState(false);
+
+    const [hasJoined, setHasJoined] = useState(() => {
+        try {
+            const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+            return joinedRooms.includes(room);
+        } catch {
+            return false;
+        }
+    });
+
+    useEffect(() => {
+        try {
+            const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+            setHasJoined(joinedRooms.includes(room));
+        } catch {
+            setHasJoined(false);
+        }
+    }, [room]);
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
@@ -176,17 +200,37 @@ const Chat = () => {
     const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
     const messageRefs = useRef({});
 
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState("");
+
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-    // FUTURO: Esta busca local poderá ser substituída por um endpoint.
-    // Ex: GET /rooms/:roomId/messages/search?q=termo
-    const searchResults = messages
-        .map((message, index) => ({ message, index }))
-        .filter(({ message }) => {
-            if (!normalizedSearchTerm) return false;
-            const text = message.content || message.text || message.body || "";
-            return text.toLowerCase().includes(normalizedSearchTerm);
-        });
+    useEffect(() => {
+        if (!searchTerm.trim()) {
+            setSearchResults([]);
+            setSearchError("");
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(async () => {
+            setSearchLoading(true);
+            setSearchError("");
+            try {
+                const results = await apiRequest(`/rooms/${room}/messages/search?q=${encodeURIComponent(searchTerm.trim())}`);
+                setSearchResults(results.map(r => ({ id: r.id })));
+                setCurrentSearchIndex(0);
+            } catch (error) {
+                console.error("Erro na busca:", error);
+                setSearchError("Não foi possível buscar mensagens.");
+                setSearchResults([]);
+            } finally {
+                setSearchLoading(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, room]);
 
     useEffect(() => {
         setCurrentSearchIndex(0);
@@ -194,12 +238,12 @@ const Chat = () => {
 
     useEffect(() => {
         if (searchOpen && searchResults.length > 0) {
-            const msgIndex = searchResults[currentSearchIndex]?.index;
-            if (msgIndex !== undefined && messageRefs.current[msgIndex]) {
-                messageRefs.current[msgIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const resultMsg = searchResults[currentSearchIndex];
+            if (resultMsg && messageRefs.current[resultMsg.id]) {
+                messageRefs.current[resultMsg.id].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
-    }, [searchOpen, currentSearchIndex, searchResults.length]);
+    }, [searchOpen, currentSearchIndex, searchResults]);
 
     const handleNextSearch = () => {
         if (searchResults.length === 0) return;
@@ -234,7 +278,7 @@ const Chat = () => {
             return updated;
         });
     };
-    const [onlineUsers, setOnlineUsers] = useState("...");
+    const [onlinePresence, setOnlinePresence] = useState({ users: [], count: 0 });
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [privateInvite, setPrivateInvite] = useState(null);
@@ -344,27 +388,64 @@ const Chat = () => {
 
     const currentRoomRef = useRef(null);
 
-    const [hasJoined, setHasJoined] = useState(() => {
-        const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
-        return joinedRooms.includes(room);
-    });
+
 
     useEffect(() => {
-        const savedMessages = localStorage.getItem(`chat_messages_${room}`);
-        if (savedMessages) {
+        const loadRoomAndMessages = async () => {
+            setRoomLoading(true);
+            let roomDisplayName = room;
+
             try {
-                setMessages(JSON.parse(savedMessages));
-            } catch (e) {
-                console.error("Erro ao carregar mensagens:", e);
-                setMessages([{ text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                const roomData = await apiRequest(`/rooms/${room}`);
+                setCurrentRoom(roomData);
+                roomDisplayName = roomData?.name || room;
+            } catch (err) {
+                console.error("Erro ao carregar detalhes da sala:", err);
+                setCurrentRoom({ name: room });
             }
-        } else {
-            setMessages([
-                { text: `Bem-vindo à sala ${room.toUpperCase()}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }
-            ]);
-        }
+
+            try {
+                const apiMessages = await apiRequest(`/rooms/${room}/messages`);
+                const mappedMessages = Array.isArray(apiMessages) ? apiMessages.map(msg => ({
+                    messageId: msg.id,
+                    text: msg.content,
+                    sender: msg.user_name || 'Usuário',
+                    userId: msg.user_id,
+                    isMe: msg.user_id === currentUserId,
+                    time: msg.created_at,
+                    image: msg.image_url || null,
+                    avatar: null,
+                    likes: [],
+                    isFavorite: false,
+                    isEdited: false
+                })) : [];
+
+                if (mappedMessages.length > 0) {
+                    setMessages(mappedMessages);
+                } else {
+                    setMessages([{ messageId: "system-welcome", text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar mensagens da API:", error);
+                const savedMessages = localStorage.getItem(`chat_messages_${room}`);
+                if (savedMessages) {
+                    try {
+                        setMessages(JSON.parse(savedMessages));
+                    } catch (e) {
+                        console.error("Erro ao fazer parse de mensagens locais:", e);
+                        setMessages([{ messageId: "system-error", text: "Não foi possível carregar as mensagens agora.", sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                    }
+                } else {
+                    setMessages([{ messageId: "system-error", text: "Não foi possível carregar as mensagens agora.", sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
+                }
+            } finally {
+                setRoomLoading(false);
+            }
+        };
+
+        loadRoomAndMessages();
         currentRoomRef.current = room;
-    }, [room]);
+    }, [room, currentUserId]);
 
     useEffect(() => {
         if (currentRoomRef.current === room && messages.length > 0) {
@@ -378,26 +459,26 @@ const Chat = () => {
     }, [messages, room]);
 
     useEffect(() => {
-        if (!hasJoined) return;
-
         let userId = localStorage.getItem('chat_uniqueUserId');
         if (!userId) {
             userId = currentUserId;
             localStorage.setItem('chat_uniqueUserId', userId);
         }
+        const userName = localStorage.getItem('chat_displayName') || 'Usuário';
 
-        socket.emit("join_room", { room, userId });
+        socket.emit("joinRoom", {
+            roomId: room,
+            user: { id: userId, name: userName }
+        });
+
+        socket.on("roomPresenceUpdated", (data) => {
+            if (data.roomId === room) {
+                setOnlinePresence({ users: data.onlineUsers, count: data.onlineCount });
+            }
+        });
 
         socket.on("room_full_error", (err) => {
             setRoomFullError(err.message);
-            setHasJoined(false);
-            const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
-            const updated = joinedRooms.filter(r => r !== room);
-            localStorage.setItem('chat_joinedRooms', JSON.stringify(updated));
-        });
-
-        socket.on("active_users_count", (count) => {
-            setOnlineUsers(count);
         });
 
         socket.on("receive_private_invite", (data) => {
@@ -470,42 +551,23 @@ const Chat = () => {
         });
 
         socket.on("receive_message", (data) => {
-            try {
-                // Código de descriptografia
-                // Provisório! deve ser mudado para JWT e bcrypt no futuro
-                const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
-                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+            setMessages((list) => {
+                if (list.some(m => m.messageId === data.id)) return list;
 
-                // Código de descriptografia
-                // Provisório! deve ser mudado para JWT e bcrypt no futuro
-                let text = decryptedString;
-                let image = null;
-                // Código de descriptografia
-                // Provisório! deve ser mudado para JWT e bcrypt no futuro
-                if (decryptedString) {
-                    try {
-                        const parsed = JSON.parse(decryptedString);
-                        if (parsed.text !== undefined || parsed.image !== undefined) {
-                            text = parsed.text || "";
-                            image = parsed.image || null;
-                        }
-                    } catch (e) {
-
-                    }
-
-                    setMessages((list) => [...list, { messageId: data.messageId, text: text, image: image, sender: data.sender, userId: data.userId, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
-
-                    const currentReader = localStorage.getItem('chat_displayName') || "Usuário";
-                    if (data.messageId) {
-                        socket.emit("read_message", { room: data.room, messageId: data.messageId, reader: currentReader });
-                    }
-                } else {
-                    setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, userId: data.userId, avatar: data.avatar, status: data.status, isMe: false, time: data.time, readBy: [], likes: [] }]);
-                }
-            } catch (error) {
-                console.error("Erro ao descriptografar mensagem:", error);
-                setMessages((list) => [...list, { messageId: data.messageId, text: data.message, sender: data.sender, userId: data.userId, isMe: false, time: data.time, readBy: [], likes: [] }]);
-            }
+                return [...list, {
+                    messageId: data.id,
+                    text: data.content,
+                    image: data.image_url,
+                    sender: data.user_name || 'Usuário',
+                    userId: data.user_id,
+                    avatar: null,
+                    status: "Disponível",
+                    isMe: data.user_id === currentUserId,
+                    time: data.created_at,
+                    readBy: [],
+                    likes: []
+                }];
+            });
         });
 
 
@@ -523,15 +585,16 @@ const Chat = () => {
         });
 
         return () => {
+            socket.emit("leaveRoom", { roomId: room, userId: localStorage.getItem('chat_uniqueUserId') || currentUserId });
+            socket.off("roomPresenceUpdated");
             socket.off("receive_message");
-            socket.off("active_users_count");
             socket.off("message_read");
             socket.off("room_full_error");
             socket.off("message_deleted");
             socket.off("message_edited");
             socket.off("like_toggled");
         };
-    }, [room, hasJoined]);
+    }, [room, currentUserId]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -572,75 +635,104 @@ const Chat = () => {
                 setImagePreview(null);
                 setEditingMessageId(null);
             } else {
-                const payload = JSON.stringify({ text: currentMessage, image: imagePreview });
-                const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
-
-                const messageId = Date.now().toString() + Math.random().toString(36).substring(7);
-
                 const messageData = {
                     room: room,
-                    messageId: messageId,
-                    sender: currentSender,
                     userId: currentUserId,
-                    avatar: currentPhoto,
-                    status: currentStatus,
-                    message: encryptedMessage,
-                    time: new Date().toISOString()
+                    userName: currentSender,
+                    content: currentMessage,
+                    imageUrl: imagePreview || null
                 };
 
-                await socket.emit("send_message", messageData);
-                setMessages((list) => [...list, { messageId: messageId, text: currentMessage, image: imagePreview, sender: currentSender, userId: currentUserId, avatar: currentPhoto, status: currentStatus, isMe: true, time: messageData.time, readBy: [], likes: [] }]);
+                socket.emit("send_message", messageData);
+
                 setCurrentMessage("");
                 setImagePreview(null);
             }
         }
     };
 
-    if (!hasJoined || roomFullError) {
+    if (!room) {
         return (
-            <main className="reveal flex-grow flex items-center justify-center px-6">
-                <div className="skeuo-panel p-10 max-w-[400px] w-full text-center animate-fade-in-up">
-                    <div className="w-20 h-20 bg-[#f4f5f7] text-[#86868b] rounded-full mx-auto flex items-center justify-center border border-black/5 mb-6 shadow-inner text-[36px]">
+            <main className="reveal chat-state-page flex-grow flex items-center justify-center px-6">
+                <div className="skeuo-panel chat-state-panel p-10 max-w-[400px] w-full text-center">
+                    <h1 className="hero-title chat-error-title text-[28px] font-semibold mb-2">Sala inválida</h1>
+                    <p className="chat-error-desc text-[15px] mb-8">Nenhuma sala foi informada.</p>
+                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn w-full py-3 text-[15px]">
+                        Voltar para Salas
+                    </button>
+                </div>
+            </main>
+        );
+    }
+
+    if (roomLoading) {
+        return (
+            <SkeuoLoading
+                title="Carregando conversa..."
+                subtitle="Sincronizando sala, mensagens e membros."
+                variant="chat"
+            />
+        );
+    }
+
+    if (roomFullError) {
+        return (
+            <main className="reveal chat-state-page flex-grow flex items-center justify-center px-6">
+                <div className="skeuo-panel chat-state-panel animate-fade-in-up p-10 max-w-[400px] w-full text-center">
+                    <div className="chat-error-icon chat-error-icon-red w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-[36px]">
                         <FaSignOutAlt />
                     </div>
-                    <h1 className="hero-title text-[28px] font-semibold mb-2">
-                        {room.toUpperCase()}
+                    <h1 className="hero-title chat-error-title text-[#1d1d1f] dark:text-[#f8fafc] text-[28px] font-semibold mb-2">
+                        Acesso Negado
+                    </h1>
+                    <p className="chat-error-desc leading-relaxed text-[15px] mb-8">
+                        {roomFullError}
+                    </p>
+                    <button onClick={() => navigate('/rooms')} className="skeuo-btn chat-state-btn w-full py-3 text-[15px]">Voltar para Salas</button>
+                </div>
+            </main>
+        );
+    }
+
+    if (!hasJoined && !roomFullError) {
+        return (
+            <main className="reveal chat-state-page flex-grow flex items-center justify-center px-6">
+                <div className="skeuo-panel chat-state-panel animate-fade-in-up p-10 max-w-[400px] w-full text-center">
+                    <div className="chat-error-icon chat-error-icon-gray w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-[36px]">
+                        <FaSignOutAlt />
+                    </div>
+
+                    <h1 className="hero-title chat-error-title text-[28px] font-semibold mb-2">
+                        Entrar na Sala
                     </h1>
 
-                    {roomFullError ? (
-                        <p className="text-[15px] font-medium text-[#ef4444] mb-8 tracking-tight leading-snug p-3 bg-[#fee2e2] rounded-[12px]">
-                            {roomFullError}
-                        </p>
-                    ) : (
-                        <p className="text-[15px] font-normal text-[#86868b] mb-8 tracking-tight leading-snug">
-                            Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?
-                        </p>
-                    )}
+                    <p className="chat-error-desc tracking-tight leading-snug text-[15px] mb-8">
+                        Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?
+                    </p>
 
-                    <div className="flex flex-col gap-3">
-                        {!roomFullError && (
-                            <button
-                                onClick={() => {
-                                    const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
-                                    if (!joinedRooms.includes(room)) {
-                                        joinedRooms.push(room);
-                                        localStorage.setItem('chat_joinedRooms', JSON.stringify(joinedRooms));
-                                    }
-                                    setHasJoined(true);
-                                }}
-                                className="skeuo-btn w-full py-3 text-[16px] font-medium"
-                            >
-                                Entrar na Sala
-                            </button>
-                        )}
+                    <div className="chat-confirm-actions flex flex-col gap-3">
+                        <button
+                            onClick={() => {
+                                const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+                                if (!joinedRooms.includes(room)) {
+                                    joinedRooms.push(room);
+                                    localStorage.setItem('chat_joinedRooms', JSON.stringify(joinedRooms));
+                                }
+                                setHasJoined(true);
+                            }}
+                            className="skeuo-btn chat-state-btn font-medium w-full py-3 text-[15px]"
+                        >
+                            Entrar na Sala
+                        </button>
+
                         <button
                             onClick={() => {
                                 setRoomFullError(false);
                                 navigate('/rooms');
                             }}
-                            className="w-full py-3 text-[16px] font-medium text-[#ef4444] hover:bg-[#fee2e2] rounded-[12px] transition-colors"
+                            className="chat-confirm-cancel-btn w-full py-3 text-base font-medium"
                         >
-                            {roomFullError ? "Voltar para Salas" : "Cancelar"}
+                            Cancelar
                         </button>
                     </div>
                 </div>
@@ -651,31 +743,41 @@ const Chat = () => {
     return (
         <>
             {selectedImage && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in" onClick={() => setSelectedImage(null)}>
-                    <button onClick={() => setSelectedImage(null)} className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+                <div className="chat-image-lightbox fixed inset-0 z-[200] flex items-center justify-center animate-fade-in" onClick={() => setSelectedImage(null)}>
+                    <button onClick={() => setSelectedImage(null)} className="chat-image-lightbox-close absolute top-6 right-6 rounded-full p-2">
                         <FaTimes size={20} />
                     </button>
-                    <img src={selectedImage} alt="Full Screen" className="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-sm" onClick={(e) => e.stopPropagation()} />
+                    <img src={selectedImage} alt="Full Screen" className="chat-image-lightbox-image max-w-[90vw] max-h-[90vh] object-contain" onClick={(e) => e.stopPropagation()} />
                 </div>
             )}
 
             {selectedUser && selectedUser.sender !== "Sistema" && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedUser(null)}>
-                    <div className="skeuo-panel p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
-                        <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="mx-auto mb-4 border-2 border-white shadow-md" />
-                        <h3 className="text-[22px] font-semibold text-[#1d1d1f] mb-1 flex items-center justify-center gap-2">
+                <div className="chat-user-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelectedUser(null)}>
+                    <div className="skeuo-panel chat-user-modal-enter p-8 max-w-[350px] w-full text-center relative" onClick={(e) => e.stopPropagation()}>
+                        <UserAvatar src={selectedUser.avatar} name={selectedUser.sender} size="2xl" className="chat-user-modal-avatar mx-auto mb-4" />
+                        <h3 className="chat-user-modal-name text-[22px] font-semibold mb-1 flex items-center justify-center gap-2">
                             {selectedUser.sender}
-                            {mockRoles[selectedUser.sender] === 'Dono' && <span className="bg-amber-100 text-amber-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-amber-200 shadow-sm flex items-center gap-1">👑 Dono</span>}
-                            {mockRoles[selectedUser.sender] === 'Moderador' && <span className="bg-blue-100 text-blue-700 text-[11px] uppercase font-bold px-2 py-0.5 rounded-[6px] tracking-wider border border-blue-200 shadow-sm flex items-center gap-1">🛡️ Mod</span>}
+                            {mockRoles[selectedUser.sender] === 'Dono' && (
+                                <span className="chat-user-modal-role-badge chat-user-modal-role-badge-owner inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-none font-bold uppercase tracking-wide">
+                                    <FaCrown size={10} className="shrink-0" aria-hidden="true" />
+                                    Dono
+                                </span>
+                            )}
+                            {mockRoles[selectedUser.sender] === 'Moderador' && (
+                                <span className="chat-user-modal-role-badge chat-user-modal-role-badge-mod inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-none font-bold uppercase tracking-wide">
+                                    <FaShieldAlt size={10} className="shrink-0" aria-hidden="true" />
+                                    Mod
+                                </span>
+                            )}
                         </h3>
-                        <p className="text-[15px] text-[#86868b] mb-6">{selectedUser.status || "Sem recado"}</p>
+                        <p className="chat-user-modal-status text-[15px] mb-6">{selectedUser.status || "Sem recado"}</p>
 
-                        <div className="bg-black/5 p-4 rounded-[12px] mb-6 text-left border border-black/5 dark:border-white/5 shadow-inner">
-                            <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-widest mb-2">Cargos e Moderação</label>
+                        <div className="chat-user-modal-role-panel p-4 rounded-[12px] mb-6 text-left border">
+                            <label className="chat-user-modal-role-label block text-[11px] font-bold uppercase tracking-widest mb-2">Cargos e Moderação</label>
                             <select
                                 value={mockRoles[selectedUser.sender] || 'Usuário'}
                                 onChange={(e) => handleRoleChange(selectedUser.sender, e.target.value)}
-                                className="skeuo-input w-full px-3 py-2 text-[14px] bg-white dark:bg-[#1e293b] cursor-pointer mb-3"
+                                className="chat-user-modal-select skeuo-input w-full px-3 py-2 text-[14px] cursor-pointer mb-3"
                             >
                                 <option value="Usuário">👤 Usuário Comum</option>
                                 <option value="Moderador">🛡️ Moderador da Sala</option>
@@ -683,8 +785,8 @@ const Chat = () => {
                             </select>
 
                             <div className="flex gap-2 flex-wrap">
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Silenciar (Em breve)</button>
-                                <button className="flex-1 btn-secondary-glossy py-1.5 text-[12px] text-[#ef4444] opacity-50 cursor-not-allowed whitespace-nowrap" disabled>Banir (Em breve)</button>
+                                <button className="chat-user-modal-disabled-action flex-1 btn-secondary-glossy py-1.5 text-[12px] whitespace-nowrap" disabled>Silenciar (Em breve)</button>
+                                <button className="chat-user-modal-disabled-action flex-1 btn-secondary-glossy py-1.5 text-[12px] whitespace-nowrap" disabled>Banir (Em breve)</button>
                             </div>
                         </div>
 
@@ -718,12 +820,12 @@ const Chat = () => {
 
                                     navigate(`/chat?room=${privateRoomName}`);
                                     setSelectedUser(null);
-                                }} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff]">
+                                }} className="chat-user-modal-private-btn btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2">
                                     <FaCommentAlt size={12} /> Mensagem Privada
                                 </button>
                             )}
                             <div className="flex gap-3">
-                                <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="btn-secondary-glossy flex-1 py-2 flex items-center justify-center gap-2 text-[#ef4444] hover:bg-[#fee2e2]">
+                                <button onClick={() => setReportModalData({ type: 'user', target: selectedUser })} className="chat-user-modal-report-btn btn-secondary-glossy flex-1 py-2 flex items-center justify-center gap-2">
                                     <FaFlag size={12} /> Denunciar
                                 </button>
                                 <button onClick={() => setSelectedUser(null)} className="skeuo-btn flex-1 py-2">Fechar</button>
@@ -738,44 +840,52 @@ const Chat = () => {
                 </div>
             )}
 
-            <div className="flex w-full h-[calc(100vh-48px)] overflow-hidden">
-                <ChatSidebar />
-                <main className="flex-1 min-w-0 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)] z-10" />
+            <div className="chat-shell animate-chat-shell flex w-full h-[calc(100vh-48px)] overflow-hidden">
+                <ChatSidebar isMobileOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
+                <main className="chat-main animate-chat-panel-main flex-1 min-w-0 flex flex-col h-full relative">
+                    <div className="chat-header-divider absolute top-0 left-0 right-0 h-1 z-10" />
 
-                    <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] shrink-0">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)] border border-sky-500">
+                    <div className="chat-header px-4 py-2.5 flex items-center justify-between shrink-0">
+                        <div className="chat-header-info flex items-center gap-3">
+                            <button onClick={() => setIsMobileSidebarOpen(true)} className="lg:hidden w-8 h-8 flex items-center justify-center text-[#86868b] dark:text-[#94a3b8] hover:text-[#0071e3] transition-colors rounded-full active:bg-black/5 dark:active:bg-white/5">
+                                <FaBars size={16} />
+                            </button>
+                            <div className="chat-header-icon w-8 h-8 rounded-full flex items-center justify-center hidden sm:flex">
                                 <FaCommentAlt size={12} />
                             </div>
-                            <div className="flex flex-col justify-center">
-                                <h2 className="font-bold text-[#1d1d1f] text-[15px] leading-tight">{room.toUpperCase()}</h2>
-                                <p className="text-[11px] text-[#86868b] flex items-center gap-1.5 mt-0.5">
-                                    <span className="flex items-center gap-1 font-medium">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
-                                        {onlineUsers} online
+                            <div className="chat-header-title-wrapper flex flex-col justify-center">
+                                <h2 className="chat-header-title font-bold text-[15px] leading-tight">
+                                    {roomLoading ? "Carregando..." : (currentRoom ? currentRoom.name : "Sala não encontrada")}
+                                </h2>
+                                <p className="chat-header-subtitle text-[11px] flex items-center gap-1.5 mt-0.5">
+                                    <span className="chat-header-online flex items-center gap-1 font-medium">
+                                        <span className="chat-header-online-dot w-1.5 h-1.5 rounded-full" />
+                                        {Number.isFinite(onlinePresence?.count) ? onlinePresence.count : 0} online
                                     </span>
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="chat-header-actions flex items-center gap-1 sm:gap-2">
+                            <button onClick={() => setIsMobileMembersOpen(true)} className="xl:hidden chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer" title="Ver membros">
+                                <FaUsers size={14} className="text-gray-500 dark:text-slate-400" />
+                            </button>
                             <button
                                 onClick={() => setSearchOpen(!searchOpen)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${searchOpen ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
+                                className={`chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${searchOpen ? 'chat-header-btn-active' : ''}`}
                                 title="Buscar mensagens"
                             >
                                 <FaSearch size={14} className={searchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-sky-50 hover:to-sky-100 dark:hover:from-slate-600 dark:hover:to-slate-700 hover:text-sky-600 ${showFavoritesOnly ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-600 dark:to-sky-800 text-white !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]' : 'bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300'}`}
+                                className={`chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer ${showFavoritesOnly ? 'chat-header-btn-active' : ''}`}
                                 title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
                             >
                                 <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => navigate('/rooms')}
-                                className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200/50 dark:border-slate-600/50 transition-all duration-150 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-900/40 dark:hover:to-rose-900/60 hover:text-rose-600 dark:hover:text-rose-400"
+                                className="chat-header-btn chat-header-btn-exit w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
                                 title="Sair da sala"
                             >
                                 <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
@@ -783,138 +893,140 @@ const Chat = () => {
                         </div>
                     </div>
 
-                    {searchOpen && (
-                        <div className="px-4 py-2 border-b border-[#d2d2d7] dark:border-white/5 bg-[#f5f5f7]/90 dark:bg-[#1e293b]/90 backdrop-blur-md flex items-center gap-3 shrink-0 z-10 shadow-sm animate-fade-in-up">
-                            <div className="relative flex-1">
-                                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#86868b] dark:text-slate-400" size={12} />
+                    <div className={`chat-search-panel overflow-hidden shrink-0 z-10 transition-all duration-300 ease-out ${searchOpen ? 'chat-search-panel-open max-h-20 py-2' : 'chat-search-panel-closed max-h-0 py-0 pointer-events-none'}`}>
+                        <div className="chat-search-inner px-4 flex items-center gap-3">
+                            <div className="chat-search-input-wrapper relative flex-1">
+                                <FaSearch className="chat-search-icon absolute left-3 top-1/2 -translate-y-1/2" size={12} />
                                 <input
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     placeholder="Buscar mensagens..."
-                                    className="w-full pl-8 pr-8 py-1.5 rounded-full text-[13px] skeuo-input"
-                                    autoFocus
+                                    className="chat-search-input skeuo-input w-full px-8 py-1.5 text-[13px] rounded-full"
                                 />
                                 {searchTerm && (
-                                    <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+                                    <button onClick={() => setSearchTerm('')} className="chat-search-clear-btn absolute right-3 top-1/2 -translate-y-1/2">
                                         <FaTimes size={12} />
                                     </button>
                                 )}
                             </div>
                             {searchResults.length > 0 ? (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
+                                <div className="chat-search-results flex items-center gap-2">
+                                    <span className="chat-search-result-count text-[11px] whitespace-nowrap">
                                         {currentSearchIndex + 1} de {searchResults.length}
                                     </span>
-                                    <div className="flex items-center border border-[#d2d2d7] dark:border-white/10 rounded-full overflow-hidden shadow-sm">
-                                        <button onClick={handlePrevSearch} className="px-2 py-1 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-[#86868b] border-r border-[#d2d2d7] dark:border-white/10 transition-colors" title="Resultado anterior">
+                                    <div className="chat-search-navigation flex items-center overflow-hidden">
+                                        <button onClick={handlePrevSearch} className="chat-search-nav-btn px-2 py-1" title="Resultado anterior">
                                             <FaChevronUp size={10} />
                                         </button>
-                                        <button onClick={handleNextSearch} className="px-2 py-1 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-[#86868b] transition-colors" title="Próximo resultado">
+                                        <button onClick={handleNextSearch} className="chat-search-nav-btn px-2 py-1" title="Próximo resultado">
                                             <FaChevronDown size={10} />
                                         </button>
                                     </div>
                                 </div>
+                            ) : searchLoading ? (
+                                <span className="chat-search-empty text-[11px] whitespace-nowrap">Buscando...</span>
+                            ) : searchError ? (
+                                <span className="chat-search-error text-[11px] whitespace-nowrap">{searchError}</span>
                             ) : searchTerm ? (
-                                <span className="text-[11px] font-medium text-[#86868b] whitespace-nowrap">
-                                    Nenhuma mensagem encontrada
-                                </span>
+                                <span className="chat-search-empty text-[11px] whitespace-nowrap">Nenhuma mensagem encontrada</span>
                             ) : null}
-                            <button onClick={() => { setSearchOpen(false); setSearchTerm(''); }} className="text-[12px] font-medium text-[var(--primary-main)] hover:underline whitespace-nowrap transition-colors">
+                            <button onClick={() => { setSearchOpen(false); setSearchTerm(''); }} className="chat-search-close-btn text-xs whitespace-nowrap">
                                 Fechar
                             </button>
                         </div>
-                    )}
+                    </div>
 
                     {pinnedMessage && (
-                        <div className="px-4 pt-3 shrink-0">
-                            <div className="relative bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/40 dark:to-amber-900/20 rounded-lg border border-amber-200/80 dark:border-amber-700/50 p-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] flex items-start gap-3">
-                                <div className="shrink-0 mt-0.5 w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-500 dark:from-amber-600 dark:to-amber-700 flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300 dark:border-amber-500">
+                        <div className="chat-pinned-wrapper px-4 pt-3 shrink-0">
+                            <div className="chat-pinned-message relative p-2.5 flex items-start gap-3">
+                                <div className="chat-pinned-icon shrink-0 mt-0.5 w-6 h-6 rounded-full flex items-center justify-center">
                                     <FaThumbtack className="w-2.5 h-2.5 text-white" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-0.5">
+                                <div className="chat-pinned-content flex-1 min-w-0">
+                                    <div className="chat-pinned-header flex items-center justify-between mb-0.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[11px] font-bold text-amber-900 dark:text-amber-200">{pinnedMessage.sender}</span>
+                                            <span className="chat-pinned-author text-[11px]">{pinnedMessage.sender}</span>
                                         </div>
-                                        <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full hover:bg-amber-100 dark:hover:bg-amber-800/50 transition-colors shrink-0">
-                                            <FaTimes size={10} className="text-amber-700/50 dark:text-amber-400/50 hover:text-amber-700 dark:hover:text-amber-300" />
+                                        <button onClick={() => setPinnedMessage(null)} className="chat-pinned-close p-0.5 rounded-full shrink-0 flex items-center justify-center">
+                                            <FaTimes size={10} />
                                         </button>
                                     </div>
-                                    <p className="text-[12.5px] text-amber-800 dark:text-amber-100 leading-snug">{pinnedMessage.text}</p>
+                                    <p className="chat-pinned-text text-[12.5px] leading-[1.375]">{pinnedMessage.text}</p>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    <div ref={chatContainerRef} className="flex-grow overflow-y-auto space-y-0.5 mb-2 pr-2 pt-2 chat-container">
+                    <div ref={chatContainerRef} className="chat-messages-area chat-container flex-grow overflow-y-auto pt-2 pr-2 mb-2 space-y-0.5">
 
                         {messages.length === 0 && !showFavoritesOnly && (
-                            <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4 animate-fade-in-up opacity-80">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-b from-gray-50 to-gray-200 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)] flex items-center justify-center mb-4 text-[#86868b]">
+                            <div className="chat-messages-empty animate-fade-in-up flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4">
+                                <div className="chat-messages-empty-icon w-16 h-16 rounded-full flex items-center justify-center mb-4">
                                     <FaComments size={24} className="drop-shadow-sm text-[#0071e3]/60" />
                                 </div>
-                                <h3 className="text-[15px] font-semibold text-[#1d1d1f] mb-1">Nenhuma mensagem ainda</h3>
-                                <p className="text-[13px] text-[#86868b]">Seja o primeiro a conversar nesta sala.</p>
+                                <h3 className="chat-messages-empty-title text-[15px] font-semibold mb-1">Nenhuma mensagem ainda</h3>
+                                <p className="chat-messages-empty-desc text-[13px]">Seja o primeiro a conversar nesta sala.</p>
                             </div>
                         )}
 
                         {messages.map((msg, index) => {
                             if (showFavoritesOnly && !msg.isFavorite) return null;
-                            const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.index === index;
+                            const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.id === msg.messageId;
                             return (
-                                <MessageBubble
-                                    key={index}
-                                    msg={msg}
-                                    innerRef={(el) => messageRefs.current[index] = el}
-                                    onAvatarClick={setSelectedUser}
-                                    onImageClick={setSelectedImage}
-                                    onToggleFavorite={() => toggleFavorite(index)}
-                                    onDeleteMessage={deleteMessage}
-                                    onEditClick={handleEditClick}
-                                    onToggleLike={toggleLike}
-                                    currentUserId={currentUserId}
-                                    mockRoles={mockRoles}
-                                    onReportClick={setReportModalData}
-                                    searchTerm={normalizedSearchTerm}
-                                    isCurrentSearch={isCurrentSearch}
-                                />
+                                <div key={index} className="chat-message-enter">
+                                    <MessageBubble
+                                        msg={msg}
+                                        innerRef={(el) => messageRefs.current[msg.messageId] = el}
+                                        onAvatarClick={setSelectedUser}
+                                        onImageClick={setSelectedImage}
+                                        onToggleFavorite={() => toggleFavorite(index)}
+                                        onDeleteMessage={deleteMessage}
+                                        onEditClick={handleEditClick}
+                                        onToggleLike={toggleLike}
+                                        currentUserId={currentUserId}
+                                        mockRoles={mockRoles}
+                                        onReportClick={setReportModalData}
+                                        searchTerm={normalizedSearchTerm}
+                                        isCurrentSearch={isCurrentSearch}
+                                    />
+                                </div>
                             );
                         })}
 
                         {showFavoritesOnly && messages.filter(msg => msg.isFavorite).length === 0 && (
-                            <div className="text-center text-[#86868b] mt-10 text-[14px]">
+                            <div className="chat-messages-empty-fav text-center mt-10 text-sm">
                                 Você ainda não tem nenhuma mensagem favorita nesta sala.
                             </div>
                         )}
 
                     </div>
 
-                    <footer className="shrink-0 relative p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-t border-[#d2d2d7] dark:border-white/5">
+                    <footer className="chat-input-footer shrink-0 relative p-3">
                         {imagePreview && !editingMessageId && (
-                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 flex items-center gap-2 z-10 animate-fade-in-up shadow-lg">
-                                <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-[8px]" />
-                                <button type="button" onClick={clearImagePreview} className="p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                            <div className="chat-input-panel absolute left-0 bottom-[calc(100%+10px)] p-2 flex items-center gap-2 z-10 skeuo-panel animate-fade-in-up">
+                                <img src={imagePreview} alt="Preview" className="chat-input-preview-image h-16 w-16 object-cover" />
+                                <button type="button" onClick={clearImagePreview} className="chat-input-preview-remove p-1.5 flex items-center justify-center">
                                     <FaTimes size={12} />
                                 </button>
                             </div>
                         )}
                         {editingMessageId && (
-                            <div className="absolute bottom-[calc(100%+10px)] left-0 skeuo-panel p-2 px-4 flex items-center gap-2 z-10 animate-fade-in-up text-[#86868b] text-sm font-medium shadow-lg">
+                            <div className="chat-input-panel chat-input-editing-bar absolute left-0 bottom-[calc(100%+10px)] p-2 flex items-center gap-2 z-10 px-4 text-sm skeuo-panel animate-fade-in-up">
                                 <FaPencilAlt /> Editando mensagem...
-                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="ml-2 p-1.5 bg-gray-200 rounded-full hover:bg-gray-300 transition text-[#1d1d1f]">
+                                <button type="button" onClick={() => { setEditingMessageId(null); setCurrentMessage(""); setImagePreview(null); }} className="chat-input-cancel-edit-btn p-1.5 flex items-center justify-center ml-2">
                                     <FaTimes size={12} />
                                 </button>
                             </div>
                         )}
-                        <form onSubmit={sendMessage} className="flex gap-2">
-                            <label className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-[#86868b] dark:text-slate-300 border border-gray-200 dark:border-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] hover:from-gray-50 hover:to-gray-200 hover:text-[#1d1d1f] dark:hover:from-slate-600 dark:hover:to-slate-700 dark:hover:text-white cursor-pointer transition-all shrink-0">
+                        <form onSubmit={sendMessage} className="chat-input-form flex gap-2">
+                            <label className="chat-input-attach-btn w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer">
                                 <FaCamera size={14} className="drop-shadow-sm" />
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                             </label>
                             <input
                                 type="text"
-                                className="skeuo-input w-full px-4 py-2 flex-grow"
+                                className="chat-input-field skeuo-input w-full px-4 py-2 flex-grow"
                                 placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
                                 value={currentMessage}
                                 onChange={(e) => setCurrentMessage(e.target.value)}
@@ -922,7 +1034,7 @@ const Chat = () => {
                             <button
                                 type="submit"
                                 disabled={!currentMessage.trim() && !imagePreview}
-                                className={`w-10 h-10 shrink-0 rounded-full shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center transition-all ${(currentMessage.trim() || imagePreview) ? 'hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed grayscale'}`}
+                                className="chat-input-send-btn w-10 h-10 shrink-0 flex items-center justify-center"
                                 title={editingMessageId ? "Salvar Edição" : "Enviar Mensagem"}
                             >
                                 <FaPaperPlane size={12} className="ml-[-2px]" />
@@ -930,7 +1042,14 @@ const Chat = () => {
                         </form>
                     </footer>
                 </main>
-                <MembersSidebar onlineCount={onlineUsers} mockRoles={mockRoles} />
+                <MembersSidebar
+                    roomId={room}
+                    currentUserId={currentUserId}
+                    onlineUsers={onlinePresence.users}
+                    onlineCount={onlinePresence.count}
+                    isMobileOpen={isMobileMembersOpen}
+                    onClose={() => setIsMobileMembersOpen(false)}
+                />
             </div>
 
             {privateInvite && (

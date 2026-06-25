@@ -1,7 +1,13 @@
 import io from 'socket.io-client';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-export const socket = io(BACKEND_URL);
+import { BACKEND_URL } from './services/api';
+
+export const socket = io(BACKEND_URL, {
+  auth: (cb) => {
+    const token = localStorage.getItem('token');
+    cb({ token });
+  }
+});
 
 socket.on('connect', () => {
     try {
