@@ -112,7 +112,7 @@ FRONTEND_URL=http://localhost:5173
 
 ## Link do deploy
 
-* **Frontend:** [https://web-chat-project-web2.vercel.app](skyripple-project-web2.vercel.app)
+* **Frontend:** [https://web-chat-project-web2.vercel.app](https://skyripple-project-web2.vercel.app/)
 * **Backend/API:** [https://webchat-9vqr.onrender.com](https://webchat-9vqr.onrender.com)
 
 ## Imagens / Screenshots
