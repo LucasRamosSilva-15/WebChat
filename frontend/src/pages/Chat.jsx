@@ -584,11 +584,21 @@ const Chat = () => {
             }));
         });
 
+        socket.on("message_error", (data) => {
+            alert(`Erro no Chat: ${data.error}`);
+        });
+
+        socket.on("rate_limit_error", (data) => {
+            alert(`Aviso: ${data.error}`);
+        });
+
         return () => {
             socket.emit("leaveRoom", { roomId: room, userId: localStorage.getItem('chat_uniqueUserId') || currentUserId });
             socket.off("roomPresenceUpdated");
             socket.off("receive_message");
             socket.off("message_read");
+            socket.off("message_error");
+            socket.off("rate_limit_error");
             socket.off("room_full_error");
             socket.off("message_deleted");
             socket.off("message_edited");

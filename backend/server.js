@@ -172,8 +172,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', async (data) => {
+    console.log('[DEBUG] Recebido send_message:', data);
     const { room, userId, userName, content, imageUrl } = data;
-    if (!room || (!content && !imageUrl)) return;
+    if (!room || (!content && !imageUrl)) {
+      console.log('[DEBUG] send_message ignorado por falta de dados (room, content ou imageUrl)');
+      return;
+    }
 
     const now = Date.now();
     const lastMessageTime = messageRateLimits.get(userId) || 0;
@@ -196,11 +200,18 @@ io.on('connection', (socket) => {
         .select()
         .single();
 
-      if (!error && savedMessage) {
+      if (error) {
+        console.error('Erro do Supabase ao salvar mensagem:', error);
+        socket.emit('message_error', { error: `Erro ao salvar no banco de dados: ${error.message}` });
+        return;
+      }
+
+      if (savedMessage) {
         io.to(room).emit('receive_message', savedMessage);
       }
     } catch (err) {
       console.error('Falha ao processar mensagem via WebSocket:', err);
+      socket.emit('message_error', { error: `Falha interna no servidor: ${err.message || 'Erro inesperado'}` });
     }
   });
 

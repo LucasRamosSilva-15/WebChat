@@ -4,9 +4,13 @@ import { BACKEND_URL } from './services/api';
 
 export const socket = io(BACKEND_URL, {
   auth: (cb) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('chat_token');
     cb({ token });
   }
+});
+
+socket.on('connect_error', (err) => {
+    console.error('Falha na conexão do WebSocket:', err.message);
 });
 
 socket.on('connect', () => {
