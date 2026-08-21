@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { apiRequest, setAuthToken } from '../services/api';
+import { socket } from '../socket';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(null);
-        
+
         if (email.trim() !== "" && password.trim() !== "") {
             setLoading(true);
             try {
@@ -26,7 +27,10 @@ const Login = () => {
                 localStorage.setItem('chat_isLoggedIn', 'true');
                 localStorage.setItem('chat_displayName', data.user.name);
                 localStorage.setItem('chat_uniqueUserId', data.user.id);
-                
+
+                socket.disconnect();
+                socket.connect();
+
                 window.dispatchEvent(new Event('profileUpdated'));
                 navigate('/rooms');
             } catch (err) {
