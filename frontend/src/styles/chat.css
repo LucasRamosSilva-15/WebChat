@@ -548,10 +548,7 @@
     html.dark .message-bubble-menu-divider {
         background-color: rgba(255, 255, 255, 0.08);
     }
-    .message-bubble-actions:hover .message-bubble-menu {
-        opacity: 1;
-        visibility: visible;
-    }
+    
     .message-bubble-actions-own .message-bubble-menu {
         right: 100%;
         margin-right: 0.5rem;
@@ -792,4 +789,58 @@
         border-radius: 0.125rem;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
+    
+    
+    .message-bubble-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+
+    .message-bubble-wrapper:hover {
+        z-index: 50;
+    }
+
+
+    .message-bubble-row {
+        position: relative;
+        z-index: 1;
+    }
+
+    .message-bubble-row:hover {
+        z-index: 50;
+    }
+
+
+    .message-bubble-actions-other .message-bubble-menu::after {
+        right: auto;
+        left: -1rem;
+    }
+
+    .message-bubble-row:hover,
+    .message-bubble-wrapper:hover,
+    .message-bubble-card:hover,
+    .message-bubble-actions:hover {
+        z-index: 9999;
+    }
+    .message-bubble-menu {
+        z-index: 10000;
+    }
+
+
+    .message-bubble-menu-item:first-child {
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+    .message-bubble-menu-item:last-child {
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+}
+
+
+.message-bubble-menu-open {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
 }

@@ -44,7 +44,7 @@ const formatMessageTime = (timeStr) => {
     return timeStr;
 };
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId }) => {
     const msgTime = formatMessageTime(msg.time);
 
     let canDelete = false;
@@ -60,15 +60,15 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     if (msg.isMe) {
         return (
-            <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-own justify-end group animate-fade-in-up">
+            <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-own justify-end group animate-fade-in-up" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
                 <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-own items-end group/msg">
                     <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-own skeuo-bubble-sent ${matchClass}`}>
                         <div className="message-bubble-actions message-bubble-actions-own">
-                            <button className="message-bubble-more-btn p-1 flex items-center justify-center">
+                            <button onClick={() => setOpenMenuId(openMenuId === msg.messageId ? null : msg.messageId)} className="message-bubble-more-btn p-1 flex items-center justify-center">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
                             </button>
 
-                            <div className="message-bubble-menu flex flex-col overflow-hidden">
+                            <div className={`message-bubble-menu flex flex-col ${openMenuId === msg.messageId ? 'message-bubble-menu-open' : ''}`}>
                                 <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                     <FaStar size={10} className={`message-favorite-menu-icon ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                                 </button>
@@ -116,7 +116,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
     }
 
     return (
-        <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-other justify-start gap-2 group animate-fade-in-up">
+        <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-other justify-start gap-2 group animate-fade-in-up" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
             <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="message-avatar-interactive mt-1" />
             <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-other items-start group/msg">
                 <span className="message-bubble-author text-[11.5px] flex items-center gap-1.5 mb-0.5 ml-1 leading-none">
@@ -134,11 +134,11 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                 </span>
                 <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-other skeuo-bubble-received ${matchClass}`}>
                     <div className="message-bubble-actions message-bubble-actions-other">
-                        <button className="message-bubble-more-btn p-1 flex items-center justify-center">
+                        <button onClick={() => setOpenMenuId(openMenuId === msg.messageId ? null : msg.messageId)} className="message-bubble-more-btn p-1 flex items-center justify-center">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
                         </button>
 
-                        <div className="message-bubble-menu flex flex-col overflow-hidden">
+                        <div className={`message-bubble-menu flex flex-col ${openMenuId === msg.messageId ? 'message-bubble-menu-open' : ''}`}>
                             <button onClick={onToggleFavorite} className="message-bubble-menu-item px-3 py-2 text-left text-xs whitespace-nowrap flex items-center gap-2">
                                 <FaStar size={10} className={`message-favorite-menu-icon drop-shadow-sm ${msg.isFavorite ? 'message-favorite-menu-icon-active' : ''}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
                             </button>
@@ -203,6 +203,7 @@ const Chat = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchError, setSearchError] = useState("");
+    const [openMenuId, setOpenMenuId] = useState(null);
 
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
@@ -235,6 +236,18 @@ const Chat = () => {
     useEffect(() => {
         setCurrentSearchIndex(0);
     }, [normalizedSearchTerm, messages.length]);
+
+    // Close menu on outside click
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest('.message-bubble-actions')) {
+                setOpenMenuId(null);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
 
     useEffect(() => {
         if (searchOpen && searchResults.length > 0) {
@@ -984,7 +997,7 @@ const Chat = () => {
                             if (showFavoritesOnly && !msg.isFavorite) return null;
                             const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.id === msg.messageId;
                             return (
-                                <div key={index} className="chat-message-enter">
+                                <div key={index} className="chat-message-enter" style={{ zIndex: openMenuId === msg.messageId ? 9999 : 1, position: 'relative' }}>
                                     <MessageBubble
                                         msg={msg}
                                         innerRef={(el) => messageRefs.current[msg.messageId] = el}
@@ -999,6 +1012,8 @@ const Chat = () => {
                                         onReportClick={setReportModalData}
                                         searchTerm={normalizedSearchTerm}
                                         isCurrentSearch={isCurrentSearch}
+                                        openMenuId={openMenuId}
+                                        setOpenMenuId={setOpenMenuId}
                                     />
                                 </div>
                             );

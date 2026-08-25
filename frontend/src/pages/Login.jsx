@@ -69,6 +69,12 @@ const Login = () => {
                         {loading ? 'Entrando...' : 'Continuar'}
                     </button>
 
+                    <div className="text-center mt-6">
+                        <Link to="#" className="auth-link text-sm">
+                            Esqueceu a senha? ›
+                        </Link>
+                    </div>
+
                     <div className="auth-divider flex items-center mt-8 mb-6">
                         <div className="auth-divider-line flex-1"></div>
                         <span className="auth-divider-text px-4 text-xs uppercase">ou continue com</span>
