@@ -63,8 +63,8 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
             <div ref={innerRef} className="message-bubble-row px-3 py-0.5 flex message-bubble-row-own justify-end group animate-fade-in-up" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
                 <div className="message-bubble-wrapper flex flex-col max-w-[80%] message-bubble-wrapper-own items-end group/msg">
                     <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-own skeuo-bubble-sent ${matchClass}`}>
-                        <div className="message-bubble-actions message-bubble-actions-own">
-                            <button onClick={() => setOpenMenuId(openMenuId === msg.messageId ? null : msg.messageId)} className="message-bubble-more-btn p-1 flex items-center justify-center">
+                        <div onMouseEnter={() => setOpenMenuId(msg.messageId)} onMouseLeave={() => setOpenMenuId(null)} className="message-bubble-actions message-bubble-actions-own">
+                            <button className="message-bubble-more-btn p-1 flex items-center justify-center">
                                 <FaEllipsisV size={12} className="drop-shadow-sm" />
                             </button>
 
@@ -133,8 +133,8 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     )}
                 </span>
                 <div className={`message-bubble-card px-3 py-1.5 flex flex-col relative message-bubble-card-other skeuo-bubble-received ${matchClass}`}>
-                    <div className="message-bubble-actions message-bubble-actions-other">
-                        <button onClick={() => setOpenMenuId(openMenuId === msg.messageId ? null : msg.messageId)} className="message-bubble-more-btn p-1 flex items-center justify-center">
+                    <div onMouseEnter={() => setOpenMenuId(msg.messageId)} onMouseLeave={() => setOpenMenuId(null)} className="message-bubble-actions message-bubble-actions-other">
+                        <button className="message-bubble-more-btn p-1 flex items-center justify-center">
                             <FaEllipsisV size={12} className="drop-shadow-sm" />
                         </button>
 
