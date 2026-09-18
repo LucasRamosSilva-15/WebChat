@@ -23,6 +23,35 @@ const authLimiter = rateLimit({
   message: { error: 'Muitas tentativas. Tente novamente mais tarde.' }
 });
 
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Muitas tentativas de admin. Bloqueado por 15 minutos.' }
+});
+
+router.post('/admin/auth', adminLimiter, (req, res) => {
+  const { password } = req.body;
+  if (!password) {
+    return res.status(400).json({ error: 'Senha é obrigatória' });
+  }
+
+  const secret = process.env.ADMIN_SECRET_KEY;
+  if (!secret) {
+    return res.status(500).json({ error: 'Servidor não configurado para admin' });
+  }
+
+  if (password === secret) {
+    const token = jwt.sign(
+      { id: 'admin-system', role: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+    res.json({ token, role: 'admin' });
+  } else {
+    res.status(401).json({ error: 'Senha de administrador incorreta' });
+  }
+});
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 

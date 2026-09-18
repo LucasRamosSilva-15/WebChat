@@ -1,5 +1,10 @@
 # SkyRipple
 
+<div align="center">
+  <img src="frontend/public/logo1_grande_true.svg" width="256" height="256" alt="SkyRipple Logo">
+</div>
+
+
 ![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.16.1-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
