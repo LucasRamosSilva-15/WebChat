@@ -168,6 +168,9 @@ const Navbar = () => {
                                     <Link to="/about" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
                                         <FaInfoCircle className="navbar-dropdown-icon" size={16} /> Sobre
                                     </Link>
+                                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
+                                        <FaShieldAlt className="navbar-dropdown-icon text-red-500" size={16} /> Área Admin
+                                    </Link>
                                     {isLoggedIn && (
                                         <button onClick={() => {
                                             localStorage.removeItem('chat_isLoggedIn');
@@ -197,7 +200,7 @@ const Navbar = () => {
                                             className="navbar-profile-name"
                                             title={profileName}
                                         >
-                                            {profileName} {isAdmin && <span className="ml-1 inline-flex items-center gap-1 bg-red-500/10 text-red-600 border border-red-500/20 text-[9px] px-1.5 py-[1px] rounded font-bold uppercase"><FaShieldAlt size={8}/> Admin</span>}
+                                            {profileName} {isAdmin && <span className="ml-1 inline-flex items-center gap-1 bg-red-500/10 text-red-600 border border-red-500/20 text-[9px] px-1.5 py-[1px] rounded font-bold uppercase"><FaShieldAlt size={8} /> Admin</span>}
                                         </span>
                                         <span className="navbar-profile-status">Online</span>
                                     </div>
@@ -221,7 +224,7 @@ const Navbar = () => {
                                                 alert('Você saiu do modo Administrador.');
                                                 if (window.location.pathname.includes('/admin') && window.location.pathname !== '/admin-login') window.location.href = '/';
                                             }} className="btn-secondary-glossy navbar-profile-edit-btn mt-2 !text-red-600 flex items-center justify-center gap-2">
-                                                <FaShieldAlt size={12}/> Sair do Admin
+                                                <FaShieldAlt size={12} /> Sair do Admin
                                             </button>
                                         )}
                                     </div>
