@@ -16,37 +16,52 @@ const Admin = () => {
     const [filterSeverity, setFilterSeverity] = useState('Todas');
     const [filterTime, setFilterTime] = useState('Todos');
 
-    const today = new Date();
-    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-    const lastWeek = new Date(today); lastWeek.setDate(lastWeek.getDate() - 8);
+    const [adminData, setAdminData] = useState({ salas: [], usuarios: [], denuncias: [], banimentos: [], feedbacks: [] });
+    const [loading, setLoading] = useState(false);
 
-    const mockData = {
-        salas: [
-            { id: 'sala-1', type: 'sala', name: 'Chat Global', user: '@admin', usersCount: 156, category: 'Geral', status: 'Ativa', date: today.toISOString() },
-            { id: 'sala-2', type: 'sala', name: 'Gamers BR', user: '@joao_dev', usersCount: 42, category: 'Jogos', status: 'Ativa', date: yesterday.toISOString() },
-            { id: 'sala-3', type: 'sala', name: 'Música & Lofi', user: '@dj_night', usersCount: 89, category: 'Música', status: 'Ativa', date: lastWeek.toISOString() },
-            { id: 'sala-4', type: 'sala', name: 'Clube da Luta (NSFW)', user: '@troll_master', usersCount: 12, category: 'Sem Regras', status: 'Sinalizada', date: yesterday.toISOString() },
-        ],
-        usuarios: [
-            { id: 'usr-1', type: 'usuario', user: 'Admin', email: 'admin@skyripple.com', role: 'admin', status: 'Ativo', date: lastWeek.toISOString() },
-            { id: 'usr-2', type: 'usuario', user: '@joao_dev', email: 'joao@mail.com', role: 'user', status: 'Ativo', date: today.toISOString() },
-            { id: 'usr-3', type: 'usuario', user: '@troll_master', email: 'troll@darkweb.com', role: 'user', status: 'Sinalizado', date: yesterday.toISOString() },
-            { id: 'usr-4', type: 'usuario', user: '@hackr_boy', email: 'hackr@mail.com', role: 'user', status: 'Banido', date: lastWeek.toISOString() },
-        ],
-        denuncias: [
-            { id: 1, type: 'denuncia', user: '@toxic_user99', reason: 'Linguagem ofensiva', severity: 'Alta', status: 'Pendente', message: 'Seu lixo, vai aprender a jogar! Vocês são todos uns perdedores hahahaha', images: ['https://picsum.photos/seed/evid1/800/600', 'https://picsum.photos/seed/evid2/800/600', 'https://picsum.photos/seed/evid3/800/600'], date: today.toISOString() },
-            { id: 2, type: 'denuncia', user: '@spambot_01', reason: 'Spam excessivo', severity: 'Média', status: 'Em análise', message: 'Ganhe 10.000 moedas grátis acessando www.scamsite.com agora mesmo!!!', date: yesterday.toISOString() },
-            { id: 3, type: 'denuncia', user: '@troll_master', reason: 'Assédio', severity: 'Alta', status: 'Pendente', message: 'Eu vou descobrir onde você mora, seu inútil.', date: lastWeek.toISOString() }
-        ],
-        banimentos: [
-            { id: 4, type: 'banimento', user: '@hackr_boy', reason: 'Uso de exploit', severity: 'Extrema', status: 'Ativo', date: lastWeek.toISOString() },
-        ],
-        feedbacks: [
-            { id: 6, type: 'feedback', user: '@joao_dev', reason: 'Sugestão de cor', severity: 'Baixa', status: 'Lido', date: today.toISOString() },
-        ]
-    };
+    React.useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const apiBaseUrl = 'http://localhost:3001/api';
 
-    const currentData = mockData[activeTab] || [];
+            let endpoint = activeTab;
+            if (activeTab === 'denuncias') endpoint = 'reports';
+            if (activeTab === 'usuarios') endpoint = 'users';
+            if (activeTab === 'salas') endpoint = 'rooms';
+            if (activeTab === 'feedbacks') endpoint = 'feedbacks';
+            if (activeTab === 'banimentos') endpoint = 'users';
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/admin/${endpoint}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    let data = await response.json();
+
+                    if (activeTab === 'banimentos') {
+                        data = data.filter(u => u.status === 'Banido').map(u => ({ ...u, user: u.name, type: 'banimento', date: u.created_at }));
+                    } else if (activeTab === 'usuarios') {
+                        data = data.map(u => ({ ...u, user: u.name, type: 'usuario', date: u.created_at }));
+                    } else if (activeTab === 'denuncias') {
+                        data = data.map(d => ({ ...d, date: d.created_at, type: 'denuncia' }));
+                    } else if (activeTab === 'feedbacks') {
+                        data = data.map(f => ({ ...f, date: f.created_at, type: 'feedback' }));
+                    } else if (activeTab === 'salas') {
+                        data = data.map(s => ({ ...s, date: s.created_at, usersCount: 0, type: 'sala' }));
+                    }
+
+                    setAdminData(prev => ({ ...prev, [activeTab]: data }));
+                }
+            } catch (err) {
+                console.error("Erro ao buscar dados:", err);
+            }
+            setLoading(false);
+        };
+        fetchData();
+    }, [activeTab]);
+
+    const currentData = adminData[activeTab] || [];
     let filteredData = currentData.filter(item => {
         const nameMatch = item.user && item.user.toLowerCase().includes(searchTerm.toLowerCase());
         const emailMatch = item.email && item.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -405,7 +420,6 @@ const Admin = () => {
                                 </div>
                             </div>
 
-                            {/* Detalhes de Denúncias/Banimentos/Feedbacks */}
                             {(selectedItem.type === 'denuncia' || selectedItem.type === 'banimento' || selectedItem.type === 'feedback') && (
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
                                     <div className="p-3 admin-details-box rounded-[10px]">
@@ -425,7 +439,6 @@ const Admin = () => {
                                 </div>
                             )}
 
-                            {/* Detalhes de Usuários */}
                             {selectedItem.type === 'usuario' && (
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
                                     <div className="p-3 admin-details-box rounded-[10px]">
@@ -443,7 +456,6 @@ const Admin = () => {
                                 </div>
                             )}
 
-                            {/* Detalhes de Salas */}
                             {selectedItem.type === 'sala' && (
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
                                     <div className="p-3 admin-details-box rounded-[10px]">
@@ -461,9 +473,8 @@ const Admin = () => {
                                 </div>
                             )}
 
-                            {/* Botões de Ação Específicos por Tipo */}
                             <div className="mt-6 flex flex-col lg:flex-row justify-between items-center gap-3">
-                                
+
                                 <div className="flex w-full lg:w-auto items-center gap-2">
                                     {(selectedItem.type === 'denuncia' || selectedItem.type === 'feedback') && (
                                         <>
