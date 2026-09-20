@@ -62,22 +62,63 @@ const Feedback = () => {
         setFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!isValid || isSubmitting) return;
 
         setIsSubmitting(true);
         setSuccess(false);
 
-        setTimeout(() => {
-            setIsSubmitting(false);
-            setSuccess(true);
-            setTitle('');
-            setDetails('');
-            setFiles([]);
-            setSelectedType('sugestao');
+        try {
+            const token = localStorage.getItem('chat_token');
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-            setTimeout(() => setSuccess(false), 5000);
-        }, 1500);
+            const severityMap = {
+                'erro': 'Alta',
+                'sugestao': 'Média',
+                'elogio': 'Baixa',
+                'ideia': 'Baixa'
+            };
+
+            const toBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+            
+            const base64Images = await Promise.all(files.map(f => toBase64(f)));
+
+            const response = await fetch(`${apiUrl}/feedbacks`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    reason: selectedType,
+                    message: `Título: ${title}\n\nDetalhes: ${details}`,
+                    severity: severityMap[selectedType] || 'Baixa',
+                    images: base64Images
+                })
+            });
+
+            if (response.ok) {
+                setSuccess(true);
+                setTitle('');
+                setDetails('');
+                setFiles([]);
+                setSelectedType('sugestao');
+                setTimeout(() => setSuccess(false), 5000);
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Erro ao enviar feedback.');
+            }
+        } catch (err) {
+            console.error('Erro ao enviar feedback:', err);
+            alert('Erro de conexão ao enviar feedback.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (isLoading) {
@@ -90,7 +131,7 @@ const Feedback = () => {
 
                 <div className="mb-8 animate-fade-in-up-1">
                     <h1 className="hero-title text-3xl md:text-4xl font-bold feedback-hero-title mb-3">
-                        Envie seu feedback (Em desenvolvimento)
+                        Envie seu feedback
                     </h1>
                     <p className="feedback-subtitle max-w-[600px] text-[15px] leading-relaxed font-medium">
                         Sua opinião ajuda a deixar o SkyRipple melhor. Conte-nos o que você achou, o que podemos melhorar ou qualquer problema que encontrou.

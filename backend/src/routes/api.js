@@ -547,4 +547,26 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 });
 
+
+router.post('/feedbacks', authMiddleware, async (req, res) => {
+  const { reason, message, severity, images } = req.body;
+  const user_id = req.userId;
+
+  if (!reason) {
+    return res.status(400).json({ error: 'Motivo (reason) é obrigatório.' });
+  }
+
+  const { data, error } = await supabase
+    .from('feedbacks')
+    .insert([{ user_id, reason, message, severity: severity || 'Baixa', images: images || [] }])
+    .select();
+
+  if (error) {
+    console.error('Erro ao salvar feedback:', error);
+    return res.status(500).json({ error: 'Erro interno ao salvar feedback' });
+  }
+
+  res.status(201).json(data[0]);
+});
+
 module.exports = router;

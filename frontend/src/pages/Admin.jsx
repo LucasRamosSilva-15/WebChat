@@ -658,8 +658,15 @@ const Admin = () => {
                                 <FaImage className="text-purple-500" size={16} />
                             </div>
                             <div>
-                                <h3 className="text-[18px] font-bold admin-hero-title">Evidências em Imagem</h3>
-                                <p className="text-[12px] admin-text-muted">Anexadas na denúncia contra <span className="font-bold">{selectedItem.user}</span></p>
+                                <h3 className="text-[18px] font-bold admin-hero-title">
+                                    {selectedItem.type === 'feedback' ? 'Imagens Anexadas' : 'Evidências em Imagem'}
+                                </h3>
+                                <p className="text-[12px] admin-text-muted">
+                                    {selectedItem.type === 'feedback' 
+                                        ? <span>Anexadas no feedback enviado por <span className="font-bold">{selectedItem.user || 'Anônimo'}</span></span>
+                                        : <span>Anexadas na denúncia contra <span className="font-bold">{selectedItem.user || 'Desconhecido'}</span></span>
+                                    }
+                                </p>
                             </div>
                         </div>
 
@@ -683,7 +690,9 @@ const Admin = () => {
                             </div>
                         ) : (
                             <div className="w-full h-[40vh] flex items-center justify-center admin-media-empty rounded-[12px]">
-                                <p className="text-[14px] admin-text-muted">Nenhuma imagem anexada a esta denúncia.</p>
+                                <p className="text-[14px] admin-text-muted">
+                                    {selectedItem.type === 'feedback' ? 'Nenhuma imagem anexada a este feedback.' : 'Nenhuma imagem anexada a esta denúncia.'}
+                                </p>
                             </div>
                         )}
 
