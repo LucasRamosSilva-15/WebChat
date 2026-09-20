@@ -1,27 +1,23 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+const adminAuth = (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'Acesso negado: Token não fornecido.' });
+        }
 
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Acesso negado. Token de admin não fornecido.' });
-  }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
 
-  const parts = authHeader.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    return res.status(401).json({ error: 'Erro no formato do token.' });
-  }
+        if (decoded.role !== 'admin') {
+            return res.status(403).json({ error: 'Acesso restrito para administradores.' });
+        }
 
-  const token = parts[1];
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ error: 'Acesso negado. Você não é um administrador.' });
+        req.admin = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Token inválido ou expirado.' });
     }
-    req.adminId = decoded.id;
-    return next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Token inválido ou expirado.' });
-  }
 };
+
+module.exports = adminAuth;

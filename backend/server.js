@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const apiRoutes = require('./src/routes/api');
+const adminRoutes = require('./src/routes/admin');
 const { createClient } = require('@supabase/supabase-js');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
@@ -59,6 +60,7 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api', apiRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.json({ status: 'online', service: 'WebChat MVP API' });
