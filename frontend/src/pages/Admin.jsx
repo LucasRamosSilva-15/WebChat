@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     FaDownload, FaGavel, FaExclamationCircle, FaUserSlash, FaBan,
     FaCommentDots, FaSearch, FaEye, FaHammer, FaBullhorn,
-    FaExclamationTriangle, FaMousePointer, FaInfoCircle, FaChartLine, FaUser, FaImage, FaTimes
+    FaExclamationTriangle, FaMousePointer, FaInfoCircle, FaChartLine, FaUser, FaImage, FaTimes, FaUsers, FaDoorOpen, FaTrash, FaShieldAlt
 } from 'react-icons/fa';
 import '../styles/admin.css';
 
@@ -21,24 +21,38 @@ const Admin = () => {
     const lastWeek = new Date(today); lastWeek.setDate(lastWeek.getDate() - 8);
 
     const mockData = {
+        salas: [
+            { id: 'sala-1', type: 'sala', name: 'Chat Global', user: '@admin', usersCount: 156, category: 'Geral', status: 'Ativa', date: today.toISOString() },
+            { id: 'sala-2', type: 'sala', name: 'Gamers BR', user: '@joao_dev', usersCount: 42, category: 'Jogos', status: 'Ativa', date: yesterday.toISOString() },
+            { id: 'sala-3', type: 'sala', name: 'Música & Lofi', user: '@dj_night', usersCount: 89, category: 'Música', status: 'Ativa', date: lastWeek.toISOString() },
+            { id: 'sala-4', type: 'sala', name: 'Clube da Luta (NSFW)', user: '@troll_master', usersCount: 12, category: 'Sem Regras', status: 'Sinalizada', date: yesterday.toISOString() },
+        ],
+        usuarios: [
+            { id: 'usr-1', type: 'usuario', user: 'Admin', email: 'admin@skyripple.com', role: 'admin', status: 'Ativo', date: lastWeek.toISOString() },
+            { id: 'usr-2', type: 'usuario', user: '@joao_dev', email: 'joao@mail.com', role: 'user', status: 'Ativo', date: today.toISOString() },
+            { id: 'usr-3', type: 'usuario', user: '@troll_master', email: 'troll@darkweb.com', role: 'user', status: 'Sinalizado', date: yesterday.toISOString() },
+            { id: 'usr-4', type: 'usuario', user: '@hackr_boy', email: 'hackr@mail.com', role: 'user', status: 'Banido', date: lastWeek.toISOString() },
+        ],
         denuncias: [
             { id: 1, type: 'denuncia', user: '@toxic_user99', reason: 'Linguagem ofensiva', severity: 'Alta', status: 'Pendente', message: 'Seu lixo, vai aprender a jogar! Vocês são todos uns perdedores hahahaha', images: ['https://picsum.photos/seed/evid1/800/600', 'https://picsum.photos/seed/evid2/800/600', 'https://picsum.photos/seed/evid3/800/600'], date: today.toISOString() },
             { id: 2, type: 'denuncia', user: '@spambot_01', reason: 'Spam excessivo', severity: 'Média', status: 'Em análise', message: 'Ganhe 10.000 moedas grátis acessando www.scamsite.com agora mesmo!!!', date: yesterday.toISOString() },
             { id: 3, type: 'denuncia', user: '@troll_master', reason: 'Assédio', severity: 'Alta', status: 'Pendente', message: 'Eu vou descobrir onde você mora, seu inútil.', date: lastWeek.toISOString() }
         ],
         banimentos: [
-            { id: 4, type: 'banimento', user: '@hackr_boy', reason: 'Uso de exploit', severity: 'Extrema', status: 'Ativo' },
-        ],
-        usuarios: [
-            { id: 5, type: 'usuario', user: '@user123', reason: '-', severity: '-', status: 'Regular' },
+            { id: 4, type: 'banimento', user: '@hackr_boy', reason: 'Uso de exploit', severity: 'Extrema', status: 'Ativo', date: lastWeek.toISOString() },
         ],
         feedbacks: [
-            { id: 6, type: 'feedback', user: '@joao_dev', reason: 'Sugestão de cor', severity: 'Baixa', status: 'Lido' },
+            { id: 6, type: 'feedback', user: '@joao_dev', reason: 'Sugestão de cor', severity: 'Baixa', status: 'Lido', date: today.toISOString() },
         ]
     };
 
     const currentData = mockData[activeTab] || [];
-    let filteredData = currentData.filter(item => item.user.toLowerCase().includes(searchTerm.toLowerCase()));
+    let filteredData = currentData.filter(item => {
+        const nameMatch = item.user && item.user.toLowerCase().includes(searchTerm.toLowerCase());
+        const emailMatch = item.email && item.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const roomNameMatch = item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return nameMatch || emailMatch || roomNameMatch;
+    });
 
     if (filterSeverity !== 'Todas') {
         filteredData = filteredData.filter(item => item.severity === filterSeverity);
@@ -84,7 +98,7 @@ const Admin = () => {
                             </span>
                         </div>
                         <p className="text-[14px] admin-text-muted">
-                            Gerencie denúncias, usuários e feedbacks do sistema.
+                            Gerencie denúncias, usuários, salas e feedbacks do sistema.
                         </p>
                     </div>
 
@@ -99,6 +113,33 @@ const Admin = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up-2">
+                    <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="w-8 h-8 rounded-full admin-icon-wrap-blue flex items-center justify-center">
+                                <FaUsers size={14} />
+                            </div>
+                            <span className="admin-badge-trend-up text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <FaChartLine size={8} /> +12%
+                            </span>
+                        </div>
+                        <h2 className="text-3xl font-bold admin-hero-title mb-1">1,204</h2>
+                        <p className="text-[12px] admin-text-muted font-medium">Usuários Totais</p>
+                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-blue rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                    </div>
+
+                    <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="w-8 h-8 rounded-full admin-icon-wrap-purple flex items-center justify-center">
+                                <FaDoorOpen size={14} />
+                            </div>
+                            <span className="admin-badge-trend-up text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <FaChartLine size={8} /> +5
+                            </span>
+                        </div>
+                        <h2 className="text-3xl font-bold admin-hero-title mb-1">48</h2>
+                        <p className="text-[12px] admin-text-muted font-medium">Salas Ativas</p>
+                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-purple rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                    </div>
 
                     <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
                         <div className="flex justify-between items-start mb-4">
@@ -116,17 +157,6 @@ const Admin = () => {
 
                     <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-full admin-icon-wrap-blue flex items-center justify-center">
-                                <FaUserSlash size={14} />
-                            </div>
-                        </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">5</h2>
-                        <p className="text-[12px] admin-text-muted font-medium">Usuários sinalizados</p>
-                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-blue rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-                    </div>
-
-                    <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
-                        <div className="flex justify-between items-start mb-4">
                             <div className="w-8 h-8 rounded-full admin-icon-wrap-green flex items-center justify-center">
                                 <FaBan size={14} />
                             </div>
@@ -135,25 +165,10 @@ const Admin = () => {
                         <p className="text-[12px] admin-text-muted font-medium">Banimentos ativos</p>
                         <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-green rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
-
-                    <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-full admin-icon-wrap-purple flex items-center justify-center">
-                                <FaCommentDots size={14} />
-                            </div>
-                            <span className="admin-badge-trend-neutral text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <FaCommentDots size={8} /> +8
-                            </span>
-                        </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">89</h2>
-                        <p className="text-[12px] admin-text-muted font-medium">Feedbacks recebidos</p>
-                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-purple rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-                    </div>
-
                 </div>
 
                 <div className="skeuo-card p-1.5 flex items-center gap-1 mb-6 overflow-x-auto w-max max-w-full animate-fade-in-up-3">
-                    {['Denúncias', 'Banimentos', 'Usuários', 'Feedbacks'].map((tab) => {
+                    {['Salas', 'Usuários', 'Denúncias', 'Banimentos', 'Feedbacks'].map((tab) => {
                         const tabId = tab.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
                         return (
                             <button
@@ -171,37 +186,41 @@ const Admin = () => {
 
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         <div className="skeuo-panel p-6 flex flex-col h-full">
-                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
-                                <h3 className="text-[16px] font-bold admin-hero-title capitalize">Fila de {activeTab}</h3>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <select
-                                        value={filterTime}
-                                        onChange={(e) => setFilterTime(e.target.value)}
-                                        className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
-                                    >
-                                        <option value="Todos">Tempo: Todos</option>
-                                        <option value="Hoje">Hoje</option>
-                                        <option value="Última Semana">Última Semana</option>
-                                        <option value="Último Mês">Último Mês</option>
-                                    </select>
+                            <div className="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-4 mb-6">
+                                <h3 className="text-[16px] font-bold admin-hero-title capitalize whitespace-nowrap">Fila de {activeTab}</h3>
+                                <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full 2xl:w-auto 2xl:justify-end">
+                                    {(activeTab === 'denuncias' || activeTab === 'banimentos' || activeTab === 'feedbacks') && (
+                                        <>
+                                            <select
+                                                value={filterTime}
+                                                onChange={(e) => setFilterTime(e.target.value)}
+                                                className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
+                                            >
+                                                <option value="Todos">Tempo: Todos</option>
+                                                <option value="Hoje">Hoje</option>
+                                                <option value="Última Semana">Última Semana</option>
+                                                <option value="Último Mês">Último Mês</option>
+                                            </select>
 
-                                    <select
-                                        value={filterSeverity}
-                                        onChange={(e) => setFilterSeverity(e.target.value)}
-                                        className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
-                                    >
-                                        <option value="Todas">Gravidade: Todas</option>
-                                        <option value="Extrema">Extrema</option>
-                                        <option value="Alta">Alta</option>
-                                        <option value="Média">Média</option>
-                                        <option value="Baixa">Baixa</option>
-                                    </select>
+                                            <select
+                                                value={filterSeverity}
+                                                onChange={(e) => setFilterSeverity(e.target.value)}
+                                                className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
+                                            >
+                                                <option value="Todas">Gravidade: Todas</option>
+                                                <option value="Extrema">Extrema</option>
+                                                <option value="Alta">Alta</option>
+                                                <option value="Média">Média</option>
+                                                <option value="Baixa">Baixa</option>
+                                            </select>
+                                        </>
+                                    )}
 
                                     <div className="relative">
                                         <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
                                         <input
                                             type="text"
-                                            placeholder="Buscar por usuário..."
+                                            placeholder="Buscar..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                             className="skeuo-input py-2 pl-8 pr-4 text-[13px] w-full sm:w-[220px]"
@@ -214,43 +233,118 @@ const Admin = () => {
                                 <table className="w-full min-w-[600px] text-left border-collapse">
                                     <thead>
                                         <tr className="admin-table-header">
-                                            <th className="pb-3 text-[12px] font-bold">Usuário</th>
-                                            <th className="pb-3 text-[12px] font-bold">Motivo</th>
-                                            <th className="pb-3 text-[12px] font-bold">Gravidade</th>
-                                            <th className="pb-3 text-[12px] font-bold">Status</th>
-                                            <th className="pb-3 text-[12px] font-bold text-right">Data / Hora</th>
+                                            {activeTab === 'salas' && (
+                                                <>
+                                                    <th className="pb-3 text-[12px] font-bold">Sala</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Dono</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Membros</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Status</th>
+                                                    <th className="pb-3 text-[12px] font-bold text-right">Criada em</th>
+                                                </>
+                                            )}
+                                            {activeTab === 'usuarios' && (
+                                                <>
+                                                    <th className="pb-3 text-[12px] font-bold">Usuário</th>
+                                                    <th className="pb-3 text-[12px] font-bold">E-mail</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Cargo</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Status</th>
+                                                    <th className="pb-3 text-[12px] font-bold text-right">Cadastrado</th>
+                                                </>
+                                            )}
+                                            {(activeTab === 'denuncias' || activeTab === 'banimentos' || activeTab === 'feedbacks') && (
+                                                <>
+                                                    <th className="pb-3 text-[12px] font-bold">Usuário</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Motivo</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Gravidade</th>
+                                                    <th className="pb-3 text-[12px] font-bold">Status</th>
+                                                    <th className="pb-3 text-[12px] font-bold text-right">Data / Hora</th>
+                                                </>
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredData.length > 0 ? filteredData.map((report) => (
+                                        {filteredData.length > 0 ? filteredData.map((item) => (
                                             <tr
-                                                key={report.id}
-                                                onClick={() => setSelectedItem(report)}
-                                                className={`admin-table-row cursor-pointer ${selectedItem?.id === report.id ? 'admin-empty-icon-bg' : ''}`}
+                                                key={item.id}
+                                                onClick={() => setSelectedItem(item)}
+                                                className={`admin-table-row cursor-pointer ${selectedItem?.id === item.id ? 'admin-empty-icon-bg' : ''}`}
                                             >
-                                                <td className="py-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-6 h-6 rounded-full admin-avatar-bg flex items-center justify-center">
-                                                            <FaUser className="admin-text-muted" size={10} />
-                                                        </div>
-                                                        <span className="text-[13px] font-bold admin-table-text">{report.user}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-3 text-[13px] admin-table-text">{report.reason}</td>
-                                                <td className="py-3">
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex w-max items-center gap-1 ${report.severity === 'Alta' || report.severity === 'Extrema' ? 'admin-status-high' : 'admin-status-pending'}`}>
-                                                        {(report.severity === 'Alta' || report.severity === 'Extrema') && <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>}
-                                                        {report.severity}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3">
-                                                    <span className="admin-status-pending text-[10px] font-bold px-2 py-0.5 rounded-full w-max">
-                                                        {report.status}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3 text-right text-[12px] text-gray-500 font-medium">
-                                                    {report.date ? new Date(report.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
-                                                </td>
+                                                {activeTab === 'salas' && (
+                                                    <>
+                                                        <td className="py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-6 h-6 rounded-full admin-avatar-bg flex items-center justify-center">
+                                                                    <FaDoorOpen className="admin-text-muted" size={10} />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-[13px] font-bold admin-table-text block">{item.name}</span>
+                                                                    <span className="text-[10px] text-gray-500">{item.category}</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 text-[13px] text-blue-500 font-medium">{item.user}</td>
+                                                        <td className="py-3 text-[13px] admin-table-text">{item.usersCount} online</td>
+                                                        <td className="py-3">
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full w-max ${item.status === 'Ativa' ? 'admin-status-pending' : 'admin-status-high'}`}>
+                                                                {item.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 text-right text-[12px] text-gray-500 font-medium">
+                                                            {item.date ? new Date(item.date).toLocaleDateString() : '-'}
+                                                        </td>
+                                                    </>
+                                                )}
+
+                                                {activeTab === 'usuarios' && (
+                                                    <>
+                                                        <td className="py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-6 h-6 rounded-full admin-avatar-bg flex items-center justify-center">
+                                                                    <FaUser className="admin-text-muted" size={10} />
+                                                                </div>
+                                                                <span className="text-[13px] font-bold admin-table-text">{item.user}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 text-[13px] admin-table-text">{item.email}</td>
+                                                        <td className="py-3 text-[13px] admin-table-text capitalize">{item.role}</td>
+                                                        <td className="py-3">
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full w-max ${item.status === 'Ativo' ? 'admin-status-pending' : 'admin-status-high'}`}>
+                                                                {item.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 text-right text-[12px] text-gray-500 font-medium">
+                                                            {item.date ? new Date(item.date).toLocaleDateString() : '-'}
+                                                        </td>
+                                                    </>
+                                                )}
+
+                                                {(activeTab === 'denuncias' || activeTab === 'banimentos' || activeTab === 'feedbacks') && (
+                                                    <>
+                                                        <td className="py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-6 h-6 rounded-full admin-avatar-bg flex items-center justify-center">
+                                                                    <FaUser className="admin-text-muted" size={10} />
+                                                                </div>
+                                                                <span className="text-[13px] font-bold admin-table-text">{item.user}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 text-[13px] admin-table-text">{item.reason}</td>
+                                                        <td className="py-3">
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex w-max items-center gap-1 ${item.severity === 'Alta' || item.severity === 'Extrema' ? 'admin-status-high' : 'admin-status-pending'}`}>
+                                                                {(item.severity === 'Alta' || item.severity === 'Extrema') && <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>}
+                                                                {item.severity}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3">
+                                                            <span className="admin-status-pending text-[10px] font-bold px-2 py-0.5 rounded-full w-max">
+                                                                {item.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 text-right text-[12px] text-gray-500 font-medium">
+                                                            {item.date ? new Date(item.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                                                        </td>
+                                                    </>
+                                                )}
                                             </tr>
                                         )) : (
                                             <tr>
@@ -298,57 +392,119 @@ const Admin = () => {
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 border-b admin-border-muted pb-4">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full admin-avatar-bg flex items-center justify-center">
-                                        <FaUser className="admin-text-muted" size={20} />
+                                        {selectedItem.type === 'sala' ? <FaDoorOpen className="admin-text-muted" size={20} /> : <FaUser className="admin-text-muted" size={20} />}
                                     </div>
                                     <div>
-                                        <h4 className="text-[18px] font-bold admin-hero-title">{selectedItem.user}</h4>
+                                        <h4 className="text-[18px] font-bold admin-hero-title">{selectedItem.name || selectedItem.user}</h4>
                                         <span className="text-[12px] admin-text-muted capitalize">{selectedItem.type} #{selectedItem.id}</span>
                                     </div>
                                 </div>
                                 <div className="text-left sm:text-right text-[12px] text-gray-500 admin-details-box px-3 py-1.5 rounded-lg w-max">
-                                    <span className="block font-bold mb-0.5 uppercase tracking-wide text-[10px]">Data e Hora do Registro</span>
+                                    <span className="block font-bold mb-0.5 uppercase tracking-wide text-[10px]">Registro</span>
                                     {selectedItem.date ? new Date(selectedItem.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Data não registrada'}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
-                                <div className="p-3 admin-details-box rounded-[10px]">
-                                    <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Motivo / Assunto:</strong>
-                                    {selectedItem.reason}
+
+                            {/* Detalhes de Denúncias/Banimentos/Feedbacks */}
+                            {(selectedItem.type === 'denuncia' || selectedItem.type === 'banimento' || selectedItem.type === 'feedback') && (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Motivo / Assunto:</strong>
+                                        {selectedItem.reason}
+                                    </div>
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Status:</strong>
+                                        {selectedItem.status}
+                                    </div>
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Gravidade:</strong>
+                                        <span className={`inline-block ${selectedItem.severity === 'Alta' || selectedItem.severity === 'Extrema' ? 'text-red-500 font-bold' : ''}`}>
+                                            {selectedItem.severity}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="p-3 admin-details-box rounded-[10px]">
-                                    <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Status:</strong>
-                                    {selectedItem.status}
+                            )}
+
+                            {/* Detalhes de Usuários */}
+                            {selectedItem.type === 'usuario' && (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">E-mail:</strong>
+                                        {selectedItem.email}
+                                    </div>
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Cargo:</strong>
+                                        <span className="capitalize">{selectedItem.role}</span>
+                                    </div>
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Status da Conta:</strong>
+                                        {selectedItem.status}
+                                    </div>
                                 </div>
-                                <div className="p-3 admin-details-box rounded-[10px]">
-                                    <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Gravidade:</strong>
-                                    <span className={`inline-block ${selectedItem.severity === 'Alta' || selectedItem.severity === 'Extrema' ? 'text-red-500 font-bold' : ''}`}>
-                                        {selectedItem.severity}
-                                    </span>
+                            )}
+
+                            {/* Detalhes de Salas */}
+                            {selectedItem.type === 'sala' && (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Dono:</strong>
+                                        {selectedItem.user}
+                                    </div>
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Categoria:</strong>
+                                        {selectedItem.category}
+                                    </div>
+                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                        <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Status:</strong>
+                                        {selectedItem.status}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {/* Botões de Ação Específicos por Tipo */}
                             <div className="mt-6 flex flex-col lg:flex-row justify-between items-center gap-3">
+                                
                                 <div className="flex w-full lg:w-auto items-center gap-2">
-                                    <button
-                                        onClick={() => setShowMessageModal(true)}
-                                        className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-blue-outline flex items-center justify-center gap-2"
-                                    >
-                                        <FaCommentDots size={10} /> Mensagem Original
-                                    </button>
-                                    <button
-                                        onClick={() => { setCurrentImageIndex(0); setShowImageModal(true); }}
-                                        className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-purple-outline flex items-center justify-center gap-2"
-                                    >
-                                        <FaImage size={10} /> Imagens/Anexos
-                                    </button>
+                                    {(selectedItem.type === 'denuncia' || selectedItem.type === 'feedback') && (
+                                        <>
+                                            <button
+                                                onClick={() => setShowMessageModal(true)}
+                                                className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-blue-outline flex items-center justify-center gap-2"
+                                            >
+                                                <FaCommentDots size={10} /> Mensagem Original
+                                            </button>
+                                            <button
+                                                onClick={() => { setCurrentImageIndex(0); setShowImageModal(true); }}
+                                                className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-purple-outline flex items-center justify-center gap-2"
+                                            >
+                                                <FaImage size={10} /> Imagens/Anexos
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
+
                                 <div className="flex w-full lg:w-auto items-center gap-2">
-                                    <button className="skeuo-btn flex-1 lg:flex-none px-4 py-2 text-[12px] flex items-center justify-center gap-2">
-                                        <FaEye size={10} /> Inspecionar Perfil
-                                    </button>
-                                    <button className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 ">
-                                        <FaHammer size={10} /> Punir / Restringir
-                                    </button>
+                                    {selectedItem.type === 'sala' ? (
+                                        <>
+                                            <button className="skeuo-btn flex-1 lg:flex-none px-4 py-2 text-[12px] flex items-center justify-center gap-2">
+                                                <FaEye size={10} /> Inspecionar Chat
+                                            </button>
+                                            <button className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 text-red-600">
+                                                <FaTrash size={10} /> Apagar Sala
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button className="skeuo-btn flex-1 lg:flex-none px-4 py-2 text-[12px] flex items-center justify-center gap-2">
+                                                <FaEye size={10} /> Inspecionar Perfil
+                                            </button>
+                                            <button className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 ">
+                                                <FaHammer size={10} /> {selectedItem.type === 'usuario' ? 'Banir Usuário' : 'Punir / Restringir'}
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
+
                             </div>
                         </div>
                     ) : (
@@ -387,7 +543,7 @@ const Admin = () => {
                             </div>
                             <div>
                                 <h3 className="text-[18px] font-bold admin-hero-title">Mensagem Original</h3>
-                                <p className="text-[12px] admin-text-muted">Enviada por <span className="font-bold">{selectedItem.user}</span></p>
+                                <p className="text-[12px] admin-text-muted">Referente a <span className="font-bold">{selectedItem.name || selectedItem.user}</span></p>
                             </div>
                         </div>
 

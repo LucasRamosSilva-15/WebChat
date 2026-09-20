@@ -65,7 +65,7 @@ const Navbar = () => {
 
             const savedPhoto = localStorage.getItem('chat_profilePhoto');
             setProfilePhoto(savedPhoto || null);
-            
+
             const savedDesc = localStorage.getItem('chat_profileDesc');
             setProfileDesc(savedDesc || "Sem recado");
         };
@@ -110,7 +110,10 @@ const Navbar = () => {
         <>
             <header className="skeuo-nav sticky top-0 z-50 w-full h-[48px] flex items-center justify-center">
                 <nav className="max-w-[980px] w-full flex justify-between items-center px-4 relative">
-                    <span className="font-bold tracking-tight text-[17px] text-shadow-sm dark:text-[#f8fafc]">SkyRipple</span>
+                    <div className="flex items-center gap-2">
+                        <img src="/logo_32x32_transparente.svg" alt="SkyRipple Logo" className="w-8 h-8 drop-shadow-sm" />
+                        <span className="font-bold tracking-tight text-[17px] text-shadow-sm dark:text-[#f8fafc]">SkyRipple</span>
+                    </div>
 
                     <div className="flex items-center gap-4">
                         <div className="relative" ref={menuRef}>
