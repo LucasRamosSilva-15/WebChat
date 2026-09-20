@@ -61,6 +61,59 @@ const Admin = () => {
         fetchData();
     }, [activeTab]);
 
+
+    const handleAction = async () => {
+        if (!selectedItem) return;
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const apiBaseUrl = 'http://localhost:3001/api';
+
+        try {
+            if (selectedItem.type === 'usuario' || selectedItem.type === 'banimento') {
+                const newStatus = selectedItem.status === 'Banido' ? 'Ativo' : 'Banido';
+                const idToBan = selectedItem.type === 'banimento' ? selectedItem.user_id || selectedItem.id : selectedItem.id;
+
+                const res = await fetch(`${apiBaseUrl}/admin/users/${idToBan}/status`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (res.ok) {
+                    setAdminData(prev => {
+                        const newData = { ...prev };
+                        if (newData.usuarios) newData.usuarios = newData.usuarios.map(u => u.id === idToBan ? { ...u, status: newStatus } : u);
+                        if (newData.banimentos && newStatus === 'Ativo') {
+                            newData.banimentos = newData.banimentos.filter(u => u.id !== idToBan);
+                        }
+                        return newData;
+                    });
+                    setSelectedItem(prev => ({ ...prev, status: newStatus }));
+                }
+            } else if (selectedItem.type === 'sala') {
+                if (window.confirm('Tem certeza que deseja apagar esta sala? Esta ação não pode ser desfeita.')) {
+                    const res = await fetch(`${apiBaseUrl}/admin/rooms/${selectedItem.id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (res.ok) {
+                        setAdminData(prev => {
+                            const newData = { ...prev };
+                            if (newData.salas) {
+                                newData.salas = newData.salas.filter(s => s.id !== selectedItem.id);
+                            }
+                            return newData;
+                        });
+                        setSelectedItem(null);
+                    } else {
+                        alert('Erro ao apagar sala.');
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Erro na ação:', err);
+        }
+    };
     const currentData = adminData[activeTab] || [];
     let filteredData = currentData.filter(item => {
         const nameMatch = item.user && item.user.toLowerCase().includes(searchTerm.toLowerCase());
@@ -500,7 +553,7 @@ const Admin = () => {
                                             <button className="skeuo-btn flex-1 lg:flex-none px-4 py-2 text-[12px] flex items-center justify-center gap-2">
                                                 <FaEye size={10} /> Inspecionar Chat
                                             </button>
-                                            <button className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 text-red-600">
+                                            <button onClick={handleAction} className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 text-red-600">
                                                 <FaTrash size={10} /> Apagar Sala
                                             </button>
                                         </>
@@ -509,8 +562,8 @@ const Admin = () => {
                                             <button className="skeuo-btn flex-1 lg:flex-none px-4 py-2 text-[12px] flex items-center justify-center gap-2">
                                                 <FaEye size={10} /> Inspecionar Perfil
                                             </button>
-                                            <button className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 ">
-                                                <FaHammer size={10} /> {selectedItem.type === 'usuario' ? 'Banir Usuário' : 'Punir / Restringir'}
+                                            <button onClick={handleAction} className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 ">
+                                                <FaHammer size={10} /> {selectedItem.status === 'Banido' ? 'Desbanir Usuário' : (selectedItem.type === 'usuario' ? 'Banir Usuário' : 'Punir / Restringir')}
                                             </button>
                                         </>
                                     )}

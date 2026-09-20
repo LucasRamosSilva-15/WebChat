@@ -78,4 +78,17 @@ router.get('/feedbacks', async (req, res) => {
     res.json(formattedData);
 });
 
+
+router.delete('/rooms/:id', async (req, res) => {
+    const { id } = req.params;
+    const { error } = await supabase
+        .from('rooms')
+        .delete()
+        .eq('id', id);
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ message: 'Sala apagada com sucesso' });
+});
+
 module.exports = router;
+
