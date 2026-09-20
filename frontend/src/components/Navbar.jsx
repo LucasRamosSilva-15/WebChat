@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes, FaLightbulb, FaLifeRing, FaSlidersH } from 'react-icons/fa';
+import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes, FaLightbulb, FaLifeRing, FaSlidersH, FaShieldAlt } from 'react-icons/fa';
 import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
 
@@ -9,6 +9,7 @@ const Navbar = () => {
     const menuRef = useRef(null);
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [profileName, setProfileName] = useState("Minha Conta");
     const [profilePhoto, setProfilePhoto] = useState(null);
     const [profileDesc, setProfileDesc] = useState("Sem recado");
@@ -55,6 +56,7 @@ const Navbar = () => {
         const loadProfile = () => {
             const loggedInStatus = localStorage.getItem('chat_isLoggedIn') === 'true';
             setIsLoggedIn(loggedInStatus);
+            setIsAdmin(!!localStorage.getItem('admin_token'));
 
             const savedName = localStorage.getItem('chat_displayName');
             if (savedName) {
@@ -195,7 +197,7 @@ const Navbar = () => {
                                             className="navbar-profile-name"
                                             title={profileName}
                                         >
-                                            {profileName}
+                                            {profileName} {isAdmin && <span className="ml-1 inline-flex items-center gap-1 bg-red-500/10 text-red-600 border border-red-500/20 text-[9px] px-1.5 py-[1px] rounded font-bold uppercase"><FaShieldAlt size={8}/> Admin</span>}
                                         </span>
                                         <span className="navbar-profile-status">Online</span>
                                     </div>
@@ -209,8 +211,19 @@ const Navbar = () => {
                                         <h3 className="navbar-profile-title">{profileName}</h3>
                                         <p className="navbar-profile-desc">{profileDesc}</p>
                                     </div>
-                                    <div className="navbar-profile-footer">
+                                    <div className="navbar-profile-footer flex flex-col gap-2">
                                         <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy navbar-profile-edit-btn">Editar Perfil</Link>
+                                        {isAdmin && (
+                                            <button onClick={() => {
+                                                localStorage.removeItem('admin_token');
+                                                setIsAdmin(false);
+                                                setIsProfileOpen(false);
+                                                alert('Você saiu do modo Administrador.');
+                                                if (window.location.pathname.includes('/admin') && window.location.pathname !== '/admin-login') window.location.href = '/';
+                                            }} className="btn-secondary-glossy navbar-profile-edit-btn mt-2 !text-red-600 flex items-center justify-center gap-2">
+                                                <FaShieldAlt size={12}/> Sair do Admin
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

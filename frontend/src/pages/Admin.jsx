@@ -22,8 +22,8 @@ const Admin = () => {
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-            const apiBaseUrl = 'http://localhost:3001/api';
+            const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+            const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
             let endpoint = activeTab;
             if (activeTab === 'denuncias') endpoint = 'reports';
@@ -36,8 +36,13 @@ const Admin = () => {
                 const response = await fetch(`${apiBaseUrl}/admin/${endpoint}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                
                 if (response.ok) {
                     let data = await response.json();
+                    console.log('--- ADMIN DATA DEBUG ---');
+                    console.log('Tab:', activeTab);
+                    console.log('Data Recebida:', data);
+
 
                     if (activeTab === 'banimentos') {
                         data = data.filter(u => u.status === 'Banido').map(u => ({ ...u, user: u.name, type: 'banimento', date: u.created_at }));
@@ -52,6 +57,13 @@ const Admin = () => {
                     }
 
                     setAdminData(prev => ({ ...prev, [activeTab]: data }));
+                } else if (response.status === 401 || response.status === 403) {
+                    console.error('--- ADMIN FETCH ERROR ---', response.status, await response.text());
+                    localStorage.removeItem('admin_token');
+                    alert('Sua sessão de administrador expirou (limite de 2 horas) ou é inválida. Por favor, faça login novamente para continuar.');
+                    window.location.href = '/admin-login';
+                } else {
+                    console.error('--- ADMIN FETCH ERROR ---', response.status, await response.text());
                 }
             } catch (err) {
                 console.error("Erro ao buscar dados:", err);
@@ -64,8 +76,8 @@ const Admin = () => {
 
     const handleAction = async () => {
         if (!selectedItem) return;
-        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-        const apiBaseUrl = 'http://localhost:3001/api';
+        const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+        const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
         try {
             if (selectedItem.type === 'usuario' || selectedItem.type === 'banimento') {
@@ -116,9 +128,11 @@ const Admin = () => {
     };
     const currentData = adminData[activeTab] || [];
     let filteredData = currentData.filter(item => {
-        const nameMatch = item.user && item.user.toLowerCase().includes(searchTerm.toLowerCase());
-        const emailMatch = item.email && item.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const roomNameMatch = item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        if (!searchTerm) return true;
+        const s = searchTerm.toLowerCase();
+        const nameMatch = item.user && item.user.toLowerCase().includes(s);
+        const emailMatch = item.email && item.email.toLowerCase().includes(s);
+        const roomNameMatch = item.name && item.name.toLowerCase().includes(s);
         return nameMatch || emailMatch || roomNameMatch;
     });
 

@@ -81,13 +81,22 @@ router.get('/feedbacks', async (req, res) => {
 
 router.delete('/rooms/:id', async (req, res) => {
     const { id } = req.params;
-    const { error } = await supabase
-        .from('rooms')
-        .delete()
-        .eq('id', id);
 
-    if (error) return res.status(500).json({ error: error.message });
-    res.json({ message: 'Sala apagada com sucesso' });
+    try {
+        await supabase.from('reports').delete().eq('reported_room_id', id);
+        await supabase.from('room_members').delete().eq('room_id', id);
+        await supabase.from('messages').delete().eq('room_id', id);
+
+        const { error } = await supabase
+            .from('rooms')
+            .delete()
+            .eq('id', id);
+
+        if (error) return res.status(500).json({ error: error.message });
+        res.json({ message: 'Sala apagada com sucesso' });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro interno ao apagar sala: ' + err.message });
+    }
 });
 
 module.exports = router;
