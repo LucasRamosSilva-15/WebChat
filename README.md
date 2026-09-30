@@ -5,7 +5,7 @@
 </div>
 
 
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.20.0-blue?style=for-the-badge)
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.20.2-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -58,12 +58,15 @@ Este projeto foi construído como um projeto prático para a disciplina de Progr
 * Supabase (banco de dados em nuvem)
 * Bibliotecas de segurança e utilidades (bcryptjs, jsonwebtoken, cors, dotenv, helmet e express-rate-limit)
 * Arquitetura de banco de dados centralizada no Node.js (Supabase RLS Desativado)
+* Testes unitários e de integração (Jest, Supertest, Socket.IO Client)
+* ORM (Supabase + Sequelize)
 
 ### Ferramentas
 
 * Git / GitHub
 * Render (deploy do Backend)
 * Vercel (Deploy do Frontend)
+* Supabase (banco de dados)
 * npm
 
 ## Como rodar localmente
@@ -138,15 +141,18 @@ FRONTEND_URL=http://localhost:5173
 * [x] Temas visuais: Modo Claro e Modo Escuro
 * [x] Layout responsivo e menus modais
 * [x] Envio de imagens e armazenamento em nuvem (Storage)
-* [ ] Refinamentos na persistência e histórico longo de mensagens
+* [X] Refinamentos na persistência e histórico longo de mensagens
 * [ ] Testes automatizados
 * [ ] Documentação
 * [ ] Sistema de criptografia de email, senhas, mensagens e etc
 * [ ] Otimizações no frontend, backend e banco de dados
 * [ ] Aumentar a segurança do sistema e do banco de dados
-* [ ] Página de Feedback (só falta a parte do backend)
+* [x] Página de Feedback
 * [x] Administração do sistema (painel de controle) (só falta a parte do backend)
-* [ ] Sistema de administração das salas (moderação avançada, cargos, etc) (A página está pronta, só falta o backend)
+* [ ] Sistema de administração das salas (moderação avançada, cargos, etc) (está em boa parte implementado mas em incompleto ainda)
+* [ ] Sistema de amizades e mensagens privadas
+* [ ] Sistema de denúncias e bloqueios (está em boa parte implementado mas em incompleto ainda)
+* [ ] O Projeto está escalável? (para chat, servidor, banco de dados, etc)
 * [x] Página de suporte (só falta a parte do backend)
 * [ ] Adaptação para telas menores (como notebooks e celulares e etc)
 
@@ -156,10 +162,36 @@ FRONTEND_URL=http://localhost:5173
 .
 ├── backend/
 │   ├── src/
+│   │   ├── config/
+│   │   │   └── database.js
+│   │   ├── controllers/
+│   │   │   ├── UserController.js
+│   │   │   ├── RoomController.js
+│   │   │   └── ...
 │   │   ├── middleware/
-│   │   │   └── auth.js
-│   │   └── routes/
-│   │       └── api.js
+│   │   │   ├── auth.js
+│   │   │   └── adminAuth.js
+│   │   ├── models/
+│   │   │   ├── User.js
+│   │   │   ├── Room.js
+│   │   │   └── ...
+│   │   ├── repositories/
+│   │   │   ├── UserRepository.js
+│   │   │   ├── RoomRepository.js
+│   │   │   └── ...
+│   │   ├── routes/
+│   │   │   ├── api.js
+│   │   │   └── admin.js
+│   │   ├── services/
+│   │   │   ├── UserService.js
+│   │   │   ├── RoomService.js
+│   │   │   └── ...
+│   │   ├── tests/
+│   │   │   ├── authMiddleware.test.js
+│   │   │   ├── chat.test.js
+│   │   │   └── ...
+│   │   ├── App.js
+│   │   ├── socket.js
 │   ├── server.js
 │   ├── package.json
 │   └── .env
@@ -180,6 +212,12 @@ FRONTEND_URL=http://localhost:5173
 │   │   │   ├── chat.css
 │   │   │   ├── skeuo.css
 │   │   │   └── ...
+│   │   │
+│   │   ├── tests/
+│   │   │   ├── chat.test.jsx
+│   │   │   ├── ChatSidebar.test.jsx
+│   │   │   └── ...
+│   │   │
 │   │   ├── App.jsx
 │   │   ├── socket.js
 │   │   ├── webchat-components.css
