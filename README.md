@@ -211,6 +211,14 @@ Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais
 * Adicionar testes automatizados
 * Capturar as telas finais e adicionar screenshots no README.
 
+## Diagrama ER
+
+![Diagrama Entidade-Relacionamento](docs/screenshots/Diagrama%20Entidade-Relacionamento.svg)
+
+## Diagrama de Classes
+
+![Diagrama de Classes](docs/screenshots/Diagrama%20de%20Classes%20SkyRippleProject%20(2).svg)
+
 ## Autor
 
 Desenvolvido por **Lucas Ramos Silva, Wssihélio Vasconcelos, Ruan Victor e Gabriel Lobão.** como parte da disciplina de Programação Web II.
