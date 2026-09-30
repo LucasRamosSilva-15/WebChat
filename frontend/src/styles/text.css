@@ -1,0 +1,88 @@
+@layer components {
+    .skeuo-title {
+        color: #1d1d1f;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+    }
+
+    html.dark .skeuo-title {
+        color: #f8fafc;
+    }
+
+    .skeuo-section-title {
+        color: #1d1d1f;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+    }
+
+    html.dark .skeuo-section-title {
+        color: #f8fafc;
+    }
+
+    .skeuo-subtitle {
+        color: #86868b;
+        font-weight: 500;
+    }
+
+    html.dark .skeuo-subtitle {
+        color: #94a3b8;
+    }
+
+    .skeuo-muted {
+        color: #86868b;
+    }
+
+    html.dark .skeuo-muted {
+        color: #64748b;
+    }
+
+    .skeuo-label {
+        color: #374151;
+        font-weight: 600;
+    }
+
+    html.dark .skeuo-label {
+        color: #cbd5e1;
+    }
+
+    .skeuo-status-online {
+        color: #16a34a;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    html.dark .skeuo-status-online {
+        color: #22c55e;
+    }
+
+    .skeuo-status-offline {
+        color: #6b7280;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    html.dark .skeuo-status-offline {
+        color: #94a3b8;
+    }
+
+    .skeuo-link {
+        color: #0284c7;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .skeuo-link:hover {
+        color: #0369a1;
+        text-decoration: underline;
+    }
+
+    html.dark .skeuo-link {
+        color: #38bdf8;
+    }
+
+    html.dark .skeuo-link:hover {
+        color: #7dd3fc;
+    }
+}

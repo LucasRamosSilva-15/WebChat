@@ -1,0 +1,7 @@
+# Arquivos que vão ser ignorados pelo git
+node_modules/
+.env
+dist/
+.DS_Store
+frontend/src/pages/LayoutDemo.jsx
+frontend/src/pages/LayoutDemo1.jsx

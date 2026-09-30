@@ -1,0 +1,17 @@
+@layer components {
+    .home-hero-title {
+        font-weight: 600;
+    }
+
+    .home-hero-subtitle {
+        font-weight: 400;
+        color: #86868b;
+    }
+    html.dark .home-hero-subtitle {
+        color: #94a3b8;
+    }
+
+    .home-action-btn {
+        font-weight: 400;
+    }
+}

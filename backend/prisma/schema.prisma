@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  password     String?
+  displayName  String?
+  profilePhoto String?
+  profileDesc  String?
+  created_at   DateTime  @default(now())
+
+  messages     Message[]
+  reports      Report[]
+  feedbacks    Feedback[]
+  rooms        Room[]    @relation("RoomCreator")
+
+  @@map("users")
+}
+
+model Room {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  type         String    @default("public")
+  created_by   String?   @db.Uuid
+  created_at   DateTime  @default(now())
+
+  creator      User?     @relation("RoomCreator", fields: [created_by], references: [id], onDelete: SetNull)
+  messages     Message[]
+
+  @@map("rooms")
+}
+
+model Message {
+  id         String   @id @default(uuid()) @db.Uuid
+  room_id    String   @db.Uuid
+  user_id    String   @db.Uuid
+  content    String
+  created_at DateTime @default(now())
+
+  room       Room     @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  reports    Report[]
+
+  @@map("messages")
+}
+
+model Report {
+  id         String   @id @default(uuid()) @db.Uuid
+  message_id String   @db.Uuid
+  user_id    String   @db.Uuid
+  reason     String
+  status     String   @default("pending")
+  created_at DateTime @default(now())
+
+  message    Message  @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model Feedback {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  comment    String
+  images     String[]
+  status     String   @default("pending")
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("feedbacks")
+}
