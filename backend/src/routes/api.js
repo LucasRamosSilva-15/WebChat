@@ -17,13 +17,15 @@ const rateLimit = require('express-rate-limit');
  *     description: Histórico de mensagens de uma sala
  */
 
-const authLimiter = rateLimit({
+const isTest = process.env.NODE_ENV === 'test';
+
+const authLimiter = isTest ? (req, res, next) => next() : rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Muitas tentativas. Tente novamente mais tarde.' }
 });
 
-const adminLimiter = rateLimit({
+const adminLimiter = isTest ? (req, res, next) => next() : rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   message: { error: 'Muitas tentativas de admin. Bloqueado por 15 minutos.' }

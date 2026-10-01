@@ -21,7 +21,7 @@ const Feedback = sequelize.define('Feedback', {
     allowNull: false,
   },
   images: {
-    type: DataTypes.ARRAY(DataTypes.TEXT),
+    type: sequelize.getDialect() === 'postgres' ? DataTypes.ARRAY(DataTypes.TEXT) : DataTypes.JSON,
     allowNull: true,
   },
   status: {

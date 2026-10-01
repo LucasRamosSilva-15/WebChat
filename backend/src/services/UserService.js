@@ -41,8 +41,8 @@ class UserService {
 
     // Gera o token
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'chave_padrao_se_faltar_no_env',
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || 'fallback_secret',
       { expiresIn: '2h' }
     );
 

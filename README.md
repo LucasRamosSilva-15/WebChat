@@ -5,7 +5,7 @@
 </div>
 
 
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.20.2-blue?style=for-the-badge)
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-6.21.0-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -255,7 +255,7 @@ Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais
 
 ## Diagrama de Classes
 
-![Diagrama de Classes](docs/screenshots/Diagrama%20de%20Classes%20SkyRippleProject%20(2).svg)
+![Diagrama de Classes](docs/screenshots/Diagrama%20de%20Classes%20SkyRippleProject%20(3).svg)
 
 ## Autor
 
