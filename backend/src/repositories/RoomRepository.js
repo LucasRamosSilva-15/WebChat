@@ -23,9 +23,19 @@ class RoomRepository {
     return await room.update(updateData);
   }
 
+  async count() {
+    return await Room.count();
+  }
+
   async delete(id) {
     const room = await this.findById(id);
     if (!room) return false;
+    
+    // Limpeza de dependências associadas à sala
+    const { RoomMember, Message } = require('../models');
+    if (RoomMember) await RoomMember.destroy({ where: { room_id: id } });
+    if (Message) await Message.destroy({ where: { room_id: id } });
+
     await room.destroy();
     return true;
   }

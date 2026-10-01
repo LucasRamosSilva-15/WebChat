@@ -28,6 +28,14 @@ const User = sequelize.define('User', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  role: {
+    type: DataTypes.STRING,
+    defaultValue: 'user',
+  },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: 'active',
+  },
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

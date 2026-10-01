@@ -58,6 +58,12 @@ class UserService {
     if (!user) throw new Error('Usuário não encontrado.');
     return user;
   }
+
+  async updateStatus(id, status) {
+    const user = await UserRepository.findById(id);
+    if (!user) throw new Error('Usuário não encontrado.');
+    return await user.update({ status });
+  }
 }
 
 module.exports = new UserService();

@@ -15,6 +15,22 @@ class MessageRepository {
     });
   }
 
+  async searchByRoom(roomId, query) {
+    const { Op } = require('sequelize');
+    return await Message.findAll({
+      where: { 
+        room_id: roomId,
+        content: {
+          [Op.iLike]: `%${query}%`
+        }
+      },
+      include: [
+        { model: User, as: 'user', attributes: ['id', 'displayName', 'profilePhoto'] }
+      ],
+      order: [['created_at', 'ASC']]
+    });
+  }
+
   async findById(id) {
     return await Message.findByPk(id);
   }

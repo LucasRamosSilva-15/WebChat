@@ -4,6 +4,14 @@ const Room = require('./Room');
 const Message = require('./Message');
 const Report = require('./Report');
 const Feedback = require('./Feedback');
+const RoomMember = require('./RoomMember');
+
+User.belongsToMany(Room, { through: RoomMember, foreignKey: 'user_id' });
+Room.belongsToMany(User, { through: RoomMember, foreignKey: 'room_id' });
+User.hasMany(RoomMember, { foreignKey: 'user_id' });
+RoomMember.belongsTo(User, { foreignKey: 'user_id' });
+Room.hasMany(RoomMember, { foreignKey: 'room_id' });
+RoomMember.belongsTo(Room, { foreignKey: 'room_id' });
 
 const initModels = async () => {
   try {
@@ -22,5 +30,6 @@ module.exports = {
   Room,
   Message,
   Report,
-  Feedback
+  Feedback,
+  RoomMember
 };

@@ -22,6 +22,12 @@ class MessageService {
     return await MessageRepository.findByRoomId(roomId);
   }
 
+  async searchMessages(roomId, query) {
+    if (!roomId) throw new Error('ID da sala é obrigatório.');
+    if (!query) throw new Error('Termo de busca é obrigatório.');
+    return await MessageRepository.searchByRoom(roomId, query);
+  }
+
   async deleteMessage(id, userId, isAdmin) {
     const message = await MessageRepository.findById(id);
     if (!message) throw new Error('Mensagem não encontrada.');

@@ -16,6 +16,14 @@ const Room = sequelize.define('Room', {
     type: DataTypes.STRING,
     defaultValue: 'public',
   },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  category: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   created_by: {
     type: DataTypes.UUID,
     allowNull: true,
