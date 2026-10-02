@@ -20,6 +20,7 @@ describe('ChatSidebar Unit Tests', () => {
     expect(screen.getByText('Salas')).toBeInTheDocument();
     expect(screen.getByText('Diretas')).toBeInTheDocument();
     expect(screen.getByText('Perfil')).toBeInTheDocument();
+    expect(screen.getByText('Ajustes')).toBeInTheDocument();
   });
 
   it('renders disabled items correctly', () => {
@@ -30,7 +31,6 @@ describe('ChatSidebar Unit Tests', () => {
     );
 
     expect(screen.getByText('Favoritos (Em breve)')).toBeInTheDocument();
-    expect(screen.getByText('Ajustes (Em breve)')).toBeInTheDocument();
   });
 
   it('renders the user profile info in the footer', () => {

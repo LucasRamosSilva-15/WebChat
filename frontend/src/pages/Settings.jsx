@@ -61,11 +61,21 @@ const Settings = () => {
         window.dispatchEvent(new Event('themeUpdated'));
     }, [bgColor]);
 
+    const [bubbleFormat, setBubbleFormat] = useState(() => localStorage.getItem('chat_bubbleFormat') || 'suave');
+
+    const toggleBubbleFormat = () => {
+        const nextFormat = bubbleFormat === 'suave' ? 'classico' : 'suave';
+        setBubbleFormat(nextFormat);
+        localStorage.setItem('chat_bubbleFormat', nextFormat);
+        window.dispatchEvent(new Event('themeUpdated'));
+    };
+
     useEffect(() => {
         const syncTheme = () => {
             setPrimaryColor(localStorage.getItem('chat_primaryColor') || 'blue');
             setColorMode(localStorage.getItem('chat_colorMode') || 'light');
             setBgColor(localStorage.getItem('chat_bgColor') || 'neutral');
+            setBubbleFormat(localStorage.getItem('chat_bubbleFormat') || 'suave');
         };
         window.addEventListener('themeUpdated', syncTheme);
         return () => window.removeEventListener('themeUpdated', syncTheme);
@@ -207,29 +217,87 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <h4 className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-4">Preview</h4>
-                                    <div className="w-full rounded-2xl p-6 bg-gray-100/80 dark:bg-slate-900/60 border border-gray-200 dark:border-white/5 flex flex-col gap-4">
-                                        <div className="flex items-center justify-between">
+                                    <h4 className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-4">PREVIEW</h4>
+                                    <div className="w-full rounded-[24px] p-6 bg-gray-100/80 dark:bg-slate-900/60 border border-gray-200/80 dark:border-white/5 flex flex-col gap-5 shadow-xs transition-all">
+                                        <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
                                             <div className="flex items-center gap-3">
-                                                <UserAvatar name="User Test" size="md" status="online" />
+                                                {bubbleFormat === 'suave' ? (
+                                                    <div className="w-10 h-10 rounded-full border-2 border-sky-400 dark:border-sky-500 bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-xs">
+                                                        <span className="text-[16px] font-bold text-[#1d1d1f] dark:text-white">A</span>
+                                                    </div>
+                                                ) : (
+                                                    <UserAvatar name="Alex Ripple" size="md" status="online" />
+                                                )}
                                                 <div>
-                                                    <span className="text-sm font-bold admin-hero-title block">Lucas Ramos</span>
+                                                    <span className="text-sm font-bold admin-hero-title block">Alex Ripple</span>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">Online agora</span>
                                                 </div>
                                             </div>
-                                            <button className="skeuo-btn px-4 py-1.5 text-xs">
-                                                Botão de Ação
+                                            <button
+                                                onClick={toggleBubbleFormat}
+                                                className="skeuo-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 cursor-pointer shadow-xs hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                                                title="Alternar entre formato Suave e Clássico"
+                                            >
+                                                <span>Mudar Formato</span>
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 uppercase font-bold tracking-tight">
+                                                    {bubbleFormat === 'suave' ? 'Suave' : 'Clássico'}
+                                                </span>
                                             </button>
                                         </div>
 
-                                        <div className="flex flex-col gap-2 mt-2">
-                                            <div className="skeuo-bubble-received p-3 max-w-[80%] self-start text-sm">
-                                                Essa é uma mensagem de exemplo recebida!
+                                        {bubbleFormat === 'suave' ? (
+                                            <div className="flex flex-col gap-4 animate-fade-in">
+                                                {/* Mensagem recebida suave */}
+                                                <div className="flex items-start gap-3 self-start max-w-[92%] md:max-w-[80%]">
+                                                    <div className="w-9 h-9 rounded-full border-2 border-sky-400 dark:border-sky-500 bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-xs">
+                                                        <span className="text-[14px] font-bold text-[#1d1d1f] dark:text-white">A</span>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[12.5px] font-bold text-[#1d1d1f] dark:text-slate-200 mb-1 ml-1 leading-none">
+                                                            Alex Ripple
+                                                        </span>
+                                                        <div className="px-5 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-850 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed">
+                                                            Ei! A nova atualização da interface ficou incrível.
+                                                        </div>
+                                                        <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 ml-2">
+                                                            10:42 AM
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Mensagem enviada suave */}
+                                                <div className="flex flex-col items-end self-end max-w-[92%] md:max-w-[80%] mt-1">
+                                                    <div className="px-6 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] text-white font-medium text-[14px] leading-relaxed shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] border border-sky-400/40">
+                                                        Concordo! Muito suave.
+                                                    </div>
+                                                    <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 mr-2 flex items-center gap-1.5">
+                                                        10:44 AM <span className="text-sky-400 dark:text-sky-300 font-semibold tracking-tighter">✓✓</span>
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="skeuo-bubble-sent p-3 max-w-[80%] self-end text-sm">
-                                                E essa é a sua resposta com o estilo ativo!
+                                        ) : (
+                                            <div className="flex flex-col gap-3 animate-fade-in">
+                                                <div className="flex flex-col items-start self-start max-w-[80%]">
+                                                    <span className="text-[11.5px] font-bold text-[#1d1d1f] dark:text-[#f8fafc] mb-1 ml-1">
+                                                        Alex Ripple
+                                                    </span>
+                                                    <div className="skeuo-bubble-received p-3 text-sm">
+                                                        Essa é uma mensagem de exemplo recebida!
+                                                    </div>
+                                                    <span className="text-[10px] text-[#86868b] dark:text-slate-400 mt-0.5 ml-1">
+                                                        10:42 AM
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-col items-end self-end max-w-[80%]">
+                                                    <div className="skeuo-bubble-sent p-3 text-sm">
+                                                        E essa é a sua resposta com o estilo ativo!
+                                                    </div>
+                                                    <span className="text-[10px] text-[#86868b] dark:text-slate-400 mt-0.5 mr-1 flex items-center gap-1">
+                                                        10:44 AM <span className="text-sky-500 font-semibold">✓✓</span>
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

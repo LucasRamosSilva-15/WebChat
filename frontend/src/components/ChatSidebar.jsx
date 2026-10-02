@@ -16,7 +16,7 @@ const ChatSidebar = ({ isMobileOpen, onClose }) => {
         { id: '/chat', icon: <FaEnvelope size={16} />, label: 'Diretas', badge: null },
         { id: '/favorites', icon: <FaStar size={16} />, label: 'Favoritos', badge: null, disabled: true },
         { id: '/custom', icon: <FaUser size={16} />, label: 'Perfil', badge: null },
-        { id: '/settings', icon: <FaCog size={16} />, label: 'Ajustes', badge: null, disabled: true },
+        { id: '/settings', icon: <FaCog size={16} />, label: 'Ajustes', badge: null },
     ];
 
     return (
