@@ -54,35 +54,35 @@ const Register = () => {
         }
     };
     return (
-        <main className="reveal auth-page auth-page-register flex-1 flex items-center justify-center px-6 py-12">
-            <div className="skeuo-card auth-panel auth-panel-register p-10 w-full text-center max-w-[500px]">
-                <h1 className="hero-title auth-title text-[40px] mb-2">
+        <main className="reveal flex-1 flex items-center justify-center px-6 py-12">
+            <div className="skeuo-card p-10 w-full text-center max-w-[500px]">
+                <h1 className="hero-title font-semibold text-[40px] mb-2">
                     Crie sua conta
                 </h1>
-                <p className="auth-subtitle text-[17px] mb-10">
+                <p className="text-[#86868b] dark:text-[#94a3b8] font-normal text-[17px] mb-10 tracking-tight">
                     Preencha os dados para criar sua conta.
                 </p>
 
-                <form className="auth-form auth-form-register text-left space-y-4" onSubmit={handleRegister}>
+                <form className="text-left space-y-4" onSubmit={handleRegister}>
                     {error && (
-                        <div className="auth-error p-3 text-sm">
+                        <div className="p-3 text-sm rounded-lg font-medium bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900">
                             {error}
                         </div>
                     )}
-                    <div className="input-group">
+                    <div>
                         <input type="text" id="username" placeholder="Nome de usuário" required
                             value={username} onChange={(e) => setUsername(e.target.value)}
-                            className="skeuo-input auth-input w-full px-4 py-3" />
+                            className="skeuo-input w-full px-4 py-3" />
                     </div>
-                    <div className="input-group">
+                    <div>
                         <input type="email" id="email" placeholder="E-mail" required
                             value={email} onChange={(e) => setEmail(e.target.value)}
-                            className="skeuo-input auth-input w-full px-4 py-3" />
+                            className="skeuo-input w-full px-4 py-3" />
                     </div>
-                    <div className="input-group">
+                    <div>
                         <input type="password" id="password" placeholder="Senha" required
                             value={password} onChange={(e) => setPassword(e.target.value)}
-                            className="skeuo-input auth-input w-full px-4 py-3" />
+                            className="skeuo-input w-full px-4 py-3" />
                     </div>
 
                     <div className="flex flex-col gap-3 mt-4 text-left">
@@ -108,28 +108,28 @@ const Register = () => {
                         </label>
                     </div>
 
-                    <button type="submit" className="skeuo-btn auth-submit auth-submit-register w-full py-3 text-[17px] mt-6" disabled={loading || !termsAccepted || !privacyAccepted}>
+                    <button type="submit" className="skeuo-btn w-full py-3 text-[17px] mt-6" disabled={loading || !termsAccepted || !privacyAccepted}>
                         {loading ? 'Cadastrando...' : 'Cadastrar'}
                     </button>
 
-                    <div className="auth-divider flex items-center mt-8 mb-6">
-                        <div className="auth-divider-line flex-1"></div>
-                        <span className="auth-divider-text px-4 text-xs uppercase">ou continue com</span>
-                        <div className="auth-divider-line flex-1"></div>
+                    <div className="flex items-center mt-8 mb-6">
+                        <div className="flex-1 border-t border-[#d2d2d7] dark:border-white/10"></div>
+                        <span className="px-4 text-xs uppercase font-medium tracking-wider text-[#86868b] dark:text-[#94a3b8]">ou continue com</span>
+                        <div className="flex-1 border-t border-[#d2d2d7] dark:border-white/10"></div>
                     </div>
 
                     <button
                         type="button"
-                        className="btn-secondary-glossy auth-secondary-btn w-full py-3 text-[15px] flex items-center justify-center gap-3"
+                        className="btn-secondary-glossy w-full py-3 text-[15px] flex items-center justify-center gap-3 opacity-50 cursor-not-allowed font-medium"
                         disabled
                     >
-                        <FcGoogle className="auth-icon w-5 h-5 shrink-0" />
+                        <FcGoogle className="w-5 h-5 shrink-0" />
                         Cadastrar com Google (Em breve)
                     </button>
                 </form>
 
-                <div className="auth-footer mt-8">
-                    <Link to="/login" className="auth-link text-sm">
+                <div className="mt-8">
+                    <Link to="/login" className="text-sm text-[#0066cc] dark:text-blue-400 hover:underline">
                         Já tem uma conta? Entrar ›
                     </Link>
                 </div>
