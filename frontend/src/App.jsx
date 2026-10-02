@@ -40,8 +40,6 @@ function App() {
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/suporte" element={<PrivateRoute><Suporte /></PrivateRoute>} />
-          {/* <Route path="/layout-demo" element={<LayoutDemo />} /> */}
-
           <Route path="*" element={<NotFound />} />
         </Routes>
         <CookieBanner />

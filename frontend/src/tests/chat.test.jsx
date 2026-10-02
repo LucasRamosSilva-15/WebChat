@@ -89,13 +89,13 @@ describe('Chat Component Integration Tests', () => {
 
   it('2. Exibe botão Entrar na Sala se usuário não entrou nela ainda', async () => {
     localStorage.setItem('chat_joinedRooms', JSON.stringify([])); // clear joins
-    
+
     renderChat();
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Entrar na Sala' })).toBeInTheDocument();
     });
-    
+
     expect(screen.getByText('Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?')).toBeInTheDocument();
   });
 
@@ -118,7 +118,6 @@ describe('Chat Component Integration Tests', () => {
       userId: 'test-user-id'
     }));
 
-    // Simula receber a mensagem devolta do servidor
     act(() => {
       if (socketCallbacks['receive_message']) {
         socketCallbacks['receive_message']({
@@ -142,15 +141,12 @@ describe('Chat Component Integration Tests', () => {
       expect(screen.getByText('Mensagem Inicial')).toBeInTheDocument();
     });
 
-    // Abrir o menu de ações
     const moreBtns = screen.getAllByRole('button').filter(b => b.className.includes('message-bubble-more-btn'));
-    fireEvent.click(moreBtns[0]); // Pela interface, é hover, mas vamos simular setando estado se der
-    
-    // In React, we trigger the menu display by hovering. Testing Library doesn't fully support CSS hover.
-    // However, the menu buttons might exist in DOM anyway
+    fireEvent.click(moreBtns[0]);
+
     const deleteBtn = screen.getByText('Apagar');
     expect(deleteBtn).toBeInTheDocument();
-    
+
     fireEvent.click(deleteBtn);
 
     expect(socket.emit).toHaveBeenCalledWith("delete_message", expect.objectContaining({
@@ -158,7 +154,6 @@ describe('Chat Component Integration Tests', () => {
       messageId: 'msg-mock-1'
     }));
 
-    // Simular o servidor respondendo
     act(() => {
       if (socketCallbacks['message_deleted']) {
         socketCallbacks['message_deleted']({ messageId: 'msg-mock-1' });
@@ -179,11 +174,11 @@ describe('Chat Component Integration Tests', () => {
     fireEvent.click(editBtn);
 
     const input = screen.getByPlaceholderText('Editar mensagem...');
-    expect(input.value).toBe('Mensagem Inicial'); // input preenchido com a msgs antiga
+    expect(input.value).toBe('Mensagem Inicial');
 
     fireEvent.change(input, { target: { value: 'Mensagem Modificada' } });
-    
-    const sendButton = screen.getByTitle('Salvar Edição'); // Muda o title/icone mas usa submit
+
+    const sendButton = screen.getByTitle('Salvar Edição');
     fireEvent.click(sendButton);
 
     expect(socket.emit).toHaveBeenCalledWith("edit_message", expect.objectContaining({
@@ -191,7 +186,6 @@ describe('Chat Component Integration Tests', () => {
       messageId: 'msg-mock-1'
     }));
 
-    // Simula evento do servidor (encriptado)
     const payload = JSON.stringify({ text: 'Mensagem Modificada', image: null });
     const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
 

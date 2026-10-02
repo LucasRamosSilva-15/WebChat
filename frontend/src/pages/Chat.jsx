@@ -123,13 +123,12 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     <div className="flex items-center gap-2 mt-0.5 px-1 w-full justify-end">
                         <button
                             onClick={() => onToggleLike(msg.messageId)}
-                            className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
-                                (msg.likes && msg.likes.includes(currentUserId))
-                                    ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
-                                    : (msg.likes && msg.likes.length > 0)
-                                        ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
-                                        : 'opacity-0 group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
-                            }`}
+                            className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${(msg.likes && msg.likes.includes(currentUserId))
+                                ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                : (msg.likes && msg.likes.length > 0)
+                                    ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                    : 'opacity-0 group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                }`}
                         >
                             {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-xs" /> : <FaRegHeart size={10} />}
                             {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
@@ -218,13 +217,12 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     <span className="text-[10px] font-medium flex items-center gap-1.5 text-[#86868b] dark:text-slate-400">{msgTime} {msg.isEdited && "(editada)"}</span>
                     <button
                         onClick={() => onToggleLike(msg.messageId)}
-                        className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
-                            (msg.likes && msg.likes.includes(currentUserId))
-                                ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
-                                : (msg.likes && msg.likes.length > 0)
-                                    ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
-                                    : 'opacity-0 group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
-                        }`}
+                        className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${(msg.likes && msg.likes.includes(currentUserId))
+                            ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                            : (msg.likes && msg.likes.length > 0)
+                                ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                : 'opacity-0 group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                            }`}
                     >
                         {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-xs" /> : <FaRegHeart size={10} />}
                         {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
@@ -320,7 +318,6 @@ const Chat = () => {
         setCurrentSearchIndex(0);
     }, [normalizedSearchTerm, messages.length]);
 
-    // Close menu on outside click
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (!e.target.closest('.message-bubble-actions')) {
@@ -944,7 +941,7 @@ const Chat = () => {
 
                                     navigate(`/chat?room=${privateRoomName}`);
                                     setSelectedUser(null);
-                                rebellion:
+                                    rebellion:
                                     setSelectedUser(null);
                                 }} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff]">
                                     <FaCommentAlt size={12} /> Mensagem Privada
@@ -1005,22 +1002,20 @@ const Chat = () => {
                             </button>
                             <button
                                 onClick={() => setSearchOpen(!searchOpen)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                                    searchOpen
-                                        ? '!bg-gradient-to-b !from-sky-400 !to-sky-600 dark:!from-sky-600 dark:!to-sky-800 !text-white !border-transparent !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]'
-                                        : 'border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 dark:hover:from-slate-600 dark:hover:to-slate-700'
-                                }`}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${searchOpen
+                                    ? '!bg-gradient-to-b !from-sky-400 !to-sky-600 dark:!from-sky-600 dark:!to-sky-800 !text-white !border-transparent !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]'
+                                    : 'border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 dark:hover:from-slate-600 dark:hover:to-slate-700'
+                                    }`}
                                 title="Buscar mensagens"
                             >
                                 <FaSearch size={14} className={searchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
                             </button>
                             <button
                                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                                    showFavoritesOnly
-                                        ? '!bg-gradient-to-b !from-sky-400 !to-sky-600 dark:!from-sky-600 dark:!to-sky-800 !text-white !border-transparent !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]'
-                                        : 'border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 dark:hover:from-slate-600 dark:hover:to-slate-700'
-                                }`}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${showFavoritesOnly
+                                    ? '!bg-gradient-to-b !from-sky-400 !to-sky-600 dark:!from-sky-600 dark:!to-sky-800 !text-white !border-transparent !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]'
+                                    : 'border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 dark:hover:from-slate-600 dark:hover:to-slate-700'
+                                    }`}
                                 title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
                             >
                                 <FaStar size={14} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />

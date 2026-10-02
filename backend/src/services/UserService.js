@@ -6,7 +6,6 @@ class UserService {
   async register(userData) {
     const { email, password, displayName } = userData;
 
-    // Validação de regra de negócio
     if (!email || !password) {
       throw new Error('E-mail e senha são obrigatórios.');
     }
@@ -16,7 +15,6 @@ class UserService {
       throw new Error('Já existe um usuário com este e-mail.');
     }
 
-    // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await UserRepository.create({
@@ -39,7 +37,6 @@ class UserService {
       throw new Error('Credenciais inválidas.');
     }
 
-    // Gera o token
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || 'fallback_secret',

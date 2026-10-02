@@ -6,7 +6,6 @@ import Register from '../pages/Register';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../socket';
 
-// Mock dependencies
 vi.mock('../services/api', () => ({
   apiRequest: vi.fn(),
   setAuthToken: vi.fn()
@@ -92,11 +91,11 @@ describe('Authentication Flow Tests', () => {
       expect(localStorage.getItem('chat_isLoggedIn')).toBe('true');
       expect(localStorage.getItem('chat_displayName')).toBe('User Test');
       expect(localStorage.getItem('chat_uniqueUserId')).toBe('user-123');
-      
+
       expect(socket.auth).toEqual({ token: 'fake-jwt-token' });
       expect(socket.disconnect).toHaveBeenCalled();
       expect(socket.connect).toHaveBeenCalled();
-      
+
       expect(mockedNavigate).toHaveBeenCalledWith('/rooms');
     });
   });
@@ -124,16 +123,14 @@ describe('Authentication Flow Tests', () => {
       fireEvent.change(screen.getByPlaceholderText(/nome de usuário/i), { target: { value: 'User' } });
       fireEvent.change(screen.getByPlaceholderText(/e-mail/i), { target: { value: 'test@test.com' } });
       fireEvent.change(screen.getByPlaceholderText(/senha/i), { target: { value: 'senha123' } });
-      
+
       const submitBtn = screen.getByRole('button', { name: /^cadastrar$/i });
       expect(submitBtn).toBeDisabled();
 
-      // Check one, still disabled
       const checkboxes = screen.getAllByRole('checkbox');
       fireEvent.click(checkboxes[0]);
       expect(submitBtn).toBeDisabled();
 
-      // Check both, now enabled
       fireEvent.click(checkboxes[1]);
       expect(submitBtn).not.toBeDisabled();
     });
@@ -141,7 +138,7 @@ describe('Authentication Flow Tests', () => {
     it('3. Realiza cadastro com sucesso, salva sessão e redireciona', async () => {
       apiRequest.mockResolvedValue({
         token: 'fake-jwt-register',
-        user: { id: 'user-456', displayName: 'New User' } // backend can return displayName
+        user: { id: 'user-456', displayName: 'New User' }
       });
 
       render(
@@ -153,11 +150,10 @@ describe('Authentication Flow Tests', () => {
       fireEvent.change(screen.getByPlaceholderText(/nome de usuário/i), { target: { value: 'New User' } });
       fireEvent.change(screen.getByPlaceholderText(/e-mail/i), { target: { value: 'new@test.com' } });
       fireEvent.change(screen.getByPlaceholderText(/senha/i), { target: { value: 'senha123' } });
-      
-      // Select the checkboxes to accept terms and privacy
+
       const checkboxes = screen.getAllByRole('checkbox');
-      fireEvent.click(checkboxes[0]); // Termos de uso
-      fireEvent.click(checkboxes[1]); // Política de privacidade
+      fireEvent.click(checkboxes[0]);
+      fireEvent.click(checkboxes[1]);
 
       fireEvent.click(screen.getByRole('button', { name: /^cadastrar$/i }));
 

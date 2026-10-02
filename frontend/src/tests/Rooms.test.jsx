@@ -47,8 +47,7 @@ describe('Rooms Component Integration Tests', () => {
     );
 
     expect(screen.getByText('Carregando salas...')).toBeInTheDocument();
-    
-    // Cleanup
+
     resolveApi([]);
   });
 
@@ -77,8 +76,7 @@ describe('Rooms Component Integration Tests', () => {
 
     expect(screen.getByText('Sala Teste')).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: 'Jogos' })).toBeInTheDocument();
-    
-    // Stats validation
+
     expect(screen.getByText('100')).toBeInTheDocument(); // total users
   });
 
@@ -99,7 +97,6 @@ describe('Rooms Component Integration Tests', () => {
   });
 
   it('4. Criação de Sala: Não permite criar se nome for vazio', async () => {
-    // Setup initial fetch
     apiRequest.mockResolvedValue([]);
 
     render(
@@ -112,27 +109,23 @@ describe('Rooms Component Integration Tests', () => {
       expect(screen.queryByText('Carregando salas...')).not.toBeInTheDocument();
     });
 
-    // Abrir modal (só tem 1 botão antes do modal abrir)
     fireEvent.click(screen.getByRole('button', { name: /criar sala/i }));
     expect(screen.getByText('Criar Nova Sala')).toBeInTheDocument();
 
-    // Tentar enviar sem nome (já é prevented pelo required mas testamos se chama a apiRequest manual)
     const inputs = screen.getAllByRole('textbox');
-    // inputs[0] is Nome da Sala (in the modal)
+
     fireEvent.change(inputs[0], { target: { value: '   ' } });
-    
+
     const submitBtn = screen.getAllByRole('button', { name: /criar sala/i })[0];
     fireEvent.submit(submitBtn.closest('form'));
-
-    // Como apenas fetch initial da paginação foi chamado
-    expect(apiRequest).toHaveBeenCalledTimes(2); // 1 para /rooms, 1 para /stats. Nada de POST!
+    expect(apiRequest).toHaveBeenCalledTimes(2);
   });
 
   it('5. Criação de Sala: Envia request para API e redireciona', async () => {
     apiRequest.mockImplementation((url, options) => {
       if (url === '/rooms' && !options) return Promise.resolve([]);
       if (url === '/stats') return Promise.resolve({});
-      
+
       if (url === '/rooms' && options?.method === 'POST') {
         return Promise.resolve({
           id: 99,
@@ -157,13 +150,12 @@ describe('Rooms Component Integration Tests', () => {
     });
 
     fireEvent.click(screen.getByRole('button', { name: /criar sala/i }));
-    
+
     const inputs = screen.getAllByRole('textbox');
-    // Modal renderiza primeiro, então inputs[0] = Nome da Sala, inputs[1] = Descrição
+
     fireEvent.change(inputs[0], { target: { value: 'Nova Sala' } });
     fireEvent.change(inputs[1], { target: { value: 'Descrição da Sala' } });
 
-    // Category select
     fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: 'Arte' } });
 
     const submitBtn = screen.getAllByRole('button', { name: /criar sala/i })[0];

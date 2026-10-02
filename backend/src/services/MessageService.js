@@ -33,7 +33,6 @@ class MessageService {
     const message = await MessageRepository.findById(id);
     if (!message) throw new Error('Mensagem não encontrada.');
 
-    // Apenas quem enviou a mensagem ou um admin pode deletar
     if (message.user_id !== userId && !isAdmin) {
       throw new Error('Você não tem permissão para deletar esta mensagem.');
     }

@@ -165,7 +165,6 @@
         z-index: 11;
     }
 
-    /* Mapeamento Dinâmico de Cor Primária do Tema */
     .text-\[\#0071e3\], html.dark .text-\[\#0071e3\] {
         color: var(--primary-main) !important;
     }

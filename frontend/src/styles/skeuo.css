@@ -35,9 +35,9 @@
     }
 
     html.dark .skeuo-card {
-        background-color: #202022;
-        border-color: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .skeuo-topbar {
@@ -343,7 +343,6 @@
         color: #f8fafc;
     }
 
-    /* Navegação */
     .skeuo-nav {
         background: linear-gradient(to bottom, #ffffff 0%, #eef1f5 100%);
         border-bottom: 1px solid #d2d2d7;
@@ -358,7 +357,6 @@
         color: #f8fafc !important;
     }
 
-    /* Botão Principal Skeuomórfico */
     .skeuo-btn {
         background: linear-gradient(to bottom, var(--primary-light) 0%, var(--primary-main) 50%, var(--primary-dark) 51%, var(--primary-darker) 100%);
         border: 1px solid var(--primary-darker);
@@ -411,7 +409,6 @@
         text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.8) !important;
     }
 
-    /* Botão Secundário Glossy */
     .btn-secondary-glossy {
         background: linear-gradient(to bottom, #ffffff 0%, #e6e6e6 50%, #cccccc 51%, #b3b3b3 100%);
         border: 1px solid #999;
@@ -456,7 +453,6 @@
         border-top-color: #000 !important;
     }
 
-    /* Botão Branco Glossy */
     .btn-white-glossy {
         background: linear-gradient(to bottom, #ffffff 0%, #f9f9f9 50%, #f0f0f0 51%, #e6e6e6 100%);
         border: 1px solid #cccccc;
@@ -501,7 +497,6 @@
         border-top-color: #000 !important;
     }
 
-    /* Input Skeuomórfico */
     .skeuo-input {
         background: #fafafa;
         border: 1px solid #b3b3b3;
@@ -534,7 +529,6 @@
         box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px var(--primary-ring-focus) !important;
     }
 
-    /* Balões de Mensagem (Formato Clássico) */
     .skeuo-bubble-received {
         background: linear-gradient(to bottom, #f9f9f9 0%, #ebebeb 100%);
         border: 1px solid #ccc;

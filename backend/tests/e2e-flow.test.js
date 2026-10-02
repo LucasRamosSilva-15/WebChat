@@ -5,7 +5,6 @@ const { Server } = require('socket.io');
 const ioClient = require('socket.io-client');
 const { sequelize } = require('../src/models/index');
 
-// Setup mock server similar to server.js
 const app = express();
 app.use(express.json());
 const apiRoutes = require('../src/routes/api');
@@ -14,7 +13,6 @@ app.use('/api', apiRoutes);
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Mock server auth and socket logic
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error('Erro de Autenticação: Token não fornecido'));
@@ -35,8 +33,8 @@ let port;
 let socketUrl;
 
 beforeAll(async () => {
-  await sequelize.sync({ force: true }); // Wipe DB
-  testServer = server.listen(0); // Random port
+  await sequelize.sync({ force: true });
+  testServer = server.listen(0);
   port = testServer.address().port;
   socketUrl = `http://localhost:${port}`;
 });
@@ -59,7 +57,7 @@ describe('E2E User Flow', () => {
         email: 'teste2e@example.com',
         password: 'password123'
       });
-    
+
     expect(res.statusCode).toBe(201);
     expect(res.body.token).toBeDefined();
     userToken = res.body.token;
@@ -75,7 +73,6 @@ describe('E2E User Flow', () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
-    // Refresh token
     userToken = res.body.token;
   });
 
@@ -101,7 +98,7 @@ describe('E2E User Flow', () => {
 
     clientSocket.on('connect', () => {
       clientSocket.emit('join_room', { room: roomId, userId: 'test_user_id' });
-      
+
       clientSocket.emit('send_message', {
         room: roomId,
         sender: 'Test E2E',

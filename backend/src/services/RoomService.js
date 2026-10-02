@@ -59,8 +59,7 @@ class RoomService {
 
   async deleteRoom(id, userId, isAdmin) {
     const room = await this.getRoomById(id);
-    
-    // Regra de negócio: Apenas o criador ou um admin podem deletar a sala
+
     if (room.created_by !== userId && !isAdmin) {
       throw new Error('Você não tem permissão para deletar esta sala.');
     }
@@ -73,7 +72,6 @@ class RoomService {
     const room = await RoomRepository.findById(roomId);
     if (!room) throw new Error('Sala não encontrada.');
 
-    // Pode implementar checagem de max_users aqui caso exista
     const member = await RoomMemberRepository.addMember(roomId, userId, 'user');
     return { success: true, member };
   }

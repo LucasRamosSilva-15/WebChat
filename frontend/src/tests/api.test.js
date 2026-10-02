@@ -3,7 +3,6 @@ import { getAuthToken, setAuthToken, removeAuthToken, apiRequest, API_URL } from
 
 describe('API Utils Tests', () => {
     beforeEach(() => {
-        // Limpar localStorage e mockar fetch antes de cada teste
         localStorage.clear();
         vi.stubGlobal('fetch', vi.fn());
     });
@@ -14,15 +13,12 @@ describe('API Utils Tests', () => {
 
     describe('Auth Token Handlers', () => {
         it('1. Deve salvar, recuperar e remover o token do localStorage corretamente', () => {
-            // Inicialmente nulo
             expect(getAuthToken()).toBeNull();
 
-            // Salva o token
             setAuthToken('test-token-123');
             expect(getAuthToken()).toBe('test-token-123');
             expect(localStorage.getItem('chat_token')).toBe('test-token-123');
 
-            // Remove o token
             removeAuthToken();
             expect(getAuthToken()).toBeNull();
         });
@@ -37,7 +33,7 @@ describe('API Utils Tests', () => {
             });
 
             const result = await apiRequest('/test-endpoint');
-            
+
             expect(fetch).toHaveBeenCalledWith(`${API_URL}/test-endpoint`, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -48,14 +44,14 @@ describe('API Utils Tests', () => {
 
         it('3. Deve injetar Authorization Bearer header se token existir', async () => {
             setAuthToken('my-secret-token');
-            
+
             fetch.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({})
             });
 
             await apiRequest('/secure-endpoint');
-            
+
             expect(fetch).toHaveBeenCalledWith(`${API_URL}/secure-endpoint`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -66,7 +62,7 @@ describe('API Utils Tests', () => {
 
         it('4. Deve mesclar custom headers preservando o Authorization', async () => {
             setAuthToken('token');
-            
+
             fetch.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({})
@@ -77,7 +73,7 @@ describe('API Utils Tests', () => {
                     'X-Custom-Header': 'CustomValue'
                 }
             });
-            
+
             expect(fetch).toHaveBeenCalledWith(`${API_URL}/upload`, {
                 headers: {
                     'Content-Type': 'application/json',
