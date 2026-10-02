@@ -1,0 +1,31 @@
+.skeuo-input {
+    background: #fafafa;
+    border: 1px solid #b3b3b3;
+    border-top-color: #999;
+    border-radius: 22px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);
+    font-size: 16px;
+    color: #1d1d1f;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.skeuo-input:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: var(--primary-main);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1), 0 0 8px var(--primary-ring-focus);
+}
+
+html.dark .skeuo-input {
+    background: #0f172a !important;
+    border: 1px solid #020617 !important;
+    border-top-color: #000 !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: #f8fafc !important;
+}
+
+html.dark .skeuo-input:focus {
+    background: #1e293b !important;
+    border-color: var(--primary-main) !important;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px var(--primary-ring-focus) !important;
+}

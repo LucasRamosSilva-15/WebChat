@@ -1,0 +1,67 @@
+.skeuo-bubble-received {
+    background: linear-gradient(to bottom, #f9f9f9 0%, #ebebeb 100%);
+    border: 1px solid #ccc;
+    border-radius: 18px;
+    border-bottom-left-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
+    color: #1d1d1f;
+}
+
+.skeuo-bubble-sent {
+    background: linear-gradient(to bottom, var(--primary-hover-light) 0%, var(--primary-main) 100%);
+    border: 1px solid var(--primary-dark);
+    border-radius: 18px;
+    border-bottom-right-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.chat-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(to right, #c2c2c2, #a3a3a3);
+    border-radius: 10px;
+    border: 1px solid #8c8c8c;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to right, #a3a3a3, #8c8c8c);
+}
+
+.message-search-match {
+    outline: 1px solid var(--primary-main) !important;
+    box-shadow: 0 0 0 3px var(--primary-ring) !important;
+    z-index: 10;
+}
+
+.message-search-current {
+    outline: 2px solid var(--primary-main) !important;
+    box-shadow: 0 0 0 4px var(--primary-ring-focus) !important;
+    z-index: 11;
+}
+
+html.dark .skeuo-bubble-received {
+    background: linear-gradient(to bottom, #334155 0%, #1e293b 100%) !important;
+    border: 1px solid #0f172a !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: #f8fafc !important;
+}
+
+html.dark .skeuo-bubble-sent {
+    background: 
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%),
+        var(--primary-main) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5) !important;
+}
