@@ -5,7 +5,7 @@
 </div>
 
 
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-8.0.0-blue?style=for-the-badge)
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-8.1.0-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -156,7 +156,7 @@ npm run test:backend && npm run test:frontend
 * [ ] Otimizações no frontend, backend e banco de dados
 * [ ] Aumentar a segurança do sistema e do banco de dados
 * [x] Página de Feedback
-* [x] Administração do sistema (painel de controle) (só falta a parte do backend)
+* [x] Administração do sistema (painel de controle) (está quase completo)
 * [ ] Sistema de administração das salas (moderação avançada, cargos, etc) (está em boa parte implementado mas em incompleto ainda)
 * [ ] Sistema de amizades e mensagens privadas
 * [ ] Sistema de denúncias e bloqueios (está em boa parte implementado mas em incompleto ainda)
