@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaCloud, FaGraduationCap, FaServer, FaUsers, FaPaperPlane, FaCity, FaComments, FaComment, FaPencilRuler } from 'react-icons/fa';
 
 const InfoCard = ({ title, description, icon: Icon, delay }) => (
-    <div className={`skeuo-panel about-info-card p-8 h-full flex flex-col items-start text-left animate-fade-in-up`} style={{ animationDelay: delay }}>
+    <div className={`about-info-card p-8 h-full flex flex-col items-start text-left animate-fade-in-up`} style={{ animationDelay: delay }}>
         <div className="about-info-icon w-12 h-12 flex items-center justify-center mb-6">
             <Icon size={24} />
         </div>
@@ -43,49 +43,49 @@ const About = () => {
 
                     <div className="about-preview flex-1 w-full max-w-[450px] mx-auto relative z-10">
                         <div className="about-preview-glow absolute inset-0 scale-[1.05]"></div>
-                        <div className="skeuo-panel about-chat-window p-0 overflow-hidden relative z-10 scale-100 hover:scale-[1.02] transition-transform duration-500">
-                            <div className="about-chat-topbar px-5 py-4 flex items-center gap-3">
-                                <div className="about-chat-room-icon w-10 h-10 flex items-center justify-center">
+                        <div className="mockup-window relative z-10 scale-100 hover:scale-[1.02] transition-transform duration-500">
+                            <div className="mockup-topbar px-5 py-4 flex items-center gap-3">
+                                <div className="mockup-room-icon w-10 h-10 flex items-center justify-center flex-shrink-0">
                                     <FaCity size={18} />
                                 </div>
                                 <div>
-                                    <h3 className="about-chat-room-title text-[15px]">Campina Grande</h3>
-                                    <div className="about-chat-online-row flex items-center gap-1.5 mt-0.5">
-                                        <span className="about-chat-status-dot w-1.5 h-1.5"></span>
-                                        <span className="about-chat-status-text text-[11px]">158 pessoas online</span>
+                                    <h3 className="mockup-room-title text-[15px]">Campina Grande</h3>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <span className="mockup-status-dot w-1.5 h-1.5"></span>
+                                        <span className="mockup-status-text text-[11px]">158 pessoas online</span>
                                     </div>
                                 </div>
-                                <div className="about-window-controls ml-auto flex gap-1">
-                                    <div className="about-window-dot about-window-dot-red w-2 h-2"></div>
-                                    <div className="about-window-dot about-window-dot-yellow w-2 h-2"></div>
-                                    <div className="about-window-dot about-window-dot-green w-2 h-2"></div>
+                                <div className="ml-auto flex items-center gap-1.5">
+                                    <div className="mockup-dot mockup-dot-red"></div>
+                                    <div className="mockup-dot mockup-dot-yellow"></div>
+                                    <div className="mockup-dot mockup-dot-green"></div>
                                 </div>
                             </div>
 
-                            <div className="about-chat-body p-5 min-h-[250px] flex flex-col justify-end gap-4 relative">
-                                <div className="about-chat-pattern absolute inset-0 pointer-events-none"></div>
+                            <div className="mockup-body p-5 min-h-[250px] flex flex-col justify-end gap-4 relative">
+                                <div className="mockup-pattern"></div>
 
-                                <div className="about-message-incoming self-start max-w-[85%] p-3.5 relative z-10 text-sm">
-                                    <p> O clima em Campina Grande está quente hoje</p>
+                                <div className="mockup-msg-incoming self-start max-w-[85%] p-3.5 relative z-10 text-sm">
+                                    <p>O clima em Campina Grande está quente hoje</p>
                                 </div>
 
-                                <div className="about-message-outgoing self-end max-w-[85%] p-3.5 relative z-10 text-sm">
+                                <div className="mockup-msg-outgoing self-end max-w-[85%] p-3.5 relative z-10 text-sm">
                                     <p>Concordo</p>
-                                    <span className="about-message-time block text-right mt-1 text-[10px]">Entregue</span>
+                                    <span className="mockup-msg-time block text-right mt-1">Entregue</span>
                                 </div>
 
-                                <div className="about-typing flex items-center gap-2 mt-2">
-                                    <span className="about-typing-text animate-pulse flex items-center gap-1 text-[11px]">
+                                <div className="flex items-center gap-2 mt-2 relative z-10">
+                                    <span className="mockup-typing animate-pulse flex items-center gap-1">
                                         <FaComments size={10} /> Gabriel está digitando...
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="about-chat-inputbar p-3 flex gap-2">
-                                <div className="skeuo-input about-chat-input flex-1 px-4 py-2 flex items-center text-[13px]">
+                            <div className="mockup-inputbar p-3 flex items-center gap-2 relative z-10">
+                                <div className="mockup-input flex-1 px-4 py-2 flex items-center text-[13px]">
                                     Enviar uma mensagem...
                                 </div>
-                                <div className="about-send-btn w-9 h-9 flex items-center justify-center -rotate-12">
+                                <div className="mockup-send-btn w-9 h-9 flex items-center justify-center -rotate-12 cursor-pointer flex-shrink-0">
                                     <FaPaperPlane size={12} className="ml-[-2px] mt-[2px]" />
                                 </div>
                             </div>

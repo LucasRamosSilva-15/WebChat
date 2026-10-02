@@ -56,16 +56,16 @@ const Register = () => {
     return (
         <main className="reveal auth-page auth-page-register flex-1 flex items-center justify-center px-6 py-12">
             <div className="skeuo-card auth-panel auth-panel-register p-10 w-full text-center max-w-[500px]">
-                <h1 className="hero-title auth-title text-[40px] mb-2">
+                <h1 className="hero-title text-[40px] mb-2 font-semibold">
                     Crie sua conta
                 </h1>
-                <p className="auth-subtitle text-[17px] mb-10">
+                <p className="skeuo-subtitle font-normal text-[17px] mb-10">
                     Preencha os dados para criar sua conta.
                 </p>
 
                 <form className="auth-form auth-form-register text-left space-y-4" onSubmit={handleRegister}>
                     {error && (
-                        <div className="auth-error p-3 text-sm">
+                        <div className="msg-error text-sm mb-4">
                             {error}
                         </div>
                     )}
@@ -112,15 +112,15 @@ const Register = () => {
                         {loading ? 'Cadastrando...' : 'Cadastrar'}
                     </button>
 
-                    <div className="auth-divider flex items-center mt-8 mb-6">
-                        <div className="auth-divider-line flex-1"></div>
-                        <span className="auth-divider-text px-4 text-xs uppercase">ou continue com</span>
-                        <div className="auth-divider-line flex-1"></div>
+                    <div className="flex items-center mt-8 mb-6">
+                        <div className="divider-line flex-1"></div>
+                        <span className="divider-text px-4 text-xs uppercase">ou continue com</span>
+                        <div className="divider-line flex-1"></div>
                     </div>
 
                     <button
                         type="button"
-                        className="btn-secondary-glossy auth-secondary-btn w-full py-3 text-[15px] flex items-center justify-center gap-3"
+                        className="btn-secondary-glossy w-full py-3 text-[15px] flex items-center justify-center gap-3 opacity-50 cursor-not-allowed font-medium"
                         disabled
                     >
                         <FcGoogle className="auth-icon w-5 h-5 shrink-0" />
@@ -129,7 +129,7 @@ const Register = () => {
                 </form>
 
                 <div className="auth-footer mt-8">
-                    <Link to="/login" className="auth-link text-sm">
+                    <Link to="/login" className="skeuo-link text-sm">
                         Já tem uma conta? Entrar ›
                     </Link>
                 </div>

@@ -39,16 +39,14 @@ const AdminLogin = () => {
         <main className="reveal auth-page flex-1 flex items-center justify-center px-6">
             <div className="skeuo-card auth-panel auth-panel-login p-10 w-full text-center max-w-[400px]">
                 <div className="flex flex-col items-center mb-10">
-                    <h2 className="hero-title auth-title text-[40px] mb-2">Admin</h2>
-                    <p className="auth-subtitle text-[17px]">Acesso Restrito</p>
+                    <h2 className="hero-title text-[40px] mb-2 font-semibold">Admin</h2>
+                    <p className="skeuo-subtitle font-normal text-[17px]">Acesso Restrito</p>
                 </div>
                 
                 <form onSubmit={handleLogin} className="auth-form auth-form-login text-left space-y-6">
-                    {error && (
-                        <div className="auth-error p-3 text-sm">
+                        <div className="msg-error text-sm mb-4">
                             {error}
                         </div>
-                    )}
                     
                     <div className="input-group">
                         <input
@@ -72,7 +70,7 @@ const AdminLogin = () => {
                 <div className="mt-6 text-center">
                     <a
                         href="/"
-                        className="auth-link text-sm"
+                        className="skeuo-link text-sm"
                     >
                         Voltar para o Início
                     </a>

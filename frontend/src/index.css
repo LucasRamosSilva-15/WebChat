@@ -4,9 +4,7 @@
 @import "./styles/animations.css";
 @import "./styles/text.css";
 @import "./styles/loading.css";
-@import "./styles/home.css";
 @import "./styles/about.css";
-@import "./styles/auth.css";
 @import "./styles/avatar.css";
 @import "./styles/footer.css";
 @import "./styles/sidebar.css";
@@ -24,5 +22,9 @@
 @import "./styles/components/buttons.css";
 @import "./styles/components/inputs.css";
 @import "./styles/components/chat-bubbles.css";
+@import "./styles/components/cards.css";
+@import "./styles/components/alerts.css";
+@import "./styles/components/dividers.css";
+@import "./styles/components/mockup-window.css";
 
 @variant dark (&:where(.dark, .dark *));

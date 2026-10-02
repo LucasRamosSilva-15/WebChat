@@ -32,6 +32,7 @@
     html.dark .about-hero-panel {
         background-color: rgba(30, 41, 59, 0.7);
         border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     .about-badge {
@@ -105,130 +106,6 @@
         filter: blur(40px);
     }
 
-    .about-chat-window {
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,1);
-    }
-
-    .about-chat-topbar {
-        border-bottom: 1px solid #d2d2d7;
-        background: linear-gradient(to bottom, #f5f5f7, #ebebed);
-    }
-    html.dark .about-chat-topbar {
-        border-color: rgba(255, 255, 255, 0.05);
-        background: linear-gradient(to bottom, #1e293b, #0f172a);
-    }
-
-    .about-chat-room-icon {
-        border-radius: 9999px;
-        background: linear-gradient(to bottom, #38bdf8, #0284c7);
-        color: white;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .about-chat-room-title {
-        font-weight: 700;
-        color: #1d1d1f;
-    }
-    html.dark .about-chat-room-title {
-        color: #f8fafc;
-    }
-
-    .about-chat-status-dot {
-        border-radius: 9999px;
-        background-color: #10b981;
-        box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
-    }
-
-    .about-chat-status-text {
-        color: #86868b;
-    }
-    html.dark .about-chat-status-text {
-        color: #94a3b8;
-    }
-
-    .about-window-dot {
-        border-radius: 9999px;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .about-window-dot-red { background-color: #fb7185; }
-    .about-window-dot-yellow { background-color: #fbbf24; }
-    .about-window-dot-green { background-color: #34d399; }
-
-    .about-chat-body {
-        background-color: #f8fafc;
-    }
-    html.dark .about-chat-body {
-        background-color: #020617;
-    }
-
-    .about-chat-pattern {
-        opacity: 0.03;
-        background-image: radial-gradient(#000 1px, transparent 1px);
-        background-size: 20px 20px;
-    }
-
-    .about-message-incoming {
-        background-color: white;
-        border-radius: 1rem;
-        border-top-left-radius: 0.125rem;
-        border: 1px solid rgba(0,0,0,0.05);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
-        color: #1d1d1f;
-    }
-    html.dark .about-message-incoming {
-        background-color: #1e293b;
-        border-color: rgba(255,255,255,0.05);
-        color: #f8fafc;
-    }
-
-    .about-message-outgoing {
-        background: linear-gradient(to bottom, #38bdf8, #0284c7);
-        color: white;
-        border-radius: 1rem;
-        border-top-right-radius: 0.125rem;
-        box-shadow: 0 4px 12px rgba(14,165,233,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
-        text-shadow: 0 -1px 0 rgba(0,0,0,0.2);
-    }
-
-    .about-message-time {
-        color: #e0f2fe;
-        opacity: 0.8;
-    }
-
-    .about-typing-text {
-        color: #0ea5e9;
-        font-weight: 500;
-    }
-    html.dark .about-typing-text {
-        color: #38bdf8;
-    }
-
-    .about-chat-inputbar {
-        background-color: white;
-        border-top: 1px solid #d2d2d7;
-    }
-    html.dark .about-chat-inputbar {
-        background-color: #1e293b;
-        border-color: rgba(255,255,255,0.05);
-    }
-
-    .about-chat-input {
-        background-color: #f4f5f7;
-        border-radius: 9999px;
-        color: #86868b;
-    }
-    html.dark .about-chat-input {
-        background-color: #0f172a;
-        color: #cbd5e1;
-    }
-
-    .about-send-btn {
-        border-radius: 9999px;
-        background: linear-gradient(to bottom, #38bdf8, #0284c7);
-        color: white;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.2);
-    }
-
     .about-section-heading-panel {
         background-color: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(12px);
@@ -239,6 +116,7 @@
     html.dark .about-section-heading-panel {
         background-color: rgba(30, 41, 59, 0.6);
         border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
     }
 
     .about-section-title {
@@ -263,11 +141,20 @@
         backdrop-filter: blur(4px);
         border: 1px solid white;
         box-shadow: 0 8px 25px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,1), inset 0 0 20px rgba(255,255,255,0.5);
+        border-radius: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .about-info-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1);
     }
     html.dark .about-info-card {
         background-color: rgba(30, 41, 59, 0.9);
         border-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    html.dark .about-info-card:hover {
+        box-shadow: 0 14px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
     }
 
     .about-info-icon {
@@ -304,6 +191,7 @@
         backdrop-filter: blur(24px);
         border: 1px solid white;
         box-shadow: 0 20px 50px rgba(0,113,227,0.08), inset 0 1px 0 rgba(255,255,255,1), inset 0 0 30px rgba(255,255,255,0.5);
+        border-radius: 2rem;
     }
     html.dark .about-cta {
         background-color: rgba(30, 41, 59, 0.8);

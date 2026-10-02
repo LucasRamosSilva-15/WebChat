@@ -1,0 +1,17 @@
+@layer components {
+    .divider-line {
+        border-top: 1px solid #d2d2d7;
+    }
+    html.dark .divider-line {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider-text {
+        color: #86868b;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+    }
+    html.dark .divider-text {
+        color: #94a3b8;
+    }
+}

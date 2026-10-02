@@ -1,0 +1,178 @@
+@layer components {
+    /* Main Mockup Window Container */
+    .mockup-window {
+        background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+        overflow: hidden;
+        position: relative;
+    }
+
+    html.dark .mockup-window {
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* Topbar */
+    .mockup-topbar {
+        border-bottom: 1px solid #d2d2d7;
+        background: linear-gradient(to bottom, #f5f5f7, #ebebed);
+    }
+
+    html.dark .mockup-topbar {
+        border-color: rgba(255, 255, 255, 0.05);
+        background: linear-gradient(to bottom, #1e293b, #0f172a);
+    }
+
+    /* Topbar Room Icon */
+    .mockup-room-icon {
+        border-radius: 9999px;
+        background: linear-gradient(to bottom, #38bdf8, #0284c7);
+        color: white;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Topbar Room Title & Status */
+    .mockup-room-title {
+        font-weight: 700;
+        color: #1d1d1f;
+    }
+
+    html.dark .mockup-room-title {
+        color: #f8fafc;
+    }
+
+    .mockup-status-dot {
+        border-radius: 9999px;
+        background-color: #10b981;
+        box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+    }
+
+    .mockup-status-text {
+        color: #86868b;
+    }
+
+    html.dark .mockup-status-text {
+        color: #94a3b8;
+    }
+
+    /* macOS Window Controls */
+    .mockup-dot {
+        border-radius: 9999px;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+        width: 10px;
+        height: 10px;
+    }
+
+    .mockup-dot-red { background-color: #fb7185; }
+    .mockup-dot-yellow { background-color: #fbbf24; }
+    .mockup-dot-green { background-color: #34d399; }
+
+    /* Window Body */
+    .mockup-body {
+        background-color: #f8fafc;
+        position: relative;
+    }
+
+    html.dark .mockup-body {
+        background-color: #020617;
+    }
+
+    .mockup-pattern {
+        opacity: 0.12;
+        background-image: radial-gradient(#64748b 1.2px, transparent 1.2px);
+        background-size: 20px 20px;
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+    }
+
+    html.dark .mockup-pattern {
+        opacity: 0.08;
+        background-image: radial-gradient(#94a3b8 1.2px, transparent 1.2px);
+    }
+
+    /* Chat Messages */
+    .mockup-msg-incoming {
+        background-color: white;
+        border-radius: 1.125rem;
+        border-top-left-radius: 0.25rem;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        color: #1d1d1f;
+    }
+
+    html.dark .mockup-msg-incoming {
+        background-color: #1e293b;
+        border-color: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+    }
+
+    .mockup-msg-outgoing {
+        background: linear-gradient(to bottom, #38bdf8, #0284c7);
+        color: white;
+        border-radius: 1.125rem;
+        border-top-right-radius: 0.25rem;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .mockup-msg-time {
+        color: #e0f2fe;
+        opacity: 0.85;
+        font-size: 10px;
+    }
+
+    .mockup-typing {
+        color: #0ea5e9;
+        font-weight: 500;
+        font-size: 11px;
+    }
+
+    html.dark .mockup-typing {
+        color: #38bdf8;
+    }
+
+    /* Inputbar */
+    .mockup-inputbar {
+        background-color: white;
+        border-top: 1px solid #d2d2d7;
+    }
+
+    html.dark .mockup-inputbar {
+        background-color: #1e293b;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .mockup-input {
+        background-color: #f4f5f7;
+        border-radius: 9999px;
+        color: #86868b;
+        border: 1px solid #d2d2d7;
+        border-top-color: #c4c4c8;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    html.dark .mockup-input {
+        background-color: #0f172a;
+        border-color: rgba(255, 255, 255, 0.1);
+        border-top-color: rgba(255, 255, 255, 0.05);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+        color: #cbd5e1;
+    }
+
+    .mockup-send-btn {
+        border-radius: 9999px;
+        background: linear-gradient(to bottom, #38bdf8, #0284c7);
+        color: white;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 6px rgba(2, 132, 199, 0.35);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mockup-send-btn:hover {
+        transform: scale(1.05);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 10px rgba(2, 132, 199, 0.45);
+    }
+}
