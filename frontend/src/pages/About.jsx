@@ -38,7 +38,7 @@ const About = () => {
                             <Link to="/rooms" className="skeuo-btn rounded-full flex items-center justify-center min-h-[48px] min-w-[160px] px-8 w-full sm:w-auto text-[15px]">
                                 Começar agora
                             </Link>
-                            <Link to="/" className="btn-secondary-glossy rounded-full font-medium text-[#1d1d1f] dark:text-white bg-white dark:bg-slate-800 border border-black/5 dark:border-white/5 shadow-xs flex items-center justify-center min-h-[48px] min-w-[160px] px-8 w-full sm:w-auto text-[15px]">
+                            <Link to="/" className="btn-secondary-glossy rounded-full min-h-[48px] min-w-[160px] px-8 w-full sm:w-auto text-[15px]">
                                 Saiba mais
                             </Link>
                         </div>
