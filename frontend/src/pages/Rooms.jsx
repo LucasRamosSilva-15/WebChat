@@ -5,26 +5,32 @@ import { FaSearch, FaSlidersH, FaCommentAlt, FaUsers, FaExclamationTriangle, FaP
 import { apiRequest } from '../services/api';
 import SkeuoLoading from '../components/SkeuoLoading';
 
+const StatCard = ({ title, value, subtext, icon: Icon, iconVariant = "blue" }) => {
+    const iconColorClass = iconVariant === "blue" 
+        ? "text-[#0071e3] dark:text-blue-400" 
+        : iconVariant === "green" 
+            ? "text-emerald-600 dark:text-emerald-400" 
+            : "text-red-500 dark:text-red-400";
 
-
-const StatCard = ({ title, value, subtext, icon: Icon, iconVariant = "blue" }) => (
-    <div className="skeuo-panel rooms-stat-card p-6 flex flex-col justify-between h-full">
-        <div className="flex justify-between items-start mb-4">
-            <h3 className="rooms-stat-title text-[13px]">{title}</h3>
-            <div className={`rooms-icon-tile w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 rooms-stat-icon-${iconVariant}`}>
-                <Icon />
+    return (
+        <div className="skeuo-panel p-6 flex flex-col justify-between h-full transition-transform duration-300 hover:scale-[1.02]">
+            <div className="flex justify-between items-start mb-4">
+                <h3 className="text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">{title}</h3>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 bg-gradient-to-b from-[#e0f2fe] to-[#f0f9ff] border border-sky-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_4px_10px_rgba(14,165,233,0.12)] dark:from-sky-500/20 dark:to-slate-900 dark:border-sky-400/20 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)] ${iconColorClass}`}>
+                    <Icon />
+                </div>
+            </div>
+            <div>
+                <div className="text-[32px] mb-1 font-bold text-[#1d1d1f] dark:text-slate-50">{value}</div>
+                <div className="text-sm flex items-center gap-1 text-[#424245] dark:text-slate-300">{subtext}</div>
             </div>
         </div>
-        <div>
-            <div className="rooms-stat-value text-[32px] mb-1">{value}</div>
-            <div className="rooms-stat-subtext text-sm flex items-center gap-1">{subtext}</div>
-        </div>
-    </div>
-);
+    );
+};
 
 const RoomIconWithTooltip = ({ description, imageUrl }) => (
     <div className="relative group">
-        <div className="rooms-icon-tile w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden bg-gradient-to-b from-[#e0f2fe] to-[#f0f9ff] border border-sky-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_4px_10px_rgba(14,165,233,0.12)] cursor-help transition-transform duration-200 group-hover:scale-105 dark:from-sky-500/20 dark:to-slate-900 dark:border-sky-400/20 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_12px_rgba(0,0,0,0.35)]">
             {imageUrl ? (
                 <img src={imageUrl} alt="Room Icon" className="w-full h-full object-cover" />
             ) : (
@@ -32,9 +38,9 @@ const RoomIconWithTooltip = ({ description, imageUrl }) => (
             )}
         </div>
 
-        <div className="skeuo-tooltip rooms-tooltip left-[calc(100%+10px)] top-1/2 -translate-y-1/2 -translate-x-2">
-            <div className="skeuo-tooltip-arrow rooms-tooltip-arrow -mr-1.5"></div>
-            <div className="skeuo-panel skeuo-tooltip-content rooms-tooltip-content">
+        <div className="skeuo-tooltip left-[calc(100%+10px)] top-1/2 -translate-y-1/2 -translate-x-2 group-hover:translate-x-0">
+            <div className="skeuo-tooltip-arrow -mr-1.5"></div>
+            <div className="skeuo-panel skeuo-tooltip-content">
                 {description || "Sem descrição disponível."}
             </div>
         </div>
@@ -63,29 +69,29 @@ const CreateRoomModal = ({
             onClick={onClose}
         >
             <div
-                className="skeuo-panel rooms-modal-panel p-8 w-full max-w-[450px] relative"
+                className="skeuo-panel p-8 w-full max-w-[450px] relative"
                 onClick={e => e.stopPropagation()}
             >
-                <h2 className="rooms-modal-title text-2xl mb-6">Criar Nova Sala</h2>
+                <h2 className="text-2xl mb-6 font-semibold text-gray-900 dark:text-slate-50">Criar Nova Sala</h2>
 
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div className="space-y-1">
-                        <label className="rooms-label block text-xs ml-1">Nome da Sala</label>
+                        <label className="block text-xs ml-1 font-medium text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">Nome da Sala</label>
                         <input
                             type="text"
                             required
                             value={newRoomTitle}
                             onChange={(e) => setNewRoomTitle(e.target.value)}
-                            className="skeuo-input rooms-modal-input w-full px-4 py-3"
+                            className="skeuo-input w-full px-4 py-3"
                         />
                     </div>
 
                     <div className="space-y-1">
-                        <label className="rooms-label block text-xs ml-1">Categoria</label>
+                        <label className="block text-xs ml-1 font-medium text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">Categoria</label>
                         <select
                             value={newRoomCategory}
                             onChange={(e) => setNewRoomCategory(e.target.value)}
-                            className="skeuo-input rooms-modal-input rooms-modal-select w-full px-4 py-3"
+                            className="skeuo-input w-full px-4 py-3 bg-white dark:bg-slate-800"
                         >
                             <option>Casual</option>
                             <option>Tecnologia</option>
@@ -96,17 +102,17 @@ const CreateRoomModal = ({
                     </div>
 
                     <div className="space-y-1">
-                        <label className="rooms-label block text-xs ml-1">Descrição</label>
+                        <label className="block text-xs ml-1 font-medium text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">Descrição</label>
                         <input
                             type="text"
                             value={newRoomDesc}
                             onChange={(e) => setNewRoomDesc(e.target.value)}
-                            className="skeuo-input rooms-modal-input w-full px-4 py-3"
+                            className="skeuo-input w-full px-4 py-3"
                         />
                     </div>
 
                     <div className="space-y-1">
-                        <label className="rooms-label block text-xs ml-1">Imagem da Sala (Opcional)</label>
+                        <label className="block text-xs ml-1 font-medium text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">Imagem da Sala (Opcional)</label>
                         <div className="flex items-center gap-4">
                             <label className="cursor-pointer skeuo-btn px-4 py-2 text-sm flex items-center gap-2 rounded-lg">
                                 Escolher Imagem
@@ -118,18 +124,18 @@ const CreateRoomModal = ({
                         </div>
                     </div>
 
-                    <div className="rooms-modal-actions flex gap-3 pt-4">
+                    <div className="flex gap-3 pt-4">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="btn-secondary-glossy rooms-modal-btn w-full py-3"
+                            className="btn-secondary-glossy w-full py-3"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={isCreatingRoom}
-                            className="skeuo-btn rooms-modal-btn rooms-modal-btn-submit w-full py-3 text-base"
+                            className="skeuo-btn w-full py-3 text-base disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {isCreatingRoom ? "Criando..." : "Criar Sala"}
                         </button>
@@ -141,59 +147,59 @@ const CreateRoomModal = ({
 };
 
 const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
-    <tr className="rooms-table-row">
-        <td className="rooms-table-td px-6 py-4">
+    <tr className="border-b border-[#d2d2d7]/30 dark:border-white/5 transition-colors duration-150 hover:bg-black/[0.02] dark:hover:bg-white/[0.02]">
+        <td className="px-6 py-4">
             <div className="flex items-center gap-4">
                 <RoomIconWithTooltip description={room.description} imageUrl={room.image_url} />
                 <div>
-                    <div className="rooms-row-title text-base">{room.title}</div>
-                    <div className="rooms-row-date text-[13px]">Criada em {room.date || "Recente"}</div>
+                    <div className="text-base font-semibold text-[#1d1d1f] dark:text-slate-50">{room.title}</div>
+                    <div className="text-[13px] text-[#86868b] dark:text-[#94a3b8]">Criada em {room.date || "Recente"}</div>
                 </div>
             </div>
         </td>
 
-        <td className="rooms-table-td rooms-row-category px-6 py-4 text-[15px]">
+        <td className="px-6 py-4 text-[15px] text-[#424245] dark:text-slate-300">
             {room.category || "Casual"}
         </td>
 
-        <td className="rooms-table-td px-6 py-4">
+        <td className="px-6 py-4">
             {room.status === "Arquivada" ? (
-                <span className="rooms-badge rooms-badge-archived inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px]">
-                    <span className="rooms-badge-dot rooms-badge-dot-archived w-2 h-2 rounded-full"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium bg-gradient-to-b from-gray-100 to-gray-200 border border-gray-300 text-gray-600 shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:from-slate-700 dark:to-slate-800 dark:border-slate-600 dark:text-slate-300 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)]">
+                    <span className="w-2 h-2 rounded-full bg-gray-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] dark:bg-slate-400"></span>
                     Arquivada
                 </span>
             ) : room.members >= 200 ? (
-                <span className="rooms-badge rooms-badge-full inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px]">
-                    <span className="rooms-badge-dot rooms-badge-dot-full w-2 h-2 rounded-full"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium bg-gradient-to-b from-red-100 to-red-200 border border-red-300 text-red-700 shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:from-red-950/40 dark:to-red-950/60 dark:border-red-800 dark:text-red-400 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)]">
+                    <span className="w-2 h-2 rounded-full bg-red-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] dark:bg-red-400"></span>
                     Cheia
                 </span>
             ) : (
-                <span className="rooms-badge rooms-badge-active inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px]">
-                    <span className="rooms-badge-dot rooms-badge-dot-active w-2 h-2 rounded-full"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-medium bg-gradient-to-b from-emerald-100 to-emerald-200 border border-emerald-300 text-emerald-700 shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] dark:from-emerald-950/40 dark:to-emerald-950/60 dark:border-emerald-800 dark:text-emerald-400 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)]">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(34,197,94,0.5),inset_0_1px_2px_rgba(0,0,0,0.2)] dark:bg-emerald-400 dark:shadow-[0_0_4px_rgba(74,222,128,0.5),inset_0_1px_2px_rgba(0,0,0,0.2)]"></span>
                     Ativa
                 </span>
             )}
         </td>
 
-        <td className="rooms-table-td rooms-row-members px-6 py-4 text-[15px] whitespace-nowrap">
+        <td className="px-6 py-4 text-[15px] whitespace-nowrap font-medium text-[#1d1d1f] dark:text-slate-50">
             {room.members} / 200
         </td>
 
-        <td className="rooms-table-td px-6 py-4 flex gap-2 items-center">
+        <td className="px-6 py-4 flex gap-2 items-center">
             <button
                 onClick={() => onToggleFavorite(room.roomParam)}
-                className={`rooms-favorite-btn p-2 rounded-full flex items-center justify-center ${isFavorite ? 'rooms-favorite-btn-active' : 'rooms-favorite-btn-inactive'}`}
+                className={`p-2 rounded-full flex items-center justify-center transition-all duration-150 ${isFavorite ? 'bg-gradient-to-b from-amber-100 to-amber-200 text-amber-600 border border-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:from-amber-700 dark:to-amber-800 dark:text-amber-400 dark:border-amber-600 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'bg-gradient-to-b from-gray-100 to-gray-200 text-[#86868b] border border-gray-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:from-amber-50 hover:to-amber-100 dark:from-slate-700 dark:to-slate-800 dark:text-[#94a3b8] dark:border-slate-600 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] dark:hover:from-amber-950/40 dark:hover:to-amber-950/60'}`}
                 title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
             >
                 <FaStar size={14} />
             </button>
             {room.status !== "Arquivada" && (
                 room.members >= 200 ? (
-                    <span className="btn-secondary-glossy rooms-action-btn rooms-full-btn px-4 py-1.5 text-[13px]">
+                    <span className="btn-secondary-glossy px-4 py-1.5 text-[13px] !text-red-500 !cursor-not-allowed opacity-80">
                         Lotada
                     </span>
                 ) : (
-                    <button onClick={() => onJoinRoom(room.roomParam)} className="btn-secondary-glossy rooms-action-btn rooms-join-btn px-4 py-1.5 text-[13px]">
+                    <button onClick={() => onJoinRoom(room.roomParam)} className="btn-secondary-glossy px-4 py-1.5 text-[13px]">
                         Entrar
                     </button>
                 )
@@ -416,14 +422,14 @@ const Rooms = () => {
 
     if (roomsError && customRooms.length === 0) {
         return (
-            <main className="reveal rooms-page rooms-page-error flex items-center justify-center min-h-[50vh]">
-                <div className="skeuo-panel rooms-error-panel p-8 text-center w-full max-w-[420px]">
-                    <div className="rooms-error-icon w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl">
+            <main className="reveal flex items-center justify-center min-h-[50vh]">
+                <div className="skeuo-panel p-8 text-center w-full max-w-[420px]">
+                    <div className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl bg-red-50 text-red-500 border border-red-100 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] dark:bg-red-500/10 dark:border-red-500/20">
                         <FaExclamationTriangle />
                     </div>
-                    <h2 className="rooms-error-title text-[22px] mb-2">Erro de Conexão</h2>
-                    <p className="rooms-error-desc text-[15px] mb-6">{roomsError}</p>
-                    <button onClick={() => window.location.reload()} className="skeuo-btn rooms-retry-btn px-6 py-2.5 text-[15px]">Tentar Novamente</button>
+                    <h2 className="text-[22px] mb-2 font-semibold text-[#1d1d1f] dark:text-slate-50">Erro de Conexão</h2>
+                    <p className="text-[15px] mb-6 text-[#86868b] dark:text-[#94a3b8]">{roomsError}</p>
+                    <button onClick={() => window.location.reload()} className="skeuo-btn px-6 py-2.5 text-[15px]">Tentar Novamente</button>
                 </div>
             </main>
         );
@@ -435,7 +441,7 @@ const Rooms = () => {
             value: filteredRooms.length,
             subtext: (
                 <>
-                    <span className="rooms-stat-positive">↗ +{customRooms.length}</span> esta semana
+                    <span className="text-emerald-500 font-medium">↗ +{customRooms.length}</span> esta semana
                 </>
             ),
             icon: FaCommentAlt,
@@ -444,14 +450,14 @@ const Rooms = () => {
         {
             title: "Usuários (Total)",
             value: stats.total_users,
-            subtext: <span className="rooms-stat-muted">A quantidade de usuários no total</span>,
+            subtext: <span className="text-[#86868b] dark:text-[#94a3b8]">A quantidade de usuários no total</span>,
             icon: FaUsers,
             iconVariant: "green"
         },
         {
             title: "Reportes Pendentes",
             value: stats.pending_reports,
-            subtext: <span className="rooms-stat-muted">Requer atenção</span>,
+            subtext: <span className="text-[#86868b] dark:text-[#94a3b8]">Requer atenção</span>,
             icon: FaExclamationTriangle,
             iconVariant: "red"
         }
@@ -474,29 +480,29 @@ const Rooms = () => {
                 isCreatingRoom={isCreatingRoom}
             />
 
-            <main className="reveal rooms-page w-full max-w-[1200px] mx-auto p-4 md:p-8 relative space-y-8">
+            <main className="reveal w-full max-w-[1200px] mx-auto p-4 md:p-8 relative space-y-8">
 
-                <div className="skeuo-panel rooms-header flex flex-col md:flex-row justify-between gap-4 mt-4 md:items-center">
-                    <div className="rooms-header-content p-6">
-                        <h1 className="rooms-title text-[28px] md:text-[32px]">Gerenciamento de Salas</h1>
-                        <p className="rooms-subtitle text-base mt-1">Administre salas, moderadores e atividades da comunidade.</p>
+                <div className="skeuo-panel flex flex-col md:flex-row justify-between gap-4 mt-4 md:items-center">
+                    <div className="p-6">
+                        <h1 className="text-[28px] md:text-[32px] font-semibold text-[#1d1d1f] dark:text-slate-50">Gerenciamento de Salas</h1>
+                        <p className="text-base mt-1 text-[#86868b] dark:text-[#94a3b8]">Administre salas, moderadores e atividades da comunidade.</p>
                     </div>
-                    <div className="rooms-toolbar flex items-center gap-3 pr-6">
-                        <div className="rooms-search-wrapper relative w-full md:w-[280px]">
-                            <FaSearch className="rooms-search-icon absolute left-3 top-1/2 -translate-y-1/2" size={16} />
+                    <div className="flex items-center gap-3 pr-6">
+                        <div className="relative w-full md:w-[280px]">
+                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] dark:text-[#94a3b8]" size={16} />
                             <input
                                 type="text"
                                 placeholder="Buscar salas..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="skeuo-input rooms-search-input w-full pl-10 pr-4 py-2 text-[15px]"
+                                className="skeuo-input w-full pl-10 pr-4 py-2 text-[15px]"
                             />
                         </div>
-                        <div className="rooms-filter-wrapper relative">
+                        <div className="relative">
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="skeuo-input rooms-filter-select w-[240px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
+                                className="skeuo-input w-[240px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer bg-white dark:bg-slate-800"
                             >
                                 <option value="Todas">Todas as Categorias</option>
                                 <option value="Casual">Casual</option>
@@ -505,45 +511,45 @@ const Rooms = () => {
                                 <option value="Arte">Arte</option>
                                 <option value="Estudos">Estudos</option>
                             </select>
-                            <FaSlidersH className="rooms-filter-icon absolute left-3 top-1/2 -translate-y-1/2" size={16} />
-                            <div className="rooms-filter-arrow absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <FaSlidersH className="text-[#0071e3] absolute left-3 top-1/2 -translate-y-1/2" size={16} />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="#86868b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="rooms-stats-grid grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {statsCards.map((card) => (
                         <StatCard key={card.title} {...card} />
                     ))}
                 </div>
 
-                <div className="skeuo-panel rooms-list-panel p-0 overflow-hidden">
-                    <div className="rooms-list-header flex flex-col md:flex-row justify-between items-center p-6 md:px-8 md:py-6 gap-4">
-                        <h2 className="rooms-list-title text-[22px]">Diretório de Salas</h2>
+                <div className="skeuo-panel p-0 overflow-hidden">
+                    <div className="flex flex-col md:flex-row justify-between items-center p-6 md:px-8 md:py-6 gap-4 border-b border-[#d2d2d7]/50 dark:border-white/5">
+                        <h2 className="text-[22px] font-semibold text-[#1d1d1f] dark:text-slate-50">Diretório de Salas</h2>
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="skeuo-btn rooms-create-room-btn px-6 py-2.5 text-[15px] inline-flex items-center gap-2"
+                            className="skeuo-btn px-6 py-2.5 text-[15px] inline-flex items-center gap-2"
                         >
                             <FaPlus size={14} />
                             Criar Sala
                         </button>
                     </div>
 
-                    <div className="rooms-table-wrapper overflow-x-auto">
-                        <table className="rooms-table w-full text-left">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="rooms-table-header-row">
-                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Nome da Sala</th>
-                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Categoria</th>
-                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Status</th>
-                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Membros</th>
-                                    <th className="rooms-table-th px-6 py-4 text-[13px]">Ações</th>
+                                <tr className="bg-black/[0.02] border-b border-[#d2d2d7]/50 dark:bg-white/[0.02] dark:border-white/5">
+                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Nome da Sala</th>
+                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Categoria</th>
+                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Membros</th>
+                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {sortedRooms.map((room, i) => (
+                                {sortedRooms.map((room) => (
                                     <RoomRow
                                         key={room.roomParam}
                                         room={room}
@@ -555,7 +561,7 @@ const Rooms = () => {
 
                                 {sortedRooms.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" className="rooms-empty py-12 px-6 text-center text-[15px]">
+                                        <td colSpan="5" className="py-12 px-6 text-center text-[15px] text-[#86868b] dark:text-[#94a3b8]">
                                             {searchQuery ? `Nenhuma sala encontrada com o termo "${searchQuery}".` : "Nenhuma sala criada ainda."}
                                         </td>
                                     </tr>
@@ -564,12 +570,12 @@ const Rooms = () => {
                         </table>
                     </div>
 
-                    <div className="rooms-pagination p-6 flex items-center justify-between text-sm">
+                    <div className="p-6 flex items-center justify-between text-sm bg-black/[0.02] border-t border-[#d2d2d7]/50 text-[#86868b] dark:bg-white/[0.02] dark:border-white/5 dark:text-[#94a3b8]">
                         <div>Mostrando 1 a {filteredRooms.length} de {allRooms.length} salas</div>
-                        <div className="rooms-pagination-actions flex gap-1">
-                            <button className="rooms-pagination-btn w-8 h-8 flex items-center justify-center rounded-full" disabled>&lt;</button>
-                            <button className="rooms-pagination-btn rooms-pagination-btn-active w-8 h-8 flex items-center justify-center rounded-full">1</button>
-                            <button className="rooms-pagination-btn w-8 h-8 flex items-center justify-center rounded-full" disabled>&gt;</button>
+                        <div className="flex gap-1">
+                            <button className="w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed not-disabled:hover:bg-gray-200 dark:not-disabled:hover:bg-slate-700" disabled>&lt;</button>
+                            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-[#0071e3] text-white font-medium shadow-xs">1</button>
+                            <button className="w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed not-disabled:hover:bg-gray-200 dark:not-disabled:hover:bg-slate-700" disabled>&gt;</button>
                         </div>
                     </div>
                 </div>
