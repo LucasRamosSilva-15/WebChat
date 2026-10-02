@@ -194,7 +194,7 @@ const Rooms = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('Todas');
     const [favorites, setFavorites] = useState([]);
-    const [stats, setStats] = useState({ active_rooms: 0, unique_users: 0, total_room_memberships: 0 });
+    const [stats, setStats] = useState({ total_users: 0, active_rooms: 0, pending_reports: 0, active_bans: 0 });
 
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const [newRoomDesc, setNewRoomDesc] = useState('');
@@ -381,14 +381,14 @@ const Rooms = () => {
         },
         {
             title: "Usuários (Total)",
-            value: stats.unique_users,
+            value: stats.total_users,
             subtext: <span className="rooms-stat-muted">A quantidade de usuários no total</span>,
             icon: FaUsers,
             iconVariant: "green"
         },
         {
             title: "Reportes Pendentes",
-            value: "7",
+            value: stats.pending_reports,
             subtext: <span className="rooms-stat-muted">Requer atenção</span>,
             icon: FaExclamationTriangle,
             iconVariant: "red"

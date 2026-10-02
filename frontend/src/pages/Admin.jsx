@@ -17,7 +17,27 @@ const Admin = () => {
     const [filterTime, setFilterTime] = useState('Todos');
 
     const [adminData, setAdminData] = useState({ salas: [], usuarios: [], denuncias: [], banimentos: [], feedbacks: [] });
+    const [globalStats, setGlobalStats] = useState({ total_users: 0, active_rooms: 0, pending_reports: 0, active_bans: 0 });
     const [loading, setLoading] = useState(false);
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+            const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+            try {
+                const res = await fetch(`${apiBaseUrl}/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setGlobalStats(data);
+                }
+            } catch (err) {
+                console.error("Erro ao buscar estatísticas:", err);
+            }
+        };
+        fetchStats();
+    }, []);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -49,9 +69,9 @@ const Admin = () => {
                     } else if (activeTab === 'usuarios') {
                         data = data.map(u => ({ ...u, user: u.name, type: 'usuario', date: u.created_at }));
                     } else if (activeTab === 'denuncias') {
-                        data = data.map(d => ({ ...d, date: d.created_at, type: 'denuncia' }));
+                        data = data.map(d => ({ ...d, date: d.created_at, type: 'denuncia', user: d.user?.displayName || d.user?.name || 'Desconhecido' }));
                     } else if (activeTab === 'feedbacks') {
-                        data = data.map(f => ({ ...f, date: f.created_at, type: 'feedback' }));
+                        data = data.map(f => ({ ...f, date: f.created_at, type: 'feedback', user: f.user?.displayName || f.user?.name || 'Desconhecido' }));
                     } else if (activeTab === 'salas') {
                         data = data.map(s => ({ ...s, date: s.created_at, usersCount: 0, type: 'sala' }));
                     }
@@ -204,7 +224,7 @@ const Admin = () => {
                                 <FaChartLine size={8} /> +12%
                             </span>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">1,204</h2>
+                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.total_users}</h2>
                         <p className="text-[12px] admin-text-muted font-medium">Usuários Totais</p>
                         <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-blue rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
@@ -218,7 +238,7 @@ const Admin = () => {
                                 <FaChartLine size={8} /> +5
                             </span>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">48</h2>
+                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.active_rooms}</h2>
                         <p className="text-[12px] admin-text-muted font-medium">Salas Ativas</p>
                         <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-purple rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
@@ -232,7 +252,7 @@ const Admin = () => {
                                 <FaChartLine size={8} /> 15%
                             </span>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">12</h2>
+                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.pending_reports}</h2>
                         <p className="text-[12px] admin-text-muted font-medium">Denúncias pendentes</p>
                         <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-red rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
@@ -243,7 +263,7 @@ const Admin = () => {
                                 <FaBan size={14} />
                             </div>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">34</h2>
+                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.active_bans}</h2>
                         <p className="text-[12px] admin-text-muted font-medium">Banimentos ativos</p>
                         <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-green rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>

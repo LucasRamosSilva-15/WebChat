@@ -27,6 +27,7 @@ const Room = sequelize.define('Room', {
   created_by: {
     type: DataTypes.UUID,
     allowNull: true,
+    field: 'owner_id',
     references: {
       model: User,
       key: 'id'

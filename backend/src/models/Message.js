@@ -27,7 +27,11 @@ const Message = sequelize.define('Message', {
   },
   content: {
     type: DataTypes.TEXT,
-    allowNull: false,
+    allowNull: true,
+  },
+  image_url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
   },
   created_at: {
     type: DataTypes.DATE,

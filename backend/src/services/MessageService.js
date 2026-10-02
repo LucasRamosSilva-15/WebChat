@@ -1,15 +1,16 @@
 const MessageRepository = require('../repositories/MessageRepository');
 
 class MessageService {
-  async sendMessage(roomId, userId, content) {
-    if (!content || content.trim() === '') {
-      throw new Error('O conteúdo da mensagem não pode estar vazio.');
+  async sendMessage(roomId, userId, content, imageUrl) {
+    if ((!content || content.trim() === '') && !imageUrl) {
+      throw new Error('O conteúdo da mensagem ou a imagem não podem estar vazios.');
     }
 
     const newMessage = await MessageRepository.create({
       room_id: roomId,
       user_id: userId,
-      content
+      content,
+      image_url: imageUrl
     });
 
     return newMessage;

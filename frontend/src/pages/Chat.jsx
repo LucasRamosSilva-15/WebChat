@@ -311,8 +311,8 @@ const Chat = () => {
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1280;
-                    const MAX_HEIGHT = 1280;
+                    const MAX_WIDTH = 2560;
+                    const MAX_HEIGHT = 2560;
                     let width = img.width;
                     let height = img.height;
 
@@ -333,7 +333,7 @@ const Chat = () => {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
                     setImagePreview(dataUrl);
                 };
                 img.src = reader.result;

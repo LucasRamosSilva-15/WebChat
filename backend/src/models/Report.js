@@ -20,6 +20,7 @@ const Report = sequelize.define('Report', {
   user_id: {
     type: DataTypes.UUID,
     allowNull: false,
+    field: 'reporter_id',
     references: {
       model: User,
       key: 'id'

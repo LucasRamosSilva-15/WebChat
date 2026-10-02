@@ -4,7 +4,7 @@ const { handleError } = require('./errorHandler');
 class MessageController {
   async send(req, res) {
     try {
-      const message = await MessageService.sendMessage(req.params.roomId, req.userId, req.body.content);
+      const message = await MessageService.sendMessage(req.params.roomId, req.userId, req.body.content, req.body.imageUrl);
       return res.status(201).json(message);
     } catch (error) {
       return handleError(res, error);

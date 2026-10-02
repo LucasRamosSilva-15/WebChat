@@ -19,6 +19,14 @@ class UserRepository {
     });
   }
 
+  async countAll() {
+    return await User.count();
+  }
+
+  async countBanned() {
+    return await User.count({ where: { status: 'banned' } });
+  }
+
   async update(id, updateData) {
     const user = await this.findById(id);
     if (!user) return null;

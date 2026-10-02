@@ -15,6 +15,10 @@ class ReportRepository {
     });
   }
 
+  async countPending() {
+    return await Report.count({ where: { status: 'pending' } });
+  }
+
   async findById(id) {
     return await Report.findByPk(id);
   }

@@ -1,18 +1,21 @@
 const RoomRepository = require('../repositories/RoomRepository');
-const RoomMemberRepository = require('../repositories/RoomMemberRepository');
+const UserRepository = require('../repositories/UserRepository');
+const ReportRepository = require('../repositories/ReportRepository');
 const { handleError } = require('./errorHandler');
 
 class StatsController {
   async getGlobalStats(req, res) {
     try {
       const active_rooms = await RoomRepository.count();
-      const total_room_memberships = await RoomMemberRepository.countTotalMemberships();
-      const unique_users = await RoomMemberRepository.countUniqueUsers();
+      const total_users = await UserRepository.countAll();
+      const pending_reports = await ReportRepository.countPending();
+      const active_bans = await UserRepository.countBanned();
 
       return res.status(200).json({
+        total_users,
         active_rooms,
-        unique_users,
-        total_room_memberships
+        pending_reports,
+        active_bans
       });
     } catch (error) {
       return handleError(res, error);
