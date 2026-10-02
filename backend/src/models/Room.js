@@ -24,6 +24,10 @@ const Room = sequelize.define('Room', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  image_url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   created_by: {
     type: DataTypes.UUID,
     allowNull: true,

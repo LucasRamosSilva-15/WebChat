@@ -12,6 +12,7 @@ class RoomService {
       type: roomData.type || 'public',
       description: roomData.description?.trim(),
       category: roomData.category,
+      image_url: roomData.image_url,
       created_by: userId
     });
 

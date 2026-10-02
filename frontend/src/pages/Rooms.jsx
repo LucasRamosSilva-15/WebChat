@@ -22,10 +22,14 @@ const StatCard = ({ title, value, subtext, icon: Icon, iconVariant = "blue" }) =
     </div>
 );
 
-const RoomIconWithTooltip = ({ description }) => (
+const RoomIconWithTooltip = ({ description, imageUrl }) => (
     <div className="relative group">
-        <div className="rooms-icon-tile w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
-            <FaHashtag size={18} />
+        <div className="rooms-icon-tile w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+            {imageUrl ? (
+                <img src={imageUrl} alt="Room Icon" className="w-full h-full object-cover" />
+            ) : (
+                <FaHashtag size={18} />
+            )}
         </div>
 
         <div className="skeuo-tooltip rooms-tooltip left-[calc(100%+10px)] top-1/2 -translate-y-1/2 -translate-x-2">
@@ -46,6 +50,8 @@ const CreateRoomModal = ({
     setNewRoomCategory,
     newRoomDesc,
     setNewRoomDesc,
+    newRoomImage,
+    onImageChange,
     onSubmit,
     isCreatingRoom
 }) => {
@@ -99,6 +105,19 @@ const CreateRoomModal = ({
                         />
                     </div>
 
+                    <div className="space-y-1">
+                        <label className="rooms-label block text-xs ml-1">Imagem da Sala (Opcional)</label>
+                        <div className="flex items-center gap-4">
+                            <label className="cursor-pointer skeuo-btn px-4 py-2 text-sm flex items-center gap-2 rounded-lg">
+                                Escolher Imagem
+                                <input type="file" accept="image/*" className="hidden" onChange={onImageChange} />
+                            </label>
+                            {newRoomImage && (
+                                <img src={newRoomImage} alt="Preview" className="w-12 h-12 rounded-lg object-cover" />
+                            )}
+                        </div>
+                    </div>
+
                     <div className="rooms-modal-actions flex gap-3 pt-4">
                         <button
                             type="button"
@@ -125,7 +144,7 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
     <tr className="rooms-table-row">
         <td className="rooms-table-td px-6 py-4">
             <div className="flex items-center gap-4">
-                <RoomIconWithTooltip description={room.description} />
+                <RoomIconWithTooltip description={room.description} imageUrl={room.image_url} />
                 <div>
                     <div className="rooms-row-title text-base">{room.title}</div>
                     <div className="rooms-row-date text-[13px]">Criada em {room.date || "Recente"}</div>
@@ -199,6 +218,46 @@ const Rooms = () => {
     const [newRoomTitle, setNewRoomTitle] = useState('');
     const [newRoomDesc, setNewRoomDesc] = useState('');
     const [newRoomCategory, setNewRoomCategory] = useState('Casual');
+    const [newRoomImage, setNewRoomImage] = useState(null);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 512;
+                    const MAX_HEIGHT = 512;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    setNewRoomImage(dataUrl);
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleJoinRoom = async (roomId) => {
         try {
@@ -220,6 +279,7 @@ const Rooms = () => {
                     id: room.id,
                     title: room.name,
                     description: room.description || "Sem descrição",
+                    image_url: room.image_url,
                     roomParam: room.id.toString(),
                     category: room.category || "Custom",
                     status: "Ativa",
@@ -277,7 +337,8 @@ const Rooms = () => {
                 body: JSON.stringify({ 
                     name: newRoomTitle.trim(), 
                     description: newRoomDesc.trim(),
-                    category: newRoomCategory
+                    category: newRoomCategory,
+                    image_url: newRoomImage
                 })
             });
 
@@ -286,6 +347,7 @@ const Rooms = () => {
                 id: savedRoom.id,
                 title: savedRoom.name,
                 description: savedRoom.description || "Sala personalizada.",
+                image_url: savedRoom.image_url,
                 roomParam: roomParam,
                 category: newRoomCategory,
                 status: "Ativa",
@@ -406,6 +468,8 @@ const Rooms = () => {
                 setNewRoomCategory={setNewRoomCategory}
                 newRoomDesc={newRoomDesc}
                 setNewRoomDesc={setNewRoomDesc}
+                newRoomImage={newRoomImage}
+                onImageChange={handleImageChange}
                 onSubmit={handleCreateRoom}
                 isCreatingRoom={isCreatingRoom}
             />

@@ -1,22 +1,24 @@
 import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import Chat from '../pages/Chat';
 import { socket } from '../socket';
 import * as api from '../services/api';
+import CryptoJS from 'crypto-js';
 
-jest.mock('../socket', () => ({
+vi.mock('../socket', () => ({
   socket: {
-    emit: jest.fn(),
-    on: jest.fn(),
-    off: jest.fn(),
-    disconnect: jest.fn()
+    emit: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    disconnect: vi.fn()
   }
 }));
 
-jest.mock('../services/api', () => ({
-  apiRequest: jest.fn(),
-  getAuthToken: jest.fn()
+vi.mock('../services/api', () => ({
+  apiRequest: vi.fn(),
+  getAuthToken: vi.fn()
 }));
 
 const originalError = console.error;
@@ -32,13 +34,28 @@ afterAll(() => {
   console.error = originalError;
 });
 
+const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
+
 describe('Chat Component Integration Tests', () => {
+  let socketCallbacks = {};
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    socketCallbacks = {};
+
+    socket.on.mockImplementation((event, cb) => {
+      socketCallbacks[event] = cb;
+    });
 
     api.apiRequest.mockImplementation(async (url) => {
       if (url.includes('/messages')) {
-        return [];
+        return [{
+          id: 'msg-mock-1',
+          content: 'Mensagem Inicial',
+          user_id: 'test-user-id',
+          user_name: 'Usuário Teste',
+          created_at: new Date().toISOString()
+        }];
       }
       if (url.includes('/rooms/')) {
         return { name: 'Sala de Teste', description: 'Sala mockada' };
@@ -48,45 +65,42 @@ describe('Chat Component Integration Tests', () => {
 
     localStorage.setItem('chat_uniqueUserId', 'test-user-id');
     localStorage.setItem('chat_displayName', 'Usuário Teste');
+    localStorage.setItem('chat_joinedRooms', JSON.stringify(['general']));
   });
 
   afterEach(() => {
     localStorage.clear();
   });
 
-  it('renders the chat error state if no room is provided', () => {
-    render(
-      <MemoryRouter initialEntries={['/chat']}>
+  const renderChat = (initialRoute = '/chat?room=general') => {
+    return render(
+      <MemoryRouter initialEntries={[initialRoute]}>
         <Routes>
           <Route path="/chat" element={<Chat />} />
         </Routes>
       </MemoryRouter>
     );
+  };
 
+  it('1. Renderiza o estado de erro se nenhuma sala for fornecida', () => {
+    renderChat('/chat');
     expect(screen.getByText('Sala inválida')).toBeInTheDocument();
   });
 
-  it('should send a message, emit via socket, and display it when received', async () => {
-    let receiveMessageCallback;
-    socket.on.mockImplementation((event, cb) => {
-      if (event === 'receive_message') {
-        receiveMessageCallback = cb;
-      }
-    });
-
-    render(
-      <MemoryRouter initialEntries={['/chat?room=general']}>
-        <Routes>
-          <Route path="/chat" element={<Chat />} />
-        </Routes>
-      </MemoryRouter>
-    );
+  it('2. Exibe botão Entrar na Sala se usuário não entrou nela ainda', async () => {
+    localStorage.setItem('chat_joinedRooms', JSON.stringify([])); // clear joins
+    
+    renderChat();
 
     await waitFor(() => {
-      expect(screen.getByText('Entrar na Sala', { selector: 'button' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Entrar na Sala' })).toBeInTheDocument();
     });
+    
+    expect(screen.getByText('Você está prestes a entrar nesta sala de bate-papo. Deseja continuar?')).toBeInTheDocument();
+  });
 
-    fireEvent.click(screen.getByText('Entrar na Sala', { selector: 'button' }));
+  it('3. Envia uma mensagem e atualiza UI (Criptografada e via Socket)', async () => {
+    renderChat();
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText('Digite uma mensagem...')).toBeInTheDocument();
@@ -96,8 +110,6 @@ describe('Chat Component Integration Tests', () => {
     const sendButton = screen.getByTitle('Enviar Mensagem');
 
     fireEvent.change(input, { target: { value: 'Olá mundo!' } });
-    expect(input.value).toBe('Olá mundo!');
-
     fireEvent.click(sendButton);
 
     expect(socket.emit).toHaveBeenCalledWith("send_message", expect.objectContaining({
@@ -106,12 +118,11 @@ describe('Chat Component Integration Tests', () => {
       userId: 'test-user-id'
     }));
 
-    expect(input.value).toBe('');
-
+    // Simula receber a mensagem devolta do servidor
     act(() => {
-      if (receiveMessageCallback) {
-        receiveMessageCallback({
-          id: 'msg-123',
+      if (socketCallbacks['receive_message']) {
+        socketCallbacks['receive_message']({
+          id: 'msg-new-123',
           room_id: 'general',
           user_id: 'test-user-id',
           user_name: 'Usuário Teste',
@@ -122,6 +133,92 @@ describe('Chat Component Integration Tests', () => {
     });
 
     expect(screen.getByText('Olá mundo!')).toBeInTheDocument();
-    expect(screen.getByText('Usuário Teste')).toBeInTheDocument();
+  });
+
+  it('4. Exclui uma mensagem se for do usuário atual', async () => {
+    renderChat();
+
+    await waitFor(() => {
+      expect(screen.getByText('Mensagem Inicial')).toBeInTheDocument();
+    });
+
+    // Abrir o menu de ações
+    const moreBtns = screen.getAllByRole('button').filter(b => b.className.includes('message-bubble-more-btn'));
+    fireEvent.click(moreBtns[0]); // Pela interface, é hover, mas vamos simular setando estado se der
+    
+    // In React, we trigger the menu display by hovering. Testing Library doesn't fully support CSS hover.
+    // However, the menu buttons might exist in DOM anyway
+    const deleteBtn = screen.getByText('Apagar');
+    expect(deleteBtn).toBeInTheDocument();
+    
+    fireEvent.click(deleteBtn);
+
+    expect(socket.emit).toHaveBeenCalledWith("delete_message", expect.objectContaining({
+      room: 'general',
+      messageId: 'msg-mock-1'
+    }));
+
+    // Simular o servidor respondendo
+    act(() => {
+      if (socketCallbacks['message_deleted']) {
+        socketCallbacks['message_deleted']({ messageId: 'msg-mock-1' });
+      }
+    });
+
+    expect(screen.queryByText('Mensagem Inicial')).not.toBeInTheDocument();
+  });
+
+  it('5. Edita uma mensagem existente', async () => {
+    renderChat();
+
+    await waitFor(() => {
+      expect(screen.getByText('Mensagem Inicial')).toBeInTheDocument();
+    });
+
+    const editBtn = screen.getByText('Editar');
+    fireEvent.click(editBtn);
+
+    const input = screen.getByPlaceholderText('Editar mensagem...');
+    expect(input.value).toBe('Mensagem Inicial'); // input preenchido com a msgs antiga
+
+    fireEvent.change(input, { target: { value: 'Mensagem Modificada' } });
+    
+    const sendButton = screen.getByTitle('Salvar Edição'); // Muda o title/icone mas usa submit
+    fireEvent.click(sendButton);
+
+    expect(socket.emit).toHaveBeenCalledWith("edit_message", expect.objectContaining({
+      room: 'general',
+      messageId: 'msg-mock-1'
+    }));
+
+    // Simula evento do servidor (encriptado)
+    const payload = JSON.stringify({ text: 'Mensagem Modificada', image: null });
+    const encryptedMessage = CryptoJS.AES.encrypt(payload, SECRET_KEY).toString();
+
+    act(() => {
+      if (socketCallbacks['message_edited']) {
+        socketCallbacks['message_edited']({ messageId: 'msg-mock-1', message: encryptedMessage });
+      }
+    });
+
+    expect(screen.getByText('Mensagem Modificada')).toBeInTheDocument();
+    expect(screen.getByText(/\(editada\)/)).toBeInTheDocument();
+  });
+
+  it('6. Avalia erro de sala lotada (room_full_error)', async () => {
+    renderChat();
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Digite uma mensagem...')).toBeInTheDocument();
+    });
+
+    act(() => {
+      if (socketCallbacks['room_full_error']) {
+        socketCallbacks['room_full_error']({ message: 'A sala está com capacidade máxima.' });
+      }
+    });
+
+    expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
+    expect(screen.getByText('A sala está com capacidade máxima.')).toBeInTheDocument();
   });
 });

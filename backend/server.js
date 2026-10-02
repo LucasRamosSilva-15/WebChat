@@ -80,7 +80,8 @@ const io = new Server(server, {
     },
     methods: ['GET', 'POST'],
     credentials: true
-  }
+  },
+  maxHttpBufferSize: 5e7 // 50 MB
 });
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -216,6 +217,50 @@ io.on('connection', (socket) => {
       console.error('Falha ao processar mensagem via WebSocket:', err);
       socket.emit('message_error', { error: `Falha interna no servidor: ${err.message || 'Erro inesperado'}` });
     }
+  });
+
+  socket.on('delete_message', async ({ room, messageId }) => {
+    if (!room || !messageId) return;
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) {
+        console.error('Erro ao apagar mensagem:', error);
+        return;
+      }
+
+      io.to(room).emit('message_deleted', { messageId });
+    } catch (err) {
+      console.error('Falha ao apagar mensagem via WebSocket:', err);
+    }
+  });
+
+  socket.on('edit_message', async ({ room, messageId, message, time }) => {
+    if (!room || !messageId) return;
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ content: message })
+        .eq('id', messageId);
+
+      if (error) {
+        console.error('Erro ao editar mensagem:', error);
+        return;
+      }
+
+      io.to(room).emit('message_edited', { messageId, message });
+    } catch (err) {
+      console.error('Falha ao editar mensagem via WebSocket:', err);
+    }
+  });
+
+  socket.on('toggle_like', ({ room, messageId, userId }) => {
+    if (!room || !messageId || !userId) return;
+    // Em um sistema real, salvaria os likes no banco
+    io.to(room).emit('like_toggled', { messageId, userId });
   });
 
   socket.on('disconnect', () => {

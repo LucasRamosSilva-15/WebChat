@@ -28,6 +28,7 @@ const Login = () => {
                 localStorage.setItem('chat_displayName', data.user.name);
                 localStorage.setItem('chat_uniqueUserId', data.user.id);
 
+                socket.auth = { token: data.token };
                 socket.disconnect();
                 socket.connect();
 

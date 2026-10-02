@@ -32,7 +32,7 @@ function toPublicUser(user) {
   if (!user) return null;
   const plain = typeof user.toJSON === 'function' ? user.toJSON() : user;
   const { password, ...rest } = plain;
-  return { ...rest, name: rest.displayName };
+  return { ...rest, name: rest.displayName || (rest.email ? rest.email.split('@')[0] : 'Usuário') };
 }
 
 module.exports = { statusFromError, handleError, toPublicUser };

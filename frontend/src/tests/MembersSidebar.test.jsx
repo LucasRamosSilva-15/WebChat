@@ -3,13 +3,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import MembersSidebar from '../components/MembersSidebar';
 import * as api from '../services/api';
 
-jest.mock('../services/api', () => ({
-  apiRequest: jest.fn()
+vi.mock('../services/api', () => ({
+  apiRequest: vi.fn()
 }));
 
 describe('MembersSidebar Unit Tests', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('shows loading state initially', () => {

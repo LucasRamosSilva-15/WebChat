@@ -103,4 +103,20 @@ router.post('/login', authLimiter, UsuarioController.login);
  */
 router.get('/me', authMiddleware, UsuarioController.me);
 
+/**
+ * @swagger
+ * /auth/me:
+ *   delete:
+ *     summary: Excluir perfil do usuário autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil excluído com sucesso
+ *       404:
+ *         description: Usuário não encontrado
+ */
+router.delete('/me', authMiddleware, UsuarioController.deleteProfile);
+
 module.exports = router;

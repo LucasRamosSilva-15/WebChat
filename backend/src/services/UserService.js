@@ -64,6 +64,13 @@ class UserService {
     if (!user) throw new Error('Usuário não encontrado.');
     return await user.update({ status });
   }
+
+  async deleteUser(id) {
+    const user = await UserRepository.findById(id);
+    if (!user) throw new Error('Usuário não encontrado.');
+    await UserRepository.delete(id);
+    return true;
+  }
 }
 
 module.exports = new UserService();

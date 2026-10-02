@@ -477,7 +477,8 @@ const Chat = () => {
             userId = currentUserId;
             localStorage.setItem('chat_uniqueUserId', userId);
         }
-        const userName = localStorage.getItem('chat_displayName') || 'Usuário';
+        const storedName = localStorage.getItem('chat_displayName');
+        const userName = (storedName && storedName !== 'null') ? storedName : 'Usuário';
 
         socket.emit("joinRoom", {
             roomId: room,
@@ -631,7 +632,8 @@ const Chat = () => {
     const sendMessage = async (e) => {
         e.preventDefault();
         if (currentMessage.trim() !== "" || imagePreview) {
-            const currentSender = localStorage.getItem('chat_displayName') || "Usuário";
+            const storedName = localStorage.getItem('chat_displayName');
+            const currentSender = (storedName && storedName !== 'null') ? storedName : 'Usuário';
             const currentPhoto = localStorage.getItem('chat_profilePhoto');
             const currentStatus = localStorage.getItem('chat_statusMessage') || "Disponível";
 
@@ -671,6 +673,21 @@ const Chat = () => {
                 setCurrentMessage("");
                 setImagePreview(null);
             }
+        }
+    };
+
+    const handleDeleteRoom = async () => {
+        if (!window.confirm("Atenção! Você é o dono desta sala. Tem certeza que deseja excluí-la permanentemente? Todas as mensagens serão perdidas.")) {
+            return;
+        }
+
+        try {
+            await apiRequest(`/rooms/${room}`, { method: 'DELETE' });
+            alert("Sala excluída com sucesso.");
+            navigate('/rooms');
+        } catch (error) {
+            console.error("Erro ao excluir sala:", error);
+            alert("Não foi possível excluir a sala: " + (error.message || "Erro desconhecido"));
         }
     };
 
@@ -814,9 +831,10 @@ const Chat = () => {
                         </div>
 
                         <div className="flex flex-col gap-3 mt-4">
-                            {selectedUser.sender !== (localStorage.getItem('chat_displayName') || 'Usuário') && (
+                            {selectedUser.sender !== ((localStorage.getItem('chat_displayName') && localStorage.getItem('chat_displayName') !== 'null') ? localStorage.getItem('chat_displayName') : 'Usuário') && (
                                 <button onClick={() => {
-                                    const currentUser = localStorage.getItem('chat_displayName') || 'Usuário';
+                                    const storedName = localStorage.getItem('chat_displayName');
+                                    const currentUser = (storedName && storedName !== 'null') ? storedName : 'Usuário';
                                     const targetId = selectedUser.userId || selectedUser.sender;
                                     const privateRoomName = `privado-${[currentUserId, targetId].sort().join('-')}`;
 
@@ -873,8 +891,12 @@ const Chat = () => {
                             <button onClick={() => setIsMobileSidebarOpen(true)} className="lg:hidden w-8 h-8 flex items-center justify-center text-[#86868b] dark:text-[#94a3b8] hover:text-[#0071e3] transition-colors rounded-full active:bg-black/5 dark:active:bg-white/5">
                                 <FaBars size={16} />
                             </button>
-                            <div className="chat-header-icon w-8 h-8 rounded-full flex items-center justify-center hidden sm:flex">
-                                <FaCommentAlt size={12} />
+                            <div className="chat-header-icon w-8 h-8 rounded-full flex items-center justify-center hidden sm:flex overflow-hidden">
+                                {currentRoom && currentRoom.image_url ? (
+                                    <img src={currentRoom.image_url} alt="Room Icon" className="w-full h-full object-cover" />
+                                ) : (
+                                    <FaCommentAlt size={12} />
+                                )}
                             </div>
                             <div className="chat-header-title-wrapper flex flex-col justify-center">
                                 <h2 className="chat-header-title font-bold text-[15px] leading-tight">
@@ -913,6 +935,15 @@ const Chat = () => {
                             >
                                 <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
                             </button>
+                            {currentRoom && currentRoom.created_by === currentUserId && (
+                                <button
+                                    onClick={handleDeleteRoom}
+                                    className="chat-header-btn w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                                    title="Excluir Sala (Apenas Dono)"
+                                >
+                                    <FaTrash size={14} className="text-rose-500" />
+                                </button>
+                            )}
                         </div>
                     </div>
 

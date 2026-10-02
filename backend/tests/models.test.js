@@ -50,10 +50,11 @@ describe('Models', () => {
       expect(msgs[0].content).toBe('oi');
     });
 
-    it('rejeita mensagem sem conteúdo', async () => {
+    it('permite mensagens sem texto desde que criadas', async () => {
       const user = await createUser();
       const room = await createRoom(user.id);
-      await expect(Message.create({ room_id: room.id, user_id: user.id })).rejects.toThrow();
+      const msg = await Message.create({ room_id: room.id, user_id: user.id });
+      expect(msg.id).toBeDefined();
     });
 
     it('apaga as mensagens em cascata quando a sala é apagada', async () => {

@@ -41,6 +41,15 @@ class UsuarioController {
     }
   }
 
+  async deleteProfile(req, res) {
+    try {
+      await UserService.deleteUser(req.userId);
+      return res.status(200).json({ message: 'Perfil excluído com sucesso.' });
+    } catch (error) {
+      return handleError(res, error);
+    }
+  }
+
   async list(req, res) {
     try {
       const users = await UserService.getAllUsers();

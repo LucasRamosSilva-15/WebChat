@@ -5,7 +5,7 @@
 </div>
 
 
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-7.1.0-blue?style=for-the-badge)
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-8.0.0-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -49,6 +49,7 @@ Este projeto foi construído como um projeto prático para a disciplina de Progr
 * React Router DOM
 * React Icons
 * Socket.IO Client
+* Vitest
 
 ### Backend
 
@@ -117,6 +118,13 @@ SUPABASE_URL=sua_url_do_supabase
 SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
 FRONTEND_URL=http://localhost:5173
 ```
+## Testes automatizados do backend e frontend
+
+Em um terminal rode o comando
+
+```bash
+npm run test:backend && npm run test:frontend
+```
 
 ## Link do deploy
 
@@ -142,7 +150,7 @@ FRONTEND_URL=http://localhost:5173
 * [x] Layout responsivo e menus modais
 * [x] Envio de imagens e armazenamento em nuvem (Storage)
 * [X] Refinamentos na persistência e histórico longo de mensagens
-* [ ] Testes automatizados
+* [X] Testes automatizados
 * [ ] Documentação
 * [ ] Sistema de criptografia de email, senhas, mensagens e etc
 * [ ] Otimizações no frontend, backend e banco de dados
@@ -165,7 +173,7 @@ FRONTEND_URL=http://localhost:5173
 │   │   ├── config/
 │   │   │   └── database.js
 │   │   ├── controllers/
-│   │   │   ├── UserController.js
+│   │   │   ├── MessageController.js
 │   │   │   ├── RoomController.js
 │   │   │   └── ...
 │   │   ├── middleware/
@@ -182,11 +190,11 @@ FRONTEND_URL=http://localhost:5173
 │   │   ├── routes/
 │   │   │   ├── api.js
 │   │   │   └── admin.js
-│   │   ├── services/
-│   │   │   ├── UserService.js
-│   │   │   ├── RoomService.js
-│   │   │   └── ...
-│   │   ├── tests/
+│   │   └── services/
+│   │       ├── UserService.js
+│   │       ├── RoomService.js
+│   │       └── ...
+│   ├── tests/
 │   │   │   ├── authMiddleware.test.js
 │   │   │   ├── chat.test.js
 │   │   │   └── ...

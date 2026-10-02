@@ -3,9 +3,9 @@ import io from 'socket.io-client';
 import { BACKEND_URL } from './services/api';
 
 export const socket = io(BACKEND_URL, {
-  auth: (cb) => {
-    const token = localStorage.getItem('chat_token');
-    cb({ token });
+  autoConnect: false,
+  auth: {
+    token: localStorage.getItem('chat_token')
   }
 });
 
