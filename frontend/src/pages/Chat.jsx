@@ -61,7 +61,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     if (msg.isMe) {
         const sentBubbleClass = isSuave
-            ? `px-5 py-2.5 flex flex-col relative transition-all duration-300 rounded-[22px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] text-white shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] border border-sky-400/40 ${matchClass}`
+            ? `px-5 py-2.5 flex flex-col relative transition-all duration-300 rounded-[22px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] dark:from-[#0284c7] dark:via-[#0369a1] dark:to-[#075985] text-white shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] border border-sky-400/40 dark:border-sky-500/20 ${matchClass}`
             : `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tr-[2px] skeuo-bubble-sent ${matchClass}`;
         return (
             <div ref={innerRef} className="px-3 py-0.5 flex justify-end group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
@@ -153,7 +153,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
     }
 
     const receivedBubbleClass = isSuave
-        ? `px-5 py-2.5 flex flex-col relative transition-all duration-300 rounded-[22px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-850 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed ${matchClass}`
+        ? `px-5 py-2.5 flex flex-col relative transition-all duration-300 rounded-[22px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-900 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed ${matchClass}`
         : `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tl-[2px] skeuo-bubble-received ${matchClass}`;
 
     return (

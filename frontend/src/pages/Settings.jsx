@@ -222,9 +222,7 @@ const Settings = () => {
                                         <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
                                             <div className="flex items-center gap-3">
                                                 {bubbleFormat === 'suave' ? (
-                                                    <div className="w-10 h-10 rounded-full border-2 border-sky-400 dark:border-sky-500 bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-xs">
-                                                        <span className="text-[16px] font-bold text-[#1d1d1f] dark:text-white">A</span>
-                                                    </div>
+                                                    <UserAvatar name="Alex Ripple" size="md" status="online" />
                                                 ) : (
                                                     <UserAvatar name="Alex Ripple" size="md" status="online" />
                                                 )}
@@ -247,16 +245,13 @@ const Settings = () => {
 
                                         {bubbleFormat === 'suave' ? (
                                             <div className="flex flex-col gap-4 animate-fade-in">
-                                                {/* Mensagem recebida suave */}
                                                 <div className="flex items-start gap-3 self-start max-w-[92%] md:max-w-[80%]">
-                                                    <div className="w-9 h-9 rounded-full border-2 border-sky-400 dark:border-sky-500 bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-xs">
-                                                        <span className="text-[14px] font-bold text-[#1d1d1f] dark:text-white">A</span>
-                                                    </div>
+                                                    <UserAvatar name="Alex Ripple" size="sm" />
                                                     <div className="flex flex-col">
                                                         <span className="text-[12.5px] font-bold text-[#1d1d1f] dark:text-slate-200 mb-1 ml-1 leading-none">
                                                             Alex Ripple
                                                         </span>
-                                                        <div className="px-5 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-850 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed">
+                                                        <div className="px-5 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-900 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed">
                                                             Ei! A nova atualização da interface ficou incrível.
                                                         </div>
                                                         <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 ml-2">
@@ -265,9 +260,8 @@ const Settings = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Mensagem enviada suave */}
                                                 <div className="flex flex-col items-end self-end max-w-[92%] md:max-w-[80%] mt-1">
-                                                    <div className="px-6 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] text-white font-medium text-[14px] leading-relaxed shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] border border-sky-400/40">
+                                                    <div className="px-6 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] dark:from-[#0284c7] dark:via-[#0369a1] dark:to-[#075985] text-white font-medium text-[14px] leading-relaxed shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] border border-sky-400/40 dark:border-sky-500/20">
                                                         Concordo! Muito suave.
                                                     </div>
                                                     <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 mr-2 flex items-center gap-1.5">
@@ -333,7 +327,7 @@ const Settings = () => {
                                     </div>
                                     <h3 className="text-[16px] font-bold admin-hero-title">Chat</h3>
                                 </div>
-                                
+
                                 <div>
                                     <h4 className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-4">Comportamento do Chat</h4>
                                     <div className="flex flex-col gap-4 skeuo-panel p-5 max-w-lg">
@@ -364,7 +358,7 @@ const Settings = () => {
                                     </div>
                                     <h3 className="text-[16px] font-bold admin-hero-title">Privacidade</h3>
                                 </div>
-                                
+
                                 <div>
                                     <h4 className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-4">Gerenciar Privacidade</h4>
                                     <div className="flex flex-col gap-4 skeuo-panel p-5 max-w-lg">

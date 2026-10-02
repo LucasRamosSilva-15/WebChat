@@ -13,6 +13,7 @@
 /* 3. Camada Base: Tokens Globais de Cores Dinâmicas */
 @layer base {
     :root {
+        color-scheme: light;
         --primary-light: #4da4ff;
         --primary-main: #0071e3;
         --primary-dark: #005bb5;
@@ -23,6 +24,10 @@
         --primary-hover-darker: #0055a3;
         --primary-ring: rgba(0, 113, 227, 0.1);
         --primary-ring-focus: rgba(0, 113, 227, 0.6);
+    }
+
+    html.dark {
+        color-scheme: dark;
     }
 
     body.color-green {
@@ -133,6 +138,48 @@
 
 /* 5. Camada Utilitária Especializada */
 @layer utilities {
+    /* Scrollbars Gerais e Suporte a Modo Escuro */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.18);
+        border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.32);
+    }
+
+    html.dark ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 9999px;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    }
+
+    html.dark * {
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+    /* Scrollbar Específico do Chat */
     .chat-container::-webkit-scrollbar {
         width: 8px;
     }
@@ -151,6 +198,20 @@
 
     .chat-container::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(to right, #a3a3a3, #8c8c8c);
+    }
+
+    html.dark .chat-container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    html.dark .chat-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(to right, #475569, #334155);
+        border: 1px solid #1e293b;
+    }
+
+    html.dark .chat-container::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(to right, #64748b, #475569);
     }
 
     .message-search-match {

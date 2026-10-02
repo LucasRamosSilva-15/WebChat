@@ -34,11 +34,11 @@ const About = () => {
                         <p className="text-[17px] leading-relaxed mb-8 text-[#424245] dark:text-[#94a3b8]">
                             O SkyRipple é uma aplicação de chat em tempo real desenvolvida para explorar salas de conversa, mensagens instantâneas via WebSocket e uma interface agradável inspirada na estética clássica da web.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                            <Link to="/rooms" className="skeuo-btn rounded-full flex items-center justify-center min-h-[48px] min-w-[160px] px-8 w-full sm:w-auto text-[15px]">
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <Link to="/rooms" className="skeuo-btn min-h-[44px] min-w-[160px] px-8 text-[15px] flex items-center justify-center">
                                 Começar agora
                             </Link>
-                            <Link to="/" className="btn-secondary-glossy rounded-full font-medium text-[#1d1d1f] dark:text-white bg-white dark:bg-slate-800 border border-black/5 dark:border-white/5 shadow-xs flex items-center justify-center min-h-[48px] min-w-[160px] px-8 w-full sm:w-auto text-[15px]">
+                            <Link to="/" className="btn-secondary-glossy min-h-[44px] min-w-[160px] px-8 text-[15px] flex items-center justify-center">
                                 Saiba mais
                             </Link>
                         </div>
