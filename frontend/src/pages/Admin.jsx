@@ -4,7 +4,6 @@ import {
     FaCommentDots, FaSearch, FaEye, FaHammer, FaBullhorn,
     FaExclamationTriangle, FaMousePointer, FaInfoCircle, FaChartLine, FaUser, FaImage, FaTimes, FaUsers, FaDoorOpen, FaTrash, FaShieldAlt
 } from 'react-icons/fa';
-import '../styles/admin.css';
 
 const Admin = () => {
     const [activeTab, setActiveTab] = useState('denuncias');
@@ -63,7 +62,6 @@ const Admin = () => {
                     console.log('Tab:', activeTab);
                     console.log('Data Recebida:', data);
 
-
                     if (activeTab === 'banimentos') {
                         data = data.filter(u => u.status === 'Banido').map(u => ({ ...u, user: u.name, type: 'banimento', date: u.created_at }));
                     } else if (activeTab === 'usuarios') {
@@ -92,7 +90,6 @@ const Admin = () => {
         };
         fetchData();
     }, [activeTab]);
-
 
     const handleAction = async () => {
         if (!selectedItem) return;
@@ -186,26 +183,26 @@ const Admin = () => {
     }
 
     return (
-        <div className="flex-1 w-full flex flex-col items-center admin-page-bg">
+        <div className="flex-1 w-full flex flex-col items-center bg-gray-50/50 dark:bg-transparent">
             <div className="w-full max-w-[1200px] px-4 py-8 md:py-10 animate-fade-in-up-1">
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <div className="flex items-center gap-3 mb-1">
-                            <h1 className="hero-title text-2xl md:text-3xl font-bold admin-hero-title">
+                            <h1 className="hero-title text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50">
                                 Painel Administrativo (Em Desenvolvimento)
                             </h1>
-                            <span className="admin-badge-global text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
+                            <span className="bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
                                 Admin Global
                             </span>
                         </div>
-                        <p className="text-[14px] admin-text-muted">
+                        <p className="text-[14px] text-gray-500 dark:text-gray-400">
                             Gerencie denúncias, usuários, salas e feedbacks do sistema.
                         </p>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="btn-white-glossy px-4 py-2 text-[13px] admin-btn-blue-outline flex items-center gap-2">
+                        <button className="btn-white-glossy px-4 py-2 text-[13px] !text-sky-500 flex items-center gap-2">
                             <FaDownload size={12} className="text-[#0ea5e9]" /> Exportar relatório
                         </button>
                         <button className="skeuo-btn px-4 py-2 text-[13px] flex items-center gap-2">
@@ -217,55 +214,55 @@ const Admin = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up-2">
                     <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-full admin-icon-wrap-blue flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-sky-100 text-blue-500 dark:bg-blue-500/20 flex items-center justify-center">
                                 <FaUsers size={14} />
                             </div>
-                            <span className="admin-badge-trend-up text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="bg-red-100 text-red-500 border border-red-200 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <FaChartLine size={8} /> +12%
                             </span>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.total_users}</h2>
-                        <p className="text-[12px] admin-text-muted font-medium">Usuários Totais</p>
-                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-blue rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1">{globalStats.total_users}</h2>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">Usuários Totais</p>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/5 dark:bg-blue-400/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
 
                     <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-full admin-icon-wrap-purple flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-500 dark:bg-purple-500/20 flex items-center justify-center">
                                 <FaDoorOpen size={14} />
                             </div>
-                            <span className="admin-badge-trend-up text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="bg-red-100 text-red-500 border border-red-200 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <FaChartLine size={8} /> +5
                             </span>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.active_rooms}</h2>
-                        <p className="text-[12px] admin-text-muted font-medium">Salas Ativas</p>
-                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-purple rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1">{globalStats.active_rooms}</h2>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">Salas Ativas</p>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-400/5 dark:bg-purple-400/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
 
                     <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-full admin-icon-wrap-red flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-red-100 text-red-500 dark:bg-red-500/20 flex items-center justify-center">
                                 <FaExclamationCircle size={14} />
                             </div>
-                            <span className="admin-badge-trend-up text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="bg-red-100 text-red-500 border border-red-200 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <FaChartLine size={8} /> 15%
                             </span>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.pending_reports}</h2>
-                        <p className="text-[12px] admin-text-muted font-medium">Denúncias pendentes</p>
-                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-red rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1">{globalStats.pending_reports}</h2>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">Denúncias pendentes</p>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-400/5 dark:bg-red-400/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
 
                     <div className="skeuo-card p-5 relative overflow-hidden flex flex-col">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-full admin-icon-wrap-green flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-500 dark:bg-emerald-500/20 flex items-center justify-center">
                                 <FaBan size={14} />
                             </div>
                         </div>
-                        <h2 className="text-3xl font-bold admin-hero-title mb-1">{globalStats.active_bans}</h2>
-                        <p className="text-[12px] admin-text-muted font-medium">Banimentos ativos</p>
-                        <div className="absolute top-0 right-0 w-32 h-32 admin-card-glow-green rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1">{globalStats.active_bans}</h2>
+                        <p className="text-[12px] text-gray-500 dark:text-gray-400 font-medium">Banimentos ativos</p>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/5 dark:bg-emerald-400/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                     </div>
                 </div>
 
@@ -276,7 +273,7 @@ const Admin = () => {
                             <button
                                 key={tabId}
                                 onClick={() => { setActiveTab(tabId); setSelectedItem(null); setSearchTerm(''); setFilterSeverity('Todas'); setFilterTime('Todos'); }}
-                                className={`px-5 py-2 text-[13px] font-bold rounded-[10px] whitespace-nowrap admin-tab ${activeTab === tabId ? 'admin-tab-active' : ''}`}
+                                className={`px-5 py-2 text-[13px] font-bold rounded-[10px] whitespace-nowrap transition-all duration-200 ${activeTab === tabId ? 'bg-sky-500 !text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),0_2px_4px_rgba(14,165,233,0.3)]' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100'}`}
                             >
                                 {tab}
                             </button>
@@ -289,14 +286,14 @@ const Admin = () => {
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         <div className="skeuo-panel p-6 flex flex-col h-full">
                             <div className="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-4 mb-6">
-                                <h3 className="text-[16px] font-bold admin-hero-title capitalize whitespace-nowrap">Fila de {activeTab}</h3>
+                                <h3 className="text-[16px] font-bold text-gray-900 dark:text-gray-50 capitalize whitespace-nowrap">Fila de {activeTab}</h3>
                                 <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full 2xl:w-auto 2xl:justify-end">
                                     {(activeTab === 'denuncias' || activeTab === 'banimentos' || activeTab === 'feedbacks') && (
                                         <>
                                             <select
                                                 value={filterTime}
                                                 onChange={(e) => setFilterTime(e.target.value)}
-                                                className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
+                                                className="skeuo-input py-2 px-3 text-[12px] bg-white dark:bg-slate-800"
                                             >
                                                 <option value="Todos">Tempo: Todos</option>
                                                 <option value="Hoje">Hoje</option>
@@ -307,7 +304,7 @@ const Admin = () => {
                                             <select
                                                 value={filterSeverity}
                                                 onChange={(e) => setFilterSeverity(e.target.value)}
-                                                className="skeuo-input py-2 px-3 text-[12px] admin-select-bg"
+                                                className="skeuo-input py-2 px-3 text-[12px] bg-white dark:bg-slate-800"
                                             >
                                                 <option value="Todas">Gravidade: Todas</option>
                                                 <option value="Extrema">Extrema</option>
@@ -334,7 +331,7 @@ const Admin = () => {
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[600px] text-left border-collapse">
                                     <thead>
-                                        <tr className="admin-table-header">
+                                        <tr className="text-gray-600 border-b-2 border-gray-200 dark:text-gray-400 dark:border-gray-700">
                                             {activeTab === 'salas' && (
                                                 <>
                                                     <th className="pb-3 text-[12px] font-bold">Sala</th>
@@ -369,25 +366,25 @@ const Admin = () => {
                                             <tr
                                                 key={item.id}
                                                 onClick={() => setSelectedItem(item)}
-                                                className={`admin-table-row cursor-pointer ${selectedItem?.id === item.id ? 'admin-empty-icon-bg' : ''}`}
+                                                className={`border-b border-gray-100 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/40 transition-colors duration-150 cursor-pointer ${selectedItem?.id === item.id ? 'bg-gray-100 dark:bg-slate-800' : ''}`}
                                             >
                                                 {activeTab === 'salas' && (
                                                     <>
                                                         <td className="py-3">
                                                             <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 rounded-full admin-avatar-bg flex items-center justify-center">
-                                                                    <FaDoorOpen className="admin-text-muted" size={10} />
+                                                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center">
+                                                                    <FaDoorOpen className="text-gray-500 dark:text-gray-400" size={10} />
                                                                 </div>
                                                                 <div>
-                                                                    <span className="text-[13px] font-bold admin-table-text block">{item.name}</span>
+                                                                    <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300 block">{item.name}</span>
                                                                     <span className="text-[10px] text-gray-500">{item.category}</span>
                                                                 </div>
                                                             </div>
                                                         </td>
                                                         <td className="py-3 text-[13px] text-blue-500 font-medium">{item.user}</td>
-                                                        <td className="py-3 text-[13px] admin-table-text">{item.usersCount} online</td>
+                                                        <td className="py-3 text-[13px] text-gray-700 dark:text-gray-300">{item.usersCount} online</td>
                                                         <td className="py-3">
-                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full w-max ${item.status === 'Ativa' ? 'admin-status-pending' : 'admin-status-high'}`}>
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full w-max ${item.status === 'Ativa' ? 'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-slate-800/20 dark:text-gray-400 dark:border-gray-500/30' : 'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:border-red-400/30'}`}>
                                                                 {item.status}
                                                             </span>
                                                         </td>
@@ -401,16 +398,16 @@ const Admin = () => {
                                                     <>
                                                         <td className="py-3">
                                                             <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 rounded-full admin-avatar-bg flex items-center justify-center">
-                                                                    <FaUser className="admin-text-muted" size={10} />
+                                                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center">
+                                                                    <FaUser className="text-gray-500 dark:text-gray-400" size={10} />
                                                                 </div>
-                                                                <span className="text-[13px] font-bold admin-table-text">{item.user}</span>
+                                                                <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{item.user}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="py-3 text-[13px] admin-table-text">{item.email}</td>
-                                                        <td className="py-3 text-[13px] admin-table-text capitalize">{item.role}</td>
+                                                        <td className="py-3 text-[13px] text-gray-700 dark:text-gray-300">{item.email}</td>
+                                                        <td className="py-3 text-[13px] text-gray-700 dark:text-gray-300 capitalize">{item.role}</td>
                                                         <td className="py-3">
-                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full w-max ${item.status === 'Ativo' ? 'admin-status-pending' : 'admin-status-high'}`}>
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full w-max ${item.status === 'Ativo' ? 'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-slate-800/20 dark:text-gray-400 dark:border-gray-500/30' : 'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:border-red-400/30'}`}>
                                                                 {item.status}
                                                             </span>
                                                         </td>
@@ -424,21 +421,21 @@ const Admin = () => {
                                                     <>
                                                         <td className="py-3">
                                                             <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 rounded-full admin-avatar-bg flex items-center justify-center">
-                                                                    <FaUser className="admin-text-muted" size={10} />
+                                                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center">
+                                                                    <FaUser className="text-gray-500 dark:text-gray-400" size={10} />
                                                                 </div>
-                                                                <span className="text-[13px] font-bold admin-table-text">{item.user}</span>
+                                                                <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{item.user}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="py-3 text-[13px] admin-table-text">{item.reason}</td>
+                                                        <td className="py-3 text-[13px] text-gray-700 dark:text-gray-300">{item.reason}</td>
                                                         <td className="py-3">
-                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex w-max items-center gap-1 ${item.severity === 'Alta' || item.severity === 'Extrema' ? 'admin-status-high' : 'admin-status-pending'}`}>
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex w-max items-center gap-1 ${item.severity === 'Alta' || item.severity === 'Extrema' ? 'bg-red-100 text-red-600 border border-red-200 dark:bg-red-600/20 dark:border-red-400/30' : 'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-slate-800/20 dark:text-gray-400 dark:border-gray-500/30'}`}>
                                                                 {(item.severity === 'Alta' || item.severity === 'Extrema') && <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>}
                                                                 {item.severity}
                                                             </span>
                                                         </td>
                                                         <td className="py-3">
-                                                            <span className="admin-status-pending text-[10px] font-bold px-2 py-0.5 rounded-full w-max">
+                                                            <span className="bg-gray-100 text-gray-600 border border-gray-200 dark:bg-slate-800/20 dark:text-gray-400 dark:border-gray-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full w-max">
                                                                 {item.status}
                                                             </span>
                                                         </td>
@@ -461,21 +458,21 @@ const Admin = () => {
 
                     <div className="lg:col-span-4 flex flex-col gap-6">
                         <div className="skeuo-panel p-6 flex flex-col h-full">
-                            <h3 className="text-[16px] font-bold admin-hero-title mb-5">Ações Rápidas</h3>
+                            <h3 className="text-[16px] font-bold text-gray-900 dark:text-gray-50 mb-5">Ações Rápidas</h3>
 
                             <div className="flex flex-col gap-3">
-                                <button className="admin-quick-action p-4 rounded-[12px] flex items-center gap-3 cursor-pointer text-left w-full group">
-                                    <div className="w-8 h-8 rounded-full admin-icon-box-blue flex items-center justify-center group-hover:scale-105 transition-transform">
+                                <button className="bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs hover:-translate-y-0.5 dark:bg-slate-800 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:shadow-md transition-all duration-200 p-4 rounded-[12px] flex items-center gap-3 cursor-pointer text-left w-full group">
+                                    <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform">
                                         <FaBullhorn className="text-blue-500" size={12} />
                                     </div>
-                                    <span className="text-[13px] font-bold admin-table-text">Criar aviso global</span>
+                                    <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Criar aviso global</span>
                                 </button>
 
-                                <button className="admin-quick-action p-4 rounded-[12px] flex items-center gap-3 cursor-pointer text-left w-full group">
-                                    <div className="w-8 h-8 rounded-full admin-icon-box-red flex items-center justify-center group-hover:scale-105 transition-transform">
+                                <button className="bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs hover:-translate-y-0.5 dark:bg-slate-800 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:shadow-md transition-all duration-200 p-4 rounded-[12px] flex items-center gap-3 cursor-pointer text-left w-full group">
+                                    <div className="w-8 h-8 rounded-full bg-red-50 dark:bg-slate-800 flex items-center justify-center group-hover:scale-105 transition-transform">
                                         <FaExclamationTriangle className="text-red-500" size={12} />
                                     </div>
-                                    <span className="text-[13px] font-bold admin-table-text">Denúncias críticas</span>
+                                    <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Denúncias críticas</span>
                                 </button>
                             </div>
                         </div>
@@ -485,39 +482,39 @@ const Admin = () => {
 
                 <div className="skeuo-panel p-6 flex flex-col min-h-[200px] mb-6 animate-fade-in-up-5">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-[16px] font-bold admin-hero-title">Detalhes da Seleção</h3>
+                        <h3 className="text-[16px] font-bold text-gray-900 dark:text-gray-50">Detalhes da Seleção</h3>
                         <FaInfoCircle className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
                     </div>
 
                     {selectedItem ? (
                         <div className="flex-1 flex flex-col pt-2 animate-fade-in-up-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 border-b admin-border-muted pb-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 border-b border-gray-100 dark:border-gray-800 pb-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full admin-avatar-bg flex items-center justify-center">
-                                        {selectedItem.type === 'sala' ? <FaDoorOpen className="admin-text-muted" size={20} /> : <FaUser className="admin-text-muted" size={20} />}
+                                    <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center">
+                                        {selectedItem.type === 'sala' ? <FaDoorOpen className="text-gray-500 dark:text-gray-400" size={20} /> : <FaUser className="text-gray-500 dark:text-gray-400" size={20} />}
                                     </div>
                                     <div>
-                                        <h4 className="text-[18px] font-bold admin-hero-title">{selectedItem.name || selectedItem.user}</h4>
-                                        <span className="text-[12px] admin-text-muted capitalize">{selectedItem.type} #{selectedItem.id}</span>
+                                        <h4 className="text-[18px] font-bold text-gray-900 dark:text-gray-50">{selectedItem.name || selectedItem.user}</h4>
+                                        <span className="text-[12px] text-gray-500 dark:text-gray-400 capitalize">{selectedItem.type} #{selectedItem.id}</span>
                                     </div>
                                 </div>
-                                <div className="text-left sm:text-right text-[12px] text-gray-500 admin-details-box px-3 py-1.5 rounded-lg w-max">
+                                <div className="text-left sm:text-right text-[12px] text-gray-500 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 px-3 py-1.5 rounded-lg w-max">
                                     <span className="block font-bold mb-0.5 uppercase tracking-wide text-[10px]">Registro</span>
                                     {selectedItem.date ? new Date(selectedItem.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Data não registrada'}
                                 </div>
                             </div>
 
                             {(selectedItem.type === 'denuncia' || selectedItem.type === 'banimento' || selectedItem.type === 'feedback') && (
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] text-gray-700 dark:text-gray-300">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Motivo / Assunto:</strong>
                                         {selectedItem.reason}
                                     </div>
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Status:</strong>
                                         {selectedItem.status}
                                     </div>
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Gravidade:</strong>
                                         <span className={`inline-block ${selectedItem.severity === 'Alta' || selectedItem.severity === 'Extrema' ? 'text-red-500 font-bold' : ''}`}>
                                             {selectedItem.severity}
@@ -527,16 +524,16 @@ const Admin = () => {
                             )}
 
                             {selectedItem.type === 'usuario' && (
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] text-gray-700 dark:text-gray-300">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">E-mail:</strong>
                                         {selectedItem.email}
                                     </div>
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Cargo:</strong>
                                         <span className="capitalize">{selectedItem.role}</span>
                                     </div>
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Status da Conta:</strong>
                                         {selectedItem.status}
                                     </div>
@@ -544,16 +541,16 @@ const Admin = () => {
                             )}
 
                             {selectedItem.type === 'sala' && (
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] admin-table-text">
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[13px] text-gray-700 dark:text-gray-300">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Dono:</strong>
                                         {selectedItem.user}
                                     </div>
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Categoria:</strong>
                                         {selectedItem.category}
                                     </div>
-                                    <div className="p-3 admin-details-box rounded-[10px]">
+                                    <div className="p-3 bg-gray-50 border border-gray-100 dark:bg-slate-800/50 dark:border-slate-800 rounded-[10px]">
                                         <strong className="block text-[11px] text-gray-400 uppercase tracking-wide mb-1">Status:</strong>
                                         {selectedItem.status}
                                     </div>
@@ -567,13 +564,13 @@ const Admin = () => {
                                         <>
                                             <button
                                                 onClick={() => setShowMessageModal(true)}
-                                                className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-blue-outline flex items-center justify-center gap-2"
+                                                className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] !text-sky-500 flex items-center justify-center gap-2"
                                             >
                                                 <FaCommentDots size={10} /> Mensagem Original
                                             </button>
                                             <button
                                                 onClick={() => { setCurrentImageIndex(0); setShowImageModal(true); }}
-                                                className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] admin-btn-purple-outline flex items-center justify-center gap-2"
+                                                className="btn-white-glossy flex-1 lg:flex-none px-3 py-2 text-[12px] !text-purple-500 flex items-center justify-center gap-2"
                                             >
                                                 <FaImage size={10} /> Imagens/Anexos
                                             </button>
@@ -587,7 +584,7 @@ const Admin = () => {
                                             <button className="skeuo-btn flex-1 lg:flex-none px-4 py-2 text-[12px] flex items-center justify-center gap-2">
                                                 <FaEye size={10} /> Inspecionar Chat
                                             </button>
-                                            <button onClick={handleAction} className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 text-red-600">
+                                            <button onClick={handleAction} className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] !text-red-500 border border-red-200 dark:border-red-950/30 flex items-center justify-center gap-2 text-red-600">
                                                 <FaTrash size={10} /> Apagar Sala
                                             </button>
                                         </>
@@ -596,7 +593,7 @@ const Admin = () => {
                                             <button className="skeuo-btn flex-1 lg:flex-none px-4 py-2 text-[12px] flex items-center justify-center gap-2">
                                                 <FaEye size={10} /> Inspecionar Perfil
                                             </button>
-                                            <button onClick={handleAction} className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] admin-btn-danger-outline flex items-center justify-center gap-2 ">
+                                            <button onClick={handleAction} className="btn-white-glossy flex-1 lg:flex-none px-4 py-2 text-[12px] !text-red-500 border border-red-200 dark:border-red-950/30 flex items-center justify-center gap-2">
                                                 <FaHammer size={10} /> {selectedItem.status === 'Banido' ? 'Desbanir Usuário' : (selectedItem.type === 'usuario' ? 'Banir Usuário' : 'Punir / Restringir')}
                                             </button>
                                         </>
@@ -607,18 +604,18 @@ const Admin = () => {
                         </div>
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-                            <div className="w-12 h-12 rounded-full admin-empty-icon-bg flex items-center justify-center mb-4">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-4">
                                 <FaMousePointer className="text-gray-400 dark:text-gray-500" size={20} />
                             </div>
-                            <p className="text-[13px] admin-text-muted max-w-[300px]">
+                            <p className="text-[13px] text-gray-500 dark:text-gray-400 max-w-[300px]">
                                 Selecione um item na lista acima para ver mais detalhes e realizar ações administrativas.
                             </p>
                         </div>
                     )}
                 </div>
 
-                <div className="admin-bottom-bar pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] animate-fade-in-up-5">
-                    <p>Administrador: <span className="font-bold admin-hero-title">SkyMaster</span></p>
+                <div className="border-t border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] animate-fade-in-up-5">
+                    <p>Administrador: <span className="font-bold text-gray-900 dark:text-gray-50">SkyMaster</span></p>
                     <p className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#0ea5e9]"></span> Status: Online</p>
                     <p>Última atualização: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
@@ -626,7 +623,7 @@ const Admin = () => {
             </div>
 
             {showMessageModal && selectedItem && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 admin-modal-overlay animate-fade-in-up-1">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in-up-1">
                     <div className="skeuo-panel w-full max-w-lg p-6 flex flex-col gap-4 shadow-2xl relative">
                         <button
                             onClick={() => setShowMessageModal(false)}
@@ -635,17 +632,17 @@ const Admin = () => {
                             <FaTimes size={18} />
                         </button>
 
-                        <div className="flex items-center gap-3 border-b admin-border-muted pb-4">
-                            <div className="w-10 h-10 rounded-full admin-icon-box-blue flex items-center justify-center">
+                        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 pb-4">
+                            <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-slate-800 flex items-center justify-center">
                                 <FaCommentDots className="text-blue-500" size={16} />
                             </div>
                             <div>
-                                <h3 className="text-[18px] font-bold admin-hero-title">Mensagem Original</h3>
-                                <p className="text-[12px] admin-text-muted">Referente a <span className="font-bold">{selectedItem.name || selectedItem.user}</span></p>
+                                <h3 className="text-[18px] font-bold text-gray-900 dark:text-gray-50">Mensagem Original</h3>
+                                <p className="text-[12px] text-gray-500 dark:text-gray-400">Referente a <span className="font-bold">{selectedItem.name || selectedItem.user}</span></p>
                             </div>
                         </div>
 
-                        <div className="admin-msg-box p-5 rounded-[12px] max-h-[300px] overflow-y-auto shadow-inner">
+                        <div className="bg-white border border-gray-200 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.06)] dark:bg-slate-900/50 dark:border-slate-700 p-5 rounded-[12px] max-h-[300px] overflow-y-auto shadow-inner">
                             <p className="text-[14px] text-gray-800 dark:text-gray-200 whitespace-pre-wrap italic">
                                 "{selectedItem.message || 'Nenhuma mensagem de texto registrada para este caso.'}"
                             </p>
@@ -664,8 +661,8 @@ const Admin = () => {
             )}
 
             {showImageModal && selectedItem && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 admin-modal-overlay-dark animate-fade-in-up-1">
-                    <div className="skeuo-panel w-full max-w-4xl p-6 flex flex-col gap-4 shadow-2xl relative admin-modal-panel">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in-up-1">
+                    <div className="skeuo-panel w-full max-w-4xl p-6 flex flex-col gap-4 shadow-2xl relative bg-white dark:bg-slate-900">
                         <button
                             onClick={() => setShowImageModal(false)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors z-10"
@@ -673,15 +670,15 @@ const Admin = () => {
                             <FaTimes size={18} />
                         </button>
 
-                        <div className="flex items-center gap-3 border-b admin-border-muted pb-4">
-                            <div className="w-10 h-10 rounded-full admin-icon-box-purple flex items-center justify-center">
+                        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 pb-4">
+                            <div className="w-10 h-10 rounded-full bg-purple-50 dark:bg-slate-800 flex items-center justify-center">
                                 <FaImage className="text-purple-500" size={16} />
                             </div>
                             <div>
-                                <h3 className="text-[18px] font-bold admin-hero-title">
+                                <h3 className="text-[18px] font-bold text-gray-900 dark:text-gray-50">
                                     {selectedItem.type === 'feedback' ? 'Imagens Anexadas' : 'Evidências em Imagem'}
                                 </h3>
-                                <p className="text-[12px] admin-text-muted">
+                                <p className="text-[12px] text-gray-500 dark:text-gray-400">
                                     {selectedItem.type === 'feedback' 
                                         ? <span>Anexadas no feedback enviado por <span className="font-bold">{selectedItem.user || 'Anônimo'}</span></span>
                                         : <span>Anexadas na denúncia contra <span className="font-bold">{selectedItem.user || 'Desconhecido'}</span></span>
@@ -692,7 +689,7 @@ const Admin = () => {
 
                         {selectedItem.images && selectedItem.images.length > 0 ? (
                             <div className="flex flex-col gap-4">
-                                <div className="w-full h-[50vh] min-h-[300px] admin-media-main rounded-[12px] overflow-hidden flex items-center justify-center">
+                                <div className="w-full h-[50vh] min-h-[300px] bg-black/5 border border-gray-200 dark:bg-black/40 dark:border-slate-800 rounded-[12px] overflow-hidden flex items-center justify-center">
                                     <img src={selectedItem.images[currentImageIndex]} alt="Evidência Principal" className="max-w-full max-h-full object-contain" />
                                 </div>
 
@@ -709,8 +706,8 @@ const Admin = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="w-full h-[40vh] flex items-center justify-center admin-media-empty rounded-[12px]">
-                                <p className="text-[14px] admin-text-muted">
+                            <div className="w-full h-[40vh] flex items-center justify-center bg-gray-50 border border-dashed border-gray-300 dark:bg-slate-800/50 dark:border-slate-700 rounded-[12px]">
+                                <p className="text-[14px] text-gray-500 dark:text-gray-400">
                                     {selectedItem.type === 'feedback' ? 'Nenhuma imagem anexada a este feedback.' : 'Nenhuma imagem anexada a esta denúncia.'}
                                 </p>
                             </div>
