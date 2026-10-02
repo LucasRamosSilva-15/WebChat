@@ -129,47 +129,47 @@ const Navbar = () => {
                                 <div className={`absolute bg-black/80 dark:bg-white/80 transition-all duration-300 ${isMenuOpen ? 'translate-y-0 opacity-0 scale-50 w-5 h-[2px]' : 'translate-y-[6px] opacity-100 scale-100 w-5 h-[2px] rounded-sm'}`}></div>
                             </button>
                             <div
-                                className={`navbar-dropdown-panel skeuo-panel ${isMenuOpen ? 'navbar-dropdown-panel-open' : 'navbar-dropdown-panel-closed'}`}
+                                className={`absolute right-0 top-[48px] w-52 overflow-hidden transition-all duration-300 origin-top-right rounded-2xl !p-0 skeuo-panel ${isMenuOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'}`}
                             >
-                                <div className="navbar-dropdown-list">
-                                    <Link to="/" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item">
-                                        <FaHome className="navbar-dropdown-icon" size={16} /> Início
+                                <div className="flex flex-col py-2 max-h-[350px] overflow-y-auto">
+                                    <Link to="/" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent">
+                                        <FaHome className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Início
                                     </Link>
-                                    <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaComments className="navbar-dropdown-icon" size={16} /> Salas
+                                    <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaComments className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Salas
                                     </Link>
-                                    <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaEnvelope className="navbar-dropdown-icon" size={16} /> Diretas
+                                    <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaEnvelope className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Diretas
                                     </Link>
-                                    <span className="navbar-dropdown-item navbar-dropdown-item-bordered navbar-dropdown-item-disabled">
-                                        <FaStar className="navbar-dropdown-icon" size={16} /> Favoritos (Em breve)
+                                    <span className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 flex items-center gap-3 w-full text-left border-t border-[#e5e5e5] dark:border-white/5 opacity-50 cursor-not-allowed">
+                                        <FaStar className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Favoritos (Em breve)
                                     </span>
-                                    <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaUser className="navbar-dropdown-icon" size={16} /> Perfil
+                                    <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaUser className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Perfil
                                     </Link>
                                     <button
                                         onClick={() => {
                                             setIsSettingsOpen(true);
                                             setIsMenuOpen(false);
                                         }}
-                                        className="navbar-dropdown-item navbar-dropdown-item-bordered"
+                                        className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5"
                                     >
-                                        <FaCog className="navbar-dropdown-icon" size={16} /> Ajustes (Rápido)
+                                        <FaCog className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Ajustes (Rápido)
                                     </button>
-                                    <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaSlidersH className="navbar-dropdown-icon" size={16} /> Configurações
+                                    <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaSlidersH className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Configurações
                                     </Link>
-                                    <Link to="/feedback" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaLightbulb className="navbar-dropdown-icon" size={16} /> Feedback
+                                    <Link to="/feedback" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaLightbulb className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Feedback
                                     </Link>
-                                    <Link to="/suporte" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaLifeRing className="navbar-dropdown-icon" size={16} /> Suporte
+                                    <Link to="/suporte" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaLifeRing className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Suporte
                                     </Link>
-                                    <Link to="/about" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaInfoCircle className="navbar-dropdown-icon" size={16} /> Sobre
+                                    <Link to="/about" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaInfoCircle className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Sobre
                                     </Link>
-                                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="navbar-dropdown-item navbar-dropdown-item-bordered">
-                                        <FaShieldAlt className="navbar-dropdown-icon text-red-500" size={16} /> Área Admin
+                                    <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaShieldAlt className="text-red-500" size={16} /> Área Admin
                                     </Link>
                                     {isLoggedIn && (
                                         <button onClick={() => {
@@ -180,8 +180,8 @@ const Navbar = () => {
                                             window.dispatchEvent(new Event('profileUpdated'));
                                             setIsMenuOpen(false);
                                             window.location.href = '/login';
-                                        }} className="navbar-dropdown-item navbar-dropdown-item-bordered navbar-dropdown-item-danger">
-                                            <FaSignOutAlt className="navbar-dropdown-icon-danger" size={16} /> Sair
+                                        }} className="px-5 py-3 text-[15px] font-medium transition-colors duration-150 flex items-center gap-3 w-full text-left border-t border-[#e5e5e5] dark:border-white/5 text-red-500 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-100 dark:hover:from-red-950/40 hover:to-transparent">
+                                            <FaSignOutAlt className="text-red-500 dark:text-red-400" size={16} /> Sair
                                         </button>
                                     )}
                                 </div>
@@ -192,30 +192,30 @@ const Navbar = () => {
                             <div className="relative" ref={profileRef}>
                                 <div
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                    className="navbar-profile-trigger"
+                                    className="flex items-center gap-2 cursor-pointer transition-opacity duration-150 hover:opacity-80"
                                 >
                                     <UserAvatar src={profilePhoto} name={profileName} size="sm" showStatus={false} />
-                                    <div className="navbar-profile-info">
+                                    <div className="hidden sm:flex flex-col items-start">
                                         <span
-                                            className="navbar-profile-name"
+                                            className="text-[13px] font-semibold text-[#1d1d1f] dark:text-slate-50 leading-none truncate max-w-[180px] md:max-w-[240px]"
                                             title={profileName}
                                         >
                                             {profileName} {isAdmin && <span className="ml-1 inline-flex items-center gap-1 bg-red-500/10 text-red-600 border border-red-500/20 text-[9px] px-1.5 py-[1px] rounded font-bold uppercase"><FaShieldAlt size={8} /> Admin</span>}
                                         </span>
-                                        <span className="navbar-profile-status">Online</span>
+                                        <span className="text-[10px] text-green-600 dark:text-green-400 uppercase tracking-widest mt-0.5 font-bold">Online</span>
                                     </div>
                                 </div>
 
                                 <div
-                                    className={`navbar-profile-panel skeuo-panel ${isProfileOpen ? 'navbar-profile-panel-open' : 'navbar-profile-panel-closed'}`}
+                                    className={`absolute right-0 top-[48px] w-[260px] overflow-hidden transition-all duration-300 origin-top-right rounded-2xl !p-0 skeuo-panel ${isProfileOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'}`}
                                 >
-                                    <div className="navbar-profile-card">
+                                    <div className="flex flex-col text-center p-5 items-center">
                                         <UserAvatar src={profilePhoto} name={profileName} size="xl" className="mb-3" showStatus={false} />
-                                        <h3 className="navbar-profile-title">{profileName}</h3>
-                                        <p className="navbar-profile-desc">{profileDesc}</p>
+                                        <h3 className="text-lg font-semibold text-[#1d1d1f] dark:text-slate-50 mb-1 leading-snug">{profileName}</h3>
+                                        <p className="text-[13px] text-[#86868b] dark:text-[#94a3b8] leading-snug">{profileDesc}</p>
                                     </div>
-                                    <div className="navbar-profile-footer flex flex-col gap-2">
-                                        <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy navbar-profile-edit-btn">Editar Perfil</Link>
+                                    <div className="p-3 bg-gradient-to-b from-[#f0f0f0] to-[#e5e5e5] border-t border-[#d2d2d7] dark:from-[#0f172a] dark:to-[#020617] dark:border-white/5 flex flex-col gap-2">
+                                        <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy w-full py-2 block text-center text-[13px]">Editar Perfil</Link>
                                         {isAdmin && (
                                             <button onClick={() => {
                                                 localStorage.removeItem('admin_token');
@@ -223,7 +223,7 @@ const Navbar = () => {
                                                 setIsProfileOpen(false);
                                                 alert('Você saiu do modo Administrador.');
                                                 if (window.location.pathname.includes('/admin') && window.location.pathname !== '/admin-login') window.location.href = '/';
-                                            }} className="btn-secondary-glossy navbar-profile-edit-btn mt-2 !text-red-600 flex items-center justify-center gap-2">
+                                            }} className="btn-secondary-glossy w-full py-2 block text-center text-[13px] mt-2 !text-red-600 flex items-center justify-center gap-2">
                                                 <FaShieldAlt size={12} /> Sair do Admin
                                             </button>
                                         )}
@@ -236,25 +236,25 @@ const Navbar = () => {
             </header>
 
             <div
-                className={`navbar-settings-overlay ${isSettingsOpen ? 'navbar-settings-overlay-open' : 'navbar-settings-overlay-closed'}`}
+                className={`fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs transition-all duration-300 ${isSettingsOpen ? 'opacity-100 pointer-events-auto visible' : 'opacity-0 pointer-events-none invisible'}`}
                 onClick={() => setIsSettingsOpen(false)}
             >
                 <div
-                    className={`skeuo-panel navbar-settings-panel ${isSettingsOpen ? 'navbar-settings-panel-open' : 'navbar-settings-panel-closed'}`}
+                    className={`skeuo-panel p-8 max-w-[500px] w-full max-h-[90vh] flex flex-col relative transition-all duration-300 origin-center ${isSettingsOpen ? 'translate-y-0 scale-100' : '-translate-y-2 scale-95'}`}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="navbar-settings-header">
-                        <h2 className="navbar-settings-title">Configurações</h2>
-                        <button onClick={() => setIsSettingsOpen(false)} className="navbar-settings-close-btn">
-                            <FaTimes className="navbar-settings-close-icon" size={14} />
+                    <div className="flex justify-between items-center mb-6 shrink-0">
+                        <h2 className="text-2xl font-semibold text-[#1d1d1f] dark:text-slate-50 text-shadow-sm">Configurações</h2>
+                        <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-gray-300 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] transition-all duration-150 hover:from-gray-200 hover:to-gray-300 dark:from-slate-700 dark:to-slate-800 dark:border-slate-600 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] dark:hover:from-slate-600 dark:hover:to-slate-700">
+                            <FaTimes className="text-[#86868b] dark:text-[#94a3b8]" size={14} />
                         </button>
                     </div>
 
-                    <div className="navbar-settings-content">
-                        <div className="navbar-settings-section">
-                            <label className="navbar-settings-label">Cor Principal</label>
+                    <div className="overflow-y-auto pr-1 space-y-6">
+                        <div className="bg-black/5 dark:bg-black/20 p-4 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
+                            <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-3">Cor Principal</label>
                             <div className="space-y-2">
-                                <div className="navbar-settings-color-grid">
+                                <div className="flex flex-wrap gap-3">
                                     {[
                                         { id: 'blue', color: 'bg-blue-500', name: 'Azul' },
                                         { id: 'green', color: 'bg-emerald-500', name: 'Verde' },
@@ -265,12 +265,12 @@ const Navbar = () => {
                                         <button
                                             key={colorOpt.id}
                                             onClick={() => setPrimaryColor(colorOpt.id)}
-                                            className={`navbar-settings-color-btn ${colorOpt.color} ${primaryColor === colorOpt.id ? 'navbar-settings-color-btn-active' : 'navbar-settings-color-btn-inactive'}`}
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 ${colorOpt.color} ${primaryColor === colorOpt.id ? 'shadow-[0_0_0_2px_#ffffff,0_0_0_4px_rgba(0,0,0,0.2),0_10px_15px_-3px_rgba(0,0,0,0.1)] dark:shadow-[0_0_0_2px_#1e293b,0_0_0_4px_rgba(255,255,255,0.2)] scale-110' : 'opacity-80 shadow-md border border-white/20 hover:opacity-100 hover:scale-105'}`}
                                             title={colorOpt.name}
                                             aria-label={`Selecionar cor ${colorOpt.name}`}
                                         >
                                             {primaryColor === colorOpt.id && (
-                                                <div className="navbar-settings-color-dot"></div>
+                                                <div className="w-3 h-3 bg-white rounded-full shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)]"></div>
                                             )}
                                         </button>
                                     ))}
@@ -278,96 +278,96 @@ const Navbar = () => {
                             </div>
                         </div>
 
-                        <div className="navbar-settings-section">
-                            <label className="navbar-settings-label">Modo de Cor</label>
-                            <div className="navbar-settings-options">
-                                <label className={`navbar-settings-option ${colorMode === 'light' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
+                        <div className="bg-black/5 dark:bg-black/20 p-4 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
+                            <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-3">Modo de Cor</label>
+                            <div className="flex flex-col gap-3">
+                                <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${colorMode === 'light' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                     <input
                                         type="radio"
                                         name="colorMode"
                                         checked={colorMode === 'light'}
                                         onChange={() => setColorMode('light')}
-                                        className="navbar-settings-radio"
+                                        className="w-4 h-4 accent-[var(--primary-main)]"
                                     />
-                                    <div className="navbar-settings-option-text">
-                                        <span className="navbar-settings-option-title">Modo Claro</span>
-                                        <span className="navbar-settings-option-desc">Cores claras, fundo branco clássico.</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Modo Claro</span>
+                                        <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Cores claras, fundo branco clássico.</span>
                                     </div>
                                 </label>
 
-                                <label className={`navbar-settings-option ${colorMode === 'dark' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
+                                <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${colorMode === 'dark' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                     <input
                                         type="radio"
                                         name="colorMode"
                                         checked={colorMode === 'dark'}
                                         onChange={() => setColorMode('dark')}
-                                        className="navbar-settings-radio"
+                                        className="w-4 h-4 accent-[var(--primary-main)]"
                                     />
-                                    <div className="navbar-settings-option-text">
-                                        <span className="navbar-settings-option-title">Modo Escuro</span>
-                                        <span className="navbar-settings-option-desc">Cores escuras para conforto visual noturno.</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Modo Escuro</span>
+                                        <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Cores escuras para conforto visual noturno.</span>
                                     </div>
                                 </label>
                             </div>
                         </div>
 
                         {colorMode === 'light' && (
-                            <div className="navbar-settings-section">
-                                <label className="navbar-settings-label">Fundo da Aplicação</label>
-                                <div className="navbar-settings-options">
-                                    <label className={`navbar-settings-option ${bgColor === 'neutral' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
+                            <div className="bg-black/5 dark:bg-black/20 p-4 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
+                                <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-3">Fundo da Aplicação</label>
+                                <div className="flex flex-col gap-3">
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'neutral' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'neutral'}
                                             onChange={() => setBgColor('neutral')}
-                                            className="navbar-settings-radio"
+                                            className="w-4 h-4 accent-[var(--primary-main)]"
                                         />
-                                        <div className="navbar-settings-option-text">
-                                            <span className="navbar-settings-option-title">Ardósia Padrão</span>
-                                            <span className="navbar-settings-option-desc">Fundo cinza-azulado suave original.</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Ardósia Padrão</span>
+                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Fundo cinza-azulado suave original.</span>
                                         </div>
                                     </label>
 
-                                    <label className={`navbar-settings-option ${bgColor === 'classic_blue' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'classic_blue' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'classic_blue'}
                                             onChange={() => setBgColor('classic_blue')}
-                                            className="navbar-settings-radio"
+                                            className="w-4 h-4 accent-[var(--primary-main)]"
                                         />
-                                        <div className="navbar-settings-option-text">
-                                            <span className="navbar-settings-option-title">Azul Clássico</span>
-                                            <span className="navbar-settings-option-desc">Gradiente listrado inspirado no clássico.</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Azul Clássico</span>
+                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Gradiente listrado inspirado no clássico.</span>
                                         </div>
                                     </label>
 
-                                    <label className={`navbar-settings-option ${bgColor === 'smooth_gradient' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'smooth_gradient' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'smooth_gradient'}
                                             onChange={() => setBgColor('smooth_gradient')}
-                                            className="navbar-settings-radio"
+                                            className="w-4 h-4 accent-[var(--primary-main)]"
                                         />
-                                        <div className="navbar-settings-option-text">
-                                            <span className="navbar-settings-option-title">Gradiente Suave</span>
-                                            <span className="navbar-settings-option-desc">Tons muito sutis de cinza prateado.</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Gradiente Suave</span>
+                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Tons muito sutis de cinza prateado.</span>
                                         </div>
                                     </label>
 
-                                    <label className={`navbar-settings-option ${bgColor === 'clean_light' ? 'navbar-settings-option-active' : 'navbar-settings-option-inactive'}`}>
+                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'clean_light' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
                                         <input
                                             type="radio"
                                             name="bgColor"
                                             checked={bgColor === 'clean_light'}
                                             onChange={() => setBgColor('clean_light')}
-                                            className="navbar-settings-radio"
+                                            className="w-4 h-4 accent-[var(--primary-main)]"
                                         />
-                                        <div className="navbar-settings-option-text">
-                                            <span className="navbar-settings-option-title">Claro Limpo</span>
-                                            <span className="navbar-settings-option-desc">Fundo minimalista acinzentado sólido.</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Claro Limpo</span>
+                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Fundo minimalista acinzentado sólido.</span>
                                         </div>
                                     </label>
                                 </div>
@@ -375,8 +375,8 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    <div className="navbar-settings-footer">
-                        <button onClick={() => setIsSettingsOpen(false)} className="skeuo-btn navbar-settings-save-btn">Salvar e Fechar</button>
+                    <div className="mt-6 shrink-0">
+                        <button onClick={() => setIsSettingsOpen(false)} className="skeuo-btn w-full py-3 text-base font-medium">Salvar e Fechar</button>
                     </div>
                 </div>
             </div>

@@ -79,36 +79,36 @@ const MembersSidebar = ({ roomId, currentUserId, onlineUsers = [], onlineCount =
     const displayOnlineCount = isSocketOnline ? Math.max(onlineCount, finalOnlineMembers.length) : finalOnlineMembers.length;
 
     return (
-        <div className={`members-sidebar animate-chat-panel-right xl:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0 overflow-y-auto ${isMobileOpen ? 'flex fixed inset-y-0 right-0 z-40 bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-xl shadow-2xl h-[100vh] top-0 pt-12' : 'hidden'}`}>
+        <div className={`animate-chat-panel-right xl:flex w-[220px] h-[calc(100vh-48px)] sticky top-[48px] flex-col shrink-0 overflow-y-auto bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] border-l border-[#d2d2d7] shadow-[inset_1px_0_0_rgba(255,255,255,0.8)] dark:from-[#1e293b] dark:to-[#0f172a] dark:border-white/5 dark:shadow-[inset_1px_0_0_rgba(255,255,255,0.02)] ${isMobileOpen ? 'flex fixed inset-y-0 right-0 z-40 bg-white/95 dark:bg-[#1c1c1e]/95 backdrop-blur-xl shadow-2xl h-[100vh] top-0 pt-12' : 'hidden'}`}>
             {isMobileOpen && (
                 <button onClick={onClose} className="absolute top-3 right-3 text-[#86868b] dark:text-[#94a3b8] hover:text-[#0071e3] xl:hidden p-2">
                     <FaTimes size={18} />
                 </button>
             )}
             {loading ? (
-                <div className="members-sidebar-empty p-4 text-center text-xs">Carregando membros...</div>
+                <div className="p-4 text-center text-xs text-[#86868b] dark:text-[#94a3b8]">Carregando membros...</div>
             ) : error ? (
-                <div className="members-sidebar-error p-4 text-center text-xs">{error}</div>
+                <div className="p-4 text-center text-xs text-red-500 dark:text-red-400">{error}</div>
             ) : members.length === 0 ? (
-                <div className="members-sidebar-empty p-4 text-center text-xs">Nenhum membro encontrado</div>
+                <div className="p-4 text-center text-xs text-[#86868b] dark:text-[#94a3b8]">Nenhum membro encontrado</div>
             ) : (
                 <>
-                    <div className="members-sidebar-header p-4 pt-5">
-                        <h3 className="sidebar-title text-[11px] mb-3 ml-2 mt-2">
+                    <div className="p-4 pt-5">
+                        <h3 className="text-[11px] mb-3 ml-2 mt-2 font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">
                             Online — {displayOnlineCount}
                         </h3>
                     </div>
-                    <div className="members-list px-3 space-y-1">
+                    <div className="px-3 space-y-1">
                         {finalOnlineMembers.map((member) => (
                             <MemberItem key={member.id} member={member} isMe={member.id === currentUserId} />
                         ))}
                     </div>
-                    <div className="members-sidebar-header-offline p-4 mt-4">
-                        <h3 className="sidebar-title text-[11px] mb-3 ml-2 mt-2">
+                    <div className="p-4 mt-4 border-t border-[#d2d2d7] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:border-white/5 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+                        <h3 className="text-[11px] mb-3 ml-2 mt-2 font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">
                             Offline — {finalOfflineMembers.length}
                         </h3>
                     </div>
-                    <div className="members-list-offline px-3 space-y-1">
+                    <div className="px-3 space-y-1 opacity-60">
                         {finalOfflineMembers.map((member) => (
                             <MemberItem key={member.id} member={member} isMe={member.id === currentUserId} />
                         ))}
@@ -124,27 +124,27 @@ const MemberItem = ({ member, isMe }) => {
     const statusText = member.online ? 'Online' : 'Offline';
 
     return (
-        <div className="member-item flex items-center gap-3 p-2">
+        <div className="flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-all duration-150 hover:bg-white hover:shadow-xs dark:hover:bg-slate-700 dark:hover:shadow-sm">
             <UserAvatar name={displayName} size="sm" showStatus={true} status={member.online ? 'online' : 'offline'} />
-            <div className="member-info flex-1 min-w-0 flex flex-col justify-center">
-                <span className="member-name text-[13px] truncate leading-tight">{displayName}</span>
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <span className="text-[13px] truncate leading-tight font-semibold text-[#1d1d1f] dark:text-slate-50">{displayName}</span>
                 {member.role === 'owner' && (
-                    <span className="member-role member-role-[role] member-role-owner inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit">
+                    <span className="inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 via-yellow-400 to-amber-500 text-amber-900">
                         <FaCrown size={8} /> DONO
                     </span>
                 )}
                 {member.role === 'admin' && (
-                    <span className="member-role member-role-[role] member-role-admin inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit">
+                    <span className="inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-blue-400 to-blue-600 text-white">
                         <FaShieldAlt size={8} /> ADMIN
                     </span>
                 )}
                 {member.role === 'moderator' && (
-                    <span className="member-role member-role-[role] member-role-moderator inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit">
+                    <span className="inline-flex items-center text-[9px] px-1.5 py-0.5 mt-0.5 gap-1 w-fit rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-purple-400 to-purple-600 text-white">
                         <FaShieldAlt size={8} /> MOD
                     </span>
                 )}
                 {member.role === 'user' && (
-                    <p className="member-status-text text-[11px] truncate mt-0.5 leading-none">{statusText}</p>
+                    <p className="text-[11px] truncate mt-0.5 leading-none text-[#86868b] dark:text-[#94a3b8]">{statusText}</p>
                 )}
             </div>
         </div>
