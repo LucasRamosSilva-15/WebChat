@@ -4,14 +4,12 @@
 @import "./styles/animations.css";
 @import "./styles/text.css";
 @import "./styles/loading.css";
-@import "./styles/about.css";
 @import "./styles/avatar.css";
 @import "./styles/footer.css";
 @import "./styles/sidebar.css";
 @import "./styles/rooms.css";
 @import "./styles/chat.css";
 @import "./styles/navbar.css";
-@import "./styles/profile.css";
 
 @variant dark (&:where(.dark, .dark *));
 
