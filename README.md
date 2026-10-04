@@ -1,7 +1,7 @@
 # SkyRipple
 
 <div align="center">
-  <img src="frontend/public/logo1_grande_true.svg" width="256" height="256" alt="SkyRipple Logo">
+  <img src="frontend/public/logo_512x512_transparente.svg" width="256" height="256" alt="SkyRipple Logo">
 </div>
 
 
