@@ -8,6 +8,7 @@ O Skeuo (agora conhecido como **Visual Clássico** para os usuários) é regido 
 - **Iluminação Coerente (Luz de Cima):** A iluminação na tela simula um ambiente físico real onde a luz vem estritamente de cima. Isso resulta em bordas superiores brilhantes (specular highlights) e sombras/bordas inferiores mais escuras.
 - **Deslocamento Físico:** Botões e elementos interativos não apenas mudam de cor, mas simulam um movimento mecânico (afundamento na tela) quando pressionados.
 - **Texturas Nostálgicas:** Superfícies neutras utilizam texturas sutis (como scanlines ou padrões de grade) para quebrar o vazio digital do flat design.
+- **Arquitetura Moderna (Tailwind CSS v4 + Módulos CSS Táteis):** Após a eliminação das antigas folhas de estilo isoladas por página, a base estrutural, o grid e a responsividade passaram a ser operados pelas classes utilitárias do Tailwind CSS v4, enquanto os materiais físicos, relevos e comportamentos mecânicos foram centralizados e modularizados em `skeuo.css`, `avatar.css`, `text.css`, `animations.css` e `loading.css`.
 
 ---
 
@@ -59,7 +60,17 @@ As cores sólidas e planas são substituídas por gradientes complexos que simul
 - **Textura de Fundo do Body (Modo Claro):**
   - **Opção 1 (Neutro / Ardósia - Recomendado):** Gradiente cinza/azulado suave `linear-gradient(200deg, #dbeafe 0%, #f1f5f9 100%)`. Reduz a "cara de IA" e cansa menos os olhos.
   - **Opção 2 (Azul Clássico):** Gradiente azul original `linear-gradient(200deg, #0280ff 0%, rgb(184, 220, 255) 100%)`.
+  - **Opção 3 (Gradiente Suave):** `linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)`.
+  - **Opção 4 (Claro Limpo):** Fundo sólido acetinado `#f8fafc`.
   - Textura de Grade Diagonal: Scanlines sutis em 45 graus (no `::before` para o neutro, ou embutido para o azul) para simular uma superfície mecânica texturizada.
+
+- **Temas Dinâmicos de Cores:**
+  - O sistema oferece 5 opções cromáticas gerenciadas dinamicamente via variáveis CSS `--primary-*`:
+    - **Azul Clássico (Padrão):** `--primary-main: #0071e3`.
+    - **Verde Esmeralda (`body.color-green`):** `--primary-main: #10b981`.
+    - **Roxo Ametista (`body.color-purple`):** `--primary-main: #a855f7`.
+    - **Rosa Carmim (`body.color-red`):** `--primary-main: #f43f5e`.
+    - **Ardósia Grafite (`body.color-slate`):** `--primary-main: #64748b`.
 
 - **Painéis e Cards (`.skeuo-panel`):**
   - Material: Plástico de alta qualidade com acabamento acetinado.
@@ -78,11 +89,11 @@ As cores sólidas e planas são substituídas por gradientes complexos que simul
 O Dark Mode no Skeuo não é apenas inverter cores, é mudar o **material**. Passamos de plástico branco brilhante e alumínio escovado para alumínio anodizado escuro, plásticos foscos estilo "Space Gray" e emissões de luz estilo OLED. O fundo deve ser limpo e profissional.
 
 - **Fundo e Textura (Dark):**
-  - O fundo é um abismo escuro `linear-gradient(200deg, #111 0%, #1c1c1e 100%)`. As texturas em grade continuam, mas com opacidade de apenas `1%`.
+  - O fundo é composto por um brilho radial central com a cor do tema ativo sobre um gradiente profundo: `radial-gradient(circle at top, var(--primary-ring) 0%, transparent 45%), linear-gradient(180deg, #111827 0%, #0f172a 100%)`.
 - **Painéis (`.skeuo-panel` Dark):**
-  - O plástico se torna alumínio escuro `linear-gradient(to bottom, #2a2a2c 0%, #1e1e20 100%)`.
-  - As sombras de elevação são muito mais profundas e pesadas `rgba(0, 0, 0, 0.5)`.
-  - O chanfro superior agora reflete uma luz ambiente super sutil `inset 0 2px 0 rgba(255, 255, 255, 0.05)`.
+  - O plástico se torna alumínio escuro `linear-gradient(to bottom, #1e293b 0%, #0f172a 100%)`.
+  - As sombras de elevação são muito mais profundas e pesadas `rgba(0, 0, 0, 0.6)`.
+  - O chanfro superior reflete uma luz ambiente super sutil `inset 0 2px 0 rgba(255, 255, 255, 0.05)`.
 - **Inversão de Letterpress:**
   - Todos os textos que antes tinham sombra branca abaixo (para parecerem entalhados no claro) agora possuem sombra preta densa abaixo `text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8)`.
 
@@ -95,21 +106,33 @@ Cada controle interativo é desenhado como um widget mecânico que responde fisi
 - **Botão Primário Esquimórfico (`.skeuo-btn`):**
   - Estilo: Aqua / Glossy Gel azul tridimensional.
   - Gradiente Duplo (Split Gradient): Gradiente dividido no meio (50%/51%) que simula reflexo cilíndrico de gel:
-      `linear-gradient(to bottom, #4da4ff 0%, #0071e3 50%, #005bb5 51%, #004488 100%)`.
+      `linear-gradient(to bottom, var(--primary-light) 0%, var(--primary-main) 50%, var(--primary-dark) 51%, var(--primary-darker) 100%)`.
   - Brilho de Borda Superior & Sombra Projetada (suavizada para não parecer exagerada):
       `box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.15)`.
   - **Estado Active (Pressão Física - CRÍTICO):** O botão "afunda" na tela.
-      `background: linear-gradient(to bottom, #004488 0%, #005bb5 100%)`.
+      `background: linear-gradient(to bottom, var(--primary-darker) 0%, var(--primary-dark) 100%)`.
       `box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5)`.
 
-- **Botão Secundário Metálico (`.btn-secondary-glossy`):**
-  - Estilo: Alumínio cromado (Light Mode) ou Grafite Fosco (Dark Mode).
-  - No Dark Mode, transforma-se em um botão furtivo lindo com reflexos suaves.
+- **Família de Botões Secundários:**
+  - **`.btn-secondary-glossy` (Alumínio Cromado / Grafite Escovado - Padrão Restaurado):**
+    - Light Mode: Gradiente metálico dividido em 50%/51% (`#ffffff` a `#b3b3b3`), contorno `#999`, specular highlight `inset 0 1px 1px rgba(255, 255, 255, 0.9)` e sombra projetada suave.
+    - Dark Mode: Grafite escovado `linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 51%, #020617 100%)` com reflexo suave e texto claro.
+  - **`.btn-secondary-modern` / `.btn-secondary-smooth` (Variante Suave):**
+    - Variante moderna com transição suave em 45% e bevels atenuados, ideal para interfaces onde se busca menor contraste metálico.
+  - **`.btn-white-glossy`:**
+    - Plástico branco perolado com reflexo superior para ações sobre fundos escuros ou cartões coloridos.
+  - **`.skeuo-btn-danger`:**
+    - Gel carmim/vermelho em 50%/51% para ações destrutivas (exclusão, banimento).
 
 - **Inputs de Texto e Recessos (`.skeuo-input`):**
   - Estilo: Entrada cavada / Baixo relevo ("well" effect).
   - Sombras Cavadas: `box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.15)`.
-  - **Estado Focus (CRÍTICO):** A cavidade se ilumina com um anel de neon volumétrico `0 0 8px rgba(0, 113, 227, 0.6)`.
+  - **Estado Focus (CRÍTICO):** A cavidade se ilumina com um anel de neon volumétrico `0 0 8px var(--primary-ring-focus)`.
+
+- **Formatos de Balões no Chat (Personalização de Usuário):**
+  - **Clássico:** Gel tridimensional Aqua (`.skeuo-bubble-sent` e `.skeuo-bubble-received`) com chanfro e luz de cima.
+  - **Moderno:** Acrílico translúcido com bordas finas e relevo suave.
+  - **Suave (Soft Gradient):** Gradientes fluidos mais calmos e sem ofuscamento, calibrado no Dark Mode com `to-slate-900` para a mensagem recebida e azul atenuado no envio (`dark:from-[#0284c7] dark:via-[#0369a1] dark:to-[#075985]`), garantindo leitura confortável e sem quebras visuais.
 
 ---
 
@@ -117,7 +140,9 @@ Cada controle interativo é desenhado como um widget mecânico que responde fisi
 
 * **Ícones:** SVG inline preferencialmente de contorno bem definido, simulando ícones gravados. Ao passar o mouse, eles devem sofrer uma sutil rotação ou ganhar profundidade.
 - **Scrollbar Tangível (Barra de Rolagem Mecânica):**
-  - Não deve ser invisível. Deve parecer uma calha física com um trilho e um manipulo deslizante revestido com um gradiente metálico.
+  - Não deve ser invisível nem apresentar trilhos brancos destoantes no Dark Mode.
+  - A arquitetura utiliza `color-scheme: light dark` no `index.css`, calhas transparentes (`background: transparent`) e manipuladores táteis arredondados com opacidades calibradas: `rgba(0, 0, 0, 0.18)` no Light Mode e `rgba(255, 255, 255, 0.2)` no Dark Mode.
+  - No container de mensagens (`.chat-container`), a scrollbar recebe acabamento especial estilo calha mecânica clássica com borda de 1px.
 
 ---
 
@@ -187,7 +212,7 @@ O SkyRipple aposta em texturas ricas de fundo e uso de gradientes e letterpresse
 
 ## 14. A Identidade "SkyRipple" (Linguagem Visual)
 
-O projeto deixou o escopo de "simples painéis de vidro flat" para mergulhar em uma interface agradável e  banhada por céus abertos, fluidez, conversas abertas e nostalgia refinada.
+O projeto deixou o escopo de "simples painéis de vidro flat" para mergulhar em uma interface agradável e banhada por céus abertos, fluidez, conversas abertas e nostalgia refinada.
 - **Vocabulário Aprovado:** Use os termos como **Visual Clássico, Interface Agradável, Web 2.0 Clássica, Estética Aqua, Skeuomorfismo, Botões em Relevo, Cartões com Profundidade** e **Design Orgânico**.
 - **Como Descrever o App:** O SkyRipple exala "leveza", com ondulações e uma atmosfera etérea/orgânica, sempre com a âncora nos azuis, cianos e bancos iluminados.
 - **Terminologias a Evitar (O que o design NÃO é):** Evite chamar a interface estritamente de "Glassmorphism puro" ou "Dashboard SaaS genérica". Mesmo onde as técnicas de vidro são usadas (como `backdrop-blur`), elas funcionam como simulacros de **placas táteis grossas de acrílico ou resina**, reforçando botões mecânicos e chanfros visíveis, diferente das simples membranas bidimensionais fantasmagóricas vistas nas vertentes de design glassmorphism usuais em IAs genéricas.
