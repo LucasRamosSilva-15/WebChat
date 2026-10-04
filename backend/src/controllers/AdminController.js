@@ -20,7 +20,7 @@ class AdminController {
     const token = jwt.sign(
       { id: 'admin-system', role: 'admin' },
       process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: '2h' }
+      { expiresIn: '8h' }
     );
     return res.json({ token, role: 'admin' });
   }

@@ -40,7 +40,7 @@ class UserService {
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: '2h' }
+      { expiresIn: '7d' }
     );
 
     return { user: { id: user.id, email: user.email, displayName: user.displayName }, token };

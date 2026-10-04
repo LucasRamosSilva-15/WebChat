@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-import { BACKEND_URL } from './services/api';
+import { BACKEND_URL, clearAuthSession } from './services/api';
 
 export const socket = io(BACKEND_URL, {
   autoConnect: false,
@@ -11,6 +11,10 @@ export const socket = io(BACKEND_URL, {
 
 socket.on('connect_error', (err) => {
     console.error('Falha na conexão do WebSocket:', err.message);
+    if (err.message && (err.message.includes('Token') || err.message.includes('Autenticação'))) {
+        socket.disconnect();
+        clearAuthSession();
+    }
 });
 
 socket.on('connect', () => {

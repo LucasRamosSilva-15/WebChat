@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { apiRequest, setAuthToken } from '../services/api';
@@ -6,14 +6,19 @@ import { socket } from '../socket';
 
 const Login = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
+    const [sessionExpiredNotice, setSessionExpiredNotice] = useState(() => {
+        return !!(location.state?.sessionExpired || new URLSearchParams(window.location.search).get('expired') === 'true');
+    });
     const [loading, setLoading] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(null);
+        setSessionExpiredNotice(false);
 
         if (email.trim() !== "" && password.trim() !== "") {
             setLoading(true);
@@ -51,6 +56,11 @@ const Login = () => {
                     Digite os dados da sua conta
                 </p>
                 <form className="text-left space-y-6" onSubmit={handleLogin}>
+                    {sessionExpiredNotice && !error && (
+                        <div className="p-3 text-sm rounded-lg font-medium bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            Sua sessão expirou. Por favor, faça login novamente para continuar.
+                        </div>
+                    )}
                     {error && (
                         <div className="p-3 text-sm rounded-lg font-medium bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900">
                             {error}

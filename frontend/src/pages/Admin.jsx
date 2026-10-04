@@ -78,7 +78,7 @@ const Admin = () => {
                 } else if (response.status === 401 || response.status === 403) {
                     console.error('--- ADMIN FETCH ERROR ---', response.status, await response.text());
                     localStorage.removeItem('admin_token');
-                    alert('Sua sessão de administrador expirou (limite de 2 horas) ou é inválida. Por favor, faça login novamente para continuar.');
+                    alert('Sua sessão de administrador expirou (limite de 8 horas) ou é inválida. Por favor, faça login novamente para continuar.');
                     window.location.href = '/admin-login';
                 } else {
                     console.error('--- ADMIN FETCH ERROR ---', response.status, await response.text());

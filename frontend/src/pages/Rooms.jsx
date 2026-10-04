@@ -295,6 +295,9 @@ const Rooms = () => {
                 setCustomRooms(mappedRooms);
             } catch (error) {
                 console.error("Erro ao carregar salas da API:", error);
+                if (error.message && (error.message.includes('Token') || error.message.includes('expirado') || error.message.includes('Acesso negado'))) {
+                    return;
+                }
                 setRoomsError("Não foi possível carregar as salas.");
                 const savedRooms = localStorage.getItem('chat_customRooms');
                 if (savedRooms) {

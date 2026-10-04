@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getAuthToken, setAuthToken, removeAuthToken, apiRequest, API_URL } from '../services/api';
+import { getAuthToken, setAuthToken, removeAuthToken, clearAuthSession, apiRequest, API_URL } from '../services/api';
 
 describe('API Utils Tests', () => {
     beforeEach(() => {
@@ -21,6 +21,16 @@ describe('API Utils Tests', () => {
 
             removeAuthToken();
             expect(getAuthToken()).toBeNull();
+        });
+
+        it('1b. Deve limpar sessão completa com clearAuthSession', () => {
+            localStorage.setItem('chat_token', 'token-123');
+            localStorage.setItem('chat_isLoggedIn', 'true');
+
+            clearAuthSession();
+
+            expect(localStorage.getItem('chat_token')).toBeNull();
+            expect(localStorage.getItem('chat_isLoggedIn')).toBeNull();
         });
     });
 
@@ -100,6 +110,21 @@ describe('API Utils Tests', () => {
             });
 
             await expect(apiRequest('/crash')).rejects.toThrow('Internal Server Error');
+        });
+
+        it('7. Deve limpar token e sessão quando receber 401 com token expirado em rota protegida', async () => {
+            localStorage.setItem('chat_token', 'expired-token');
+            localStorage.setItem('chat_isLoggedIn', 'true');
+
+            fetch.mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+                json: async () => ({ error: 'Token inválido ou expirado.' })
+            });
+
+            await expect(apiRequest('/rooms')).rejects.toThrow('Token inválido ou expirado.');
+            expect(localStorage.getItem('chat_token')).toBeNull();
+            expect(localStorage.getItem('chat_isLoggedIn')).toBeNull();
         });
     });
 });
