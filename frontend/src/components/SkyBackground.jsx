@@ -70,22 +70,16 @@ const VolumetricCloud = ({ className = '', flip = false, variant = 'large' }) =>
 const WaterOrb = ({ size = 'w-16 h-16', className = '' }) => {
     return (
         <div
-            className={`relative rounded-full pointer-events-none select-none ${size} ${className}`}
-            style={{
-                background: 'radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.3) 25%, rgba(56, 189, 248, 0.25) 55%, rgba(2, 132, 199, 0.45) 85%, rgba(3, 105, 161, 0.6) 100%)',
-                boxShadow: 'inset -3px -5px 12px rgba(2, 132, 199, 0.5), inset 2px 3px 6px rgba(255, 255, 255, 0.95), 0 8px 20px rgba(14, 165, 233, 0.25)',
-                border: '1px solid rgba(255, 255, 255, 0.65)',
-                backdropFilter: 'blur(1.5px)',
-            }}
+            className={`relative rounded-full pointer-events-none select-none shadow-[inset_-3px_-5px_12px_rgba(2,132,199,0.5),inset_2px_3px_6px_rgba(255,255,255,0.95),0_8px_20px_rgba(14,165,233,0.25)] dark:shadow-[inset_-2px_-4px_10px_rgba(0,0,0,0.6),inset_1px_2px_4px_rgba(255,255,255,0.12)] border border-white/70 dark:border-white/15 backdrop-blur-[2px] bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.85)_0%,rgba(255,255,255,0.3)_25%,rgba(56,189,248,0.35)_55%,rgba(2,132,199,0.5)_85%,rgba(3,105,161,0.7)_100%)] dark:bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.18)_0%,rgba(30,41,59,0.4)_45%,rgba(15,23,42,0.75)_100%)] ${size} ${className}`}
         >
             <div
-                className="absolute top-[16%] left-[20%] w-[38%] h-[24%] rounded-full bg-white/90"
+                className="absolute top-[16%] left-[20%] w-[38%] h-[24%] rounded-full bg-white/95 shadow-[0_0_8px_rgba(255,255,255,0.8)] dark:bg-white/20 dark:shadow-none"
                 style={{
                     transform: 'rotate(-32deg)',
                     filter: 'blur(0.5px)',
                 }}
             />
-            <div className="absolute bottom-[14%] right-[22%] w-[20%] h-[14%] rounded-full bg-white/40" />
+            <div className="absolute bottom-[14%] right-[22%] w-[20%] h-[14%] rounded-full bg-white/50 dark:bg-white/10" />
         </div>
     );
 };
@@ -96,50 +90,46 @@ const SkyBackground = () => {
             aria-hidden="true"
             className="fixed inset-0 pointer-events-none overflow-hidden select-none z-0"
         >
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="relative flex items-center justify-center animate-ripple-breathe">
-                    <div className="w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] rounded-full border border-sky-400/25 dark:border-sky-400/15" />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-60">
+                <div className="relative flex items-center justify-center">
+                    <div className="w-[600px] h-[600px] sm:w-[740px] sm:h-[740px] rounded-full border border-sky-400/15 dark:border-sky-400/8" />
 
-                    <div className="absolute w-[560px] h-[560px] sm:w-[680px] sm:h-[680px] rounded-full border border-sky-400/20 dark:border-sky-400/10" />
+                    <div className="absolute w-[1000px] h-[1000px] sm:w-[1200px] sm:h-[1200px] rounded-full border border-sky-400/10 dark:border-sky-400/5" />
 
-                    <div className="absolute w-[820px] h-[820px] sm:w-[980px] sm:h-[980px] rounded-full border border-sky-400/18 dark:border-sky-400/8" />
-
-                    <div className="absolute w-[1140px] h-[1140px] sm:w-[1340px] sm:h-[1340px] rounded-full border border-sky-400/15 dark:border-sky-400/6" />
-
-                    <div className="absolute w-[1500px] h-[1500px] sm:w-[1750px] sm:h-[1750px] rounded-full border border-sky-400/10 dark:border-sky-400/4" />
+                    <div className="absolute w-[1460px] h-[1460px] sm:w-[1700px] sm:h-[1700px] rounded-full border border-sky-400/8 dark:border-sky-400/3" />
                 </div>
             </div>
 
-            <div className="absolute top-[20%] left-[8%] sm:left-[12%] animate-water-orb hidden sm:block opacity-90">
-                <WaterOrb size="w-14 h-14 lg:w-20 lg:h-20" />
-            </div>
-
-            <div className="absolute top-[26%] right-[8%] sm:right-[12%] animate-water-orb-delayed hidden sm:block opacity-90">
-                <WaterOrb size="w-16 h-16 lg:w-24 lg:h-24" />
-            </div>
-
-            <div className="absolute top-[10%] sm:top-[12%] -left-20 sm:-left-12 lg:-left-4 w-[340px] sm:w-[460px] lg:w-[540px] animate-cloud-left opacity-95">
+            <div className="absolute top-[10%] sm:top-[12%] -left-20 sm:-left-12 lg:-left-4 w-[340px] sm:w-[460px] lg:w-[540px] opacity-95 z-10">
                 <VolumetricCloud variant="large-left" />
             </div>
 
-            <div className="absolute top-[18%] sm:top-[18%] -right-20 sm:-right-12 lg:-right-4 w-[320px] sm:w-[440px] lg:w-[520px] animate-cloud-right opacity-95">
+            <div className="absolute top-[18%] sm:top-[18%] -right-20 sm:-right-12 lg:-right-4 w-[320px] sm:w-[440px] lg:w-[520px] opacity-95 z-10">
                 <VolumetricCloud flip variant="large-right" />
             </div>
 
-            <div className="absolute top-[5%] left-[28%] sm:left-[34%] w-[130px] sm:w-[170px] animate-cloud-small-1 opacity-80">
+            <div className="absolute top-[5%] left-[28%] sm:left-[34%] w-[130px] sm:w-[170px] opacity-80 z-10">
                 <VolumetricCloud variant="small-1" />
             </div>
 
-            <div className="absolute top-[48%] right-[16%] sm:right-[22%] w-[120px] sm:w-[150px] animate-cloud-small-2 opacity-70">
+            <div className="absolute top-[48%] right-[16%] sm:right-[22%] w-[120px] sm:w-[150px] opacity-70 z-10">
                 <VolumetricCloud flip variant="small-2" />
             </div>
 
-            <div className="absolute top-[68%] left-[16%] sm:left-[24%] w-[140px] sm:w-[180px] animate-cloud-small-3 opacity-75">
+            <div className="absolute top-[68%] left-[16%] sm:left-[24%] w-[140px] sm:w-[180px] opacity-75 z-10">
                 <VolumetricCloud variant="small-3" />
             </div>
 
-            <div className="absolute top-[82%] right-[28%] sm:right-[34%] w-[110px] sm:w-[140px] animate-cloud-small-4 opacity-70">
+            <div className="absolute top-[82%] right-[28%] sm:right-[34%] w-[110px] sm:w-[140px] opacity-70 z-10">
                 <VolumetricCloud variant="small-4" />
+            </div>
+
+            <div className="absolute top-[48%] left-[6%] sm:left-[9%] lg:left-[11%] z-20 opacity-95">
+                <WaterOrb size="w-14 h-14 sm:w-16 sm:h-16 lg:w-22 lg:h-22" />
+            </div>
+
+            <div className="absolute top-[8%] sm:top-[9%] right-[8%] sm:right-[13%] lg:right-[16%] z-20 opacity-95">
+                <WaterOrb size="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24" />
             </div>
         </div>
     );
