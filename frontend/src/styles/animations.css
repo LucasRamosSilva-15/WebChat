@@ -56,8 +56,43 @@
   .animate-fade-in-up-4 { animation: fade-in-up 400ms ease-out both; animation-delay: 400ms; }
   .animate-fade-in-up-5 { animation: fade-in-up 400ms ease-out both; animation-delay: 500ms; }
 
+  /* Animações Atmosféricas (Céu, Nuvens e Ondinhas SkyRipple) */
+  @keyframes cloud-float-left {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(14px, -18px) scale(1.02); }
+  }
+  .animate-cloud-left { animation: cloud-float-left 14s ease-in-out infinite; }
+
+  @keyframes cloud-float-right {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-16px, -14px) scale(1.02); }
+  }
+  .animate-cloud-right { animation: cloud-float-right 16s ease-in-out infinite; }
+
+  @keyframes cloud-float-small {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(8px, -10px); }
+  }
+  .animate-cloud-small-1 { animation: cloud-float-small 11s ease-in-out infinite; }
+  .animate-cloud-small-2 { animation: cloud-float-small 13s ease-in-out infinite 2s; }
+  .animate-cloud-small-3 { animation: cloud-float-small 15s ease-in-out infinite 4s; }
+  .animate-cloud-small-4 { animation: cloud-float-small 12s ease-in-out infinite 1s; }
+
+  @keyframes ripple-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.28; }
+    50% { transform: scale(1.03); opacity: 0.45; }
+  }
+  .animate-ripple-breathe { animation: ripple-breathe 8s ease-in-out infinite; }
+
+  @keyframes water-orb-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-16px) rotate(3deg); }
+  }
+  .animate-water-orb { animation: water-orb-float 9s ease-in-out infinite; }
+  .animate-water-orb-delayed { animation: water-orb-float 11s ease-in-out infinite 3s; }
+
   @media (prefers-reduced-motion: reduce) {
-    .animate-chat-shell, .animate-chat-panel-left, .animate-chat-panel-main, .animate-chat-panel-right, .animate-loading-panel, .animate-loading-orb, .animate-loading-shine, .reveal, .animate-fade-in-up-1, .animate-fade-in-up-2, .animate-fade-in-up-3, .animate-fade-in-up-4, .animate-fade-in-up-5 {
+    .animate-chat-shell, .animate-chat-panel-left, .animate-chat-panel-main, .animate-chat-panel-right, .animate-loading-panel, .animate-loading-orb, .animate-loading-shine, .reveal, .animate-fade-in-up-1, .animate-fade-in-up-2, .animate-fade-in-up-3, .animate-fade-in-up-4, .animate-fade-in-up-5, .animate-cloud-left, .animate-cloud-right, .animate-cloud-small-1, .animate-cloud-small-2, .animate-cloud-small-3, .animate-cloud-small-4, .animate-ripple-breathe, .animate-water-orb, .animate-water-orb-delayed {
       animation: none !important;
     }
   }

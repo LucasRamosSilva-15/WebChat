@@ -12,6 +12,7 @@ import Custom from './pages/Custom';
 import Feedback from './pages/Feedback';
 import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
+import SkyBackground from './components/SkyBackground';
 
 // Páginas que ainda vamos implementar
 
@@ -25,7 +26,8 @@ import Settings from './pages/Settings';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col relative overflow-x-hidden">
+        <SkyBackground />
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
