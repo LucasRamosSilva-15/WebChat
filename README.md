@@ -271,7 +271,7 @@ Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais
 
 ## Diagrama de Classes
 
-![Diagrama de Classes](docs/screenshots/Diagrama%20de%20Classes%20SkyRippleProject%20(3).svg)
+![Diagrama de Classes](docs/screenshots/Diagrama%20de%20Classes%20SkyRippleProject%20(5).svg)
 
 ## Autor
 
