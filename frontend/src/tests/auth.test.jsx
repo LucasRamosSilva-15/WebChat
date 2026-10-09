@@ -42,7 +42,7 @@ describe('Authentication Flow Tests', () => {
         </MemoryRouter>
       );
       expect(screen.getByPlaceholderText(/e-mail/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/senha|password/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
     });
 
@@ -56,7 +56,7 @@ describe('Authentication Flow Tests', () => {
       );
 
       fireEvent.change(screen.getByPlaceholderText(/e-mail/i), { target: { value: 'teste@email.com' } });
-      fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'senha123' } });
+      fireEvent.change(screen.getByPlaceholderText(/senha|password/i), { target: { value: 'senha123' } });
       fireEvent.click(screen.getByRole('button', { name: /continuar/i }));
 
       await waitFor(() => {
@@ -77,7 +77,7 @@ describe('Authentication Flow Tests', () => {
       );
 
       fireEvent.change(screen.getByPlaceholderText(/e-mail/i), { target: { value: 'teste@email.com' } });
-      fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'senha123' } });
+      fireEvent.change(screen.getByPlaceholderText(/senha|password/i), { target: { value: 'senha123' } });
       fireEvent.click(screen.getByRole('button', { name: /continuar/i }));
 
       await waitFor(() => {

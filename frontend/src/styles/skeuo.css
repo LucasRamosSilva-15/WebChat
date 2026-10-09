@@ -590,6 +590,26 @@
         box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 8px var(--primary-ring-focus) !important;
     }
 
+    .skeuo-input:-webkit-autofill,
+    .skeuo-input:-webkit-autofill:hover,
+    .skeuo-input:-webkit-autofill:focus,
+    .skeuo-input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #fafafa inset !important;
+        -webkit-text-fill-color: #1d1d1f !important;
+        caret-color: #1d1d1f !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    html.dark .skeuo-input:-webkit-autofill,
+    html.dark .skeuo-input:-webkit-autofill:hover,
+    html.dark .skeuo-input:-webkit-autofill:focus,
+    html.dark .skeuo-input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+        -webkit-text-fill-color: #f8fafc !important;
+        caret-color: #f8fafc !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
     .skeuo-bubble-received {
         background: linear-gradient(to bottom, #f9f9f9 0%, #ebebeb 100%);
         border: 1px solid #ccc;
