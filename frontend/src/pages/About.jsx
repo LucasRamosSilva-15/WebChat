@@ -4,14 +4,16 @@ import { FaCloud, FaGraduationCap, FaServer, FaUsers, FaPaperPlane, FaCity, FaCo
 
 const InfoCard = ({ title, description, icon: Icon, delay }) => (
     <div
-        className="rounded-3xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs border border-white dark:border-white/10 shadow-[0_8px_25px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1),inset_0_0_20px_rgba(255,255,255,0.5)] dark:shadow-[0_8px_25px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)] hover:-translate-y-1 transition-all p-8 h-full flex flex-col items-start text-left animate-fade-in-up"
+        className="skeuo-card p-6 flex flex-col justify-between text-left animate-fade-in-up"
         style={{ animationDelay: delay }}
     >
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-sky-100 to-white dark:from-sky-900 dark:to-slate-800 text-sky-500 border border-sky-100 dark:border-sky-700 shadow-xs flex items-center justify-center mb-6">
-            <Icon size={24} />
+        <div>
+            <div className="skeuo-surface-orb-badge w-12 h-12 flex items-center justify-center mb-6 shrink-0">
+                <Icon size={22} className="text-sky-600 dark:text-sky-400" />
+            </div>
+            <h3 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_1px_0_rgba(0,0,0,0.8)] mb-3 text-[18px]">{title}</h3>
+            <p className="text-[#424245] dark:text-[#94a3b8] leading-relaxed text-[14px]">{description}</p>
         </div>
-        <h3 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_1px_0_rgba(0,0,0,0.8)] mb-3 text-[20px]">{title}</h3>
-        <p className="text-[#424245] dark:text-[#94a3b8] flex-grow leading-relaxed text-[15px]">{description}</p>
     </div>
 );
 
@@ -24,7 +26,7 @@ const About = () => {
             <section className="w-full max-w-[1100px] mb-24 relative z-10">
                 <div className="skeuo-panel rounded-[32px] md:rounded-[40px] bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white/80 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] p-8 md:p-12 flex flex-col lg:flex-row items-center gap-12 lg:gap-16 relative z-10">
                     <div className="text-left flex-1 mx-auto lg:mx-0 relative z-10">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 text-[11px] rounded-full bg-sky-50 dark:bg-sky-950/30 text-[#0284c7] dark:text-sky-400 font-bold uppercase tracking-wider border border-sky-100 dark:border-sky-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-none">
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 text-[11px] rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md text-[#0284c7] dark:text-sky-400 font-bold uppercase tracking-wider border border-white/90 dark:border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_2px_6px_rgba(0,0,0,0.05)]">
                             <FaGraduationCap size={12} />
                             Projeto Acadêmico
                         </div>
@@ -35,10 +37,10 @@ const About = () => {
                             O SkyRipple é uma aplicação de chat em tempo real desenvolvida para explorar salas de conversa, mensagens instantâneas via WebSocket e uma interface agradável inspirada na estética clássica da web.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center gap-4">
-                            <Link to="/rooms" className="skeuo-btn min-h-[44px] min-w-[160px] px-8 text-[15px] flex items-center justify-center">
+                            <Link to="/rooms" className="skeuo-btn-primary px-6 py-2.5 text-sm font-semibold text-white flex items-center justify-center">
                                 Começar agora
                             </Link>
-                            <Link to="/" className="btn-secondary-glossy min-h-[44px] min-w-[160px] px-8 text-[15px] flex items-center justify-center">
+                            <Link to="/" className="btn-secondary-glossy px-6 py-2.5 text-sm font-medium flex items-center justify-center">
                                 Saiba mais
                             </Link>
                         </div>
@@ -46,7 +48,7 @@ const About = () => {
 
                     <div className="[perspective:1000px] flex-1 w-full max-w-[450px] mx-auto relative z-10">
                         <div className="absolute inset-0 scale-105 bg-gradient-to-tr from-sky-300/30 to-blue-400/20 rounded-3xl blur-[40px]"></div>
-                        <div className="skeuo-panel rounded-[24px] overflow-hidden relative z-10 shadow-[0_20px_40px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,1)] scale-100 hover:scale-[1.02] transition-transform duration-500">
+                        <div className="skeuo-card overflow-hidden relative z-10 scale-100 hover:scale-[1.02] transition-transform duration-500">
                             <div className="px-5 py-4 flex items-center gap-3 border-b border-[#d2d2d7] dark:border-white/5 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-slate-800 dark:to-slate-900">
                                 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-gradient-to-b from-[#38bdf8] to-[#0284c7] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]">
                                     <FaCity size={18} />
@@ -85,11 +87,14 @@ const About = () => {
                             </div>
 
                             <div className="p-3 flex items-center gap-2 relative z-10 bg-white dark:bg-slate-800 border-t border-[#d2d2d7] dark:border-white/5">
-                                <div className="flex-1 px-4 py-2.5 flex items-center text-[13px] rounded-full bg-[#f4f5f7] dark:bg-slate-900 border border-[#d2d2d7] border-t-[#c4c4c8] dark:border-white/10 text-[#86868b] dark:text-slate-300 shadow-[inset_0_2px_4px_rgba(0,0,0,0.08),0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]">
-                                    Enviar uma mensagem...
-                                </div>
-                                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 cursor-pointer bg-gradient-to-b from-[#38bdf8] to-[#0284c7] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_6px_rgba(2,132,199,0.35)] -rotate-12 hover:scale-105 transition-all">
-                                    <FaPaperPlane size={12} className="ml-[-2px] mt-[2px]" />
+                                <input
+                                    type="text"
+                                    placeholder="Enviar uma mensagem..."
+                                    readOnly
+                                    className="skeuo-input flex-1 px-4 py-2 text-sm rounded-full"
+                                />
+                                <div className="skeuo-icon-btn w-9 h-9 shrink-0 cursor-pointer -rotate-12 hover:scale-105 transition-all">
+                                    <FaPaperPlane size={12} className="ml-[-2px] mt-[2px] text-sky-600 dark:text-sky-400" />
                                 </div>
                             </div>
                         </div>
@@ -98,7 +103,7 @@ const About = () => {
             </section>
 
             <section className="w-full max-w-[1000px] text-center mb-24 relative z-10">
-                <div className="rounded-3xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_8px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] inline-block px-8 py-6 mb-12">
+                <div className="skeuo-card inline-block px-8 py-6 mb-12">
                     <h2 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_1px_0_rgba(0,0,0,0.8)] mb-3 text-[28px] md:text-[36px]">
                         Projetado para criar atmosfera
                     </h2>
@@ -148,13 +153,13 @@ const About = () => {
             </section>
 
             <section className="w-full max-w-[980px] mb-12 relative z-10 mx-auto">
-                <div className="rounded-[2rem] bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white dark:border-white/10 shadow-[0_20px_50px_rgba(0,113,227,0.08),inset_0_1px_0_rgba(255,255,255,1),inset_0_0_30px_rgba(255,255,255,0.5)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden relative p-12 md:p-16 text-center">
+                <div className="skeuo-card overflow-hidden relative p-12 md:p-16 text-center">
                     <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-50"></div>
                     <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-sky-100/30 to-transparent"></div>
                     <div className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none bg-gradient-to-t from-sky-100/50 dark:from-sky-900/20 to-transparent"></div>
 
-                    <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 text-sky-500 shadow-md border border-black/5 dark:border-white/10 mx-auto flex items-center justify-center mb-6 relative z-10">
-                        <FaComment size={32} />
+                    <div className="skeuo-surface-orb-badge w-16 h-16 mx-auto flex items-center justify-center mb-6 relative z-10">
+                        <FaComment size={28} className="text-sky-600 dark:text-sky-400" />
                     </div>
 
                     <h2 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] drop-shadow-[0_2px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_0_rgba(0,0,0,0.8)] mb-4 relative z-10 text-[36px] md:text-[44px]">
@@ -166,7 +171,7 @@ const About = () => {
                     </p>
 
                     <div className="relative z-10">
-                        <Link to="/rooms" className="skeuo-btn shadow-[0_4px_10px_rgba(0,113,227,0.3)] px-10 py-4 inline-flex items-center gap-2 text-[17px]">
+                        <Link to="/rooms" className="skeuo-btn-primary px-8 py-3 text-sm font-semibold text-white inline-flex items-center gap-2">
                             Criar meu espaço
                         </Link>
                     </div>
