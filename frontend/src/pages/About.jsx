@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaCloud, FaGraduationCap, FaServer, FaUsers, FaPaperPlane, FaCity, FaComments, FaComment, FaPencilRuler } from 'react-icons/fa';
+import { FaCloud, FaGraduationCap, FaServer, FaUsers, FaPaperPlane, FaCity, FaComments, FaComment, FaPencilRuler, FaStar } from 'react-icons/fa';
 
 const InfoCard = ({ title, description, icon: Icon, delay }) => (
     <div
@@ -19,15 +19,15 @@ const InfoCard = ({ title, description, icon: Icon, delay }) => (
 
 const About = () => {
     return (
-        <main className="reveal flex-1 flex flex-col items-center py-12 px-4 sm:px-6 md:py-20 relative overflow-hidden">
+        <main className="reveal flex-1 flex flex-col items-center py-8 px-4 sm:px-6 md:py-12 relative overflow-hidden">
             <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] pointer-events-none rounded-full blur-3xl bg-sky-200/20 dark:bg-sky-950/10"></div>
             <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] pointer-events-none rounded-full blur-3xl bg-blue-200/20 dark:bg-blue-950/10"></div>
 
-            <section className="w-full max-w-[1100px] mb-24 relative z-10">
+            <section className="w-full max-w-[1100px] mb-12 relative z-10">
                 <div className="skeuo-panel rounded-[32px] md:rounded-[40px] bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white/80 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] p-8 md:p-12 flex flex-col lg:flex-row items-center gap-12 lg:gap-16 relative z-10">
                     <div className="text-left flex-1 mx-auto lg:mx-0 relative z-10">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-700 bg-gradient-to-b from-sky-100 to-sky-200/80 border border-sky-300/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,113,227,0.08)] mb-4">
-                            <span className="text-sky-600"><FaGraduationCap size={12} /></span>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-100/90 dark:bg-sky-950/60 border border-sky-300/70 dark:border-sky-800/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,113,227,0.1)] mb-4">
+                            <span className="text-sky-600 dark:text-sky-400"><FaGraduationCap size={12} /></span>
                             PROJETO ACADÊMICO
                         </span>
                         <h1 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] tracking-tight drop-shadow-[0_2px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_0_rgba(0,0,0,0.8)] mb-6 leading-tight text-[40px] md:text-[50px]">
@@ -37,7 +37,7 @@ const About = () => {
                             O SkyRipple é uma aplicação de chat em tempo real desenvolvida para explorar salas de conversa, mensagens instantâneas via WebSocket e uma interface agradável inspirada na estética clássica da web.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center gap-4">
-                            <Link to="/rooms" className="skeuo-btn-primary px-6 py-2.5 text-sm font-semibold text-white flex items-center justify-center">
+                            <Link to="/rooms" className="skeuo-btn-primary px-6 py-2.5 text-sm font-semibold text-white">
                                 Começar agora
                             </Link>
                             <Link to="/" className="btn-secondary-glossy px-6 py-2.5 text-sm font-medium flex items-center justify-center">
@@ -102,12 +102,18 @@ const About = () => {
                 </div>
             </section>
 
-            <section className="w-full max-w-[1000px] text-center mb-24 relative z-10">
-                <div className="skeuo-card p-8 max-w-2xl mx-auto text-center my-12">
-                    <h2 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_1px_0_rgba(0,0,0,0.8)] mb-3 text-[28px] md:text-[36px]">
+            <section className="w-full max-w-[1000px] mb-12 relative z-10">
+                <div className="skeuo-card max-w-xl mx-auto p-6 sm:p-8 text-center my-8 mb-8 flex flex-col items-center">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-100/90 dark:bg-sky-950/60 border border-sky-300/70 dark:border-sky-700/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,113,227,0.1)] mb-3">
+                        <span className="text-sky-600 dark:text-sky-400">
+                            <FaStar size={12} />
+                        </span>
+                        EXPERIÊNCIA & FLUIDEZ
+                    </span>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
                         Projetado para criar atmosfera
                     </h2>
-                    <p className="text-[#6e6e73] dark:text-[#94a3b8] max-w-[500px] mx-auto text-base">
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                         Experimente um ambiente de conversa onde a tecnologia parece leve, orgânica e tangível.
                     </p>
                 </div>
@@ -152,7 +158,7 @@ const About = () => {
                 </div>
             </section>
 
-            <section className="w-full max-w-[980px] mb-12 relative z-10 mx-auto">
+            <section className="w-full max-w-[980px] mb-8 relative z-10 mx-auto">
                 <div className="skeuo-card overflow-hidden relative p-12 md:p-16 text-center">
                     <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-50"></div>
                     <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-sky-100/30 to-transparent"></div>
