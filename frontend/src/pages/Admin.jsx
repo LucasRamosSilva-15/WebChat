@@ -588,9 +588,9 @@ const Admin = () => {
                                                 {activeTab === 'salas' && (
                                                     <>
                                                         <td className="py-3 px-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                                                                    <FaDoorOpen className="text-gray-500 dark:text-gray-400" size={10} />
+                                                            <div className="flex items-center gap-2.5">
+                                                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 shrink-0">
+                                                                    <FaDoorOpen size={12} />
                                                                 </div>
                                                                 <div>
                                                                     <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300 block">{item.name}</span>
@@ -612,9 +612,9 @@ const Admin = () => {
                                                 {activeTab === 'usuarios' && (
                                                     <>
                                                         <td className="py-3 px-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                                                                    <FaUser className="text-gray-500 dark:text-gray-400" size={10} />
+                                                            <div className="flex items-center gap-2.5">
+                                                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 shrink-0">
+                                                                    <FaUser size={12} />
                                                                 </div>
                                                                 <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{item.user}</span>
                                                             </div>
@@ -633,9 +633,9 @@ const Admin = () => {
                                                 {(activeTab === 'denuncias' || activeTab === 'banimentos' || activeTab === 'feedbacks') && (
                                                     <>
                                                         <td className="py-3 px-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                                                                    <FaUser className="text-gray-500 dark:text-gray-400" size={10} />
+                                                            <div className="flex items-center gap-2.5">
+                                                                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 shrink-0">
+                                                                    <FaUser size={12} />
                                                                 </div>
                                                                 <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{item.user}</span>
                                                             </div>
@@ -703,8 +703,8 @@ const Admin = () => {
                                 <div className="flex-1 flex flex-col pt-1 animate-fade-in-up-1">
                                     <div className="flex items-center justify-between gap-3 mb-4 border-b border-gray-100 dark:border-gray-800 pb-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                                                {selectedItem.type === 'sala' ? <FaDoorOpen className="text-gray-500 dark:text-gray-400" size={16} /> : <FaUser className="text-gray-500 dark:text-gray-400" size={16} />}
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 shrink-0">
+                                                {selectedItem.type === 'sala' ? <FaDoorOpen size={16} /> : <FaUser size={16} />}
                                             </div>
                                             <div>
                                                 <h4 className="text-[16px] font-bold text-gray-900 dark:text-gray-50 leading-tight">
