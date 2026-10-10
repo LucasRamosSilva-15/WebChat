@@ -555,6 +555,113 @@ const ButtonsTest = () => {
                             </div>
                         </div>
 
+                        <div className="glass-panel p-6 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Glass Panel (Home)</span>
+                                    <button onClick={() => copyToClipboard('.glass-panel')} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs flex items-center gap-1 cursor-pointer">
+                                        <FiCopy /> .glass-panel
+                                    </button>
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Painel de Vidro Jateado</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+                                    Superfície de vidro semitransparente com <code className="font-mono text-[11px]">blur(12px)</code> e cantos de 24px, utilizado no centro da página inicial.
+                                </p>
+                            </div>
+                            <div className="pt-4 border-t border-slate-200/50 dark:border-slate-800 flex items-center justify-between">
+                                <span className="text-xs text-slate-400">Home Design</span>
+                                <button className="skeuo-btn text-xs px-3.5 py-1.5">
+                                    Entrar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="glass-card p-6 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Glass Card</span>
+                                    <button onClick={() => copyToClipboard('.glass-card')} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs flex items-center gap-1 cursor-pointer">
+                                        <FiCopy /> .glass-card
+                                    </button>
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Cartão de Vidro Compacto</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+                                    Vidro branco opalescente com halo interno suave (<code className="font-mono text-[11px]">inset 0 0 20px</code>) e cantos de 16px.
+                                </p>
+                            </div>
+                            <div className="pt-4 border-t border-slate-200/50 dark:border-slate-800 flex items-center justify-between">
+                                <span className="text-xs text-slate-400">Halo Vítreo</span>
+                                <button className="btn-secondary-glossy text-xs px-3.5 py-1.5">
+                                    Opção
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card-type2 p-6 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Card Tipo 2</span>
+                                    <button onClick={() => copyToClipboard('.skeuo-card-type2')} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs flex items-center gap-1 cursor-pointer">
+                                        <FiCopy /> .skeuo-card-type2
+                                    </button>
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Cartão Translúcido Suave</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+                                    Gradiente leve de 90% para 60% de opacidade com cantos de 16px e reflexo superior suave.
+                                </p>
+                            </div>
+                            <div className="pt-4 border-t border-slate-200/50 dark:border-slate-800 flex items-center justify-between">
+                                <span className="text-xs text-slate-400">Minimalista</span>
+                                <button className="btn-secondary-glossy text-xs px-3.5 py-1.5">
+                                    Acessar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card-aqua md:col-span-2 lg:col-span-2 flex flex-col">
+                            <div className="skeuo-card-aqua-header">
+                                <div className="w-full flex items-center justify-between mb-1">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-900/70 dark:text-sky-300/70">Aqua Glossy</span>
+                                    <button onClick={() => copyToClipboard('.skeuo-card-aqua')} className="text-sky-900/70 hover:text-sky-950 dark:text-sky-300/70 dark:hover:text-white text-xs flex items-center gap-1 cursor-pointer">
+                                        <FiCopy /> .skeuo-card-aqua
+                                    </button>
+                                </div>
+                                <h3 className="skeuo-card-aqua-title">Central de Ajuda & Suporte</h3>
+                                <div className="skeuo-card-aqua-input">
+                                    <FaSearch className="text-sky-600/60 dark:text-sky-400/60 ml-1.5 mr-1" size={13} />
+                                    <input type="text" placeholder="Buscar na ajuda..." />
+                                </div>
+                            </div>
+                            <div className="skeuo-card-aqua-body">
+                                <button onClick={handleClick} className="skeuo-card-aqua-btn">Ajuda</button>
+                                <button onClick={handleClick} className="skeuo-card-aqua-btn">FAQ</button>
+                                <button onClick={handleClick} className="skeuo-card-aqua-btn">Comunidade</button>
+                                <button onClick={handleClick} className="skeuo-card-aqua-btn">Status</button>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card-dialog md:col-span-2 lg:col-span-1 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">Card Dialog / Login</span>
+                                    <button onClick={() => copyToClipboard('.skeuo-card-dialog')} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs flex items-center gap-1 cursor-pointer">
+                                        <FiCopy /> .skeuo-card-dialog
+                                    </button>
+                                </div>
+                                <h3 className="skeuo-card-dialog-title">Admin Login</h3>
+                                <div className="mb-4">
+                                    <input 
+                                        type="password" 
+                                        placeholder="Senha Mestra" 
+                                        className="skeuo-dialog-input"
+                                    />
+                                </div>
+                            </div>
+                            <button onClick={handleClick} className="skeuo-btn-aqua-pill mt-2">
+                                Login
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             )}
