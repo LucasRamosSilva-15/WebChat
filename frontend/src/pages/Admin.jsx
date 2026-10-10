@@ -938,7 +938,7 @@ const Admin = () => {
                             <div className="flex flex-col gap-2.5">
                                 <button className="btn-secondary-glossy text-sm p-3.5 flex items-center gap-3 cursor-pointer text-left w-full group">
                                     <FiBell className="text-blue-500 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" size={17} />
-                                    <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Criar aviso global</span>
+                                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-200">Criar aviso global</span>
                                 </button>
 
                                 <button
@@ -946,7 +946,7 @@ const Admin = () => {
                                     className="btn-secondary-glossy text-sm p-3.5 flex items-center gap-3 cursor-pointer text-left w-full group"
                                 >
                                     <FiAlertTriangle className="text-red-500 dark:text-red-400 shrink-0 group-hover:scale-110 transition-transform" size={17} />
-                                    <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Denúncias críticas</span>
+                                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-200">Denúncias críticas</span>
                                 </button>
                             </div>
                         </div>
