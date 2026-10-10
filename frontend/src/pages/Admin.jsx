@@ -474,11 +474,12 @@ const Admin = () => {
                 <div className="skeuo-segmented-track mb-6 overflow-x-auto max-w-full animate-fade-in-up-3">
                     {['Salas', 'Usuários', 'Denúncias', 'Banimentos', 'Feedbacks'].map((tab) => {
                         const tabId = tab.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                        const isActive = activeTab === tabId;
                         return (
                             <button
                                 key={tabId}
                                 onClick={() => { setActiveTab(tabId); setSelectedItem(null); setSearchTerm(''); setFilterSeverity('Todas'); setFilterTime('Todos'); }}
-                                className={`skeuo-segmented-item whitespace-nowrap ${activeTab === tabId ? 'skeuo-segmented-item-active' : ''}`}
+                                className={`skeuo-segmented-item whitespace-nowrap outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40 select-none ${isActive ? 'skeuo-segmented-item-active' : ''}`}
                             >
                                 {tab}
                             </button>
