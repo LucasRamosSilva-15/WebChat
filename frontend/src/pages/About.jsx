@@ -26,10 +26,10 @@ const About = () => {
             <section className="w-full max-w-[1100px] mb-24 relative z-10">
                 <div className="skeuo-panel rounded-[32px] md:rounded-[40px] bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white/80 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)] p-8 md:p-12 flex flex-col lg:flex-row items-center gap-12 lg:gap-16 relative z-10">
                     <div className="text-left flex-1 mx-auto lg:mx-0 relative z-10">
-                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 text-[11px] rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md text-[#0284c7] dark:text-sky-400 font-bold uppercase tracking-wider border border-white/90 dark:border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_2px_6px_rgba(0,0,0,0.05)]">
-                            <FaGraduationCap size={12} />
-                            Projeto Acadêmico
-                        </div>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-700 bg-gradient-to-b from-sky-100 to-sky-200/80 border border-sky-300/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,113,227,0.08)] mb-4">
+                            <span className="text-sky-600"><FaGraduationCap size={12} /></span>
+                            PROJETO ACADÊMICO
+                        </span>
                         <h1 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] tracking-tight drop-shadow-[0_2px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_0_rgba(0,0,0,0.8)] mb-6 leading-tight text-[40px] md:text-[50px]">
                             Deixe seus pensamentos <span className="text-[#0284c7] dark:text-[#38bdf8] drop-shadow-[0_1px_1px_rgba(255,255,255,1)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] relative z-10 inline-block">fluírem livremente.</span>
                         </h1>
@@ -61,22 +61,22 @@ const About = () => {
                                     </div>
                                 </div>
                                 <div className="ml-auto flex items-center gap-1.5">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#fb7185] shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)]"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#fbbf24] shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)]"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#34d399] shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)]"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-b from-rose-400 to-rose-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-b from-amber-300 to-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"></div>
                                 </div>
                             </div>
 
                             <div className="bg-[#f8fafc] dark:bg-[#020617] p-5 min-h-[250px] flex flex-col justify-end gap-4 relative">
                                 <div className="absolute inset-0 pointer-events-none opacity-10 dark:opacity-5 [background-image:radial-gradient(#64748b_1.2px,transparent_1.2px)] [background-size:20px_20px]"></div>
 
-                                <div className="self-start max-w-[85%] p-3.5 relative z-10 text-sm bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-[#f8fafc] rounded-2xl rounded-tl-xs border border-black/5 dark:border-white/5 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]">
+                                <div className="self-start max-w-[85%] p-3 relative z-10 text-sm bg-white/90 dark:bg-slate-800/90 text-[#1d1d1f] dark:text-[#f8fafc] rounded-2xl rounded-tl-xs border border-slate-200/80 dark:border-white/10 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
                                     <p>O clima em Campina Grande está quente hoje</p>
                                 </div>
 
-                                <div className="self-end max-w-[85%] p-3.5 relative z-10 text-sm bg-gradient-to-b from-[#38bdf8] to-[#0284c7] text-white rounded-2xl rounded-tr-xs shadow-[0_4px_12px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] [text-shadow:0_-1px_0_rgba(0,0,0,0.2)]">
+                                <div className="self-end max-w-[85%] p-3 relative z-10 text-sm bg-gradient-to-b from-sky-400 to-sky-600 text-white rounded-2xl rounded-tr-xs shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_4px_rgba(0,113,227,0.25)]">
                                     <p>Concordo</p>
-                                    <span className="block text-right mt-1 text-[10px] text-[#e0f2fe] opacity-80">Entregue</span>
+                                    <span className="block text-right mt-1 text-[10px] text-sky-100 opacity-90">Entregue</span>
                                 </div>
 
                                 <div className="flex items-center gap-2 mt-2 relative z-10">
@@ -103,7 +103,7 @@ const About = () => {
             </section>
 
             <section className="w-full max-w-[1000px] text-center mb-24 relative z-10">
-                <div className="skeuo-card inline-block px-8 py-6 mb-12">
+                <div className="skeuo-card p-8 max-w-2xl mx-auto text-center my-12">
                     <h2 className="font-bold text-[#1d1d1f] dark:text-[#f8fafc] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] dark:drop-shadow-[0_1px_0_rgba(0,0,0,0.8)] mb-3 text-[28px] md:text-[36px]">
                         Projetado para criar atmosfera
                     </h2>
