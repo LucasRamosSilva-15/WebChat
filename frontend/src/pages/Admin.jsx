@@ -479,7 +479,11 @@ const Admin = () => {
                             <button
                                 key={tabId}
                                 onClick={() => { setActiveTab(tabId); setSelectedItem(null); setSearchTerm(''); setFilterSeverity('Todas'); setFilterTime('Todos'); }}
-                                className={`skeuo-segmented-item whitespace-nowrap outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/40 select-none ${isActive ? 'skeuo-segmented-item-active' : ''}`}
+                                className={`skeuo-segmented-item w-28 sm:w-32 flex items-center justify-center text-center truncate outline-none focus:outline-none focus-visible:ring-0 select-none ${
+                                    isActive
+                                        ? 'skeuo-segmented-item-active hover:brightness-105'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/40 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/40 border-transparent shadow-none'
+                                }`}
                             >
                                 {tab}
                             </button>
