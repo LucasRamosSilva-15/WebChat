@@ -709,6 +709,100 @@ const ButtonsTest = () => {
                 </div>
             </div>
 
+            <section className="w-full my-12 border-t border-slate-200/80 dark:border-slate-800 pt-8">
+                <div className="mb-6">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold tracking-wider uppercase text-sky-600 dark:text-sky-400">Superfícies Isoladas</span>
+                        <span className="text-xs text-slate-400 font-mono">.skeuo-surface-panel</span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Showcase de Cards</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Modelos construídos com novas classes personalizadas para testes de luz, cavidades e profundidade.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                    <div className="skeuo-surface-panel w-full p-6 flex flex-col justify-between">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Utilizadores Totais
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300/70 dark:border-emerald-800/60 shadow-sm">
+                                +12%
+                            </span>
+                        </div>
+
+                        <div className="skeuo-surface-cavity p-4 flex items-baseline justify-between mb-5">
+                            <span className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+                                1.420
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tempo real</span>
+                        </div>
+
+                        <div className="flex justify-end pt-3 border-t border-slate-200/50 dark:border-slate-800">
+                            <button type="button" onClick={handleClick} className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-medium">
+                                Ver relatório
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="skeuo-surface-panel w-full p-6 flex flex-col items-center">
+                        <div className="skeuo-surface-orb-badge w-11 h-11 mb-3 pointer-events-none flex items-center justify-center">
+                            <span className="text-sky-600 dark:text-sky-400 text-base font-bold">🔒</span>
+                        </div>
+
+                        <h4 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1 text-center">
+                            Admin Login
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 text-center">
+                            Introduza a palavra-passe mestra para aceder.
+                        </p>
+
+                        <div className="w-full mb-4">
+                            <input 
+                                type="password" 
+                                placeholder="Senha Mestra" 
+                                className="skeuo-surface-field w-full px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100"
+                                readOnly
+                                value="••••••••••••"
+                            />
+                        </div>
+
+                        <div className="w-full grid grid-cols-2 gap-2">
+                            <button type="button" onClick={handleClick} className="btn-secondary-glossy py-2 text-xs font-medium">
+                                Cancelar
+                            </button>
+                            <button type="button" onClick={handleClick} className="skeuo-btn-primary py-2 text-xs font-semibold text-white">
+                                Entrar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="skeuo-surface-panel skeuo-surface-panel-interactive w-full p-5 flex flex-col justify-between gap-4">
+                        <div className="flex items-center gap-3.5">
+                            <div className="skeuo-surface-avatar-box w-11 h-11 flex items-center justify-center font-bold text-white text-base flex-shrink-0">
+                                #1
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                                    Sala Geral
+                                </h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    28 participantes online
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-200/50 dark:border-slate-800">
+                            <span className="text-xs text-slate-400 font-medium">Acesso livre</span>
+                            <button type="button" onClick={handleClick} className="skeuo-btn-primary px-4 py-1.5 text-xs font-semibold text-white">
+                                Entrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
     );
 };
