@@ -18,7 +18,7 @@
         background-color: white;
         border-radius: 28px;
         overflow: hidden;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
         border: 1px solid rgba(229, 231, 235, 0.8);
         transition: all 0.2s ease;
     }
@@ -34,10 +34,57 @@
         box-shadow: 0 1px 2px rgba(14, 165, 233, 0.3);
     }
 
+    .skeuo-card-glass {
+        position: relative;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 20px 40px rgba(0, 102, 204, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+        transition: all 0.2s ease;
+    }
+
+    .skeuo-card-interactive {
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .skeuo-card-interactive:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px rgba(0, 102, 204, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+        border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .skeuo-panel-inset {
+        background: rgba(248, 250, 252, 0.8);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
     html.dark .skeuo-card {
         background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-card-glass {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-card-interactive:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark .skeuo-panel-inset {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     .skeuo-topbar {
@@ -163,6 +210,69 @@
             inset 0 2px 4px rgba(0, 0, 0, 0.6),
             inset 0 1px 2px rgba(0, 0, 0, 0.4),
             0 1px 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .skeuo-icon-badge,
+    .skeuo-icon-pod,
+    .skeuo-icon-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 9999px;
+        background: linear-gradient(to bottom, #ffffff 0%, #f9f9f9 50%, #f0f0f0 51%, #e6e6e6 100%);
+        border: 1px solid #cccccc;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 2px 4px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    html.dark .skeuo-icon-badge,
+    html.dark .skeuo-icon-pod,
+    html.dark .skeuo-icon-circle {
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+        border: 1px solid #020617;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    button.skeuo-icon-badge,
+    button.skeuo-icon-pod,
+    button.skeuo-icon-circle,
+    .skeuo-icon-badge[role="button"] {
+        cursor: pointer;
+        outline: none;
+        user-select: none;
+        transition: all 120ms ease-out;
+    }
+
+    button.skeuo-icon-badge:hover,
+    button.skeuo-icon-pod:hover,
+    button.skeuo-icon-circle:hover {
+        background: linear-gradient(to bottom, #ffffff 0%, #ffffff 50%, #f9f9f9 51%, #f0f0f0 100%);
+        border-color: #b3b3b3;
+    }
+
+    button.skeuo-icon-badge:active,
+    button.skeuo-icon-pod:active,
+    button.skeuo-icon-circle:active {
+        transform: translateY(1px) scale(0.97);
+        background: linear-gradient(to bottom, #e6e6e6 0%, #cccccc 100%);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    html.dark button.skeuo-icon-badge:hover,
+    html.dark button.skeuo-icon-pod:hover,
+    html.dark button.skeuo-icon-circle:hover {
+        background: linear-gradient(to bottom, #334155 0%, #1e293b 100%);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    html.dark button.skeuo-icon-badge:active,
+    html.dark button.skeuo-icon-pod:active,
+    html.dark button.skeuo-icon-circle:active {
+        transform: translateY(1px) scale(0.97);
+        background: linear-gradient(to bottom, #0f172a 0%, #020617 100%);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
     }
 
     .skeuo-btn-danger {

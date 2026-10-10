@@ -188,10 +188,10 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
         <td className="px-6 py-4 flex gap-2 items-center">
             <button
                 onClick={() => onToggleFavorite(room.roomParam)}
-                className={`p-2 rounded-full flex items-center justify-center transition-all duration-150 ${isFavorite ? 'bg-gradient-to-b from-amber-100 to-amber-200 text-amber-600 border border-amber-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:from-amber-700 dark:to-amber-800 dark:text-amber-400 dark:border-amber-600 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'bg-gradient-to-b from-gray-100 to-gray-200 text-[#86868b] border border-gray-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:from-amber-50 hover:to-amber-100 dark:from-slate-700 dark:to-slate-800 dark:text-[#94a3b8] dark:border-slate-600 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] dark:hover:from-amber-950/40 dark:hover:to-amber-950/60'}`}
+                className={`skeuo-icon-badge !w-8 !h-8 ${isFavorite ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-amber-500 dark:text-slate-500 dark:hover:text-amber-400'}`}
                 title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
             >
-                <FaStar size={14} />
+                <FaStar size={13} />
             </button>
             {room.status !== "Arquivada" && (
                 room.members >= 200 ? (

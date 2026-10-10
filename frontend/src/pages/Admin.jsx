@@ -420,7 +420,7 @@ const Admin = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up-2">
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                            <div className="skeuo-icon-badge">
                                 <FaUsers size={16} className="text-blue-500" />
                             </div>
                             <span className="bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-xs">
@@ -434,7 +434,7 @@ const Admin = () => {
 
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                            <div className="skeuo-icon-badge">
                                 <FaDoorOpen size={16} className="text-purple-500" />
                             </div>
                             <span className="bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-xs">
@@ -448,7 +448,7 @@ const Admin = () => {
 
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                            <div className="skeuo-icon-badge">
                                 <FaExclamationCircle size={16} className="text-red-500" />
                             </div>
                             <span className="bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-xs">
@@ -462,7 +462,7 @@ const Admin = () => {
 
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                            <div className="skeuo-icon-badge">
                                 <FaBan size={16} className="text-emerald-500" />
                             </div>
                         </div>
