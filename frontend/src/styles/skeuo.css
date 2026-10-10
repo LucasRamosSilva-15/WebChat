@@ -7,13 +7,27 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 2px rgba(0, 0, 0, 0.03);
     }
 
-    html.dark .skeuo-panel {
-        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.05), inset 0 -1px 2px rgba(0, 0, 0, 0.3) !important;
+    html.dark .skeuo-panel,
+    .dark .skeuo-panel {
+        position: relative;
+        background: linear-gradient(
+            180deg, 
+            rgba(30, 41, 59, 0.78) 0%, 
+            rgba(15, 23, 42, 0.88) 100%
+        );
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-bottom-color: rgba(0, 0, 0, 0.4);
+        box-shadow: 
+            inset 0 1px 0 rgba(255, 255, 255, 0.16),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.35),
+            0 4px 14px rgba(0, 0, 0, 0.35),
+            0 16px 36px -8px rgba(0, 0, 0, 0.55);
     }
 
-    .skeuo-card {
+    .skeuo-card-v1-legacy {
         position: relative;
         background-color: white;
         border-radius: 28px;
@@ -21,6 +35,23 @@
         box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
         border: 1px solid rgba(229, 231, 235, 0.8);
         transition: all 0.2s ease;
+    }
+
+    .skeuo-card,
+    .skeuo-surface-panel {
+        position: relative;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        border-bottom-color: rgba(203, 213, 225, 0.5);
+        box-shadow: 
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.03),
+            0 4px 12px rgba(15, 23, 42, 0.04),
+            0 16px 36px -8px rgba(0, 80, 180, 0.12);
+        transition: all 0.3s ease;
     }
     
     .skeuo-card-type2 {
@@ -108,10 +139,22 @@
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
-    html.dark .skeuo-card {
+    html.dark .skeuo-card-v1-legacy {
         background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-card,
+    html.dark .skeuo-surface-panel {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom-color: rgba(51, 65, 85, 0.5);
+        box-shadow: 
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+            0 4px 12px rgba(0, 0, 0, 0.4),
+            0 16px 36px -8px rgba(0, 0, 0, 0.6);
     }
 
     html.dark .skeuo-card-glass {
@@ -1444,21 +1487,6 @@
         filter: brightness(1.05);
     }
 
-    .skeuo-surface-panel {
-        position: relative;
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 28px;
-        border: 1px solid rgba(255, 255, 255, 0.85);
-        border-bottom-color: rgba(203, 213, 225, 0.5);
-        box-shadow: 
-            inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-            inset 0 -1px 1px rgba(0, 0, 0, 0.03),
-            0 4px 12px rgba(15, 23, 42, 0.04),
-            0 16px 36px -8px rgba(0, 80, 180, 0.12);
-    }
-
     .skeuo-surface-panel-interactive {
         cursor: pointer;
         transition: transform 150ms ease-out, box-shadow 150ms ease-out;
@@ -1525,16 +1553,6 @@
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
     }
 
-    html.dark .skeuo-surface-panel {
-        background: rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-bottom-color: rgba(51, 65, 85, 0.5);
-        box-shadow: 
-            inset 0 1.5px 0 rgba(255, 255, 255, 0.1),
-            inset 0 -1px 1px rgba(0, 0, 0, 0.2),
-            0 4px 12px rgba(0, 0, 0, 0.4),
-            0 16px 36px -8px rgba(0, 0, 0, 0.6);
-    }
 
     html.dark .skeuo-surface-panel-interactive:hover {
         box-shadow: 

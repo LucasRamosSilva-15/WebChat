@@ -641,32 +641,80 @@ const ButtonsTest = () => {
                             </div>
                         </div>
 
-                        <div className="skeuo-card-dialog w-full max-w-sm p-8 flex flex-col items-center justify-between md:col-span-2 lg:col-span-1 mx-auto">
-                            <div className="w-full">
-                                <div className="flex items-center justify-between mb-4 w-full">
-                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">Card Dialog / Login</span>
+                        <div className="skeuo-card p-6 flex flex-col justify-between md:col-span-2 lg:col-span-1">
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">Card Oficial</span>
+                                    <button onClick={() => copyToClipboard('.skeuo-card')} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs flex items-center gap-1 cursor-pointer">
+                                        <FiCopy /> .skeuo-card
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                                    <button onClick={() => copyToClipboard('.skeuo-surface-orb-badge')} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                        <FiCopy size={9} /> .skeuo-surface-orb-badge
+                                    </button>
+                                    <button onClick={() => copyToClipboard('.skeuo-surface-field')} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                        <FiCopy size={9} /> .skeuo-surface-field
+                                    </button>
+                                    <button onClick={() => copyToClipboard('.skeuo-btn-primary')} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                        <FiCopy size={9} /> .skeuo-btn-primary
+                                    </button>
+                                </div>
+
+                                <div className="w-full flex flex-col items-center">
+                                    <div className="skeuo-surface-orb-badge w-11 h-11 mb-3 pointer-events-none flex items-center justify-center">
+                                        <span className="text-sky-600 dark:text-sky-400 text-base font-bold">🔒</span>
+                                    </div>
+
+                                    <h4 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1 text-center">
+                                        Admin Login
+                                    </h4>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 text-center">
+                                        Introduza a palavra-passe mestra para aceder.
+                                    </p>
+
+                                    <div className="w-full mb-4">
+                                        <input
+                                            type="password"
+                                            placeholder="Senha Mestra"
+                                            value={adminPassword}
+                                            onChange={(e) => setAdminPassword(e.target.value)}
+                                            className="skeuo-surface-field w-full px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100"
+                                        />
+                                    </div>
+
+                                    <div className="w-full grid grid-cols-2 gap-2">
+                                        <button type="button" onClick={handleClick} className="btn-secondary-glossy py-2 text-xs font-medium">
+                                            Cancelar
+                                        </button>
+                                        <button type="button" onClick={handleClick} className="skeuo-btn-primary py-2 text-xs font-semibold text-white">
+                                            Entrar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card-dialog p-6 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">Card Dialog</span>
                                     <button onClick={() => copyToClipboard('.skeuo-card-dialog')} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs flex items-center gap-1 cursor-pointer">
                                         <FiCopy /> .skeuo-card-dialog
                                     </button>
                                 </div>
-                                <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 text-center select-none">Admin Login</h3>
-                                <div className="w-full mb-5">
-                                    <input
-                                        type="password"
-                                        placeholder="Senha Mestra"
-                                        value={adminPassword}
-                                        onChange={(e) => setAdminPassword(e.target.value)}
-                                        className="skeuo-input w-full px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none rounded-xl"
-                                    />
-                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Diálogo Translúcido</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+                                    Painel com <code className="font-mono text-[11px]">blur(16px)</code>, borda suave e chanfro especular superior de 1.5px.
+                                </p>
                             </div>
-                            <button
-                                type="submit"
-                                onClick={handleClick}
-                                className="skeuo-btn-primary w-full py-3 px-4 text-sm font-semibold text-white tracking-wide flex items-center justify-center gap-2"
-                            >
-                                Entrar
-                            </button>
+                            <div className="pt-4 border-t border-slate-200/50 dark:border-slate-800 flex items-center justify-between">
+                                <span className="text-xs text-slate-400">Modal Base</span>
+                                <button className="btn-secondary-glossy text-xs px-3.5 py-1.5">
+                                    Confirmar
+                                </button>
+                            </div>
                         </div>
 
                     </div>
@@ -713,7 +761,7 @@ const ButtonsTest = () => {
                 <div className="mb-6">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-bold tracking-wider uppercase text-sky-600 dark:text-sky-400">Superfícies Isoladas</span>
-                        <span className="text-xs text-slate-400 font-mono">.skeuo-surface-panel</span>
+                        <span className="text-xs text-slate-400 font-mono">.skeuo-card</span>
                     </div>
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Showcase de Cards</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -722,7 +770,7 @@ const ButtonsTest = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                    <div className="skeuo-surface-panel w-full p-6 flex flex-col justify-between">
+                    <div className="skeuo-card w-full p-6 flex flex-col justify-between">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                                 Utilizadores Totais
@@ -746,7 +794,7 @@ const ButtonsTest = () => {
                         </div>
                     </div>
 
-                    <div className="skeuo-surface-panel w-full p-6 flex flex-col items-center">
+                    <div className="skeuo-card w-full max-w-sm p-6 flex flex-col items-center mx-auto">
                         <div className="skeuo-surface-orb-badge w-11 h-11 mb-3 pointer-events-none flex items-center justify-center">
                             <span className="text-sky-600 dark:text-sky-400 text-base font-bold">🔒</span>
                         </div>
@@ -759,9 +807,9 @@ const ButtonsTest = () => {
                         </p>
 
                         <div className="w-full mb-4">
-                            <input 
-                                type="password" 
-                                placeholder="Senha Mestra" 
+                            <input
+                                type="password"
+                                placeholder="Senha Mestra"
                                 className="skeuo-surface-field w-full px-3.5 py-2 text-sm text-slate-800 dark:text-slate-100"
                                 readOnly
                                 value="••••••••••••"
@@ -778,7 +826,7 @@ const ButtonsTest = () => {
                         </div>
                     </div>
 
-                    <div className="skeuo-surface-panel skeuo-surface-panel-interactive w-full p-5 flex flex-col justify-between gap-4">
+                    <div className="skeuo-card skeuo-surface-panel-interactive w-full p-5 flex flex-col justify-between gap-4">
                         <div className="flex items-center gap-3.5">
                             <div className="skeuo-surface-avatar-box w-11 h-11 flex items-center justify-center font-bold text-white text-base flex-shrink-0">
                                 #1
