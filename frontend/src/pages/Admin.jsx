@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
     FaDownload, FaGavel, FaExclamationCircle, FaUserSlash, FaBan,
-    FaCommentDots, FaSearch, FaEye, FaHammer, FaBullhorn,
-    FaExclamationTriangle, FaMousePointer, FaInfoCircle, FaChartLine, FaUser, FaImage, FaTimes, FaUsers, FaDoorOpen, FaTrash, FaShieldAlt,
+    FaCommentDots, FaSearch, FaEye, FaHammer,
+    FaMousePointer, FaInfoCircle, FaChartLine, FaUser, FaImage, FaTimes, FaUsers, FaDoorOpen, FaTrash, FaShieldAlt,
     FaCopy, FaCheck, FaEdit
 } from 'react-icons/fa';
+import { FiBell, FiAlertTriangle } from 'react-icons/fi';
 
 const Admin = () => {
     const [activeTab, setActiveTab] = useState('denuncias');
@@ -60,7 +61,7 @@ const Admin = () => {
                 const response = await fetch(`${apiBaseUrl}/admin/${endpoint}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok) {
                     let data = await response.json();
                     console.log('--- ADMIN DATA DEBUG ---');
@@ -129,7 +130,7 @@ const Admin = () => {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    
+
                     if (res.ok) {
                         setAdminData(prev => {
                             const newData = { ...prev };
@@ -419,8 +420,8 @@ const Admin = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up-2">
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-xl bg-sky-100 text-blue-500 dark:bg-blue-500/20 flex items-center justify-center">
-                                <FaUsers size={14} />
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                                <FaUsers size={16} className="text-blue-500" />
                             </div>
                             <span className="bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-xs">
                                 <FaChartLine size={8} /> +12%
@@ -433,8 +434,8 @@ const Admin = () => {
 
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-500 dark:bg-purple-500/20 flex items-center justify-center">
-                                <FaDoorOpen size={14} />
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                                <FaDoorOpen size={16} className="text-purple-500" />
                             </div>
                             <span className="bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-xs">
                                 <FaChartLine size={8} /> +5
@@ -447,8 +448,8 @@ const Admin = () => {
 
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-xl bg-red-100 text-red-500 dark:bg-red-500/20 flex items-center justify-center">
-                                <FaExclamationCircle size={14} />
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                                <FaExclamationCircle size={16} className="text-red-500" />
                             </div>
                             <span className="bg-red-50 text-red-600 border border-red-200/80 dark:bg-red-500/20 dark:border-red-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-xs">
                                 <FaChartLine size={8} /> 15%
@@ -461,8 +462,8 @@ const Admin = () => {
 
                     <div className="bg-white/90 backdrop-blur-md border border-white/60 shadow-[0_10px_30px_rgba(0,102,204,0.08)] rounded-2xl p-5 relative overflow-hidden flex flex-col dark:bg-slate-900/80 dark:border-slate-800 dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-500 dark:bg-emerald-500/20 flex items-center justify-center">
-                                <FaBan size={14} />
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 border border-slate-300 dark:border-slate-600 shadow-inner flex items-center justify-center">
+                                <FaBan size={16} className="text-emerald-500" />
                             </div>
                         </div>
                         <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1">{globalStats.active_bans}</h2>
@@ -471,17 +472,23 @@ const Admin = () => {
                     </div>
                 </div>
 
-                <div className="skeuo-segmented-track mb-6 overflow-x-auto max-w-full animate-fade-in-up-3">
+                <div className="skeuo-segmented-track inline-flex w-fit mb-6 overflow-x-auto max-w-full animate-fade-in-up-3">
                     {['Salas', 'Usuários', 'Denúncias', 'Banimentos', 'Feedbacks'].map((tab) => {
                         const tabId = tab.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
                         const isActive = activeTab === tabId;
                         return (
                             <button
                                 key={tabId}
-                                onClick={() => { setActiveTab(tabId); setSelectedItem(null); setSearchTerm(''); setFilterSeverity('Todas'); setFilterTime('Todos'); }}
-                                className={`skeuo-segmented-item w-28 sm:w-32 ${
-                                    isActive ? 'skeuo-segmented-item-active' : ''
-                                }`}
+                                type="button"
+                                onClick={() => {
+                                    setActiveTab(tabId);
+                                    setSelectedItem(null);
+                                    setSearchTerm('');
+                                    setFilterSeverity('Todas');
+                                    setFilterTime('Todos');
+                                }}
+                                className={`skeuo-segmented-item w-28 sm:w-32 flex-shrink-0 ${isActive ? 'skeuo-segmented-item-active' : ''
+                                    }`}
                             >
                                 {tab}
                             </button>
@@ -658,10 +665,10 @@ const Admin = () => {
                                                         </div>
                                                         <p className="text-[13px] font-medium text-slate-600 dark:text-slate-300 mb-1">
                                                             {activeTab === 'denuncias' ? 'Nenhuma denúncia registrada de momento.' :
-                                                             activeTab === 'usuarios' ? 'Nenhum usuário registrado de momento.' :
-                                                             activeTab === 'salas' ? 'Nenhuma sala registrada de momento.' :
-                                                             activeTab === 'banimentos' ? 'Nenhum banimento registrado de momento.' :
-                                                             'Nenhum feedback registrado de momento.'}
+                                                                activeTab === 'usuarios' ? 'Nenhum usuário registrado de momento.' :
+                                                                    activeTab === 'salas' ? 'Nenhuma sala registrada de momento.' :
+                                                                        activeTab === 'banimentos' ? 'Nenhum banimento registrado de momento.' :
+                                                                            'Nenhum feedback registrado de momento.'}
                                                         </p>
                                                         <p className="text-[11px] text-slate-400 dark:text-slate-500">
                                                             Os novos registros aparecerão automaticamente nesta fila.
@@ -788,13 +795,12 @@ const Admin = () => {
                                                     value={normalizeReportStatus(selectedItem.status)}
                                                     onChange={(e) => handleStatusChange(e.target.value)}
                                                     disabled={isSavingStatus}
-                                                    className={`w-full text-xs font-semibold rounded-xl py-2 px-3 border border-slate-200/90 shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all ${
-                                                        normalizeReportStatus(selectedItem.status) === 'Resolvido'
-                                                            ? 'bg-emerald-50/90 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60'
-                                                            : normalizeReportStatus(selectedItem.status) === 'Descartado'
+                                                    className={`w-full text-xs font-semibold rounded-xl py-2 px-3 border border-slate-200/90 shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all ${normalizeReportStatus(selectedItem.status) === 'Resolvido'
+                                                        ? 'bg-emerald-50/90 text-emerald-800 border-emerald-300/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60'
+                                                        : normalizeReportStatus(selectedItem.status) === 'Descartado'
                                                             ? 'bg-red-50/90 text-red-800 border-red-300/80 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/60'
                                                             : 'bg-amber-50/90 text-amber-800 border-amber-300/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <option value="Pendente">Pendente</option>
                                                     <option value="Resolvido">Resolvido</option>
@@ -805,24 +811,22 @@ const Admin = () => {
                                             <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 shadow-xs dark:bg-slate-800/50 dark:border-slate-700/80 flex flex-col justify-between">
                                                 <div className="flex items-center justify-between mb-1">
                                                     <strong className="block text-[10px] text-gray-400 uppercase tracking-wide">Gravidade</strong>
-                                                    <span className={`w-2 h-2 rounded-full ${
-                                                        selectedItem.severity === 'Extrema' ? 'bg-red-500 animate-ping' :
+                                                    <span className={`w-2 h-2 rounded-full ${selectedItem.severity === 'Extrema' ? 'bg-red-500 animate-ping' :
                                                         selectedItem.severity === 'Alta' ? 'bg-orange-500' :
-                                                        selectedItem.severity === 'Baixa' ? 'bg-emerald-500' : 'bg-amber-500'
-                                                    }`} />
+                                                            selectedItem.severity === 'Baixa' ? 'bg-emerald-500' : 'bg-amber-500'
+                                                        }`} />
                                                 </div>
                                                 <select
                                                     value={selectedItem.severity || 'Média'}
                                                     onChange={(e) => handleSeverityChange(e.target.value)}
-                                                    className={`w-full text-xs font-semibold rounded-xl py-2 px-3 border border-slate-200/90 shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all ${
-                                                        selectedItem.severity === 'Extrema'
-                                                            ? 'bg-red-50/90 text-red-700 border-red-300/80 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/60'
-                                                            : selectedItem.severity === 'Alta'
+                                                    className={`w-full text-xs font-semibold rounded-xl py-2 px-3 border border-slate-200/90 shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all ${selectedItem.severity === 'Extrema'
+                                                        ? 'bg-red-50/90 text-red-700 border-red-300/80 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/60'
+                                                        : selectedItem.severity === 'Alta'
                                                             ? 'bg-orange-50/90 text-orange-700 border-orange-300/80 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800/60'
                                                             : selectedItem.severity === 'Baixa'
-                                                            ? 'bg-emerald-50/90 text-emerald-700 border-emerald-300/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60'
-                                                            : 'bg-amber-50/90 text-amber-700 border-amber-300/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60'
-                                                    }`}
+                                                                ? 'bg-emerald-50/90 text-emerald-700 border-emerald-300/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60'
+                                                                : 'bg-amber-50/90 text-amber-700 border-amber-300/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60'
+                                                        }`}
                                                 >
                                                     <option value="Baixa">Baixa</option>
                                                     <option value="Média">Média</option>
@@ -933,9 +937,7 @@ const Admin = () => {
                             <h3 className="text-[15px] font-bold text-gray-900 dark:text-gray-50 mb-3">Ações Rápidas</h3>
                             <div className="flex flex-col gap-2.5">
                                 <button className="btn-secondary-glossy text-sm p-3.5 flex items-center gap-3 cursor-pointer text-left w-full group">
-                                    <div className="w-7 h-7 rounded-xl bg-blue-50 dark:bg-slate-700 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                                        <FaBullhorn className="text-blue-500" size={12} />
-                                    </div>
+                                    <FiBell className="text-blue-500 dark:text-blue-400 shrink-0 group-hover:scale-110 transition-transform" size={17} />
                                     <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Criar aviso global</span>
                                 </button>
 
@@ -943,9 +945,7 @@ const Admin = () => {
                                     onClick={() => { setActiveTab('denuncias'); setFilterSeverity('Alta'); }}
                                     className="btn-secondary-glossy text-sm p-3.5 flex items-center gap-3 cursor-pointer text-left w-full group"
                                 >
-                                    <div className="w-7 h-7 rounded-xl bg-red-50 dark:bg-slate-700 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                                        <FaExclamationTriangle className="text-red-500" size={12} />
-                                    </div>
+                                    <FiAlertTriangle className="text-red-500 dark:text-red-400 shrink-0 group-hover:scale-110 transition-transform" size={17} />
                                     <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Denúncias críticas</span>
                                 </button>
                             </div>
@@ -973,7 +973,7 @@ const Admin = () => {
                         </button>
 
                         <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 pb-4">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-slate-800 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-blue-50/80 border border-blue-200/60 dark:bg-slate-800/80 dark:border-slate-700/60 shadow-xs flex items-center justify-center shrink-0">
                                 <FaCommentDots className="text-blue-500" size={16} />
                             </div>
                             <div>
@@ -1011,7 +1011,7 @@ const Admin = () => {
                         </button>
 
                         <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 pb-4">
-                            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-slate-800 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-purple-50/80 border border-purple-200/60 dark:bg-slate-800/80 dark:border-slate-700/60 shadow-xs flex items-center justify-center shrink-0">
                                 <FaImage className="text-purple-500" size={16} />
                             </div>
                             <div>
@@ -1019,7 +1019,7 @@ const Admin = () => {
                                     {selectedItem.type === 'feedback' ? 'Imagens Anexadas' : 'Evidências em Imagem'}
                                 </h3>
                                 <p className="text-[12px] text-gray-500 dark:text-gray-400">
-                                    {selectedItem.type === 'feedback' 
+                                    {selectedItem.type === 'feedback'
                                         ? <span>Anexadas no feedback enviado por <span className="font-bold">{selectedItem.user || 'Anônimo'}</span></span>
                                         : <span>Anexadas na denúncia contra <span className="font-bold">{selectedItem.user || 'Desconhecido'}</span></span>
                                     }
