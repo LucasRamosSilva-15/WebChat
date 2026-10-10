@@ -23,10 +23,13 @@ class ReportRepository {
     return await Report.findByPk(id);
   }
 
-  async updateStatus(id, status) {
+  async updateStatus(id, status, reason) {
     const report = await this.findById(id);
     if (!report) return null;
-    return await report.update({ status });
+    const payload = {};
+    if (status) payload.status = status;
+    if (reason !== undefined) payload.reason = reason;
+    return await report.update(payload);
   }
 
   async delete(id) {
