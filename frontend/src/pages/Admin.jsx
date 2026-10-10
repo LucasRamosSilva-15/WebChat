@@ -386,7 +386,7 @@ const Admin = () => {
     }
 
     return (
-        <div className="flex-1 w-full flex flex-col items-center bg-gray-50/50 dark:bg-transparent">
+        <div className="min-h-screen flex-1 w-full flex flex-col justify-between items-center bg-transparent">
             <div className="w-full max-w-[1200px] px-4 py-8 md:py-10 animate-fade-in-up-1">
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -954,10 +954,14 @@ const Admin = () => {
 
                 </div>
 
-                <div className="border-t border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-400 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] animate-fade-in-up-5">
-                    <p>Administrador: <span className="font-bold text-gray-900 dark:text-gray-50">SkyMaster</span></p>
-                    <p className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#0ea5e9]"></span> Status: Online</p>
-                    <p>Última atualização: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                <div className="border-t border-white/40 dark:border-white/10 text-slate-600 dark:text-slate-400 pt-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs animate-fade-in-up-5">
+                    <p>Administrador: <span className="font-semibold text-slate-800 dark:text-slate-100">SkyMaster</span></p>
+                    <p className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span> Status: Online
+                    </p>
+                    <p className="text-slate-500 dark:text-slate-400">
+                        Última atualização: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
                 </div>
 
             </div>
