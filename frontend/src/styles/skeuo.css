@@ -1500,15 +1500,14 @@
             0 20px 40px -8px rgba(0, 80, 180, 0.16);
     }
 
-    .skeuo-surface-cavity {
+    .skeuo-surface-cavity,
+    .skeuo-well {
         background: rgba(241, 245, 249, 0.7);
         border: 1px solid rgba(203, 213, 225, 0.75);
-        border-bottom-color: rgba(255, 255, 255, 0.9);
         border-radius: 14px;
         box-shadow: 
             inset 0 1px 3px rgba(15, 23, 42, 0.08),
-            inset 0 2px 6px rgba(15, 23, 42, 0.04),
-            0 1px 0 rgba(255, 255, 255, 0.8);
+            inset 0 2px 6px rgba(15, 23, 42, 0.04);
     }
 
     .skeuo-surface-field {
@@ -1542,7 +1541,8 @@
             0 2px 5px rgba(15, 23, 42, 0.06);
     }
 
-    .skeuo-surface-avatar-box {
+    .skeuo-surface-avatar-box,
+    .skeuo-avatar-badge {
         border-radius: 14px;
         background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
         border: 1px solid rgba(255, 255, 255, 0.5);
@@ -1561,14 +1561,14 @@
             0 20px 40px -8px rgba(0, 0, 0, 0.7);
     }
 
-    html.dark .skeuo-surface-cavity {
+    html.dark .skeuo-surface-cavity,
+    html.dark .skeuo-well {
         background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(51, 65, 85, 0.6);
-        border-bottom-color: rgba(255, 255, 255, 0.05);
+        border-radius: 14px;
         box-shadow: 
             inset 0 1px 3px rgba(0, 0, 0, 0.4),
-            inset 0 2px 6px rgba(0, 0, 0, 0.2),
-            0 1px 0 rgba(255, 255, 255, 0.05);
+            inset 0 2px 6px rgba(0, 0, 0, 0.2);
     }
 
     html.dark .skeuo-surface-field {
