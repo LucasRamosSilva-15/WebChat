@@ -900,7 +900,9 @@
         color: #f8fafc !important;
     }
 
-    .skeuo-btn {
+    .skeuo-btn,
+    .skeuo-btn-primary,
+    .btn-primary-glossy {
         background: linear-gradient(to bottom, var(--primary-light) 0%, var(--primary-main) 50%, var(--primary-dark) 51%, var(--primary-darker) 100%);
         border: 1px solid var(--primary-darker);
         border-radius: 0.75rem;
@@ -915,17 +917,23 @@
         justify-content: center;
     }
 
-    .skeuo-btn:hover {
+    .skeuo-btn:hover,
+    .skeuo-btn-primary:hover,
+    .btn-primary-glossy:hover {
         background: linear-gradient(to bottom, var(--primary-hover-light) 0%, var(--primary-hover-main) 50%, var(--primary-hover-dark) 51%, var(--primary-hover-darker) 100%);
     }
 
-    .skeuo-btn:active {
+    .skeuo-btn:active,
+    .skeuo-btn-primary:active,
+    .btn-primary-glossy:active {
         background: linear-gradient(to bottom, var(--primary-darker) 0%, var(--primary-dark) 100%);
         box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
         border-top-color: #000000;
     }
 
-    html.dark .skeuo-btn {
+    html.dark .skeuo-btn,
+    html.dark .skeuo-btn-primary,
+    html.dark .btn-primary-glossy {
         background: 
             linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.4) 100%),
             var(--primary-main) !important;
@@ -934,7 +942,9 @@
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
     }
 
-    html.dark .skeuo-btn:hover {
+    html.dark .skeuo-btn:hover,
+    html.dark .skeuo-btn-primary:hover,
+    html.dark .btn-primary-glossy:hover {
         background: 
             linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.3) 100%),
             var(--primary-main) !important;
@@ -942,7 +952,9 @@
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
     }
 
-    html.dark .skeuo-btn:active {
+    html.dark .skeuo-btn:active,
+    html.dark .skeuo-btn-primary:active,
+    html.dark .btn-primary-glossy:active {
         background: 
             linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.5) 100%),
             var(--primary-main) !important;

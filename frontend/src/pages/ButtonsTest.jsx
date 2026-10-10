@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { 
-    FaDownload, FaTrash, FaCheck, FaHeart, FaShare, 
+import {
+    FaDownload, FaTrash, FaCheck, FaHeart, FaShare,
     FaSearch, FaBell, FaSun, FaMoon, FaCog, FaRocket, FaStar,
     FaUsers, FaChartLine, FaShieldAlt, FaComments, FaUser, FaDoorOpen, FaLock, FaExternalLinkAlt
 } from 'react-icons/fa';
@@ -12,6 +12,7 @@ const ButtonsTest = () => {
     const [selectedTab, setSelectedTab] = useState('todos');
     const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
     const [copiedClass, setCopiedClass] = useState('');
+    const [adminPassword, setAdminPassword] = useState('');
 
     const toggleTheme = () => {
         const root = document.documentElement;
@@ -36,7 +37,7 @@ const ButtonsTest = () => {
 
     return (
         <div className="flex-1 w-full flex flex-col items-center py-10 px-4 md:px-8 max-w-7xl mx-auto animate-fade-in-up-1">
-            
+
             <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-200/80 dark:border-slate-800">
                 <div>
                     <h1 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-3">
@@ -48,7 +49,7 @@ const ButtonsTest = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button 
+                    <button
                         onClick={toggleTheme}
                         className="btn-secondary-glossy px-4 py-2 text-xs font-semibold flex items-center gap-2 rounded-xl cursor-pointer"
                     >
@@ -640,25 +641,31 @@ const ButtonsTest = () => {
                             </div>
                         </div>
 
-                        <div className="skeuo-card-dialog md:col-span-2 lg:col-span-1 flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center justify-between mb-3">
+                        <div className="skeuo-card-dialog w-full max-w-sm p-8 flex flex-col items-center justify-between md:col-span-2 lg:col-span-1 mx-auto">
+                            <div className="w-full">
+                                <div className="flex items-center justify-between mb-4 w-full">
                                     <span className="text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">Card Dialog / Login</span>
                                     <button onClick={() => copyToClipboard('.skeuo-card-dialog')} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs flex items-center gap-1 cursor-pointer">
                                         <FiCopy /> .skeuo-card-dialog
                                     </button>
                                 </div>
-                                <h3 className="skeuo-card-dialog-title">Admin Login</h3>
-                                <div className="mb-4">
-                                    <input 
-                                        type="password" 
-                                        placeholder="Senha Mestra" 
-                                        className="skeuo-dialog-input"
+                                <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 text-center select-none">Admin Login</h3>
+                                <div className="w-full mb-5">
+                                    <input
+                                        type="password"
+                                        placeholder="Senha Mestra"
+                                        value={adminPassword}
+                                        onChange={(e) => setAdminPassword(e.target.value)}
+                                        className="skeuo-input w-full px-4 py-3 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none rounded-xl"
                                     />
                                 </div>
                             </div>
-                            <button onClick={handleClick} className="skeuo-btn-aqua-pill mt-2">
-                                Login
+                            <button
+                                type="submit"
+                                onClick={handleClick}
+                                className="skeuo-btn-primary w-full py-3 px-4 text-sm font-semibold text-white tracking-wide flex items-center justify-center gap-2"
+                            >
+                                Entrar
                             </button>
                         </div>
 
