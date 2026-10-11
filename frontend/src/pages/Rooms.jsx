@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { socket } from '../socket';
-import { FaSearch, FaSlidersH, FaCommentAlt, FaUsers, FaExclamationTriangle, FaPlus, FaHashtag, FaStar } from 'react-icons/fa';
+import { FaSearch, FaSlidersH, FaCommentAlt, FaUsers, FaExclamationTriangle, FaPlus, FaHashtag, FaStar, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { apiRequest } from '../services/api';
 import SkeuoLoading from '../components/SkeuoLoading';
 
@@ -561,7 +561,7 @@ const Rooms = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-100/50 dark:bg-slate-800/40 border-b border-slate-200/80 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                <tr className="bg-slate-100/60 dark:bg-slate-800/50 border-b border-slate-200/80 dark:border-slate-700/60 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                                     <th className="px-6 py-4">Nome da Sala</th>
                                     <th className="px-6 py-4">Categoria</th>
                                     <th className="px-6 py-4">Status</th>
@@ -593,26 +593,26 @@ const Rooms = () => {
 
                     <div className="p-6 flex items-center justify-between text-sm bg-black/[0.02] border-t border-[#d2d2d7]/50 text-[#86868b] dark:bg-white/[0.02] dark:border-white/5 dark:text-[#94a3b8]">
                         <div>Mostrando 1 a {filteredRooms.length} de {allRooms.length} salas</div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1">
                             <button
                                 type="button"
                                 disabled
-                                className="btn-secondary-glossy w-8 h-8 rounded-lg flex items-center justify-center text-xs text-slate-400 opacity-60 cursor-not-allowed"
+                                className="btn-secondary-glossy !w-8 !h-8 !p-0 flex items-center justify-center text-xs font-semibold text-slate-400 opacity-60 rounded-lg cursor-not-allowed"
                             >
-                                &lt;
+                                <FaArrowLeft size={12} />
                             </button>
                             <button
                                 type="button"
-                                className="skeuo-btn-primary w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                                className="skeuo-btn-primary !w-8 !h-8 !p-0 flex items-center justify-center text-xs font-bold text-white rounded-lg shadow-sm"
                             >
                                 1
                             </button>
                             <button
                                 type="button"
                                 disabled
-                                className="btn-secondary-glossy w-8 h-8 rounded-lg flex items-center justify-center text-xs text-slate-400 opacity-60 cursor-not-allowed"
+                                className="btn-secondary-glossy !w-8 !h-8 !p-0 flex items-center justify-center text-xs font-semibold text-slate-400 opacity-60 rounded-lg cursor-not-allowed"
                             >
-                                &gt;
+                                <FaArrowRight size={12} />
                             </button>
                         </div>
                     </div>
