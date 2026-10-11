@@ -6,10 +6,10 @@ import { apiRequest } from '../services/api';
 import SkeuoLoading from '../components/SkeuoLoading';
 
 const StatCard = ({ title, value, subtext, icon: Icon, iconVariant = "blue" }) => {
-    const iconColorClass = iconVariant === "blue" 
-        ? "text-[#0071e3] dark:text-blue-400" 
-        : iconVariant === "green" 
-            ? "text-emerald-600 dark:text-emerald-400" 
+    const iconColorClass = iconVariant === "blue"
+        ? "text-[#0071e3] dark:text-blue-400"
+        : iconVariant === "green"
+            ? "text-emerald-600 dark:text-emerald-400"
             : "text-red-500 dark:text-red-400";
 
     return (
@@ -147,7 +147,7 @@ const CreateRoomModal = ({
 };
 
 const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
-    <tr className="border-b border-[#d2d2d7]/30 dark:border-white/5 transition-colors duration-150 hover:bg-black/[0.02] dark:hover:bg-white/[0.02]">
+    <tr className="transition-colors hover:bg-sky-50/40 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/50">
         <td className="px-6 py-4">
             <div className="flex items-center gap-4">
                 <RoomIconWithTooltip description={room.description} imageUrl={room.image_url} />
@@ -193,11 +193,10 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
                 className="btn-secondary-glossy w-8 h-8 rounded-full inline-flex items-center justify-center p-0 shrink-0 transition-transform active:scale-95"
             >
                 <svg
-                    className={`w-4 h-4 transition-colors ${
-                        isFavorite
-                            ? "text-amber-500 fill-amber-400 drop-shadow-[0_1px_1px_rgba(245,158,11,0.4)]"
-                            : "text-slate-400 hover:text-amber-500/80"
-                    }`}
+                    className={`w-4 h-4 transition-colors ${isFavorite
+                        ? "text-amber-500 fill-amber-400 drop-shadow-[0_1px_1px_rgba(245,158,11,0.4)]"
+                        : "text-slate-400 hover:text-amber-500/80"
+                        }`}
                     viewBox="0 0 24 24"
                     fill={isFavorite ? "currentColor" : "none"}
                     stroke="currentColor"
@@ -210,11 +209,15 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
             </button>
             {room.status !== "Arquivada" && (
                 room.members >= 200 ? (
-                    <span className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-medium !text-red-500 !cursor-not-allowed opacity-80">
+                    <span className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-semibold !text-red-500 !cursor-not-allowed opacity-80">
                         Lotada
                     </span>
                 ) : (
-                    <button onClick={() => onJoinRoom(room.roomParam)} className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-medium">
+                    <button
+                        type="button"
+                        onClick={() => onJoinRoom(room.roomParam)}
+                        className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200"
+                    >
                         Entrar
                     </button>
                 )
@@ -349,7 +352,7 @@ const Rooms = () => {
 
     const handleCreateRoom = async (e) => {
         e.preventDefault();
-        
+
         if (isCreatingRoom) return;
         if (newRoomTitle.trim() === '') return;
 
@@ -358,8 +361,8 @@ const Rooms = () => {
         try {
             const savedRoom = await apiRequest('/rooms', {
                 method: 'POST',
-                body: JSON.stringify({ 
-                    name: newRoomTitle.trim(), 
+                body: JSON.stringify({
+                    name: newRoomTitle.trim(),
                     description: newRoomDesc.trim(),
                     category: newRoomCategory,
                     image_url: newRoomImage
@@ -506,21 +509,21 @@ const Rooms = () => {
                         <p className="text-base mt-1 text-[#86868b] dark:text-[#94a3b8]">Administre salas, moderadores e atividades da comunidade.</p>
                     </div>
                     <div className="flex items-center gap-3 pr-6">
-                        <div className="relative w-full md:w-[280px]">
-                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] dark:text-[#94a3b8]" size={16} />
+                        <div className="relative">
+                            <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" size={15} />
                             <input
                                 type="text"
                                 placeholder="Buscar salas..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="skeuo-input w-full pl-10 pr-4 py-2 text-[15px]"
+                                className="skeuo-input pl-10 pr-4 py-2 text-sm w-64 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 rounded-xl"
                             />
                         </div>
                         <div className="relative">
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="btn-secondary-glossy w-[240px] pl-10 pr-8 py-2 text-[15px] appearance-none cursor-pointer"
+                                className="btn-secondary-glossy pl-9 pr-8 py-2 text-sm font-medium flex items-center gap-2 cursor-pointer appearance-none"
                             >
                                 <option value="Todas">Todas as Categorias</option>
                                 <option value="Casual">Casual</option>
@@ -529,7 +532,7 @@ const Rooms = () => {
                                 <option value="Arte">Arte</option>
                                 <option value="Estudos">Estudos</option>
                             </select>
-                            <FaSlidersH className="text-[#0071e3] absolute left-3 top-1/2 -translate-y-1/2" size={16} />
+                            <FaSlidersH className="text-[#0071e3] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={15} />
                             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="#86868b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             </div>
@@ -558,12 +561,12 @@ const Rooms = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-black/[0.02] border-b border-[#d2d2d7]/50 dark:bg-white/[0.02] dark:border-white/5">
-                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Nome da Sala</th>
-                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Categoria</th>
-                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Membros</th>
-                                    <th className="px-6 py-4 text-[13px] font-semibold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-wider">Ações</th>
+                                <tr className="bg-slate-100/50 dark:bg-slate-800/40 border-b border-slate-200/80 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    <th className="px-6 py-4">Nome da Sala</th>
+                                    <th className="px-6 py-4">Categoria</th>
+                                    <th className="px-6 py-4">Status</th>
+                                    <th className="px-6 py-4">Membros</th>
+                                    <th className="px-6 py-4">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -590,10 +593,27 @@ const Rooms = () => {
 
                     <div className="p-6 flex items-center justify-between text-sm bg-black/[0.02] border-t border-[#d2d2d7]/50 text-[#86868b] dark:bg-white/[0.02] dark:border-white/5 dark:text-[#94a3b8]">
                         <div>Mostrando 1 a {filteredRooms.length} de {allRooms.length} salas</div>
-                        <div className="flex gap-1.5 items-center">
-                            <button className="btn-secondary-glossy w-7 h-7 text-xs rounded-lg flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed" disabled>&lt;</button>
-                            <button className="skeuo-btn-primary w-7 h-7 text-xs rounded-lg flex items-center justify-center text-white font-bold">1</button>
-                            <button className="btn-secondary-glossy w-7 h-7 text-xs rounded-lg flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed" disabled>&gt;</button>
+                        <div className="flex items-center gap-1.5">
+                            <button
+                                type="button"
+                                disabled
+                                className="btn-secondary-glossy w-8 h-8 rounded-lg flex items-center justify-center text-xs text-slate-400 opacity-60 cursor-not-allowed"
+                            >
+                                &lt;
+                            </button>
+                            <button
+                                type="button"
+                                className="skeuo-btn-primary w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm"
+                            >
+                                1
+                            </button>
+                            <button
+                                type="button"
+                                disabled
+                                className="btn-secondary-glossy w-8 h-8 rounded-lg flex items-center justify-center text-xs text-slate-400 opacity-60 cursor-not-allowed"
+                            >
+                                &gt;
+                            </button>
                         </div>
                     </div>
                 </div>
