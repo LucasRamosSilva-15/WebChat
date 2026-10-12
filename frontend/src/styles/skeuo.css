@@ -1596,4 +1596,31 @@
             inset 0 1px 0 rgba(255, 255, 255, 0.1),
             0 2px 5px rgba(0, 0, 0, 0.4);
     }
+
+    .skeuo-table-head {
+        background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    .skeuo-table-head th {
+        padding: 14px 24px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #64748b;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+        border-bottom: 1px solid #cbd5e1;
+    }
+
+    html.dark .skeuo-table-head {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark .skeuo-table-head th {
+        color: #94a3b8;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+        border-bottom: 1px solid #334155;
+    }
 }

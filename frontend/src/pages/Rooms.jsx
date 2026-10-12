@@ -185,43 +185,45 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
             {room.members} / 200
         </td>
 
-        <td className="px-6 py-4 flex gap-2 items-center">
-            <button
-                type="button"
-                onClick={() => onToggleFavorite(room.roomParam)}
-                title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                className="btn-secondary-glossy w-8 h-8 rounded-full inline-flex items-center justify-center p-0 shrink-0 transition-transform active:scale-95"
-            >
-                <svg
-                    className={`w-4 h-4 transition-colors ${isFavorite
-                        ? "text-amber-500 fill-amber-400 drop-shadow-[0_1px_1px_rgba(245,158,11,0.4)]"
-                        : "text-slate-400 hover:text-amber-500/80"
-                        }`}
-                    viewBox="0 0 24 24"
-                    fill={isFavorite ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+        <td className="px-6 py-4">
+            <div className="flex items-center justify-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => onToggleFavorite(room.roomParam)}
+                    title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+                    className="btn-secondary-glossy !w-8 !h-8 !p-0 rounded-full inline-flex items-center justify-center shrink-0 transition-transform active:scale-95"
                 >
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
-            </button>
-            {room.status !== "Arquivada" && (
-                room.members >= 200 ? (
-                    <span className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-semibold !text-red-500 !cursor-not-allowed opacity-80">
-                        Lotada
-                    </span>
-                ) : (
-                    <button
-                        type="button"
-                        onClick={() => onJoinRoom(room.roomParam)}
-                        className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200"
+                    <svg
+                        className={`w-4 h-4 transition-colors ${isFavorite
+                            ? "text-amber-500 fill-amber-400 drop-shadow-[0_1px_1px_rgba(245,158,11,0.4)]"
+                            : "text-slate-400 hover:text-amber-500/80"
+                            }`}
+                        viewBox="0 0 24 24"
+                        fill={isFavorite ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                     >
-                        Entrar
-                    </button>
-                )
-            )}
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                </button>
+                {room.status !== "Arquivada" && (
+                    room.members >= 200 ? (
+                        <span className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-semibold !text-red-500 !cursor-not-allowed opacity-80">
+                            Lotada
+                        </span>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => onJoinRoom(room.roomParam)}
+                            className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200"
+                        >
+                            Entrar
+                        </button>
+                    )
+                )}
+            </div>
         </td>
     </tr>
 );
@@ -560,13 +562,13 @@ const Rooms = () => {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-100/60 dark:bg-slate-800/50 border-b border-slate-200/80 dark:border-slate-700/60 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                    <th className="px-6 py-4">Nome da Sala</th>
-                                    <th className="px-6 py-4">Categoria</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4">Membros</th>
-                                    <th className="px-6 py-4">Ações</th>
+                            <thead className="skeuo-table-head">
+                                <tr>
+                                    <th className="text-left">Nome da Sala</th>
+                                    <th className="text-left">Categoria</th>
+                                    <th className="text-left">Status</th>
+                                    <th className="text-left">Membros</th>
+                                    <th className="text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
