@@ -2,17 +2,24 @@ import React, { useState } from 'react';
 import {
     FaDownload, FaTrash, FaCheck, FaHeart, FaShare,
     FaSearch, FaBell, FaSun, FaMoon, FaCog, FaRocket, FaStar,
-    FaUsers, FaChartLine, FaShieldAlt, FaComments, FaUser, FaDoorOpen, FaLock, FaExternalLinkAlt
+    FaUsers, FaChartLine, FaShieldAlt, FaComments, FaUser, FaDoorOpen, FaLock, FaExternalLinkAlt, FaPaperPlane
 } from 'react-icons/fa';
-import { FiBell, FiAlertTriangle, FiArrowRight, FiShield, FiSend, FiCopy, FiLayers, FiGrid, FiBox } from 'react-icons/fi';
+import {
+    FiBell, FiAlertTriangle, FiArrowRight, FiShield, FiSend, FiCopy, FiLayers, FiGrid, FiBox,
+    FiStar, FiMessageSquare, FiCompass, FiChevronDown, FiChevronUp, FiPaperclip, FiSliders, FiHelpCircle, FiCheck as FiCheckIcon, FiInfo, FiActivity
+} from 'react-icons/fi';
 
 const ButtonsTest = () => {
     const [clickCount, setClickCount] = useState(0);
-    const [activeSection, setActiveSection] = useState('todos');
+    const [activeSection, setActiveSection] = useState('principais');
     const [selectedTab, setSelectedTab] = useState('todos');
     const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
     const [copiedClass, setCopiedClass] = useState('');
     const [adminPassword, setAdminPassword] = useState('');
+    const [adminActiveTab, setAdminActiveTab] = useState('usuarios');
+    const [faqOpen, setFaqOpen] = useState(true);
+    const [chatPreviewInput, setChatPreviewInput] = useState('Olá! Como posso ajudar na sala?');
+    const [searchRoomValue, setSearchRoomValue] = useState('');
 
     const toggleTheme = () => {
         const root = document.documentElement;
@@ -63,7 +70,14 @@ const ButtonsTest = () => {
             </div>
 
             <div className="w-full flex justify-center mb-8">
-                <div className="skeuo-segmented-track">
+                <div className="skeuo-segmented-track flex-wrap sm:flex-nowrap">
+                    <button
+                        type="button"
+                        onClick={() => setActiveSection('principais')}
+                        className={`skeuo-segmented-item flex items-center gap-2 px-5 ${activeSection === 'principais' ? 'skeuo-segmented-item-active' : ''}`}
+                    >
+                        <FiStar size={14} className="text-amber-500" /> Principais por Página
+                    </button>
                     <button
                         type="button"
                         onClick={() => setActiveSection('todos')}
@@ -91,6 +105,432 @@ const ButtonsTest = () => {
             {copiedClass && (
                 <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 animate-bounce">
                     <FaCheck className="text-emerald-400 dark:text-emerald-600" /> Classe copiada: {copiedClass}
+                </div>
+            )}
+
+            {(activeSection === 'todos' || activeSection === 'principais') && (
+                <div className="w-full mb-14 animate-fade-in-up-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-200/60 dark:border-slate-800">
+                        <div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                                    <FiStar size={13} /> Tier 1 • Componentes Fundamentais de Produção
+                                </span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-300/60 dark:border-sky-800/60">
+                                    Prioridade Máxima
+                                </span>
+                            </div>
+                            <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2.5">
+                                Principais Componentes por Página
+                            </h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                                Estruturas táteis definitivas extraídas de cada página do WebChat (<code className="font-mono text-sky-600 dark:text-sky-400">Rooms</code>, <code className="font-mono text-sky-600 dark:text-sky-400">Chat</code>, <code className="font-mono text-sky-600 dark:text-sky-400">Suporte</code>, <code className="font-mono text-sky-600 dark:text-sky-400">Admin</code> e <code className="font-mono text-sky-600 dark:text-sky-400">About</code>) com as classes prioritárias de <code className="font-mono text-sky-600 dark:text-sky-400">skeuo.css</code> aplicadas em primeiro plano.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                                Copie as classes com 1 clique
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-7">
+
+                        <div className="skeuo-card p-6 flex flex-col justify-between border-slate-200/80 dark:border-slate-700/80">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                                        Página Rooms.jsx • Métrica Tátil
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => copyToClipboard('.skeuo-card')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-card
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-well')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-well
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-surface-orb-badge')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-surface-orb-badge
+                                        </button>
+                                    </div>
+                                </div>
+                                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+                                    StatCard de Salas & Atividade
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                                    Card métrico de produção que combina elevação física externa com cavidade invertida interna (<code className="font-mono text-sky-600 dark:text-sky-400">.skeuo-well</code>) e orbe vítreo com reflexo de luz superior a 90°.
+                                </p>
+                            </div>
+
+                            <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex flex-col gap-3.5 mb-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="skeuo-surface-orb-badge w-10 h-10 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                                            <FaUsers size={16} />
+                                        </div>
+                                        <div>
+                                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 block">
+                                                Salas Conectadas
+                                            </span>
+                                            <span className="text-[10px] text-slate-400">Atualizado ao vivo</span>
+                                        </div>
+                                    </div>
+                                    <span className="skeuo-badge skeuo-badge-ativa text-[10px] px-2.5 py-0.5 rounded-full font-bold">
+                                        Ativo
+                                    </span>
+                                </div>
+
+                                <div className="skeuo-well p-3.5 rounded-xl flex items-baseline justify-between">
+                                    <span className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+                                        128 Salas
+                                    </span>
+                                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                        <FaChartLine size={11} /> +18.4%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                                <span className="text-[11px] text-slate-400">Usado em: Estatísticas de Salas</span>
+                                <button type="button" onClick={handleClick} className="btn-secondary-glossy text-xs px-3.5 py-1.5 flex items-center gap-1.5">
+                                    Ver Detalhes <FiArrowRight size={11} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card p-6 flex flex-col justify-between border-slate-200/80 dark:border-slate-700/80">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                                        Página Rooms.jsx • Controle & Filtro
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => copyToClipboard('.skeuo-input')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-input
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-btn-primary')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-btn-primary
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.btn-secondary-glossy')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .btn-secondary-glossy
+                                        </button>
+                                    </div>
+                                </div>
+                                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+                                    Toolbar de Busca & Criação de Salas
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                                    Barra de ferramentas de alta fidelidade integrando cavidade de busca tátil com auto-relevo e botão primário com luz gel aqua translúcida.
+                                </p>
+                            </div>
+
+                            <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex flex-col gap-3 mb-4">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                                    <div className="relative flex-1">
+                                        <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={13} />
+                                        <input
+                                            type="text"
+                                            value={searchRoomValue}
+                                            onChange={(e) => setSearchRoomValue(e.target.value)}
+                                            placeholder="Buscar sala por nome ou tag..."
+                                            className="skeuo-input w-full pl-9 pr-3.5 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400"
+                                        />
+                                    </div>
+                                    <button type="button" onClick={handleClick} className="btn-secondary-glossy px-3 py-2 text-xs flex items-center justify-center gap-1.5 shrink-0">
+                                        <FiSliders size={12} /> Filtros
+                                    </button>
+                                    <button type="button" onClick={handleClick} className="skeuo-btn-primary px-4 py-2 text-xs font-semibold text-white flex items-center justify-center gap-1.5 shrink-0">
+                                        <FaRocket size={12} /> Criar Sala
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-2 pt-1">
+                                    <span className="text-[10px] text-slate-400">Atalhos rápidos:</span>
+                                    <span className="skeuo-badge skeuo-badge-online text-[9px] px-2 py-0.5 rounded-full cursor-pointer">Públicas (94)</span>
+                                    <span className="skeuo-badge text-[9px] px-2 py-0.5 rounded-full cursor-pointer bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Privadas (34)</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                                <span className="text-[11px] text-slate-400">Usado em: Topo de Rooms.jsx</span>
+                                <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400">input + action primary</span>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card p-6 flex flex-col justify-between border-slate-200/80 dark:border-slate-700/80">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                                        Página Chat.jsx • Balões de Conversa
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => copyToClipboard('.bubble-smooth')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .bubble-smooth
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.bubble-smooth-sent')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .bubble-smooth-sent
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-avatar-badge')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-avatar-badge
+                                        </button>
+                                    </div>
+                                </div>
+                                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+                                    Balões Táteis "Estilo Suave" (Recebido / Enviado)
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                                    Formato orgânico de pílula arredondada com aro de destaque do avatar, reflexo especular na parte superior e sombra de oclusão de base.
+                                </p>
+                            </div>
+
+                            <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex flex-col gap-4 mb-4">
+                                <div className="flex items-end gap-2.5 max-w-[85%]">
+                                    <div className="skeuo-avatar-badge w-8 h-8 rounded-full border-2 border-sky-400 bg-white dark:bg-slate-800 flex items-center justify-center font-bold text-sky-600 dark:text-sky-300 text-xs shadow-sm shrink-0">
+                                        LR
+                                    </div>
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-[10px] font-semibold text-slate-500 mb-1 ml-2">
+                                            Lucas Ramos
+                                        </span>
+                                        <div className="bubble-smooth px-3.5 py-2 text-xs text-slate-800 dark:text-slate-100 rounded-2xl shadow-sm">
+                                            Tudo pronto com a nova iluminação tátil no chat!
+                                        </div>
+                                        <span className="text-[9px] text-slate-400 mt-1 ml-2">14:32</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col items-end self-end max-w-[85%]">
+                                    <div className="bubble-smooth-sent px-3.5 py-2 text-xs text-white rounded-2xl shadow-sm">
+                                        Perfeito! Os gradientes e reflexos ficaram impecáveis.
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-1 mr-1">
+                                        <span className="text-[9px] text-slate-400">14:33</span>
+                                        <FaCheck className="text-sky-500" size={9} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                                <span className="text-[11px] text-slate-400">Usado em: MessageItem.jsx</span>
+                                <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400">.bubble-smooth + .bubble-smooth-sent</span>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card p-6 flex flex-col justify-between border-slate-200/80 dark:border-slate-700/80">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                                        Página Chat.jsx • Console de Envio
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => copyToClipboard('.skeuo-input')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-input
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-btn-primary')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-btn-primary
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-icon-btn')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-icon-btn
+                                        </button>
+                                    </div>
+                                </div>
+                                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+                                    Barra de Mensagem & Botão Circular Gel
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                                    Console de composição com campo cavitário em gradiente suave e botão de envio em cápsula cilíndrica de gel azul com foco e relevo.
+                                </p>
+                            </div>
+
+                            <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex flex-col gap-3 mb-4">
+                                <div className="flex items-center gap-2">
+                                    <button type="button" onClick={handleClick} className="skeuo-icon-btn w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 shrink-0">
+                                        <FiPaperclip size={15} />
+                                    </button>
+                                    <div className="relative flex-1">
+                                        <input
+                                            type="text"
+                                            value={chatPreviewInput}
+                                            onChange={(e) => setChatPreviewInput(e.target.value)}
+                                            placeholder="Digite sua mensagem tátil..."
+                                            className="skeuo-input w-full px-3.5 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleClick}
+                                        className="skeuo-btn-primary w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 shadow-md cursor-pointer"
+                                    >
+                                        <FiSend size={13} className="ml-0.5" />
+                                    </button>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
+                                    <span>Pressione Enter para enviar</span>
+                                    <span>Markdown ativo • Status seguro</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                                <span className="text-[11px] text-slate-400">Usado em: MessageInput.jsx</span>
+                                <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400">.skeuo-input + .skeuo-btn-primary</span>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card p-6 flex flex-col justify-between border-slate-200/80 dark:border-slate-700/80">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                                        Página Suporte.jsx • Central de Ajuda
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => copyToClipboard('.skeuo-card-aqua')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-card-aqua
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-card-aqua-btn')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-card-aqua-btn
+                                        </button>
+                                    </div>
+                                </div>
+                                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+                                    Banner Aqua Glossy & FAQ Expansível
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                                    Placa com saturação ciano e reflexo polarizado Mac OS X Aqua para cabeçalhos de suporte e acordeão com cavidade invertida interna.
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col gap-3.5 mb-4">
+                                <div className="skeuo-card-aqua p-4 flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-xs font-bold text-sky-950 dark:text-sky-100">Como podemos ajudar você?</h4>
+                                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-white/40 dark:bg-slate-900/40 text-sky-900 dark:text-sky-200">Suporte 24/7</span>
+                                    </div>
+                                    <div className="skeuo-card-aqua-body !pt-2">
+                                        <button type="button" onClick={handleClick} className="skeuo-card-aqua-btn text-[11px] py-1">FAQ</button>
+                                        <button type="button" onClick={handleClick} className="skeuo-card-aqua-btn text-[11px] py-1">Denúncias</button>
+                                        <button type="button" onClick={handleClick} className="skeuo-card-aqua-btn text-[11px] py-1">Segurança</button>
+                                    </div>
+                                </div>
+
+                                <div className="skeuo-well p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFaqOpen(!faqOpen)}
+                                        className="w-full flex items-center justify-between text-left text-xs font-bold text-slate-800 dark:text-slate-100 cursor-pointer"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <FiHelpCircle className="text-sky-500" size={13} /> O WebChat armazena histórico persistente?
+                                        </span>
+                                        {faqOpen ? <FiChevronUp size={13} /> : <FiChevronDown size={13} />}
+                                    </button>
+                                    {faqOpen && (
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2.5 pt-2 border-t border-slate-200/50 dark:border-slate-800 leading-relaxed">
+                                            Sim, as mensagens de salas públicas e privadas são sincronizadas criptograficamente e mantidas em tempo real conforme as políticas de segurança.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                                <span className="text-[11px] text-slate-400">Usado em: Suporte.jsx</span>
+                                <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400">.skeuo-card-aqua + .skeuo-well</span>
+                            </div>
+                        </div>
+
+                        <div className="skeuo-card p-6 flex flex-col justify-between border-slate-200/80 dark:border-slate-700/80">
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                                        Página Admin.jsx • Painel de Controle
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => copyToClipboard('.skeuo-segmented-track')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-segmented-track
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-badge-admin')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-badge-admin
+                                        </button>
+                                        <button onClick={() => copyToClipboard('.skeuo-btn-danger')} className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1 cursor-pointer">
+                                            <FiCopy size={9} /> .skeuo-btn-danger
+                                        </button>
+                                    </div>
+                                </div>
+                                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+                                    Trilho de Abas & Badges de Autoridade
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                                    Sistema segmentado cavitário com deslocamento de luz e insígnias físicas táteis para perfis com permissões de moderação e ações de risco.
+                                </p>
+                            </div>
+
+                            <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex flex-col gap-3.5 mb-4">
+                                <div className="skeuo-segmented-track w-full flex justify-between p-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAdminActiveTab('usuarios')}
+                                        className={`skeuo-segmented-item flex-1 text-center py-1.5 text-xs ${adminActiveTab === 'usuarios' ? 'skeuo-segmented-item-active' : ''}`}
+                                    >
+                                        Usuários
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAdminActiveTab('salas')}
+                                        className={`skeuo-segmented-item flex-1 text-center py-1.5 text-xs ${adminActiveTab === 'salas' ? 'skeuo-segmented-item-active' : ''}`}
+                                    >
+                                        Salas
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAdminActiveTab('denuncias')}
+                                        className={`skeuo-segmented-item flex-1 text-center py-1.5 text-xs ${adminActiveTab === 'denuncias' ? 'skeuo-segmented-item-active' : ''}`}
+                                    >
+                                        Denúncias
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="skeuo-badge skeuo-badge-dono text-[10px] px-2.5 py-0.5 rounded-full font-bold">Dono</span>
+                                        <span className="skeuo-badge skeuo-badge-admin text-[10px] px-2.5 py-0.5 rounded-full font-bold">Admin</span>
+                                        <span className="skeuo-badge skeuo-badge-mod text-[10px] px-2.5 py-0.5 rounded-full font-bold">Mod</span>
+                                    </div>
+                                    <button type="button" onClick={handleClick} className="skeuo-btn-danger px-3 py-1.5 text-[11px] rounded-xl flex items-center gap-1.5 cursor-pointer">
+                                        <FaTrash size={10} /> Suspender
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-slate-800">
+                                <span className="text-[11px] text-slate-400">Usado em: Admin.jsx</span>
+                                <span className="text-[10px] font-mono text-sky-600 dark:text-sky-400">.skeuo-segmented-track + .skeuo-badge-*</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div className="w-full mt-8 p-6 rounded-3xl bg-gradient-to-r from-sky-500/10 via-blue-500/5 to-transparent border border-sky-300/40 dark:border-sky-700/40 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-3.5">
+                            <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-sky-400 to-blue-600 flex items-center justify-center text-white shadow-md shrink-0">
+                                <FaShieldAlt size={18} />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                                    Matriz de Prioridade CSS Tier-1 (Ordem de Precedência)
+                                </h4>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                    Superfícies táteis fundamentais (<code className="font-mono text-sky-600 dark:text-sky-400">.skeuo-card</code>, <code className="font-mono text-sky-600 dark:text-sky-400">.skeuo-well</code>, <code className="font-mono text-sky-600 dark:text-sky-400">.skeuo-btn-primary</code>) implementadas com iluminação zenital a 90°.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => copyToClipboard('.skeuo-card .skeuo-well .skeuo-btn-primary')}
+                                className="btn-secondary-glossy text-xs px-3.5 py-2 flex items-center gap-1.5 cursor-pointer"
+                            >
+                                <FiCopy size={12} /> Copiar Stack Essencial
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
