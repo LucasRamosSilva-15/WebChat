@@ -44,7 +44,7 @@ const formatMessageTime = (timeStr) => {
     return timeStr;
 };
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'suave' }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'suave', visualStyle }) => {
     const msgTime = formatMessageTime(msg.time);
 
     let canDelete = false;
@@ -57,12 +57,101 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     const isMatch = searchTerm && msg.text && msg.text.toLowerCase().includes(searchTerm);
     const matchClass = isMatch ? (isCurrentSearch ? 'message-search-current scale-[1.02]' : 'message-search-match') : '';
-    const isSuave = bubbleFormat === 'suave';
+    const isSuave = (visualStyle || bubbleFormat) === 'suave';
 
     if (msg.isMe) {
-        const sentBubbleClass = isSuave
-            ? `px-5 py-2.5 flex flex-col relative transition-all duration-300 rounded-[22px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] dark:from-[#0284c7] dark:via-[#0369a1] dark:to-[#075985] text-white shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] border border-sky-400/40 dark:border-sky-500/20 ${matchClass}`
-            : `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tr-[2px] skeuo-bubble-sent ${matchClass}`;
+        if (isSuave) {
+            return (
+                <div ref={innerRef} className="px-3 py-1 flex justify-end group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
+                    <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto group/msg relative z-1 hover:z-50">
+                        <div className={`bg-gradient-to-b from-sky-400 to-sky-500 dark:from-sky-500 dark:to-sky-600 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-400/60 dark:border-sky-500/60 rounded-3xl px-5 py-2.5 text-sm font-medium relative transition-all duration-300 ${matchClass}`}>
+                            <div className="message-bubble-actions absolute top-2 right-full mr-2 z-10">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuId(prev => prev === msg.messageId ? null : msg.messageId);
+                                    }}
+                                    className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${openMenuId === msg.messageId ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'}`}
+                                    title="Mais opções"
+                                >
+                                    <FaEllipsisV size={12} className="drop-shadow-xs" />
+                                </button>
+
+                                <div className={`absolute top-0 right-full mr-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${openMenuId === msg.messageId ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
+                                    <button
+                                        onClick={() => {
+                                            setOpenMenuId(null);
+                                            onToggleFavorite();
+                                        }}
+                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl last:rounded-b-xl"
+                                    >
+                                        <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                    </button>
+                                    {canDelete && (
+                                        <>
+                                            <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                            <button
+                                                onClick={() => {
+                                                    setOpenMenuId(null);
+                                                    onEditClick(msg);
+                                                }}
+                                                className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-sky-50 dark:hover:bg-sky-500/20 first:rounded-t-xl last:rounded-b-xl"
+                                            >
+                                                <FaPencilAlt size={10} className="text-[#0071e3] drop-shadow-xs" /> Editar
+                                            </button>
+                                            <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                            <button
+                                                onClick={() => {
+                                                    setOpenMenuId(null);
+                                                    onDeleteMessage(msg.messageId);
+                                                }}
+                                                className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 first:rounded-t-xl last:rounded-b-xl"
+                                            >
+                                                <FaTrash size={10} className="drop-shadow-xs" /> Apagar
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                            {msg.image && (
+                                <div className="rounded-2xl overflow-hidden border border-white/20 dark:border-white/10 shadow-sm mb-1.5 mt-0.5">
+                                    <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Enviada" className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                                </div>
+                            )}
+                            {msg.text && <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
+                            <button
+                                onClick={() => onToggleLike(msg.messageId)}
+                                className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${(msg.likes && msg.likes.includes(currentUserId))
+                                    ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                    : (msg.likes && msg.likes.length > 0)
+                                        ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                        : 'opacity-0 group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                    }`}
+                            >
+                                {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-xs" /> : <FaRegHeart size={10} />}
+                                {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                            </button>
+                            {mockRoles && mockRoles[msg.sender] === 'Dono' && (
+                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
+                                    <FaCrown size={8} /> DONO
+                                </span>
+                            )}
+                            {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
+                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-blue-200 bg-gradient-to-b from-blue-200 to-blue-100 text-blue-700">
+                                    <FaShieldAlt size={8} /> MOD
+                                </span>
+                            )}
+                            <span>{msgTime} {msg.isEdited && "(editada)"}</span>
+                            <span className="text-sky-500 dark:text-sky-400 font-bold">✓✓</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const sentBubbleClass = `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tr-[2px] skeuo-bubble-sent ${matchClass}`;
         return (
             <div ref={innerRef} className="px-3 py-0.5 flex justify-end group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
                 <div className="flex flex-col max-w-[80%] items-end group/msg relative z-1 hover:z-50">
@@ -118,7 +207,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         {msg.image && (
                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[240px] mb-1 mt-0.5 object-cover rounded-md border border-white/20 dark:border-white/5 cursor-pointer hover:opacity-90 transition-opacity" />
                         )}
-                        {msg.text && <p className={`break-words whitespace-pre-wrap ${isSuave ? 'text-[14px] leading-relaxed' : 'text-[13px] leading-[1.25]'}`}>{msg.text}</p>}
+                        {msg.text && <p className="break-words whitespace-pre-wrap text-[13px] leading-[1.25]">{msg.text}</p>}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 px-1 w-full justify-end">
                         <button
@@ -133,7 +222,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                             {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-xs" /> : <FaRegHeart size={10} />}
                             {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
                         </button>
-                        <span className={`text-[10px] font-medium flex items-center gap-1.5 text-[#86868b] dark:text-slate-400 ${isSuave ? 'mr-1' : ''}`}>
+                        <span className="text-[10px] font-medium flex items-center gap-1.5 text-[#86868b] dark:text-slate-400">
                             {mockRoles && mockRoles[msg.sender] === 'Dono' && (
                                 <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
                                     <FaCrown size={8} /> DONO
@@ -144,7 +233,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                                     <FaShieldAlt size={8} /> MOD
                                 </span>
                             )}
-                            {msgTime} {msg.isEdited && "(editada)"} <span className={isSuave ? "text-sky-400 dark:text-sky-300 font-semibold tracking-tighter" : "text-[10px] ml-0.5 text-sky-500"}>✓✓</span>
+                            {msgTime} {msg.isEdited && "(editada)"} <span className="text-[10px] ml-0.5 text-sky-500">✓✓</span>
                         </span>
                     </div>
                 </div>
@@ -152,15 +241,111 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         );
     }
 
-    const receivedBubbleClass = isSuave
-        ? `px-5 py-2.5 flex flex-col relative transition-all duration-300 rounded-[22px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-900 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed ${matchClass}`
-        : `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tl-[2px] skeuo-bubble-received ${matchClass}`;
+    const senderInitial = msg.sender ? msg.sender.charAt(0).toUpperCase() : '?';
+
+    if (isSuave) {
+        return (
+            <div ref={innerRef} className="px-3 py-1 flex justify-start group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
+                <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%] group/msg relative z-1 hover:z-50">
+                    <div
+                        onClick={() => onAvatarClick(msg)}
+                        className="w-8 h-8 rounded-full border-2 border-sky-400 bg-white dark:bg-slate-800 flex items-center justify-center font-bold text-sky-600 dark:text-sky-400 text-xs shadow-sm shrink-0 overflow-hidden cursor-pointer hover:opacity-85 transition-opacity"
+                        title={msg.sender}
+                    >
+                        {msg.avatar ? (
+                            <img src={msg.avatar} alt={msg.sender} className="w-full h-full object-cover" />
+                        ) : (
+                            senderInitial
+                        )}
+                    </div>
+
+                    <div className="flex flex-col items-start min-w-0">
+                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5">
+                            {msg.sender}
+                            {mockRoles && mockRoles[msg.sender] === 'Dono' && (
+                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
+                                    <FaCrown size={8} /> DONO
+                                </span>
+                            )}
+                            {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
+                                <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-blue-200 bg-gradient-to-b from-blue-200 to-blue-100 text-blue-700">
+                                    <FaShieldAlt size={8} /> MOD
+                                </span>
+                            )}
+                        </span>
+
+                        <div className={`bg-gradient-to-b from-white to-slate-100/90 dark:from-slate-800 dark:to-slate-900/90 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700/80 shadow-[0_2px_6px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] rounded-3xl px-5 py-2.5 text-sm relative transition-all duration-300 ${matchClass}`}>
+                            <div className="message-bubble-actions absolute top-2 left-full ml-2 z-10">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuId(prev => prev === msg.messageId ? null : msg.messageId);
+                                    }}
+                                    className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${openMenuId === msg.messageId ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'}`}
+                                    title="Mais opções"
+                                >
+                                    <FaEllipsisV size={12} className="drop-shadow-xs" />
+                                </button>
+
+                                <div className={`absolute top-0 left-full ml-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${openMenuId === msg.messageId ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'}`}>
+                                    <button
+                                        onClick={() => {
+                                            setOpenMenuId(null);
+                                            onToggleFavorite();
+                                        }}
+                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl last:rounded-b-xl"
+                                    >
+                                        <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} /> {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                    </button>
+                                    <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                    <button
+                                        onClick={() => {
+                                            setOpenMenuId(null);
+                                            onReportClick({ type: 'message', target: msg });
+                                        }}
+                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 first:rounded-t-xl last:rounded-b-xl"
+                                    >
+                                        <FaFlag size={10} className="drop-shadow-xs" /> Denunciar
+                                    </button>
+                                </div>
+                            </div>
+
+                            {msg.image && (
+                                <div className="rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-sm mb-1.5 mt-0.5">
+                                    <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Recebida" className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                                </div>
+                            )}
+                            {msg.text && <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>}
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-1 ml-3 text-[10px] text-slate-400 dark:text-slate-500">
+                            <span>{msgTime} {msg.isEdited && "(editada)"}</span>
+                            <button
+                                onClick={() => onToggleLike(msg.messageId)}
+                                className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${(msg.likes && msg.likes.includes(currentUserId))
+                                    ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                    : (msg.likes && msg.likes.length > 0)
+                                        ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                        : 'opacity-0 group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                    }`}
+                            >
+                                {(msg.likes && msg.likes.includes(currentUserId)) ? <FaHeart size={10} className="drop-shadow-xs" /> : <FaRegHeart size={10} />}
+                                {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const receivedBubbleClass = `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tl-[2px] skeuo-bubble-received ${matchClass}`;
 
     return (
         <div ref={innerRef} className="px-3 py-0.5 flex justify-start gap-2 group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
             <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 transition-opacity hover:opacity-80 cursor-pointer" />
             <div className="flex flex-col max-w-[80%] items-start group/msg relative z-1 hover:z-50">
-                <span className={`font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] ${isSuave ? 'text-[13px] ml-1.5' : 'text-[11.5px] ml-1'}`}>
+                <span className="font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] text-[11.5px] ml-1">
                     {msg.sender}
                     {mockRoles && mockRoles[msg.sender] === 'Dono' && (
                         <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
@@ -211,7 +396,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     {msg.image && (
                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[240px] mb-1 mt-0.5 object-cover rounded-md border border-white/20 dark:border-white/5 cursor-pointer hover:opacity-90 transition-opacity" />
                     )}
-                    {msg.text && <p className={`break-words whitespace-pre-wrap text-[#1d1d1f] dark:text-[#f8fafc] ${isSuave ? 'text-[14px] leading-relaxed' : 'text-[13px] leading-[1.25]'}`}>{msg.text}</p>}
+                    {msg.text && <p className="break-words whitespace-pre-wrap text-[#1d1d1f] dark:text-[#f8fafc] text-[13px] leading-[1.25]">{msg.text}</p>}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 px-1 w-full justify-start ml-1">
                     <span className="text-[10px] font-medium flex items-center gap-1.5 text-[#86868b] dark:text-slate-400">{msgTime} {msg.isEdited && "(editada)"}</span>
@@ -1138,6 +1323,7 @@ const Chat = () => {
                                         openMenuId={openMenuId}
                                         setOpenMenuId={setOpenMenuId}
                                         bubbleFormat={bubbleFormat}
+                                        visualStyle={bubbleFormat}
                                     />
                                 </div>
                             );

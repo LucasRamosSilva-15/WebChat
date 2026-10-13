@@ -245,28 +245,30 @@ const Settings = () => {
 
                                         {bubbleFormat === 'suave' ? (
                                             <div className="flex flex-col gap-4 animate-fade-in">
-                                                <div className="flex items-start gap-3 self-start max-w-[92%] md:max-w-[80%]">
-                                                    <UserAvatar name="Alex Ripple" size="sm" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[12.5px] font-bold text-[#1d1d1f] dark:text-slate-200 mb-1 ml-1 leading-none">
+                                                <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%]">
+                                                    <div className="w-8 h-8 rounded-full border-2 border-sky-400 bg-white dark:bg-slate-800 flex items-center justify-center font-bold text-sky-600 dark:text-sky-400 text-xs shadow-sm shrink-0">
+                                                        AR
+                                                    </div>
+
+                                                    <div className="flex flex-col items-start">
+                                                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2">
                                                             Alex Ripple
                                                         </span>
-                                                        <div className="px-5 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-900 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed">
+                                                        <div className="bg-gradient-to-b from-white to-slate-100/90 dark:from-slate-800 dark:to-slate-900/90 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700/80 shadow-[0_2px_6px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] rounded-3xl px-5 py-2.5 text-sm">
                                                             Ei! A nova atualização da interface ficou incrível.
                                                         </div>
-                                                        <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 ml-2">
-                                                            10:42 AM
-                                                        </span>
+                                                        <span className="text-[10px] text-slate-400 mt-1 ml-3">10:42 AM</span>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex flex-col items-end self-end max-w-[92%] md:max-w-[80%] mt-1">
-                                                    <div className="px-6 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] dark:from-[#0284c7] dark:via-[#0369a1] dark:to-[#075985] text-white font-medium text-[14px] leading-relaxed shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] border border-sky-400/40 dark:border-sky-500/20">
+                                                <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto mt-1">
+                                                    <div className="bg-gradient-to-b from-sky-400 to-sky-500 dark:from-sky-500 dark:to-sky-600 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-400/60 dark:border-sky-500/60 rounded-3xl px-5 py-2.5 text-sm font-medium">
                                                         Concordo! Muito suave.
                                                     </div>
-                                                    <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 mr-2 flex items-center gap-1.5">
-                                                        10:44 AM <span className="text-sky-400 dark:text-sky-300 font-semibold tracking-tighter">✓✓</span>
-                                                    </span>
+                                                    <div className="flex items-center gap-1 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
+                                                        <span>10:44 AM</span>
+                                                        <span className="text-sky-500 font-bold">✓✓</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ) : (
