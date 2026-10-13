@@ -148,7 +148,7 @@ const CreateRoomModal = ({
 
 const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
     <tr className="transition-colors hover:bg-sky-50/40 dark:hover:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/50">
-        <td className="px-6 py-4">
+        <td className="px-6 py-4 align-middle">
             <div className="flex items-center gap-4">
                 <RoomIconWithTooltip description={room.description} imageUrl={room.image_url} />
                 <div>
@@ -158,11 +158,13 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
             </div>
         </td>
 
-        <td className="px-6 py-4 text-[15px] text-[#424245] dark:text-slate-300">
-            {room.category || "Casual"}
+        <td className="px-6 py-4 align-middle">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_1px_rgba(0,0,0,0.03)]">
+                {room.category || "Casual"}
+            </span>
         </td>
 
-        <td className="px-6 py-4">
+        <td className="px-6 py-4 align-middle">
             {room.status === "Arquivada" ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-slate-600 bg-gradient-to-b from-slate-100 to-slate-200/90 border border-slate-300/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,0,0,0.08)]">
                     <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
@@ -181,11 +183,18 @@ const RoomRow = ({ room, isFavorite, onToggleFavorite, onJoinRoom }) => (
             )}
         </td>
 
-        <td className="px-6 py-4 text-[15px] whitespace-nowrap font-medium text-[#1d1d1f] dark:text-slate-50">
-            {room.members} / 200
+        <td className="px-6 py-4 align-middle">
+            <div className="inline-flex items-baseline gap-1 text-sm">
+                <span className="font-bold text-slate-800 dark:text-slate-100">
+                    {room.memberCount || room.members}
+                </span>
+                <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                    / {room.maxMembers || 200}
+                </span>
+            </div>
         </td>
 
-        <td className="px-6 py-4">
+        <td className="px-6 py-4 align-middle">
             <div className="flex items-center justify-center gap-2">
                 <button
                     type="button"
