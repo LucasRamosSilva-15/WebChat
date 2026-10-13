@@ -2,6 +2,7 @@
 
 /* 1. Módulos do Design System Skeuomórfico */
 @import "./styles/skeuo.css";
+@import "./styles/skeuo-extra.css";
 @import "./styles/animations.css";
 @import "./styles/text.css";
 @import "./styles/loading.css";
