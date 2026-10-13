@@ -44,7 +44,7 @@ const formatMessageTime = (timeStr) => {
     return timeStr;
 };
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'suave', visualStyle }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'grande', visualStyle }) => {
     const msgTime = formatMessageTime(msg.time);
 
     let canDelete = false;
@@ -57,14 +57,14 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     const isMatch = searchTerm && msg.text && msg.text.toLowerCase().includes(searchTerm);
     const matchClass = isMatch ? (isCurrentSearch ? 'message-search-current scale-[1.02]' : 'message-search-match') : '';
-    const isSuave = (visualStyle || bubbleFormat) === 'suave';
+    const isGrande = (visualStyle || bubbleFormat) === 'grande' || (visualStyle || bubbleFormat) === 'suave';
 
     if (msg.isMe) {
-        if (isSuave) {
+        if (isGrande) {
             return (
                 <div ref={innerRef} className="px-3 py-1 flex justify-end group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
                     <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto group/msg relative z-1 hover:z-50">
-                        <div className={`bg-gradient-to-b from-sky-400 to-sky-500 dark:from-sky-500 dark:to-sky-600 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-400/60 dark:border-sky-500/60 rounded-3xl px-5 py-2.5 text-sm font-medium relative transition-all duration-300 ${matchClass}`}>
+                        <div className={`bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-500 dark:to-blue-700 text-white shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-600/70 dark:border-sky-400/60 rounded-[18px] px-5 py-2.5 text-sm font-medium [text-shadow:0_-1px_0_rgba(0,0,0,0.2)] relative transition-all duration-300 ${matchClass}`}>
                             <div className="message-bubble-actions absolute top-2 right-full mr-2 z-10">
                                 <button
                                     onClick={(e) => {
@@ -241,23 +241,17 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         );
     }
 
-    const senderInitial = msg.sender ? msg.sender.charAt(0).toUpperCase() : '?';
-
-    if (isSuave) {
+    if (isGrande) {
         return (
             <div ref={innerRef} className="px-3 py-1 flex justify-start group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
                 <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%] group/msg relative z-1 hover:z-50">
-                    <div
+                    <UserAvatar
+                        src={msg.avatar}
+                        name={msg.sender}
                         onClick={() => onAvatarClick(msg)}
-                        className="w-8 h-8 rounded-full border-2 border-sky-400 bg-white dark:bg-slate-800 flex items-center justify-center font-bold text-sky-600 dark:text-sky-400 text-xs shadow-sm shrink-0 overflow-hidden cursor-pointer hover:opacity-85 transition-opacity"
-                        title={msg.sender}
-                    >
-                        {msg.avatar ? (
-                            <img src={msg.avatar} alt={msg.sender} className="w-full h-full object-cover" />
-                        ) : (
-                            senderInitial
-                        )}
-                    </div>
+                        size="sm"
+                        className="shrink-0 transition-opacity hover:opacity-85 cursor-pointer"
+                    />
 
                     <div className="flex flex-col items-start min-w-0">
                         <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5">
@@ -274,7 +268,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                             )}
                         </span>
 
-                        <div className={`bg-gradient-to-b from-white to-slate-100/90 dark:from-slate-800 dark:to-slate-900/90 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700/80 shadow-[0_2px_6px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] rounded-3xl px-5 py-2.5 text-sm relative transition-all duration-300 ${matchClass}`}>
+                        <div className={`bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[18px] px-5 py-2.5 text-sm relative transition-all duration-300 ${matchClass}`}>
                             <div className="message-bubble-actions absolute top-2 left-full ml-2 z-10">
                                 <button
                                     onClick={(e) => {
@@ -457,11 +451,15 @@ const Chat = () => {
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchError, setSearchError] = useState("");
     const [openMenuId, setOpenMenuId] = useState(null);
-    const [bubbleFormat, setBubbleFormat] = useState(() => localStorage.getItem('chat_bubbleFormat') || 'suave');
+    const [bubbleFormat, setBubbleFormat] = useState(() => {
+        const saved = localStorage.getItem('chat_bubbleFormat');
+        return saved === 'classico' ? 'classico' : 'grande';
+    });
 
     useEffect(() => {
         const handleUpdate = () => {
-            setBubbleFormat(localStorage.getItem('chat_bubbleFormat') || 'suave');
+            const saved = localStorage.getItem('chat_bubbleFormat');
+            setBubbleFormat(saved === 'classico' ? 'classico' : 'grande');
         };
         window.addEventListener('themeUpdated', handleUpdate);
         window.addEventListener('storage', handleUpdate);

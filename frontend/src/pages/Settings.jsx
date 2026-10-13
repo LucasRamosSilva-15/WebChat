@@ -61,10 +61,13 @@ const Settings = () => {
         window.dispatchEvent(new Event('themeUpdated'));
     }, [bgColor]);
 
-    const [bubbleFormat, setBubbleFormat] = useState(() => localStorage.getItem('chat_bubbleFormat') || 'suave');
+    const [bubbleFormat, setBubbleFormat] = useState(() => {
+        const saved = localStorage.getItem('chat_bubbleFormat');
+        return saved === 'classico' ? 'classico' : 'grande';
+    });
 
     const toggleBubbleFormat = () => {
-        const nextFormat = bubbleFormat === 'suave' ? 'classico' : 'suave';
+        const nextFormat = bubbleFormat === 'classico' ? 'grande' : 'classico';
         setBubbleFormat(nextFormat);
         localStorage.setItem('chat_bubbleFormat', nextFormat);
         window.dispatchEvent(new Event('themeUpdated'));
@@ -75,7 +78,8 @@ const Settings = () => {
             setPrimaryColor(localStorage.getItem('chat_primaryColor') || 'blue');
             setColorMode(localStorage.getItem('chat_colorMode') || 'light');
             setBgColor(localStorage.getItem('chat_bgColor') || 'neutral');
-            setBubbleFormat(localStorage.getItem('chat_bubbleFormat') || 'suave');
+            const savedFormat = localStorage.getItem('chat_bubbleFormat');
+            setBubbleFormat(savedFormat === 'classico' ? 'classico' : 'grande');
         };
         window.addEventListener('themeUpdated', syncTheme);
         return () => window.removeEventListener('themeUpdated', syncTheme);
@@ -221,11 +225,7 @@ const Settings = () => {
                                     <div className="w-full rounded-[24px] p-6 bg-gray-100/80 dark:bg-slate-900/60 border border-gray-200/80 dark:border-white/5 flex flex-col gap-5 shadow-xs transition-all">
                                         <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
                                             <div className="flex items-center gap-3">
-                                                {bubbleFormat === 'suave' ? (
-                                                    <UserAvatar name="Alex Ripple" size="md" status="online" />
-                                                ) : (
-                                                    <UserAvatar name="Alex Ripple" size="md" status="online" />
-                                                )}
+                                                <UserAvatar name="Alex Ripple" size="md" status="online" />
                                                 <div>
                                                     <span className="text-sm font-bold admin-hero-title block">Alex Ripple</span>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">Online agora</span>
@@ -234,27 +234,25 @@ const Settings = () => {
                                             <button
                                                 onClick={toggleBubbleFormat}
                                                 className="skeuo-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 cursor-pointer shadow-xs hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                                                title="Alternar entre formato Suave e Clássico"
+                                                title="Alternar entre formato Grande e Clássico"
                                             >
                                                 <span>Mudar Formato</span>
                                                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 uppercase font-bold tracking-tight">
-                                                    {bubbleFormat === 'suave' ? 'Suave' : 'Clássico'}
+                                                    {bubbleFormat === 'classico' ? 'Clássico' : 'Grande'}
                                                 </span>
                                             </button>
                                         </div>
 
-                                        {bubbleFormat === 'suave' ? (
+                                        {bubbleFormat === 'grande' ? (
                                             <div className="flex flex-col gap-4 animate-fade-in">
                                                 <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%]">
-                                                    <div className="w-8 h-8 rounded-full border-2 border-sky-400 bg-white dark:bg-slate-800 flex items-center justify-center font-bold text-sky-600 dark:text-sky-400 text-xs shadow-sm shrink-0">
-                                                        AR
-                                                    </div>
+                                                    <UserAvatar name="Alex Ripple" size="sm" showStatus={false} />
 
                                                     <div className="flex flex-col items-start">
                                                         <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2">
                                                             Alex Ripple
                                                         </span>
-                                                        <div className="bg-gradient-to-b from-white to-slate-100/90 dark:from-slate-800 dark:to-slate-900/90 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700/80 shadow-[0_2px_6px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] rounded-3xl px-5 py-2.5 text-sm">
+                                                        <div className="bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[18px] px-5 py-2.5 text-sm leading-relaxed">
                                                             Ei! A nova atualização da interface ficou incrível.
                                                         </div>
                                                         <span className="text-[10px] text-slate-400 mt-1 ml-3">10:42 AM</span>
@@ -262,8 +260,8 @@ const Settings = () => {
                                                 </div>
 
                                                 <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto mt-1">
-                                                    <div className="bg-gradient-to-b from-sky-400 to-sky-500 dark:from-sky-500 dark:to-sky-600 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-400/60 dark:border-sky-500/60 rounded-3xl px-5 py-2.5 text-sm font-medium">
-                                                        Concordo! Muito suave.
+                                                    <div className="bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-500 dark:to-blue-700 text-white shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-600/70 dark:border-sky-400/60 rounded-[18px] px-5 py-2.5 text-sm font-medium [text-shadow:0_-1px_0_rgba(0,0,0,0.2)]">
+                                                        Concordo! Formato grande ativo.
                                                     </div>
                                                     <div className="flex items-center gap-1 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
                                                         <span>10:44 AM</span>
