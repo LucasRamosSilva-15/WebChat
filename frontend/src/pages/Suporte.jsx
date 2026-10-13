@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import {
-    FaRocket, FaUser, FaShieldAlt, FaCog, FaServer,
-    FaQuestionCircle, FaChevronDown, FaChevronUp, FaExclamationCircle,
+    Wrench, Search, HelpCircle, Server, ShieldAlert, AlertTriangle
+} from 'lucide-react';
+import {
+    FaRocket, FaUser, FaShieldAlt, FaCog,
+    FaChevronDown, FaChevronUp,
     FaBan, FaHeadset
 } from 'react-icons/fa';
 
@@ -37,17 +40,20 @@ const Suporte = () => {
         <div className="flex-1 w-full flex flex-col items-center min-h-[calc(100vh-64px)] relative z-1">
             <div className="w-full max-w-[1000px] px-4 py-8 md:py-12 animate-fade-in-up-1">
 
-                <div className="flex flex-col items-center text-center mb-10">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-100/90 dark:bg-sky-950/60 border border-sky-300/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,113,227,0.1)] mb-4">
-                        🛠️ SUPORTE AO USUÁRIO
-                    </span>
+                <section className="skeuo-card w-full p-8 md:py-12 md:px-10 text-center mb-8 flex flex-col items-center">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-100/90 dark:bg-sky-950/60 border border-sky-300/70 dark:border-sky-700/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,113,227,0.1)] mb-4">
+                        <Wrench className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                        <span>SUPORTE AO USUÁRIO</span>
+                    </div>
 
-                    <h1 className="text-3xl font-bold admin-hero-title text-sky-500 dark:text-sky-400 mb-2">Central de Ajuda & Suporte</h1>
-                    <p className="text-[14px] text-slate-500 dark:text-slate-400 max-w-lg mb-8">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold text-sky-600 dark:text-sky-400 tracking-tight mb-3">
+                        Central de Ajuda & Suporte
+                    </h1>
+                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-8">
                         Encontre respostas, relate problemas e aprenda a usar o SkyRipple.
                     </p>
 
-                    <div className="relative max-w-xl mx-auto w-full mb-10">
+                    <div className="relative max-w-xl mx-auto w-full">
                         <input
                             type="text"
                             placeholder="Como podemos ajudar hoje?"
@@ -58,13 +64,10 @@ const Suporte = () => {
                             title="Buscar"
                             className="skeuo-btn-primary absolute right-1.5 top-1/2 -translate-y-1/2 !w-9 !h-9 !p-0 rounded-full inline-flex items-center justify-center text-white shadow-sm"
                         >
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8" />
-                                <path d="m21 21-4.3-4.3" />
-                            </svg>
+                            <Search className="w-4 h-4 text-white" />
                         </button>
                     </div>
-                </div>
+                </section>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <div className="skeuo-card p-6 flex flex-col items-center text-center cursor-pointer transition-transform hover:-translate-y-1">
@@ -104,7 +107,7 @@ const Suporte = () => {
                     <div className="lg:col-span-2">
                         <div className="skeuo-card p-6 flex flex-col h-full">
                             <div className="pb-4 border-b border-slate-200/60 dark:border-slate-700/50 flex items-center gap-2">
-                                <FaQuestionCircle size={15} className="text-teal-500" />
+                                <HelpCircle className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                                 <h3 className="text-[15px] font-bold admin-hero-title">Perguntas Frequentes</h3>
                             </div>
 
@@ -147,7 +150,7 @@ const Suporte = () => {
                     <div className="lg:col-span-1 flex flex-col gap-6">
                         <div className="skeuo-card p-6 flex flex-col">
                             <div className="flex items-center gap-2 mb-1">
-                                <FaServer size={14} className="text-blue-500" />
+                                <Server className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                                 <h3 className="text-[14px] font-bold admin-hero-title">Status dos Servidores</h3>
                             </div>
 
@@ -182,7 +185,7 @@ const Suporte = () => {
                         <div className="skeuo-card p-6 flex flex-col gap-4">
                             <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-2">
-                                    <FaBan size={14} className="text-gray-400" />
+                                    <ShieldAlert className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                     <h3 className="text-[14px] font-bold admin-hero-title">Transparência</h3>
                                 </div>
                                 <span className="text-[11px] px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-500 dark:text-slate-400 font-medium">
@@ -195,12 +198,12 @@ const Suporte = () => {
 
                             <div className="flex flex-col gap-1 mt-1">
                                 {bannedRooms.map((room, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 my-2">
-                                        <div className="flex items-center gap-2">
-                                            <FaBan size={12} className="text-rose-500" />
-                                            <span className="text-[13px] font-medium admin-table-text">{room.name}</span>
+                                    <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 my-1">
+                                        <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1.5">
+                                            <FaBan size={11} className="text-rose-500 shrink-0" />
+                                            <span className="text-[12px] font-medium admin-table-text truncate">{room.name}</span>
                                         </div>
-                                        <span className="text-xs font-semibold text-rose-700 dark:text-rose-300 bg-white/70 dark:bg-slate-900/60 px-2.5 py-1 rounded-md border border-rose-200/60 dark:border-rose-900/40">
+                                        <span className="shrink-0 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white/80 dark:bg-slate-900/70 px-2 py-0.5 rounded-md border border-rose-200/60 dark:border-rose-900/40">
                                             {room.reason}
                                         </span>
                                     </div>
@@ -213,7 +216,7 @@ const Suporte = () => {
                 <div className="w-full max-w-4xl mx-auto my-8">
                     <div className="skeuo-card p-6 flex flex-col gap-4">
                         <div className="flex items-center gap-2 mb-1">
-                            <FaExclamationCircle size={14} className="text-rose-500" />
+                            <AlertTriangle className="w-5 h-5 text-rose-500" />
                             <h3 className="text-[14px] font-bold admin-hero-title">Relatar Usuário ou Sala</h3>
                         </div>
                         <p className="text-[12px] text-slate-500 dark:text-slate-400">
@@ -230,9 +233,14 @@ const Suporte = () => {
                                 className="skeuo-input w-full p-3 text-sm rounded-xl min-h-[80px] resize-none"
                                 placeholder="Descreva o motivo da denúncia..."
                             ></textarea>
-                            <button className="btn-secondary-glossy w-full py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 mt-2">
-                                Enviar Denúncia Anonimamente
-                            </button>
+                            <div className="flex justify-end mt-4">
+                                <button
+                                    type="submit"
+                                    className="btn-secondary-glossy px-6 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200"
+                                >
+                                    Enviar Denúncia Anonimamente
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -253,4 +261,5 @@ const Suporte = () => {
 };
 
 export default Suporte;
+
 
