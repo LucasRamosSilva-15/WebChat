@@ -1,0 +1,54 @@
+---
+title: "Visão Geral de Componentes"
+sidebarTitle: "Catálogo de Componentes"
+description: "Mapeamento completo dos componentes reutilizáveis, módulos de UI e classes utilitárias do WebChat."
+---
+
+O WebChat conta com um conjunto coeso de componentes e classes de estilo concebidos para proporcionar uma experiência tátil, elegante e moderna.
+
+<CardGroup cols={2}>
+  <Card title="Botões & Ações" icon="hand-pointer" href="/frontend/components/button">
+    Classes e variações de botões primários, secundários, perigo e ícones circulares.
+  </Card>
+  <Card title="Campos de Entrada (Input)" icon="keyboard" href="/frontend/components/input">
+    Inputs cavitários, busca com ícones embutidos, selects e áreas de texto táteis.
+  </Card>
+  <Card title="Janelas Modais" icon="window-restore" href="/frontend/components/modal">
+    Diálogos de confirmação flutuantes com cabeçalho de sistema e efeito de vidro.
+  </Card>
+  <Card title="Balões de Mensagem (ChatBubble)" icon="comment-dots" href="/frontend/components/chat-bubble">
+    Balões de fala com relevo 3D para mensagens enviadas e recebidas com anexos.
+  </Card>
+</CardGroup>
+
+---
+
+## Tabela de Componentes Principais
+
+| Componente | Caminho do Arquivo | Propósito Principal |
+| :--- | :--- | :--- |
+| `<UserAvatar />` | `src/components/UserAvatar.jsx` | Exibe imagem de perfil ou iniciais com moldura gradiente e anéis de presença online/offline. |
+| `<SkeuoLoading />` | `src/components/SkeuoLoading.jsx` | Tela e indicador de progresso com animação de shimmer e barra física preenchida. |
+| `<SkyBackground />`| `src/components/SkyBackground.jsx` | Fundo de céu atmosférico animado que se adapta ao tema e paleta de cores ativa. |
+| `<Navbar />` | `src/components/Navbar.jsx` | Barra superior com controle de modo escuro, seleção de cores, perfil e logout. |
+| `<ChatSidebar />` | `src/components/ChatSidebar.jsx` | Menu lateral com lista de canais disponíveis e botão de criar sala. |
+| `<MembersSidebar />`| `src/components/MembersSidebar.jsx`| Lista lateral de membros da sala com separação por papéis (`Dono`, `Admin`, `Membro`). |
+| `<PrivateRoute />` | `src/components/PrivateRoute.jsx` | Guarda de rota que redireciona usuários não autenticados para `/login`. |
+| `<AdminRoute />` | `src/components/AdminRoute.jsx` | Guarda de rota que valida privilégios de administrador antes de abrir `/admin`. |
+
+---
+
+## Classes de Apoio do Design System
+
+Além dos componentes em arquivos `.jsx`, a interface utiliza classes utilitárias semânticas declaradas em `src/styles/skeuo.css` e `src/styles/skeuo-extra.css`:
+
+### Badges e Indicadores de Estado (`.skeuo-badge-*`)
+- `.skeuo-badge-online`: Indicador verde esmeralda para usuários ativos.
+- `.skeuo-badge-ativa`: Indicador azul para salas com conversas em andamento.
+- `.skeuo-badge-dono`: Marcador dourado/âmbar exclusivo para o criador da sala.
+- `.skeuo-badge-admin`: Marcador violeta para operadores com permissões elevadas.
+- `.skeuo-badge-mod`: Marcador ciano para moderadores de canal.
+
+### Efeitos de Superfície
+- `.skeuo-surface-orb-badge`: Círculo com relevo central utilizado em ícones e contadores numéricos.
+- `.skeuo-well`: Recesso de luz invertida que dá a sensação de área afundada na tela.

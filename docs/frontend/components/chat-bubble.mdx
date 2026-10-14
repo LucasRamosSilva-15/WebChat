@@ -1,0 +1,127 @@
+---
+title: "Balões de Mensagem (ChatBubble)"
+sidebarTitle: "ChatBubble"
+description: "Módulo de conversa com balões táteis no formato grande, chanfros de luz especular e suporte a anexos de mídia."
+---
+
+O **ChatBubble** é o elemento visual central da interface de mensagens do WebChat. Ele apresenta acabamento arredondado pronunciado (`rounded-[18px]`), chanfro de luz no topo e diferenciação semântica entre mensagens emitidas pelo usuário logado e participantes da sala.
+
+---
+
+## Comparação de Estilos
+
+| Tipo de Mensagem | Alinhamento | Gradiente de Fundo | Sombra & Reflexo Interno |
+| :--- | :--- | :--- | :--- |
+| **Enviada (`sent: true`)** | Direita | `from-sky-400 to-sky-600` (Azul Ciano) | `inset 0 1px 0 rgba(255,255,255,0.4)` |
+| **Recebida (`sent: false`)** | Esquerda | `from-[#f9f9f9] to-[#ebebeb]` (Alumínio) | `inset 0 1px 0 rgba(255,255,255,1)` |
+
+---
+
+## Tabela de Props e Atributos
+
+<ResponseField name="message" type="string" required>
+  Conteúdo textual transmitido na mensagem.
+</ResponseField>
+
+<ResponseField name="sent" type="boolean" default="false">
+  Define se a mensagem partiu do usuário local (`true`) ou de um terceiro (`false`).
+</ResponseField>
+
+<ResponseField name="senderName" type="string">
+  Nome de exibição do autor da mensagem (obrigatório para mensagens recebidas).
+</ResponseField>
+
+<ResponseField name="time" type="string" required>
+  Horário da mensagem formatado em `HH:mm`.
+</ResponseField>
+
+<ResponseField name="imageUrl" type="string (URL)">
+  Link opcional de imagem ou captura de tela anexada ao post.
+</ResponseField>
+
+<ResponseField name="avatarSrc" type="string (URL)">
+  URL da foto de perfil do autor da mensagem.
+</ResponseField>
+
+---
+
+## Exemplos de Implementação
+
+<CodeGroup>
+```jsx Balão de Conversa (Componente React)
+import React from 'react';
+import UserAvatar from '../UserAvatar';
+import { FaCheck } from 'react-icons/fa';
+
+export function ChatBubble({
+  message,
+  sent = false,
+  senderName,
+  time,
+  imageUrl,
+  avatarSrc
+}) {
+  return (
+    <div className={`flex items-end gap-2.5 ${sent ? 'self-end flex-row-reverse max-w-[85%]' : 'items-start max-w-[85%]'}`}>
+      {!sent && (
+        <UserAvatar
+          name={senderName}
+          src={avatarSrc}
+          size="xs"
+          showStatus={false}
+        />
+      )}
+
+      <div className={`flex flex-col ${sent ? 'items-end' : 'items-start'}`}>
+        {!sent && senderName && (
+          <span className="text-[11px] font-semibold text-slate-500 mb-1 ml-2">
+            {senderName}
+          </span>
+        )}
+
+        <div
+          className={`${
+            sent
+              ? 'bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-500 dark:to-blue-700 text-white shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-600/70 dark:border-sky-400/60 [text-shadow:0_-1px_0_rgba(0,0,0,0.2)] font-medium'
+              : 'bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]'
+          } px-4 py-2.5 text-xs rounded-[18px] leading-relaxed break-words`}
+        >
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="Anexo da mensagem"
+              className="rounded-xl max-h-60 w-auto object-cover mb-2 border border-black/10 dark:border-white/10"
+            />
+          )}
+          {message}
+        </div>
+
+        <div className={`flex items-center gap-1 mt-1 text-[10px] text-slate-400 ${sent ? 'mr-1' : 'ml-2'}`}>
+          <span>{time}</span>
+          {sent && <FaCheck className="text-sky-500" size={9} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+```jsx Renderização em Lista de Chat
+export function MessageFeed({ messages, currentUserId }) {
+  return (
+    <div className="flex flex-col gap-4 p-6 bg-slate-50/50 dark:bg-slate-950/40 min-h-[300px] overflow-y-auto">
+      {messages.map((msg) => (
+        <ChatBubble
+          key={msg.id}
+          message={msg.content}
+          sent={msg.user_id === currentUserId}
+          senderName={msg.user?.displayName || msg.user_name}
+          time={new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          imageUrl={msg.image_url}
+        />
+      ))}
+    </div>
+  );
+}
+```
+</CodeGroup>

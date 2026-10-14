@@ -1,0 +1,104 @@
+---
+title: "Tokens de Design & Tailwind CSS"
+sidebarTitle: "Design Tokens & Estilos"
+description: "Sistema de design AeroGlass & SkyRipple: variáveis CSS, temas dinâmicos, paleta de cores, tipografia e superfícies físicas."
+---
+
+O WebChat adota **Tailwind CSS v4** integrado nativamente ao Vite através do plugin `@tailwindcss/vite`, estendido por uma camada de design tokens táteis baseados em luz zenital difusa a 90° e superfícies físicas translúcidas.
+
+---
+
+## 🎨 Temas e Paletas de Cores Dinâmicas
+
+A aplicação suporta múltiplos esquemas de cores primárias controladas dinamicamente via variáveis CSS injetadas no elemento `:root` e classes no `<body>`:
+
+| Tema | Classe no Body | `--primary-main` | `--primary-light` | `--primary-dark` |
+| :--- | :--- | :--- | :--- | :--- |
+| **Azul (Padrão)** | `:root` | `#0071e3` | `#4da4ff` | `#005bb5` |
+| **Esmeralda** | `body.color-green` | `#10b981` | `#34d399` | `#059669` |
+| **Púrpura** | `body.color-purple`| `#a855f7` | `#c084fc` | `#9333ea` |
+| **Rubi** | `body.color-red` | `#f43f5e` | `#fb7185` | `#e11d48` |
+| **Ardósia** | `body.color-slate` | `#64748b` | `#94a3b8` | `#475569` |
+
+### Declaração em `index.css`
+
+```css
+@layer base {
+  :root {
+    color-scheme: light;
+    --primary-light: #4da4ff;
+    --primary-main: #0071e3;
+    --primary-dark: #005bb5;
+    --primary-ring: rgba(0, 113, 227, 0.1);
+    --primary-ring-focus: rgba(0, 113, 227, 0.6);
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+}
+```
+
+---
+
+## 🌓 Suporte a Modo Escuro (Dark Mode)
+
+O WebChat utiliza a diretiva nativa do Tailwind v4 para controle estrito via classe `.dark` na tag raiz `<html>`:
+
+```css
+@variant dark (&:where(.dark, .dark *));
+```
+
+- **Modo Claro**: Fundo em gradiente suave `linear-gradient(200deg, #dbeafe 0%, #f1f5f9 100%)`, texto `#1d1d1f` e reflexos brancos especulares.
+- **Modo Escuro**: Fundos translúcidos em `rgba(15, 23, 42, 0.85)` com desfoque de fundo (`backdrop-blur-md`), bordas de contraste sutil e relevos internos escurecidos.
+
+---
+
+## ✍️ Tipografia
+
+A família de fontes oficial prioriza renderização nítida de interfaces gráficas:
+
+```css
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+```
+
+| Escala | Tamanho / Line-height | Classe Tailwind | Uso Recomendado |
+| :--- | :--- | :--- | :--- |
+| **Hero Title** | 36px - 48px | `text-3xl md:text-5xl font-black` | Cabeçalhos principais e destaques |
+| **Window Header** | 18px - 20px | `text-lg font-bold` | Títulos de modais e painéis |
+| **Body / Mensagens**| 13px - 14px | `text-xs md:text-sm leading-relaxed`| Balões de conversa e textos de leitura |
+| **Meta / Badges** | 10px - 11px | `text-[10px] md:text-xs font-semibold uppercase` | Timestamps, cargos e contadores |
+
+---
+
+## 💎 Superfícies e Efeitos de Vidro (Glassmorphism)
+
+O ecossistema disponibiliza quatro classes de superfícies principais:
+
+<CardGroup cols={2}>
+  <Card title=".skeuo-card" icon="id-badge">
+    Cartão principal com `backdrop-filter: blur(16px)`, borda chanfrada branca e sombra multicamada.
+  </Card>
+  <Card title=".glass-panel" icon="window-maximize">
+    Superfície de vidro jateado com desfoque de 12px para cartões flutuantes e resumos métricos.
+  </Card>
+  <Card title=".skeuo-panel" icon="table-columns">
+    Painel sólido com gradiente vertical e bordas de luz superior para janelas do sistema.
+  </Card>
+  <Card title=".skeuo-well" icon="arrows-down-to-line">
+    Cavidade tátil invertida com sombra interna profunda (`inset 0 2px 4px rgba(0,0,0,0.1)`).
+  </Card>
+</CardGroup>
+
+---
+
+## 📐 Breakpoints Responsivos
+
+Ajustados para dispositivos móveis, tablets e monitores widescreen:
+
+| Prefixo | Resolução Mínima | Cenário de Layout no WebChat |
+| :--- | :--- | :--- |
+| `sm:` | `640px` | Diálogos modais centralizados e barras de ferramentas horizontais |
+| `md:` | `768px` | Ativação das barras laterais (`ChatSidebar` e `MembersSidebar`) |
+| `lg:` | `1024px` | Layout de chat com 3 colunas completas simultâneas |
+| `xl:` | `1280px` | Bancada maximizada e painel administrativo expansível |

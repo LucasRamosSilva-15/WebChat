@@ -1,0 +1,90 @@
+---
+title: "Avatar de Usuário (UserAvatar)"
+sidebarTitle: "UserAvatar"
+description: "Avatar tátil com iniciais de fallback, anéis de presença gradiente e indicadores de status online/offline."
+---
+
+O `<UserAvatar />` (`src/components/UserAvatar.jsx`) padroniza a exibição visual de perfis no WebChat, suportando imagens remotas ou fallback com a primeira letra do nome, além de anéis táteis e pontos de status de conexão.
+
+---
+
+## Escala de Tamanhos
+
+| Tamanho | Dimensões | Classe Interna | Uso Principal |
+| :--- | :--- | :--- | :--- |
+| `xs` | `24x24px` | `.avatar-xs` | Balões de conversa e listas densas |
+| `sm` | `32x32px` | `.avatar-sm` | Cabeçalho do chat e barra de canais |
+| `md` | `40x40px` | `.avatar-md` | Listas de presença e itens de membros |
+| `lg` | `48x48px` | `.avatar-lg` | Cartão de perfil ativo e modais |
+| `xl` | `64x64px` | `.avatar-xl` | Telas de perfil e configurações |
+| `2xl`| `80x80px` | `.avatar-2xl`| Painel de exibição e edição de foto |
+
+---
+
+## Tabela de Props e Atributos
+
+<ResponseField name="name" type="string" default="?">
+  Nome de exibição do usuário. Caso `src` não seja fornecido, a primeira letra é utilizada como fallback.
+</ResponseField>
+
+<ResponseField name="src" type="string (URL)">
+  URL da imagem ou foto de perfil.
+</ResponseField>
+
+<ResponseField name="size" type="string" default="md">
+  Tamanho do avatar: `"xs"`, `"sm"`, `"md"`, `"lg"`, `"xl"`, `"2xl"`.
+</ResponseField>
+
+<ResponseField name="showStatus" type="boolean" default="false">
+  Ativa o ponto indicador de status de conexão no canto inferior direito.
+</ResponseField>
+
+<ResponseField name="status" type="string" default="online">
+  Status de presença: `"online"`, `"offline"`, `"busy"`, `"away"`.
+</ResponseField>
+
+<ResponseField name="onClick" type="function">
+  Manipulador de clique para abrir perfil ou menu de opções.
+</ResponseField>
+
+---
+
+## Exemplo de Implementação
+
+<CodeGroup>
+```jsx Uso Básico
+import UserAvatar from '../components/UserAvatar';
+
+export function MemberItem({ user }) {
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-xl">
+      <UserAvatar
+        name={user.name}
+        src={user.profilePhoto}
+        size="md"
+        showStatus={true}
+        status={user.online ? "online" : "offline"}
+      />
+      <div>
+        <strong className="text-sm font-semibold">{user.name}</strong>
+        <span className="text-xs text-slate-400 block">{user.role}</span>
+      </div>
+    </div>
+  );
+}
+```
+
+```jsx Variações de Tamanho
+export function AvatarShowcase() {
+  return (
+    <div className="flex items-center gap-4">
+      <UserAvatar name="Lucas Ramos" size="xs" showStatus status="online" />
+      <UserAvatar name="Lucas Ramos" size="sm" showStatus status="online" />
+      <UserAvatar name="Lucas Ramos" size="md" showStatus status="online" />
+      <UserAvatar name="Lucas Ramos" size="lg" showStatus status="online" />
+      <UserAvatar name="Lucas Ramos" size="xl" showStatus status="online" />
+    </div>
+  );
+}
+```
+</CodeGroup>

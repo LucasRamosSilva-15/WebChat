@@ -1,0 +1,113 @@
+---
+title: "Botões (Button)"
+sidebarTitle: "Button"
+description: "Botões físicos com relevo tátil, borda superior de luz difusa e feedback mecânico de clique."
+---
+
+Os botões do WebChat seguem o paradigma **AeroGlass**, apresentando um chanfro superior iluminado por luz zenital difusa e contração sutil de 1px ao serem pressionados (`:active`).
+
+---
+
+## Variações de Estilo
+
+| Variação | Classe CSS | Propósito |
+| :--- | :--- | :--- |
+| **Primário (Primary)** | `.skeuo-btn-primary` | Ações principais de conversão (Entrar na sala, Enviar, Salvar) |
+| **Secundário Glossy** | `.btn-secondary-glossy` | Ações neutras de cancelamento, alternância ou suporte |
+| **Perigo (Danger)** | `.skeuo-btn-danger` | Exclusão de mensagens, banimento de usuários ou deletar sala |
+| **Ícone Circular** | `.skeuo-icon-btn` | Botões de anexo, sinos de notificação e alternadores de tema |
+| **Gel Branco** | `.skeuo-btn-white` | Botão com aparência vítrea translúcida para fundos escuros |
+
+---
+
+## Tabela de Props e Atributos
+
+<ResponseField name="variant" type="string" default="primary">
+  Estilo visual do botão: `"primary"`, `"secondary"`, `"danger"`, `"icon"`.
+</ResponseField>
+
+<ResponseField name="size" type="string" default="md">
+  Dimensões de escala:
+  - `"sm"`: `px-3 py-1.5 text-xs`
+  - `"md"`: `px-4 py-2.5 text-sm`
+  - `"lg"`: `px-6 py-3 text-base font-bold`
+</ResponseField>
+
+<ResponseField name="disabled" type="boolean" default="false">
+  Quando verdadeiro, reduz a opacidade para 50%, desativa sombras e define cursor para `not-allowed`.
+</ResponseField>
+
+<ResponseField name="onClick" type="function">
+  Função de callback disparada ao clicar no botão.
+</ResponseField>
+
+---
+
+## Exemplos de Implementação
+
+<CodeGroup>
+```jsx Botão Primário
+import { FaRocket } from "react-icons/fa";
+
+export function ConnectButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="skeuo-btn-primary px-5 py-2.5 text-sm font-semibold text-white flex items-center gap-2 cursor-pointer"
+    >
+      <FaRocket size={13} />
+      <span>Entrar na Sala</span>
+    </button>
+  );
+}
+```
+
+```jsx Botão Secundário Glossy
+export function CancelButton({ onCancel }) {
+  return (
+    <button
+      type="button"
+      onClick={onCancel}
+      className="btn-secondary-glossy px-4 py-2.5 text-sm font-medium cursor-pointer"
+    >
+      Cancelar
+    </button>
+  );
+}
+```
+
+```jsx Botão de Perigo (Danger)
+import { FaTrash } from "react-icons/fa";
+
+export function DeleteButton({ onDelete }) {
+  return (
+    <button
+      type="button"
+      onClick={onDelete}
+      className="skeuo-btn-danger px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 cursor-pointer"
+    >
+      <FaTrash size={12} />
+      <span>Remover Sala</span>
+    </button>
+  );
+}
+```
+
+```jsx Botão de Ícone Circular
+import { FiBell } from "react-icons/fi";
+
+export function NotificationButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="skeuo-icon-btn w-10 h-10 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 cursor-pointer"
+      title="Notificações"
+    >
+      <FiBell size={16} />
+    </button>
+  );
+}
+```
+</CodeGroup>

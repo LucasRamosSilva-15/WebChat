@@ -1,0 +1,129 @@
+---
+title: "Campos de Entrada (Input)"
+sidebarTitle: "Input & Formulários"
+description: "Campos de entrada embutidos em cavidade reversa, foco azul límpido e seletores táteis."
+---
+
+Os componentes de entrada utilizam a classe `.skeuo-input`, simulando uma cavidade afundada no painel com sombras internas (`inset 0 1.5px 3px rgba(0,0,0,0.15)`) e iluminação suave ao receber foco.
+
+---
+
+## Estrutura Visual
+
+```
++-------------------------------------------------------+
+|  [Ícone]  Digite sua mensagem aqui...                 |  <- Cavidade afundada com chanfro interno
++-------------------------------------------------------+
+      |
+      +--> No foco: Anel de luz azul límpido (ring-2 ring-sky-400)
+```
+
+---
+
+## Tabela de Props e Atributos
+
+<ResponseField name="type" type="string" default="text">
+  Tipo do elemento HTML (`"text"`, `"email"`, `"password"`, `"search"`).
+</ResponseField>
+
+<ResponseField name="placeholder" type="string">
+  Texto de ajuda exibido quando o campo está vazio.
+</ResponseField>
+
+<ResponseField name="value" type="string">
+  Valor controlado do campo no estado React.
+</ResponseField>
+
+<ResponseField name="onChange" type="function">
+  Manipulador acionado a cada caractere digitado (`(e) => setValue(e.target.value)`).
+</ResponseField>
+
+<ResponseField name="disabled" type="boolean" default="false">
+  Desativa o campo, aplicando opacidade reduzida e cursor bloqueado.
+</ResponseField>
+
+<ResponseField name="icon" type="ReactNode">
+  Ícone opcional renderizado à esquerda no campo de busca.
+</ResponseField>
+
+---
+
+## Exemplos de Implementação
+
+<CodeGroup>
+```jsx Input de Texto Padrão
+export function TextInput({ label, value, onChange, placeholder }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      {label && (
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+          {label}
+        </label>
+      )}
+      <input
+        type="text"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="skeuo-input w-full px-3.5 py-2 text-xs text-slate-800 dark:text-slate-100"
+      />
+    </div>
+  );
+}
+```
+
+```jsx Busca com Ícone Embutido
+import { FaSearch } from "react-icons/fa";
+
+export function SearchInput({ value, onChange }) {
+  return (
+    <div className="relative w-full">
+      <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
+      <input
+        type="text"
+        value={value}
+        onChange={onChange}
+        placeholder="Filtrar salas ou mensagens..."
+        className="skeuo-input w-full pl-9 pr-3.5 py-2 text-xs text-slate-800 dark:text-slate-100"
+      />
+    </div>
+  );
+}
+```
+
+```jsx Seletor Tátil (Select)
+export function RoomTypeSelect({ value, onChange }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+        Tipo de Sala
+      </label>
+      <select
+        value={value}
+        onChange={onChange}
+        className="skeuo-input w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100"
+      >
+        <option value="public">Pública (Livre para todos)</option>
+        <option value="private">Privada (Apenas com convite)</option>
+        <option value="moderated">Moderada (Apenas leitura para membros)</option>
+      </select>
+    </div>
+  );
+}
+```
+
+```jsx Área de Texto (Textarea)
+export function ChatTextarea({ value, onChange, onKeyDown }) {
+  return (
+    <textarea
+      rows={3}
+      value={value}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      placeholder="Escreva sua mensagem... (Enter para enviar)"
+      className="skeuo-input w-full px-3.5 py-2 text-xs text-slate-800 dark:text-slate-100 resize-none"
+    />
+  );
+}
+```
+</CodeGroup>

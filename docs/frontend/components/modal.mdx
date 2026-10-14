@@ -1,0 +1,169 @@
+---
+title: "Janelas Modais (Modal)"
+sidebarTitle: "Modal & Diálogos"
+description: "Diálogos flutuantes de confirmação e alerta sobre fundo translúcido com cabeçalho de sistema."
+---
+
+Os diálogos modais do WebChat combinam um plano de fundo escurecido com desfoque gaussiano (`bg-slate-900/60 backdrop-blur-md`) e uma moldura de janela com cabeçalho de sistema tátil.
+
+---
+
+## Anatomia do Modal
+
+```
++-------------------------------------------------------------+
+| (•) Confirmar Entrada                          [DIÁLOGO] (X)| <- WindowHeader
++-------------------------------------------------------------+
+|                                                             |
+|   Deseja realmente excluir esta mensagem?                   | <- Corpo de Conteúdo
+|   Esta ação não poderá ser desfeita.                        |
+|                                                             |
+|                    [ Cancelar ]  [ Confirmar Exclusão ]     | <- Ações Duplas
++-------------------------------------------------------------+
+```
+
+---
+
+## Tabela de Props e Atributos
+
+<ResponseField name="isOpen" type="boolean" required>
+  Controla a visibilidade do diálogo modal na tela.
+</ResponseField>
+
+<ResponseField name="onClose" type="function" required>
+  Função disparada para fechar o modal ao clicar fora ou no botão de cancelamento.
+</ResponseField>
+
+<ResponseField name="title" type="string" default="Diálogo do Sistema">
+  Título textual exibido na barra superior da janela.
+</ResponseField>
+
+<ResponseField name="meta" type="string">
+  Tag curta em caixa-alta exibida à direita no cabeçalho (ex: `"AVISO"`, `"DIÁLOGO"`).
+</ResponseField>
+
+<ResponseField name="onConfirm" type="function">
+  Callback acionado quando o usuário clica no botão principal de confirmação.
+</ResponseField>
+
+<ResponseField name="confirmVariant" type="string" default="primary">
+  Estilo do botão confirmatório: `"primary"` ou `"danger"`.
+</ResponseField>
+
+---
+
+## Exemplo de Implementação
+
+<CodeGroup>
+```jsx Componente Modal Completo
+import React from 'react';
+
+export function ConfirmationModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title = "Confirmar Ação",
+  description,
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
+  isDanger = false
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="skeuo-card overflow-hidden w-full max-w-md shadow-2xl animate-scale-in"
+      >
+        {/* Cabeçalho de Janela */}
+        <div className="relative z-10 flex items-center justify-between gap-3 px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/80 bg-slate-100/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 inline-block" />
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+              {title}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Corpo do Diálogo */}
+        <div className="p-6">
+          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-2">
+            {title}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+            {description}
+          </p>
+
+          {/* Barra de Ações */}
+          <div className="flex justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary-glossy px-4 py-2 text-xs font-medium cursor-pointer"
+            >
+              {cancelText}
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className={isDanger
+                ? "skeuo-btn-danger px-4 py-2 text-xs font-semibold text-white cursor-pointer"
+                : "skeuo-btn-primary px-4 py-2 text-xs font-semibold text-white cursor-pointer"
+              }
+            >
+              {confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+```jsx Uso na Página de Chat
+import { useState } from 'react';
+import { ConfirmationModal } from './ConfirmationModal';
+
+export function ChatContainer() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleDeleteMessage = () => {
+    console.log("Mensagem removida!");
+    setIsModalOpen(false);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="skeuo-btn-danger text-xs px-3 py-1.5"
+      >
+        Excluir Mensagem
+      </button>
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleDeleteMessage}
+        title="Excluir Mensagem"
+        description="Tem certeza de que deseja apagar esta mensagem do histórico de todos os membros?"
+        confirmText="Sim, Apagar"
+        isDanger={true}
+      />
+    </div>
+  );
+}
+```
+</CodeGroup>

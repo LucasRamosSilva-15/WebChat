@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "WebChat API",
+  "name": "WebChat API & UI",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
@@ -27,8 +27,12 @@
   },
   "tabs": [
     {
-      "name": "Guias & Arquitetura",
+      "name": "Guias & Backend",
       "url": "guides"
+    },
+    {
+      "name": "Frontend & UI",
+      "url": "frontend"
     },
     {
       "name": "Referência da API",
@@ -60,6 +64,24 @@
       "group": "Webhooks",
       "pages": [
         "guides/webhooks"
+      ]
+    },
+    {
+      "group": "Arquitetura & Design System",
+      "pages": [
+        "frontend/architecture",
+        "frontend/tailwind-tokens"
+      ]
+    },
+    {
+      "group": "Componentes de Interface",
+      "pages": [
+        "frontend/components-overview",
+        "frontend/components/button",
+        "frontend/components/input",
+        "frontend/components/modal",
+        "frontend/components/chat-bubble",
+        "frontend/components/avatar"
       ]
     },
     {
@@ -129,7 +151,6 @@
       "method": "bearer"
     }
   },
-  "openapi": "openapi.json",
   "footerSocials": {
     "github": "https://github.com/LucasRamosSilva-15/WebChat"
   }
