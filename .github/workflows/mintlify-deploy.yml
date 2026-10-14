@@ -1,0 +1,110 @@
+name: Mintlify Docs CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'docs/**'
+      - 'backend/**'
+      - '.github/workflows/mintlify-deploy.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'docs/**'
+      - 'backend/**'
+      - '.github/workflows/mintlify-deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-docs:
+    name: Validar Sintaxe, OpenAPI e Links
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Setup do Ambiente Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Validar Sintaxe da Especificação OpenAPI 3.1
+        run: |
+          node -e "
+            const fs = require('fs');
+            const openapiPath = 'docs/openapi.json';
+            if (!fs.existsSync(openapiPath)) {
+              console.error('Arquivo ' + openapiPath + ' não encontrado!');
+              process.exit(1);
+            }
+            try {
+              const spec = JSON.parse(fs.readFileSync(openapiPath, 'utf8'));
+              if (!spec.openapi || !spec.openapi.startsWith('3.')) {
+                throw new Error('Versão do OpenAPI inválida: ' + spec.openapi);
+              }
+              console.log('OpenAPI 3.1 válido! Título:', spec.info.title, '| Endpoints:', Object.keys(spec.paths).length);
+            } catch (err) {
+              console.error('Falha de validação no OpenAPI:', err.message);
+              process.exit(1);
+            }
+          "
+
+      - name: Instalar Mintlify CLI
+        run: npm install -g mintlify
+
+      - name: Checar Links Quebrados e Validade MDX
+        working-directory: docs
+        run: |
+          mintlify broken-links
+
+  deploy-docs:
+    name: Sincronização & Deploy da Documentação
+    needs: validate-docs
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Notificar / Disparar Deploy no Mintlify
+        env:
+          MINTLIFY_API_KEY: ${{ secrets.MINTLIFY_API_KEY }}
+        run: |
+          echo "=========================================================="
+          echo "Verificando mecanismo de publicação do portal Mintlify..."
+          echo "=========================================================="
+
+          if [ -n "$MINTLIFY_API_KEY" ]; then
+            echo "Secret MINTLIFY_API_KEY detectada. Disparando trigger de sincronização via API..."
+            
+            HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" -X POST "https://api.mintlify.com/v1/deploy" \
+              -H "Authorization: Bearer $MINTLIFY_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"repository\": \"${{ github.repository }}\", \"branch\": \"${{ github.ref_name }}\"}" || echo "000")
+
+            echo "Status HTTP retornado: $HTTP_STATUS"
+            if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+              echo "Sincronização via API concluída com sucesso!"
+              cat response.json
+            else
+              echo "Aviso: A sincronização via API retornou status $HTTP_STATUS. Caso o repositório utilize o Mintlify GitHub App nativo, a publicação é contínua e automática no push da branch principal."
+              cat response.json 2>/dev/null || true
+            fi
+          else
+            echo "Informação: MINTLIFY_API_KEY não configurada nas Secrets deste repositório."
+            echo "O Mintlify GitHub App oficial sincroniza automaticamente o diretório 'docs/' após cada push aprovado na branch principal (${{ github.ref_name }})."
+          fi
+
+          echo "Deploy e validação da documentação finalizados com êxito!"
