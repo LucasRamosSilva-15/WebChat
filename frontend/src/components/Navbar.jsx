@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes, FaLightbulb, FaLifeRing, FaSlidersH, FaShieldAlt } from 'react-icons/fa';
+import { X } from 'lucide-react';
 import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
 
@@ -240,143 +241,143 @@ const Navbar = () => {
                 onClick={() => setIsSettingsOpen(false)}
             >
                 <div
-                    className={`skeuo-panel p-8 max-w-[500px] w-full max-h-[90vh] flex flex-col relative transition-all duration-300 origin-center ${isSettingsOpen ? 'translate-y-0 scale-100' : '-translate-y-2 scale-95'}`}
+                    className={`skeuo-panel p-5 max-w-[500px] w-full max-h-[90vh] flex flex-col relative transition-all duration-300 origin-center ${isSettingsOpen ? 'translate-y-0 scale-100' : '-translate-y-2 scale-95'}`}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex justify-between items-center mb-6 shrink-0">
+                    <div className="flex justify-between items-center mb-4 shrink-0">
                         <h2 className="text-2xl font-semibold text-[#1d1d1f] dark:text-slate-50 text-shadow-sm">Configurações</h2>
-                        <button onClick={() => setIsSettingsOpen(false)} className="w-8 h-8 rounded-full bg-gradient-to-b from-gray-100 to-gray-200 border border-gray-300 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,1),0_1px_2px_rgba(0,0,0,0.1)] transition-all duration-150 hover:from-gray-200 hover:to-gray-300 dark:from-slate-700 dark:to-slate-800 dark:border-slate-600 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] dark:hover:from-slate-600 dark:hover:to-slate-700">
-                            <FaTimes className="text-[#86868b] dark:text-[#94a3b8]" size={14} />
+                        <button
+                            type="button"
+                            onClick={() => setIsSettingsOpen(false)}
+                            className="btn-secondary-glossy !w-8 !h-8 !p-0 rounded-full inline-flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                            title="Fechar"
+                        >
+                            <X className="w-4 h-4" />
                         </button>
                     </div>
 
-                    <div className="overflow-y-auto pr-1 space-y-6">
-                        <div className="bg-black/5 dark:bg-black/20 p-4 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
-                            <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-3">Cor Principal</label>
-                            <div className="space-y-2">
-                                <div className="flex flex-wrap gap-3">
-                                    {[
-                                        { id: 'blue', color: 'bg-blue-500', name: 'Azul' },
-                                        { id: 'green', color: 'bg-emerald-500', name: 'Verde' },
-                                        { id: 'purple', color: 'bg-purple-500', name: 'Roxo' },
-                                        { id: 'red', color: 'bg-rose-500', name: 'Vermelho' },
-                                        { id: 'slate', color: 'bg-slate-500', name: 'Cinza' }
-                                    ].map((colorOpt) => (
-                                        <button
-                                            key={colorOpt.id}
-                                            onClick={() => setPrimaryColor(colorOpt.id)}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 ${colorOpt.color} ${primaryColor === colorOpt.id ? 'shadow-[0_0_0_2px_#ffffff,0_0_0_4px_rgba(0,0,0,0.2),0_10px_15px_-3px_rgba(0,0,0,0.1)] dark:shadow-[0_0_0_2px_#1e293b,0_0_0_4px_rgba(255,255,255,0.2)] scale-110' : 'opacity-80 shadow-md border border-white/20 hover:opacity-100 hover:scale-105'}`}
-                                            title={colorOpt.name}
-                                            aria-label={`Selecionar cor ${colorOpt.name}`}
-                                        >
-                                            {primaryColor === colorOpt.id && (
-                                                <div className="w-3 h-3 bg-white rounded-full shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)]"></div>
-                                            )}
-                                        </button>
-                                    ))}
+                    <div className="overflow-y-auto max-h-[80vh] skeuo-scrollbar pr-1 space-y-4">
+                        <div className="bg-black/5 dark:bg-black/20 p-3.5 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
+                            <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-2.5">Cor Principal</label>
+                            <div className="flex items-center gap-3">
+                                {[
+                                    { id: 'blue', gradient: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 50%, #1d4ed8 100%)', name: 'Azul' },
+                                    { id: 'green', gradient: 'linear-gradient(135deg, #34d399 0%, #059669 50%, #047857 100%)', name: 'Verde' },
+                                    { id: 'purple', gradient: 'linear-gradient(135deg, #c084fc 0%, #9333ea 50%, #7e22ce 100%)', name: 'Roxo' },
+                                    { id: 'red', gradient: 'linear-gradient(135deg, #fb7185 0%, #e11d48 50%, #be123c 100%)', name: 'Vermelho' },
+                                    { id: 'slate', gradient: 'linear-gradient(135deg, #94a3b8 0%, #475569 50%, #334155 100%)', name: 'Cinza' }
+                                ].map((c) => (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => setPrimaryColor(c.id)}
+                                        style={{ background: c.gradient }}
+                                        className={`w-9 h-9 rounded-full relative transition-transform active:scale-95 shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1.5px_1px_rgba(255,255,255,0.7),inset_0_-1.5px_2px_rgba(0,0,0,0.2)] border border-white/50 flex items-center justify-center cursor-pointer ${
+                                            primaryColor === c.id ? 'ring-2 ring-offset-2 ring-sky-500 scale-105' : 'hover:scale-105'
+                                        }`}
+                                        title={c.name}
+                                        aria-label={`Selecionar cor ${c.name}`}
+                                    >
+                                        {primaryColor === c.id && (
+                                            <span className="w-2.5 h-2.5 rounded-full bg-white shadow-xs" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-black/5 dark:bg-black/20 p-3.5 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
+                            <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-2.5">Modo de Cor</label>
+                            <div className="flex flex-col gap-2">
+                                <div
+                                    onClick={() => setColorMode('light')}
+                                    className={`p-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${
+                                        colorMode === 'light'
+                                            ? 'bg-gradient-to-b from-sky-50 to-white dark:from-slate-800 dark:to-slate-850 border-2 border-sky-400 shadow-[0_2px_8px_rgba(14,165,233,0.15),inset_0_1px_0_rgba(255,255,255,0.9)]'
+                                            : 'bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center border shrink-0 ${
+                                        colorMode === 'light'
+                                            ? 'border-sky-500 bg-sky-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)]'
+                                            : 'border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700'
+                                    }`}>
+                                        {colorMode === 'light' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-slate-800 dark:text-slate-100">Modo Claro</div>
+                                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Cores claras, fundo branco clássico.</div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    onClick={() => setColorMode('dark')}
+                                    className={`p-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${
+                                        colorMode === 'dark'
+                                            ? 'bg-gradient-to-b from-sky-50 to-white dark:from-slate-800 dark:to-slate-850 border-2 border-sky-400 shadow-[0_2px_8px_rgba(14,165,233,0.15),inset_0_1px_0_rgba(255,255,255,0.9)]'
+                                            : 'bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center border shrink-0 ${
+                                        colorMode === 'dark'
+                                            ? 'border-sky-500 bg-sky-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)]'
+                                            : 'border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700'
+                                    }`}>
+                                        {colorMode === 'dark' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-slate-800 dark:text-slate-100">Modo Escuro</div>
+                                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Cores escuras para conforto visual noturno.</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-black/5 dark:bg-black/20 p-4 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
-                            <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-3">Modo de Cor</label>
-                            <div className="flex flex-col gap-3">
-                                <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${colorMode === 'light' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
-                                    <input
-                                        type="radio"
-                                        name="colorMode"
-                                        checked={colorMode === 'light'}
-                                        onChange={() => setColorMode('light')}
-                                        className="w-4 h-4 accent-[var(--primary-main)]"
-                                    />
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Modo Claro</span>
-                                        <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Cores claras, fundo branco clássico.</span>
-                                    </div>
-                                </label>
-
-                                <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${colorMode === 'dark' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
-                                    <input
-                                        type="radio"
-                                        name="colorMode"
-                                        checked={colorMode === 'dark'}
-                                        onChange={() => setColorMode('dark')}
-                                        className="w-4 h-4 accent-[var(--primary-main)]"
-                                    />
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Modo Escuro</span>
-                                        <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Cores escuras para conforto visual noturno.</span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
                         {colorMode === 'light' && (
-                            <div className="bg-black/5 dark:bg-black/20 p-4 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
-                                <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-3">Fundo da Aplicação</label>
-                                <div className="flex flex-col gap-3">
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'neutral' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
-                                        <input
-                                            type="radio"
-                                            name="bgColor"
-                                            checked={bgColor === 'neutral'}
-                                            onChange={() => setBgColor('neutral')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Ardósia Padrão</span>
-                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Fundo cinza-azulado suave original.</span>
+                            <div className="bg-black/5 dark:bg-black/20 p-3.5 rounded-2xl border border-black/5 dark:border-white/5 shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] text-left">
+                                <label className="block text-[11px] font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest mb-2.5">Fundo da Aplicação</label>
+                                <div className="flex flex-col gap-2">
+                                    {[
+                                        { id: 'neutral', label: 'Ardósia Padrão', desc: 'Fundo cinza-azulado suave original.' },
+                                        { id: 'classic_blue', label: 'Azul Clássico', desc: 'Gradiente listrado inspirado no clássico.' },
+                                        { id: 'smooth_gradient', label: 'Gradiente Suave', desc: 'Tons muito sutis de cinza prateado.' },
+                                        { id: 'clean_light', label: 'Claro Limpo', desc: 'Fundo minimalista acinzentado sólido.' }
+                                    ].map((bgOpt) => (
+                                        <div
+                                            key={bgOpt.id}
+                                            onClick={() => setBgColor(bgOpt.id)}
+                                            className={`p-2.5 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${
+                                                bgColor === bgOpt.id
+                                                    ? 'bg-gradient-to-b from-sky-50 to-white dark:from-slate-800 dark:to-slate-850 border-2 border-sky-400 shadow-[0_2px_8px_rgba(14,165,233,0.15),inset_0_1px_0_rgba(255,255,255,0.9)]'
+                                                    : 'bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            }`}
+                                        >
+                                            <div className={`w-4 h-4 rounded-full flex items-center justify-center border shrink-0 ${
+                                                bgColor === bgOpt.id
+                                                    ? 'border-sky-500 bg-sky-500 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)]'
+                                                    : 'border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700'
+                                            }`}>
+                                                {bgColor === bgOpt.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-bold text-slate-800 dark:text-slate-100">{bgOpt.label}</div>
+                                                <div className="text-[11px] text-slate-500 dark:text-slate-400">{bgOpt.desc}</div>
+                                            </div>
                                         </div>
-                                    </label>
-
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'classic_blue' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
-                                        <input
-                                            type="radio"
-                                            name="bgColor"
-                                            checked={bgColor === 'classic_blue'}
-                                            onChange={() => setBgColor('classic_blue')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Azul Clássico</span>
-                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Gradiente listrado inspirado no clássico.</span>
-                                        </div>
-                                    </label>
-
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'smooth_gradient' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
-                                        <input
-                                            type="radio"
-                                            name="bgColor"
-                                            checked={bgColor === 'smooth_gradient'}
-                                            onChange={() => setBgColor('smooth_gradient')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Gradiente Suave</span>
-                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Tons muito sutis de cinza prateado.</span>
-                                        </div>
-                                    </label>
-
-                                    <label className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl border transition-all duration-150 bg-white dark:bg-slate-800 ${bgColor === 'clean_light' ? 'border-[var(--primary-main)] shadow-[0_0_0_3px_var(--primary-ring)]' : 'border-[#d2d2d7] dark:border-white/10 hover:border-[var(--primary-main)]'}`}>
-                                        <input
-                                            type="radio"
-                                            name="bgColor"
-                                            checked={bgColor === 'clean_light'}
-                                            onChange={() => setBgColor('clean_light')}
-                                            className="w-4 h-4 accent-[var(--primary-main)]"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-[#1d1d1f] dark:text-slate-50">Claro Limpo</span>
-                                            <span className="text-xs text-[#86868b] dark:text-[#94a3b8]">Fundo minimalista acinzentado sólido.</span>
-                                        </div>
-                                    </label>
+                                    ))}
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-6 shrink-0">
-                        <button onClick={() => setIsSettingsOpen(false)} className="skeuo-btn w-full py-3 text-base font-medium">Salvar e Fechar</button>
+                    <div className="mt-4 shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setIsSettingsOpen(false)}
+                            className="skeuo-btn-primary w-full py-2.5 text-sm font-semibold text-white rounded-xl shadow-md cursor-pointer"
+                        >
+                            Salvar e Fechar
+                        </button>
                     </div>
                 </div>
             </div>

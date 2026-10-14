@@ -389,7 +389,7 @@ const Admin = () => {
         <div className="min-h-screen flex-1 w-full flex flex-col justify-between items-center bg-transparent">
             <div className="w-full max-w-[1200px] px-4 py-8 md:py-10 animate-fade-in-up-1">
 
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="skeuo-card p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <h1 className="hero-title text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50">
@@ -405,10 +405,11 @@ const Admin = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="btn-secondary-glossy text-sm px-4 py-2 inline-flex items-center justify-center gap-2 cursor-pointer">
+                        <button type="button" className="btn-secondary-glossy text-sm px-4 py-2 inline-flex items-center justify-center gap-2 cursor-pointer">
                             <FaDownload size={12} className="text-slate-600 dark:text-slate-300" /> Exportar relatório
                         </button>
                         <button
+                            type="button"
                             onClick={() => { setActiveTab('denuncias'); setFilterSeverity('Todas'); }}
                             className="skeuo-btn text-sm px-4 py-2.5 inline-flex items-center justify-center gap-2 cursor-pointer"
                         >
