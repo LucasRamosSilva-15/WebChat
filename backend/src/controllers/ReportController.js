@@ -26,7 +26,7 @@ class ReportController {
 
   async updateStatus(req, res) {
     try {
-      const report = await ReportService.resolveReport(req.params.id, req.body.status);
+      const report = await ReportService.resolveReport(req.params.id, req.body.status, req.body.reason);
       return res.status(200).json(report);
     } catch (error) {
       return handleError(res, error);

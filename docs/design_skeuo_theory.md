@@ -278,3 +278,81 @@ Críticos de designs complexos frequentemente levantam questões de acessibilida
 A web moderna (Flat Design, Corporate Memphis) atingiu um pico de utilitarismo extremo e padronização. Tudo se tornou altamente funcional, pasteurizado e idêntico, focado estritamente na conversão sem fricção. 
 
 O SkyRipple adota a tese oposta: **usar o computador deve ser agradável e gerar alegria térmica**. A interface não é apenas um "obstáculo" invisível entre o usuário e suas conversas; ela é um instrumento que o usuário tem prazer em tocar. O Visual Clássico e Frutiger Aero trazem de volta a mágica, o brilho, o escapismo e a sensação de que a internet é um lugar acolhedor, lúdico e humano. Quando a tela parece feita de materiais amigáveis de alta qualidade, o estresse das interações digitais diminui e a fluidez da comunicação impera.
+
+---
+
+## 21. Catálogo Oficial de Superfícies e Componentes Táteis (`skeuo.css`)
+
+Com a evolução da padronização skeuomórfica em páginas como `Rooms.jsx`, `ButtonsTest.jsx` e `Suporte.jsx`, foram estabelecidos componentes canônicos com assinaturas físicas específicas:
+
+- **`.skeuo-card` & `.skeuo-surface-panel` (O Painel de Resina Translúcida):**
+  - **Material:** Acrílico polido translúcido com difusão óptica (`background: rgba(255, 255, 255, 0.88)` e `backdrop-filter: blur(16px)`).
+  - **Chanfro Especular:** Borda superior iluminada por chanfro de 1.5px (`inset 0 1.5px 0 rgba(255, 255, 255, 0.95)`), simulando refração de luz zenital.
+  - **Flutuação e Profundidade:** Sombra suave difusa combinada com projeção profunda calculada (`0 4px 12px rgba(15, 23, 42, 0.04), 0 16px 36px -8px rgba(0, 80, 180, 0.12)`).
+  - **Dark Mode:** O acrílico claro cede lugar à chapa de grafite anodizado (`rgba(30, 41, 59, 0.78)` a `rgba(15, 23, 42, 0.88)`) com chanfro atenuado (`inset 0 1px 0 rgba(255, 255, 255, 0.16)`).
+
+- **`.skeuo-well` & `.skeuo-surface-cavity` (O Display Cavitário Entalhado):**
+  - **Conceito:** Enquanto o card se projeta *para fora* da tela, o "well" é uma fenda mecânica esculpida *para dentro* da carcaça do painel.
+  - **Aplicação:** Ideal para agrupar métricas de status de servidores, indicadores de ping/uptime e relatórios de telemetria sem poluir a interface com múltiplos mini-cards.
+  - **Tratamento de Sombra:** Sombra interna composta dupla que afunda a superfície:
+    `box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.08), inset 0 2px 6px rgba(15, 23, 42, 0.04)`.
+  - **Dark Mode:** Cavidade de ardósia escura (`#0f172a`) com bordas entalhadas de alto contraste.
+
+- **`.skeuo-surface-orb-badge` (A Cápsula Esférica Convexa):**
+  - **Conceito:** Alojamento esférico em forma de lente ou cápsula para ícones de cabeçalhos e atalhos rápidos.
+  - **Tratamento de Volume:** Gradiente radial e sombra esférica que criam a ilusão de um orbe convexo sob uma cúpula transparente de policarbonato.
+
+- **`.skeuo-btn-primary` (Botão Primário Gel com Duplo Reflexo):**
+  - Superfície hiper-glossy com corte especular cilíndrico, feedback de compressão tátil instantâneo no `:active` e chanfro interno de 1px.
+  - **Variante Circular Gel (`!w-9 !h-9 !p-0 rounded-full`):** Adaptação geométrica circular para botões de busca e ações pontuais, mantendo o mesmo gradiente especular e a sombra de relevo em formato de botão-lente.
+
+---
+
+## 22. Ergonomia de Cards, Proporção e Prevenção de Transbordamento (Anti-Cramping)
+
+O refinamento de páginas ricas como `Suporte.jsx` consolidou regras de proporção física para evitar a percepção de elementos sufocados ("cartões apertados"):
+
+- **Regra da Respiração do Hero:**
+  - O card de cabeçalho principal (Hero) deve acompanhar a largura total da grade (`w-full` até o limite do layout, ex: `max-w-[1000px]`), alinhando suas bordas perfeitamente com os módulos inferiores.
+  - **Paddings Simétricos Generosos:** O hero exige respiro vertical amplo (`p-8 md:py-12 md:px-10`). É expressamente proibido usar margens ou paddings inferiores curtos (como `pb-2`), que espremem o campo de busca contra a borda inferior do card e rompem a harmonia visual.
+
+- **Contenção Segura em Colunas Estreitas (Colunas de 1/3 - `lg:col-span-1`):**
+  - Em painéis laterais de largura reduzida (como o Painel de Transparência), itens com texto à esquerda e tags à direita correm risco de transbordamento horizontal.
+  - **Solução Arquitetural Mandatória:**
+    1. A coluna da esquerda com o título/nome deve conter `min-w-0 flex-1 mr-1.5` acompanhado de `truncate`. Isso permite que o flexbox encolha o texto graciosamente sem empurrar os elementos adjacentes.
+    2. O badge de status ou categoria à direita deve possuir `shrink-0`, tipografia calibrada (`text-[11px]`) e padding horizontal compacto (`px-2 py-0.5`).
+    3. Isso garante que termos extensos (como "Spam/Phishing") permaneçam 100% contidos dentro da moldura colorida, sem ultrapassar as linhas de borda.
+
+- **Alinhamento Ergonômico de Formulários:**
+  - Botões de envio em formulários contidos em cards não devem ser estirados para 100% de largura quando isso resultar em uma faixa cinzenta excessivamente longa. Deve-se priorizar o alinhamento à direita (`flex justify-end mt-4`) com largura proporcional (`px-6 py-2.5 text-xs font-semibold`).
+
+---
+
+## 23. Padrões de Tabelas e Apresentação de Dados (Rooms & Admin)
+
+Tabelas na estética do Skeuo Design System abandonam a frieza de linhas flat em favor de superfícies maquinadas com alto contraste tátil:
+
+- **Faixa Mecânica no Cabeçalho (`<th>`):**
+  - O estilo de faixa translúcida com contraste mecânico deve ser aplicado nas células `<th>` (`px-6 py-3.5 bg-slate-100/70 dark:bg-slate-800/60`), assegurando que todo o cabeçalho renderize de forma uniforme independente de particularidades de motores de renderização HTML.
+- **Controles Quadrados de Paginação (`<` e `>`):**
+  - Botões de navegação numérica ou de paginação exigem fixação geométrica (`!w-9 !h-9 !p-0 flex items-center justify-center rounded-xl`). Sem o `!p-0`, os paddings horizontais padrões de classes de botão deformam os controles em retângulos achatados.
+- **Micro-Badges de Categoria:**
+  - Categorias e metadados devem habitar micro-cápsulas com relevo tátil discreto (`px-2.5 py-1 rounded-md text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_1px_rgba(0,0,0,0.03)]`), em vez de texto cru.
+- **Hierarquia Numérica:**
+  - Relações quantitativas (como lotação de salas `5 / 200`) separam o valor corrente com peso negrito e cor contrastante (`font-bold text-slate-800 dark:text-slate-100`) do limite máximo atenuado (`text-slate-400 font-medium text-xs`).
+
+---
+
+## 24. Iconografia Vetorial e Eliminação de Emojis Estruturais
+
+Para manter a integridade tátil e a estética premium de alta resolução, o sistema adota regras estritas de iconografia:
+
+- **Proibição de Emojis em Elementos Estruturais:** Emojis renderizados pelo sistema operacional possuem estilos gráficos divergentes entre plataformas (Apple, Google, Windows) e introduzem ruído amador na interface.
+- **Padronização com Ícones Vetoriais (`lucide-react` / `react-icons`):**
+  - Badges de topo usam `<Wrench className="w-3.5 h-3.5" />` ou `<LifeBuoy className="w-3.5 h-3.5" />`.
+  - Perguntas frequentes utilizam `<HelpCircle className="w-5 h-5 text-sky-600 dark:text-sky-400" />`.
+  - Módulos de infraestrutura e status utilizam `<Server className="w-5 h-5 text-sky-600 dark:text-sky-400" />`.
+  - Módulos de moderação e transparência utilizam `<ShieldAlert className="w-5 h-5 text-slate-500 dark:text-slate-400" />`.
+  - Formulários de denúncia utilizam `<AlertTriangle className="w-5 h-5 text-rose-500" />`.
+- **Efeito de Gravação em Ícones:** Ícones vetoriais integrados a superfícies táteis devem possuir escala proporcional ao container (14px a 20px) e cores cromáticas harmonizadas com o tema de iluminação da página.
+

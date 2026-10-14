@@ -17,13 +17,15 @@ class ReportService {
     return await ReportRepository.findAll();
   }
 
-  async resolveReport(id, newStatus) {
-    const validStatuses = ['pending', 'resolved', 'dismissed'];
-    if (!validStatuses.includes(newStatus)) {
-      throw new Error('Status inválido.');
+  async resolveReport(id, newStatus, reason) {
+    if (newStatus) {
+      const validStatuses = ['pending', 'resolved', 'dismissed'];
+      if (!validStatuses.includes(newStatus)) {
+        throw new Error('Status inválido.');
+      }
     }
 
-    const updated = await ReportRepository.updateStatus(id, newStatus);
+    const updated = await ReportRepository.updateStatus(id, newStatus, reason);
     if (!updated) throw new Error('Denúncia não encontrada.');
     return updated;
   }

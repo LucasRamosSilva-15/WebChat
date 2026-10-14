@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UserAvatar from '../components/UserAvatar';
+import { Camera } from 'lucide-react';
 
 function Custom() {
     const navigate = useNavigate();
@@ -68,19 +68,29 @@ function Custom() {
                                 onChange={handlePhotoChange}
                                 className="hidden"
                             />
-                            <div className="flex items-center gap-6">
-                                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
-                                    <UserAvatar src={profilePhoto} name={displayName} size="2xl" />
-                                    <div className="bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center m-[3px] pointer-events-none">
-                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-                                        </svg>
-                                    </div>
+                            <div className="flex items-center gap-4">
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="relative w-16 h-16 rounded-full border-2 border-sky-400/80 bg-gradient-to-b from-white to-sky-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center font-bold text-2xl text-sky-600 dark:text-sky-400 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),0_4px_8px_rgba(14,165,233,0.15)] shrink-0 overflow-hidden cursor-pointer"
+                                >
+                                    {profilePhoto ? (
+                                        <img src={profilePhoto} alt="Foto de perfil" className="w-full h-full object-cover" />
+                                    ) : (
+                                        (displayName ? displayName.charAt(0).toUpperCase() : 'L')
+                                    )}
                                 </div>
-                                <button type="button" onClick={() => fileInputRef.current.click()} className="font-medium text-[#0071e3] hover:text-[#0077ed] hover:underline transition-colors text-[14px] focus:outline-none">
-                                    Alterar foto de perfil
-                                </button>
+
+                                <div className="flex flex-col gap-1.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="btn-secondary-glossy px-3.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 inline-flex items-center gap-1.5 cursor-pointer"
+                                    >
+                                        <Camera className="w-3.5 h-3.5 text-slate-500" />
+                                        Alterar foto
+                                    </button>
+                                    <span className="text-[11px] text-slate-400">JPG, PNG ou GIF até 5MB</span>
+                                </div>
                             </div>
                         </div>
 
@@ -94,7 +104,7 @@ function Custom() {
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
                                 placeholder="Ex: João Silva"
-                                className="skeuo-input bg-[#fbfbfd] dark:bg-slate-800 w-full px-4 py-3"
+                                className="skeuo-input w-full px-4 py-2.5 text-sm rounded-xl"
                             />
                         </div>
 
@@ -108,7 +118,7 @@ function Custom() {
                                 value={statusMessage}
                                 onChange={(e) => setStatusMessage(e.target.value)}
                                 placeholder="O que você está pensando?"
-                                className="skeuo-input bg-[#fbfbfd] dark:bg-slate-800 w-full px-4 py-3"
+                                className="skeuo-input w-full px-4 py-2.5 text-sm rounded-xl"
                             />
                         </div>
 
@@ -116,13 +126,13 @@ function Custom() {
                             <button
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="btn-secondary-glossy flex-1 py-3 text-[16px] font-medium"
+                                className="btn-secondary-glossy flex-1 py-3 text-[16px] font-medium cursor-pointer"
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                className="skeuo-btn flex-1 py-3 text-[16px] font-medium"
+                                className="skeuo-btn flex-1 py-3 text-[16px] font-medium cursor-pointer"
                             >
                                 Salvar Alterações
                             </button>
@@ -134,16 +144,28 @@ function Custom() {
                     <h3 className="text-[20px] font-semibold text-[#1d1d1f] dark:text-[#f8fafc] mb-4">Prévia do Perfil</h3>
                     <p className="text-[13px] text-[#86868b] dark:text-[#94a3b8] mb-6">Como outros usuários verão seu perfil</p>
 
-                    <div className="bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-slate-900 dark:to-slate-950 rounded-2xl border border-[#d2d2d7] dark:border-white/5 shadow-inner p-6">
-                        <div className="flex items-center gap-4">
-                            <UserAvatar src={profilePhoto} name={displayName} size="lg" showStatus={true} status="online" />
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-[#1d1d1f] dark:text-[#f8fafc] text-[18px] truncate">{displayName || "Seu Nome"}</h4>
-                                <p className="text-[#86868b] dark:text-[#94a3b8] text-[13px] truncate">{statusMessage || "Sem recado"}</p>
-                                <div className="flex items-center gap-1.5 mt-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]"></span>
-                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold tracking-wide text-[11px] uppercase">Online</span>
-                                </div>
+                    <div className="skeuo-well p-4 rounded-2xl flex items-center gap-3 border border-slate-200/80 dark:border-slate-700/60">
+                        <div className="relative w-12 h-12 shrink-0">
+                            <div className="w-full h-full rounded-full border-2 border-sky-400 bg-white dark:bg-slate-800 flex items-center justify-center font-bold text-sky-600 dark:text-sky-400 text-lg shadow-sm overflow-hidden">
+                                {profilePhoto ? (
+                                    <img src={profilePhoto} alt="Prévia" className="w-full h-full object-cover" />
+                                ) : (
+                                    (displayName ? displayName.charAt(0).toUpperCase() : 'L')
+                                )}
+                            </div>
+                            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">
+                                {displayName || "Lucas Ramos Silva"}
+                            </h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                {statusMessage || "Sem recado"}
+                            </p>
+                            <div className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                ONLINE
                             </div>
                         </div>
                     </div>

@@ -5,3 +5,4 @@ dist/
 .DS_Store
 frontend/src/pages/LayoutDemo.jsx
 frontend/src/pages/LayoutDemo1.jsx
+AGENTS.md

@@ -26,33 +26,40 @@ const ChatSidebar = ({ isMobileOpen, onClose }) => {
                     <FaTimes size={18} />
                 </button>
             )}
-            <nav className="flex-1 p-3 overflow-y-auto space-y-1">
-                <div className="text-[11px] mb-3 ml-2 mt-2 font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">Navegação</div>
-                {navItems.map(item => (
-                    item.disabled ? (
-                        <span
-                            key={item.id}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-medium opacity-50 cursor-not-allowed text-[#86868b] dark:text-[#94a3b8]"
-                        >
-                            <span className="flex items-center justify-center w-6 h-6">{item.icon}</span>
-                            <span className="text-sm flex-1 text-left">{item.label} (Em breve)</span>
-                        </span>
-                    ) : (
-                    <Link
-                        key={item.id}
-                        to={item.id}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl font-medium transition-all duration-150 ${activeTab === item.id ? 'bg-gradient-to-b from-[#38bdf8] to-[#0284c7] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.15)] dark:from-[#0284c7] dark:to-[#075985]' : 'text-[#424245] dark:text-[#cbd5e1] hover:bg-white hover:shadow-xs hover:text-[#1d1d1f] dark:hover:bg-slate-700 dark:hover:shadow-sm dark:hover:text-white'}`}
-                    >
-                        <span className="flex items-center justify-center w-6 h-6">{item.icon}</span>
-                        <span className="text-sm flex-1 text-left">{item.label}</span>
-                        {item.badge && (
-                            <span className={`min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[10px] rounded-full font-bold ${activeTab === item.id ? 'bg-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]' : 'bg-gradient-to-b from-rose-500 to-rose-600 text-white shadow-[0_1px_2px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.3)]'}`}>
-                                {item.badge}
+            <nav className="flex-1 p-3 overflow-y-auto space-y-2">
+                <div className="text-[11px] mb-2 ml-2 mt-1 font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">Navegação</div>
+                <div className="skeuo-segmented-track flex flex-col w-full !items-stretch !p-1 !gap-1">
+                    {navItems.map(item => {
+                        const isActive = activeTab === item.id;
+                        return item.disabled ? (
+                            <span
+                                key={item.id}
+                                className="w-full flex items-center !justify-start gap-3 px-3 py-2 rounded-xl font-medium opacity-40 cursor-not-allowed text-[#86868b] dark:text-[#94a3b8]"
+                            >
+                                <span className="flex items-center justify-center w-6 h-6">{item.icon}</span>
+                                <span className="text-sm flex-1 text-left">{item.label} (Em breve)</span>
                             </span>
-                        )}
-                    </Link>
-                    )
-                ))}
+                        ) : (
+                            <Link
+                                key={item.id}
+                                to={item.id}
+                                className={`w-full flex items-center !justify-start gap-3 px-3 py-2 rounded-xl font-medium transition-all duration-150 ${
+                                    isActive
+                                        ? 'skeuo-segmented-item-active'
+                                        : 'skeuo-segmented-item !justify-start hover:text-[#0f172a] dark:hover:text-[#f1f5f9]'
+                                }`}
+                            >
+                                <span className="flex items-center justify-center w-6 h-6">{item.icon}</span>
+                                <span className="text-sm flex-1 text-left">{item.label}</span>
+                                {item.badge && (
+                                    <span className={`min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[10px] rounded-full font-bold ${isActive ? 'bg-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]' : 'bg-gradient-to-b from-rose-500 to-rose-600 text-white shadow-[0_1px_2px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.3)]'}`}>
+                                        {item.badge}
+                                    </span>
+                                )}
+                            </Link>
+                        );
+                    })}
+                </div>
             </nav>
 
             <div className="p-3 bg-gradient-to-b from-[#ebebed] to-[#e0e0e0] border-t border-[#d2d2d7] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:from-[#0f172a] dark:to-[#020617] dark:border-white/5 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">

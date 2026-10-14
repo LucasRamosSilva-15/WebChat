@@ -21,6 +21,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminRoute from './components/AdminRoute';
 import Suporte from './pages/Suporte';
 import Settings from './pages/Settings';
+import ButtonsTest from './pages/ButtonsTest';
 
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/suporte" element={<PrivateRoute><Suporte /></PrivateRoute>} />
+          <Route path="/buttons" element={<ButtonsTest />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <CookieBanner />

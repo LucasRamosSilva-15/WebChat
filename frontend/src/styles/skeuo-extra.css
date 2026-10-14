@@ -1,0 +1,867 @@
+@layer components {
+
+    .skeuo-card-v1-legacy {
+        position: relative;
+        background-color: white;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+        border: 1px solid rgba(229, 231, 235, 0.8);
+        transition: all 0.2s ease;
+    }
+
+    .skeuo-surface-panel {
+        position: relative;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 28px;
+        border: 1px solid rgba(203, 213, 225, 0.85);
+        border-top-color: rgba(255, 255, 255, 1);
+        border-bottom-color: rgba(255, 255, 255, 1);
+        box-shadow: 
+            inset 0 1.5px 0 rgba(255, 255, 255, 1),
+            0 2px 5px rgba(15, 23, 42, 0.06),
+            0 16px 36px -8px rgba(0, 80, 180, 0.12);
+        transition: all 0.3s ease;
+    }
+
+    .skeuo-card-type2 {
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        transition: all 0.2s ease;
+    }
+
+    html.dark .skeuo-card-type2 {
+        background: linear-gradient(to bottom, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-card {
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid white;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        border-radius: 16px;
+    }
+
+    html.dark .glass-card {
+        background-color: rgba(30, 41, 59, 0.9);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .skeuo-card-accent::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(to right, #38bdf8, #0ea5e9, #38bdf8);
+        box-shadow: 0 1px 2px rgba(14, 165, 233, 0.3);
+    }
+
+    .skeuo-card-glass {
+        position: relative;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 20px 40px rgba(0, 102, 204, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+        transition: all 0.2s ease;
+    }
+
+    .skeuo-card-interactive {
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .skeuo-card-interactive:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px rgba(0, 102, 204, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+        border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .skeuo-panel-inset {
+        background: rgba(248, 250, 252, 0.8);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    html.dark .skeuo-card-v1-legacy {
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-surface-panel {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: 
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.16),
+            0 4px 12px rgba(0, 0, 0, 0.4),
+            0 16px 36px -8px rgba(0, 0, 0, 0.6);
+    }
+
+    html.dark .skeuo-card-glass {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-card-interactive:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark .skeuo-panel-inset {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .skeuo-card-aqua {
+        position: relative;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid rgba(126, 162, 214, 0.85);
+        box-shadow: 
+            0 14px 34px rgba(37, 99, 185, 0.16),
+            0 4px 10px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .skeuo-card-aqua-header {
+        position: relative;
+        background: linear-gradient(180deg, #cbe0fa 0%, #a8cbf7 50%, #7eafe7 100%);
+        padding: 24px 28px 20px 28px;
+        border-bottom: 1px solid rgba(100, 140, 195, 0.45);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .skeuo-card-aqua-title {
+        color: #0d2d5e;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+        margin-bottom: 14px;
+        text-align: center;
+        letter-spacing: -0.01em;
+    }
+
+    .skeuo-card-aqua-input {
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 9999px;
+        border: 1px solid rgba(120, 160, 210, 0.75);
+        box-shadow: 
+            inset 0 2px 4px rgba(10, 45, 90, 0.22),
+            inset 0 1px 2px rgba(0, 0, 0, 0.12),
+            0 1px 0 rgba(255, 255, 255, 0.95);
+        padding: 2px 14px;
+        transition: all 0.15s ease;
+    }
+
+    .skeuo-card-aqua-input:focus-within {
+        border-color: #0284c7;
+        box-shadow: 
+            inset 0 2px 4px rgba(10, 45, 90, 0.22),
+            0 0 0 3px rgba(56, 189, 248, 0.4);
+    }
+
+    .skeuo-card-aqua-input input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 0.925rem;
+        color: #1e293b;
+        padding: 8px 10px;
+    }
+
+    .skeuo-card-aqua-input input::placeholder {
+        color: #788ea8;
+    }
+
+    .skeuo-card-aqua-body {
+        background: linear-gradient(180deg, #edf4fc 0%, #dbe8f8 100%);
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .skeuo-card-aqua-btn {
+        position: relative;
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        background: linear-gradient(180deg, #ffffff 0%, #f4f8fd 45%, #dbe8f6 100%);
+        border: 1px solid rgba(135, 170, 215, 0.85);
+        border-radius: 12px;
+        color: #102c52;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+        box-shadow: 
+            inset 0 1px 0 rgba(255, 255, 255, 1),
+            0 2px 4px rgba(30, 70, 130, 0.1),
+            0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.15s ease;
+        cursor: pointer;
+        user-select: none;
+        outline: none;
+    }
+
+    .skeuo-card-aqua-btn:hover {
+        background: linear-gradient(180deg, #ffffff 0%, #ffffff 50%, #e6f0fa 100%);
+        border-color: rgba(110, 150, 205, 0.95);
+        box-shadow: 
+            inset 0 1px 0 rgba(255, 255, 255, 1),
+            0 3px 6px rgba(30, 70, 130, 0.15);
+    }
+
+    .skeuo-card-aqua-btn:active {
+        transform: translateY(1px) scale(0.98);
+        background: linear-gradient(180deg, #d3e4f7 0%, #e6effa 100%);
+        box-shadow: 
+            inset 0 2px 4px rgba(20, 60, 120, 0.2),
+            0 1px 1px rgba(255, 255, 255, 0.7);
+    }
+
+    html.dark .skeuo-card-aqua {
+        border-color: rgba(56, 189, 248, 0.25);
+        box-shadow: 
+            0 12px 30px rgba(0, 0, 0, 0.7),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    html.dark .skeuo-card-aqua-header {
+        background: linear-gradient(180deg, #1e3a5f 0%, #162c4a 50%, #0f1f35 100%);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark .skeuo-card-aqua-title {
+        color: #e0f2fe;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    html.dark .skeuo-card-aqua-input {
+        background: #0b1523;
+        border-color: rgba(56, 189, 248, 0.3);
+        box-shadow: 
+            inset 0 2px 5px rgba(0, 0, 0, 0.6),
+            0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-card-aqua-input input {
+        color: #f1f5f9;
+    }
+
+    html.dark .skeuo-card-aqua-input input::placeholder {
+        color: #64748b;
+    }
+
+    html.dark .skeuo-card-aqua-body {
+        background: linear-gradient(180deg, #101c2c 0%, #0c1420 100%);
+    }
+
+    html.dark .skeuo-card-aqua-btn {
+        background: linear-gradient(180deg, #253d5e 0%, #17273d 50%, #101c2c 100%);
+        border-color: rgba(56, 189, 248, 0.25);
+        color: #e0f2fe;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        box-shadow: 
+            inset 0 1px 0 rgba(255, 255, 255, 0.12),
+            0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    html.dark .skeuo-card-aqua-btn:hover {
+        background: linear-gradient(180deg, #2f4c75 0%, #1d334f 100%);
+        border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    html.dark .skeuo-card-aqua-btn:active {
+        background: linear-gradient(180deg, #0d1724 0%, #152438 100%);
+        box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.6),
+            0 1px 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .skeuo-card-dialog,
+    .skeuo-card-porcelain {
+        position: relative;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-bottom-color: rgba(203, 213, 225, 0.5);
+        box-shadow:
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.03),
+            0 4px 12px rgba(15, 23, 42, 0.04),
+            0 16px 36px -8px rgba(0, 80, 180, 0.12);
+        transition: all 200ms ease-out;
+        padding: 36px 32px 32px 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .skeuo-card-dialog-title {
+        color: #050b14;
+        font-size: 1.625rem;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: -0.02em;
+        margin-bottom: 24px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .skeuo-dialog-input {
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid rgba(160, 190, 225, 0.75);
+        border-radius: 16px;
+        box-shadow: 
+            inset 0 2px 5px rgba(15, 45, 90, 0.12),
+            inset 0 1px 2px rgba(0, 0, 0, 0.06),
+            0 1px 0 rgba(255, 255, 255, 1);
+        padding: 12px 18px;
+        font-size: 1rem;
+        color: #1e293b;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .skeuo-dialog-input::placeholder {
+        color: #94a3b8;
+    }
+
+    .skeuo-dialog-input:focus {
+        border-color: #0284c7;
+        box-shadow: 
+            inset 0 2px 4px rgba(15, 45, 90, 0.12),
+            0 0 0 3.5px rgba(56, 189, 248, 0.35);
+    }
+
+    .skeuo-btn-aqua-pill {
+        position: relative;
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        background: linear-gradient(180deg, #4ea3fa 0%, #2985ec 50%, #176fdc 100%);
+        border: 1px solid rgba(18, 92, 195, 0.85);
+        border-radius: 9999px;
+        color: #ffffff !important;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-shadow: 0 -1px 1px rgba(10, 45, 110, 0.5);
+        box-shadow: 
+            0 8px 20px rgba(22, 110, 220, 0.32),
+            0 2px 4px rgba(0, 0, 0, 0.08),
+            inset 0 1px 1px rgba(255, 255, 255, 0.8),
+            inset 0 -2px 4px rgba(10, 50, 125, 0.25);
+        cursor: pointer;
+        user-select: none;
+        outline: none;
+        transition: all 0.15s ease;
+    }
+
+    .skeuo-btn-aqua-pill:hover {
+        background: linear-gradient(180deg, #62b1fc 0%, #3a93f5 50%, #1f78e4 100%);
+        box-shadow: 
+            0 10px 24px rgba(22, 110, 220, 0.4),
+            inset 0 1px 1px rgba(255, 255, 255, 0.95);
+    }
+
+    .skeuo-btn-aqua-pill:active {
+        transform: translateY(1px) scale(0.99);
+        background: linear-gradient(180deg, #176fdc 0%, #2581ea 100%);
+        box-shadow: 
+            inset 0 3px 6px rgba(10, 40, 100, 0.4),
+            0 1px 2px rgba(255, 255, 255, 0.5);
+    }
+
+    html.dark .skeuo-card-dialog,
+    html.dark .skeuo-card-porcelain {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom-color: rgba(51, 65, 85, 0.5);
+        box-shadow: 
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+            0 4px 12px rgba(0, 0, 0, 0.4),
+            0 16px 36px -8px rgba(0, 0, 0, 0.6);
+    }
+
+    html.dark .skeuo-card-dialog-title {
+        color: #f8fafc;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    html.dark .skeuo-dialog-input {
+        background: #0b1523;
+        border-color: rgba(56, 189, 248, 0.25);
+        box-shadow: 
+            inset 0 2px 5px rgba(0, 0, 0, 0.6),
+            0 1px 0 rgba(255, 255, 255, 0.05);
+        color: #f1f5f9;
+    }
+
+    html.dark .skeuo-dialog-input::placeholder {
+        color: #64748b;
+    }
+
+    html.dark .skeuo-dialog-input:focus {
+        border-color: #38bdf8;
+        box-shadow: 
+            inset 0 2px 5px rgba(0, 0, 0, 0.6),
+            0 0 0 3.5px rgba(56, 189, 248, 0.3);
+    }
+
+    html.dark .skeuo-btn-aqua-pill {
+        background: linear-gradient(180deg, #2b6cb0 0%, #1e4e8c 50%, #153a6b 100%);
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: 
+            0 8px 20px rgba(0, 0, 0, 0.5),
+            inset 0 1px 1px rgba(255, 255, 255, 0.3),
+            inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    html.dark .skeuo-btn-aqua-pill:hover {
+        background: linear-gradient(180deg, #3182ce 0%, #2b6cb0 50%, #1a4971 100%);
+    }
+
+    html.dark .skeuo-btn-aqua-pill:active {
+        background: linear-gradient(180deg, #102a45 0%, #1a426a 100%);
+        box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7);
+    }
+
+    .skeuo-topbar {
+        background: linear-gradient(to bottom, #ffffff 0%, #eef1f5 100%);
+        border-bottom: 1px solid #d2d2d7;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
+        color: #1d1d1f;
+    }
+
+    html.dark .skeuo-topbar {
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%) !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .skeuo-sidebar {
+        background: linear-gradient(to bottom, #f5f5f7 0%, #ebebed 100%);
+    }
+
+    html.dark .skeuo-sidebar {
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+    }
+
+    .skeuo-sidebar-left {
+        border-right: 1px solid #d2d2d7;
+        box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.8);
+    }
+
+    html.dark .skeuo-sidebar-left {
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .skeuo-sidebar-right {
+        border-left: 1px solid #d2d2d7;
+        box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.8);
+    }
+
+    html.dark .skeuo-sidebar-right {
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .skeuo-icon-pod,
+    .skeuo-icon-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 9999px;
+        background: linear-gradient(to bottom, #ffffff 0%, #f9f9f9 50%, #f0f0f0 51%, #e6e6e6 100%);
+        border: 1px solid #cccccc;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 2px 4px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    html.dark .skeuo-icon-pod,
+    html.dark .skeuo-icon-circle {
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+        border: 1px solid #020617;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    button.skeuo-icon-pod,
+    button.skeuo-icon-circle {
+        cursor: pointer;
+        outline: none;
+        user-select: none;
+        transition: all 120ms ease-out;
+    }
+
+    button.skeuo-icon-pod:hover,
+    button.skeuo-icon-circle:hover {
+        background: linear-gradient(to bottom, #ffffff 0%, #ffffff 50%, #f9f9f9 51%, #f0f0f0 100%);
+        border-color: #b3b3b3;
+    }
+
+    button.skeuo-icon-pod:active,
+    button.skeuo-icon-circle:active {
+        transform: translateY(1px) scale(0.97);
+        background: linear-gradient(to bottom, #e6e6e6 0%, #cccccc 100%);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    html.dark button.skeuo-icon-pod:hover,
+    html.dark button.skeuo-icon-circle:hover {
+        background: linear-gradient(to bottom, #334155 0%, #1e293b 100%);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    html.dark button.skeuo-icon-pod:active,
+    html.dark button.skeuo-icon-circle:active {
+        transform: translateY(1px) scale(0.97);
+        background: linear-gradient(to bottom, #0f172a 0%, #020617 100%);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .skeuo-badge-vip {
+        background: linear-gradient(to bottom, #38bdf8, #0284c7);
+        color: white;
+    }
+
+    .skeuo-badge-cheia {
+        background: linear-gradient(to bottom, #fee2e2, #fecaca);
+        color: #b91c1c;
+        border-color: #fca5a5;
+    }
+
+    .skeuo-badge-arquivada {
+        background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+        color: #4b5563;
+        border-color: #d1d5db;
+    }
+
+    html.dark .skeuo-badge-vip {
+        background: linear-gradient(to bottom, #0369a1, #075985);
+        color: #e0f2fe;
+        border-color: #0c4a6e;
+    }
+
+    html.dark .skeuo-badge-cheia {
+        background: linear-gradient(to bottom, #991b1b, #7f1d1d);
+        color: #fecaca;
+        border-color: #7f1d1d;
+    }
+
+    html.dark .skeuo-badge-arquivada {
+        background: linear-gradient(to bottom, #374151, #1f2937);
+        color: #d1d5db;
+        border-color: #1f2937;
+    }
+
+    .skeuo-brand {
+        color: #1d1d1f;
+        font-weight: 700;
+        text-shadow:
+            0 1px 0 rgba(255, 255, 255, 0.65),
+            -2px 5px 6px rgba(0, 0, 0, 0.18);
+    }
+
+    html.dark .skeuo-brand {
+        color: #f8fafc;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+    }
+
+    .btn-primary-glossy {
+        background: linear-gradient(to bottom, var(--primary-light) 0%, var(--primary-main) 50%, var(--primary-dark) 51%, var(--primary-darker) 100%);
+        border: 1px solid var(--primary-darker);
+        border-radius: 0.75rem;
+        color: white !important;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.15);
+        font-weight: 500;
+        transition: all 0.1s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-primary-glossy:hover {
+        background: linear-gradient(to bottom, var(--primary-hover-light) 0%, var(--primary-hover-main) 50%, var(--primary-hover-dark) 51%, var(--primary-hover-darker) 100%);
+    }
+
+    .btn-primary-glossy:active {
+        background: linear-gradient(to bottom, var(--primary-darker) 0%, var(--primary-dark) 100%);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        border-top-color: #000000;
+    }
+
+    html.dark .btn-primary-glossy {
+        background: 
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 49%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.4) 100%),
+            var(--primary-main) !important;
+        border: 1px solid var(--primary-darker) !important;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    html.dark .btn-primary-glossy:hover {
+        background: 
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 49%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.3) 100%),
+            var(--primary-main) !important;
+        border-color: var(--primary-darker) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7) !important;
+    }
+
+    html.dark .btn-primary-glossy:active {
+        background: 
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.5) 100%),
+            var(--primary-main) !important;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+        border-color: rgba(0, 0, 0, 0.8) !important;
+        border-top-color: #000 !important;
+        text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .btn-metallic-glossy,
+    .skeuo-btn-metallic {
+        background: linear-gradient(to bottom, #ffffff 0%, #e6e6e6 50%, #cccccc 51%, #b3b3b3 100%);
+        border: 1px solid #999;
+        border-radius: 0.75rem;
+        color: #333 !important;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 2px 4px rgba(0, 0, 0, 0.2);
+        font-weight: 500;
+        padding: 8px 16px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.1s ease;
+    }
+
+    .btn-metallic-glossy:hover,
+    .skeuo-btn-metallic:hover {
+        background: linear-gradient(to bottom, #ffffff 0%, #f2f2f2 50%, #d9d9d9 51%, #cccccc 100%);
+    }
+
+    .btn-metallic-glossy:active,
+    .skeuo-btn-metallic:active {
+        background: linear-gradient(to bottom, #cccccc 0%, #b3b3b3 100%);
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+        border-top-color: #666666;
+    }
+
+    .btn-metallic-glossy:disabled,
+    .skeuo-btn-metallic:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    html.dark .btn-metallic-glossy,
+    html.dark .skeuo-btn-metallic {
+        background: linear-gradient(to bottom, #334155 0%, #1e293b 50%, #0f172a 51%, #020617 100%) !important;
+        border: 1px solid #0f172a !important;
+        color: #e2e8f0 !important;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8) !important;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html.dark .btn-metallic-glossy:hover,
+    html.dark .skeuo-btn-metallic:hover {
+        background: linear-gradient(to bottom, #475569 0%, #334155 50%, #1e293b 51%, #0f172a 100%) !important;
+    }
+
+    html.dark .btn-metallic-glossy:active,
+    html.dark .skeuo-btn-metallic:active {
+        background: linear-gradient(to bottom, #020617 0%, #0f172a 100%) !important;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6) !important;
+        border-top-color: #000 !important;
+    }
+
+    .btn-secondary-modern,
+    .btn-secondary-smooth {
+        background: linear-gradient(to bottom, #ffffff 0%, #f6f7f9 45%, #e9ecef 100%);
+        border: 1px solid #d1d5db;
+        border-bottom-color: #b0b5c0;
+        border-radius: 0.75rem;
+        color: #1d1d1f !important;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+        box-shadow: inset 0 1px 0 #ffffff, 0 1px 2px rgba(0, 0, 0, 0.08);
+        font-weight: 500;
+        padding: 8px 16px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+
+    .btn-secondary-modern:hover,
+    .btn-secondary-smooth:hover {
+        background: linear-gradient(to bottom, #ffffff 0%, #fbfbfc 45%, #edf0f3 100%);
+        border-color: #c4c8d0;
+        box-shadow: inset 0 1px 0 #ffffff, 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary-modern:active,
+    .btn-secondary-smooth:active {
+        background: linear-gradient(to bottom, #e2e5e9 0%, #eaedf0 100%);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
+        border-color: #a8aeb8;
+    }
+
+    html.dark .btn-secondary-modern,
+    html.dark .btn-secondary-smooth {
+        background: linear-gradient(to bottom, #334155 0%, #1e293b 45%, #0f172a 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-bottom-color: rgba(0, 0, 0, 0.5) !important;
+        color: #f1f5f9 !important;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html.dark .btn-secondary-modern:hover,
+    html.dark .btn-secondary-smooth:hover {
+        background: linear-gradient(to bottom, #3f4e65 0%, #253347 45%, #141e30 100%) !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html.dark .btn-secondary-modern:active,
+    html.dark .btn-secondary-smooth:active {
+        background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%) !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+        border-color: rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .skeuo-surface-panel-interactive {
+        cursor: pointer;
+        transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+    }
+
+    .skeuo-surface-panel-interactive:hover {
+        transform: translateY(-2px);
+        box-shadow: 
+            inset 0 1.5px 0 rgba(255, 255, 255, 1),
+            0 6px 16px rgba(15, 23, 42, 0.06),
+            0 20px 40px -8px rgba(0, 80, 180, 0.16);
+    }
+
+    .skeuo-surface-cavity {
+        background: rgba(241, 245, 249, 0.75);
+        border: 1px solid rgba(203, 213, 225, 0.95);
+        border-top-color: rgba(148, 163, 184, 0.75);
+        border-bottom-color: rgba(148, 163, 184, 0.65);
+        border-radius: 14px;
+        box-shadow: 
+            inset 0 1.5px 3px rgba(15, 23, 42, 0.08),
+            inset 0 2px 6px rgba(15, 23, 42, 0.04),
+            0 1px 0 #ffffff;
+    }
+
+    .skeuo-surface-field {
+        position: relative;
+        background: rgba(248, 250, 252, 0.85);
+        border: 1px solid rgba(203, 213, 225, 0.85);
+        border-top-color: rgba(148, 163, 184, 0.85);
+        border-radius: 12px;
+        color: #1e293b;
+        box-shadow: 
+            inset 0 1.5px 3px rgba(15, 23, 42, 0.08),
+            0 1px 0 rgba(255, 255, 255, 0.9);
+        transition: all 120ms ease-out;
+        outline: none;
+    }
+
+    .skeuo-surface-field:focus {
+        background: #ffffff;
+        border-color: rgba(56, 189, 248, 0.9);
+        box-shadow: 
+            inset 0 1px 2px rgba(15, 23, 42, 0.05),
+            0 0 0 3px rgba(56, 189, 248, 0.25);
+    }
+
+    .skeuo-surface-avatar-box {
+        border-radius: 14px;
+        background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 
+            inset 0 1px 0 rgba(255, 255, 255, 0.6),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+            0 2px 5px rgba(2, 132, 199, 0.35);
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    html.dark .skeuo-surface-panel-interactive:hover {
+        box-shadow: 
+            inset 0 1.5px 0 rgba(255, 255, 255, 0.15),
+            0 6px 16px rgba(0, 0, 0, 0.5),
+            0 20px 40px -8px rgba(0, 0, 0, 0.7);
+    }
+
+    html.dark .skeuo-surface-cavity {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(51, 65, 85, 0.7);
+        border-top-color: rgba(15, 23, 42, 0.9);
+        border-bottom-color: rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        box-shadow: 
+            inset 0 1.5px 3px rgba(0, 0, 0, 0.45),
+            inset 0 2px 6px rgba(0, 0, 0, 0.25),
+            0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-surface-field {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        border-top-color: rgba(30, 41, 59, 0.8);
+        color: #f1f5f9;
+        box-shadow: 
+            inset 0 1.5px 3px rgba(0, 0, 0, 0.5),
+            0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark .skeuo-surface-field:focus {
+        background: #0f172a;
+        border-color: rgba(56, 189, 248, 0.6);
+        box-shadow: 
+            inset 0 1px 2px rgba(0, 0, 0, 0.3),
+            0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+}

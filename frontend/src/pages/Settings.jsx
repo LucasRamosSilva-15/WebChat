@@ -7,14 +7,11 @@ import {
     FaCommentAlt,
     FaUniversalAccess,
     FaShieldAlt,
-    FaSun,
-    FaMoon,
     FaUndo,
     FaSave,
-    FaCheck,
-    FaEllipsisV,
     FaUserCog
 } from 'react-icons/fa';
+import { Sun, Moon, Check } from 'lucide-react';
 import UserAvatar from '../components/UserAvatar';
 
 const Settings = () => {
@@ -61,10 +58,13 @@ const Settings = () => {
         window.dispatchEvent(new Event('themeUpdated'));
     }, [bgColor]);
 
-    const [bubbleFormat, setBubbleFormat] = useState(() => localStorage.getItem('chat_bubbleFormat') || 'suave');
+    const [bubbleFormat, setBubbleFormat] = useState(() => {
+        const saved = localStorage.getItem('chat_bubbleFormat');
+        return saved === 'classico' ? 'classico' : 'grande';
+    });
 
     const toggleBubbleFormat = () => {
-        const nextFormat = bubbleFormat === 'suave' ? 'classico' : 'suave';
+        const nextFormat = bubbleFormat === 'classico' ? 'grande' : 'classico';
         setBubbleFormat(nextFormat);
         localStorage.setItem('chat_bubbleFormat', nextFormat);
         window.dispatchEvent(new Event('themeUpdated'));
@@ -75,28 +75,29 @@ const Settings = () => {
             setPrimaryColor(localStorage.getItem('chat_primaryColor') || 'blue');
             setColorMode(localStorage.getItem('chat_colorMode') || 'light');
             setBgColor(localStorage.getItem('chat_bgColor') || 'neutral');
-            setBubbleFormat(localStorage.getItem('chat_bubbleFormat') || 'suave');
+            const savedFormat = localStorage.getItem('chat_bubbleFormat');
+            setBubbleFormat(savedFormat === 'classico' ? 'classico' : 'grande');
         };
         window.addEventListener('themeUpdated', syncTheme);
         return () => window.removeEventListener('themeUpdated', syncTheme);
     }, []);
 
     const tabs = [
-        { id: 'Account', label: 'Account', icon: <FaUserCircle /> },
-        { id: 'Appearance', label: 'Appearance', icon: <FaPalette /> },
-        { id: 'Notifications', label: 'Notifications', icon: <FaBell /> },
-        { id: 'Privacy', label: 'Privacy', icon: <FaLock /> },
+        { id: 'Account', label: 'Conta', icon: <FaUserCircle /> },
+        { id: 'Appearance', label: 'Aparência', icon: <FaPalette /> },
+        { id: 'Notifications', label: 'Notificações', icon: <FaBell /> },
+        { id: 'Privacy', label: 'Privacidade', icon: <FaLock /> },
         { id: 'Chat', label: 'Chat', icon: <FaCommentAlt /> },
-        { id: 'Accessibility', label: 'Accessibility', icon: <FaUniversalAccess /> },
-        { id: 'Security', label: 'Security', icon: <FaShieldAlt /> }
+        { id: 'Accessibility', label: 'Acessibilidade', icon: <FaUniversalAccess /> },
+        { id: 'Security', label: 'Segurança', icon: <FaShieldAlt /> }
     ];
 
     const colors = [
-        { id: 'blue', value: '#3b82f6' },
-        { id: 'green', value: '#10b981' },
-        { id: 'purple', value: '#a855f7' },
-        { id: 'red', value: '#f43f5e' },
-        { id: 'slate', value: '#64748b' }
+        { id: 'blue', gradient: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 50%, #1d4ed8 100%)' },
+        { id: 'green', gradient: 'linear-gradient(135deg, #34d399 0%, #059669 50%, #047857 100%)' },
+        { id: 'purple', gradient: 'linear-gradient(135deg, #c084fc 0%, #9333ea 50%, #7e22ce 100%)' },
+        { id: 'red', gradient: 'linear-gradient(135deg, #fb7185 0%, #e11d48 50%, #be123c 100%)' },
+        { id: 'slate', gradient: 'linear-gradient(135deg, #94a3b8 0%, #475569 50%, #334155 100%)' }
     ];
 
     const bgOptions = [
@@ -110,7 +111,7 @@ const Settings = () => {
         <div className="flex-1 w-full flex flex-col items-center">
             <div className="w-full max-w-[1200px] px-4 py-8 md:py-10 animate-fade-in-up-1">
 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+                <div className="skeuo-card p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-slate-800/50 border border-blue-100 dark:border-slate-700 mb-3">
                             <FaUserCog size={12} className="text-sky-500" />
@@ -125,10 +126,10 @@ const Settings = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="btn-secondary-glossy px-4 py-2 text-[13px] flex items-center gap-2">
+                        <button type="button" className="btn-secondary-glossy px-4 py-2 text-[13px] flex items-center gap-2 cursor-pointer">
                             <FaUndo size={12} className="opacity-70" /> Restaurar padrões
                         </button>
-                        <button className="skeuo-btn px-4 py-2 text-[13px] flex items-center gap-2">
+                        <button type="button" className="skeuo-btn px-4 py-2 text-[13px] flex items-center gap-2 cursor-pointer">
                             <FaSave size={12} /> Salvar alterações
                         </button>
                     </div>
@@ -139,8 +140,12 @@ const Settings = () => {
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
+                                type="button"
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm w-full text-left transition-all ${activeTab === tab.id ? 'bg-cyan-500 dark:bg-cyan-600 text-white! font-semibold shadow-md shadow-cyan-500/20' : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold text-sm w-full text-left transition-all cursor-pointer ${activeTab === tab.id
+                                    ? 'text-white bg-gradient-to-b from-sky-400 to-sky-500 shadow-[0_2px_6px_rgba(14,165,233,0.35),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/80'
+                                    : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5 border border-transparent font-normal'
+                                    }`}
                             >
                                 <span className={activeTab === tab.id ? '' : 'opacity-70'}>
                                     {tab.icon}
@@ -163,39 +168,51 @@ const Settings = () => {
                                 <div>
                                     <h4 className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-4">Modo de Cor</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div
+                                        <button
+                                            type="button"
                                             onClick={() => setColorMode('light')}
-                                            className={`rounded-xl p-4 cursor-pointer flex flex-col gap-3 items-center border-2 transition-all ${colorMode === 'light' ? 'border-sky-500 bg-sky-500/5 ring-1 ring-sky-500/20' : 'border-transparent bg-gray-50 dark:bg-slate-800 hover:-translate-y-0.5 hover:shadow-xs'}`}
+                                            className={`p-4 rounded-2xl flex flex-col items-center gap-3 transition-all cursor-pointer ${colorMode === 'light'
+                                                ? 'skeuo-card ring-2 ring-sky-500/80 shadow-[0_4px_12px_rgba(14,165,233,0.18)]'
+                                                : 'bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800'
+                                                }`}
                                         >
-                                            <div className="w-full h-20 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 shadow-inner flex items-center justify-center">
-                                                <FaSun className="text-blue-600 opacity-50" size={24} />
+                                            <div className="w-full h-20 rounded-xl bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center border border-slate-200/60 dark:border-slate-700/60 shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)]">
+                                                <Sun className="w-6 h-6 text-sky-500 drop-shadow-[0_1px_2px_rgba(14,165,233,0.3)]" />
                                             </div>
-                                            <span className="text-sm font-semibold admin-table-text">Claro</span>
-                                        </div>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Claro</span>
+                                        </button>
 
-                                        <div
+                                        <button
+                                            type="button"
                                             onClick={() => setColorMode('dark')}
-                                            className={`rounded-xl p-4 cursor-pointer flex flex-col gap-3 items-center border-2 transition-all ${colorMode === 'dark' ? 'border-sky-500 bg-sky-500/5 ring-1 ring-sky-500/20' : 'border-transparent bg-gray-50 dark:bg-slate-800 hover:-translate-y-0.5 hover:shadow-xs'}`}
+                                            className={`p-4 rounded-2xl flex flex-col items-center gap-3 transition-all cursor-pointer ${colorMode === 'dark'
+                                                ? 'skeuo-card ring-2 ring-sky-500/80 shadow-[0_4px_12px_rgba(14,165,233,0.18)]'
+                                                : 'bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800'
+                                                }`}
                                         >
-                                            <div className="w-full h-20 rounded-lg bg-gradient-to-br from-gray-800 to-gray-950 shadow-inner flex items-center justify-center">
-                                                <FaMoon className="text-gray-400 opacity-50" size={24} />
+                                            <div className="w-full h-20 rounded-xl bg-slate-800 dark:bg-slate-950 flex items-center justify-center border border-slate-700/60 shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]">
+                                                <Moon className="w-6 h-6 text-sky-400 drop-shadow-[0_1px_2px_rgba(56,189,248,0.3)]" />
                                             </div>
-                                            <span className="text-sm font-semibold admin-table-text">Escuro</span>
-                                        </div>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Escuro</span>
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div>
                                     <h4 className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-4">Fundo da Aplicação</h4>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                        {bgOptions.map((bg) => (
-                                            <div
-                                                key={bg.id}
-                                                onClick={() => setBgColor(bg.id)}
-                                                className={`rounded-xl p-3 cursor-pointer flex flex-col items-center justify-center text-center h-full border-2 transition-all ${bgColor === bg.id ? 'border-sky-500 bg-sky-500/5 ring-1 ring-sky-500/20' : 'border-transparent bg-gray-50 dark:bg-slate-800 hover:-translate-y-0.5 hover:shadow-xs'}`}
+                                    <div className="p-1 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-1">
+                                        {bgOptions.map((opt) => (
+                                            <button
+                                                key={opt.id}
+                                                type="button"
+                                                onClick={() => setBgColor(opt.id)}
+                                                className={`py-2 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${bgColor === opt.id
+                                                    ? 'btn-secondary-glossy text-sky-700 dark:text-sky-300 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                                                    }`}
                                             >
-                                                <span className="text-xs font-semibold admin-table-text">{bg.label}</span>
-                                            </div>
+                                                {opt.label}
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
@@ -206,11 +223,13 @@ const Settings = () => {
                                         {colors.map((c) => (
                                             <button
                                                 key={c.id}
+                                                type="button"
                                                 onClick={() => setPrimaryColor(c.id)}
-                                                style={{ backgroundColor: c.value }}
-                                                className={`w-10 h-10 rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.1)] hover:scale-110 transition-transform flex items-center justify-center ${primaryColor === c.id ? 'outline-2 outline-sky-500 outline-offset-2' : ''}`}
+                                                style={{ background: c.gradient }}
+                                                className={`w-9 h-9 rounded-full relative transition-transform active:scale-95 shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1.5px_1px_rgba(255,255,255,0.7),inset_0_-1.5px_2px_rgba(0,0,0,0.2)] border border-white/40 flex items-center justify-center cursor-pointer ${primaryColor === c.id ? 'ring-2 ring-offset-2 ring-sky-500 scale-105' : 'hover:scale-105'
+                                                    }`}
                                             >
-                                                {primaryColor === c.id && <FaCheck className="text-white text-xs" />}
+                                                {primaryColor === c.id && <Check className="w-4 h-4 text-white drop-shadow-sm stroke-[3]" />}
                                             </button>
                                         ))}
                                     </div>
@@ -221,11 +240,7 @@ const Settings = () => {
                                     <div className="w-full rounded-[24px] p-6 bg-gray-100/80 dark:bg-slate-900/60 border border-gray-200/80 dark:border-white/5 flex flex-col gap-5 shadow-xs transition-all">
                                         <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/5">
                                             <div className="flex items-center gap-3">
-                                                {bubbleFormat === 'suave' ? (
-                                                    <UserAvatar name="Alex Ripple" size="md" status="online" />
-                                                ) : (
-                                                    <UserAvatar name="Alex Ripple" size="md" status="online" />
-                                                )}
+                                                <UserAvatar name="Alex Ripple" size="md" status="online" />
                                                 <div>
                                                     <span className="text-sm font-bold admin-hero-title block">Alex Ripple</span>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">Online agora</span>
@@ -234,39 +249,39 @@ const Settings = () => {
                                             <button
                                                 onClick={toggleBubbleFormat}
                                                 className="skeuo-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 cursor-pointer shadow-xs hover:scale-[1.02] active:scale-[0.98] transition-transform"
-                                                title="Alternar entre formato Suave e Clássico"
+                                                title="Alternar entre formato Grande e Clássico"
                                             >
                                                 <span>Mudar Formato</span>
                                                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 uppercase font-bold tracking-tight">
-                                                    {bubbleFormat === 'suave' ? 'Suave' : 'Clássico'}
+                                                    {bubbleFormat === 'classico' ? 'Clássico' : 'Grande'}
                                                 </span>
                                             </button>
                                         </div>
 
-                                        {bubbleFormat === 'suave' ? (
+                                        {bubbleFormat === 'grande' ? (
                                             <div className="flex flex-col gap-4 animate-fade-in">
-                                                <div className="flex items-start gap-3 self-start max-w-[92%] md:max-w-[80%]">
-                                                    <UserAvatar name="Alex Ripple" size="sm" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[12.5px] font-bold text-[#1d1d1f] dark:text-slate-200 mb-1 ml-1 leading-none">
+                                                <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%]">
+                                                    <UserAvatar name="Alex Ripple" size="sm" showStatus={false} />
+
+                                                    <div className="flex flex-col items-start">
+                                                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2">
                                                             Alex Ripple
                                                         </span>
-                                                        <div className="px-5 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-white to-[#eceef1] dark:from-slate-800 dark:to-slate-900 border border-[#d2d2d7] dark:border-white/10 shadow-[0_2px_4px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] text-[14px] text-[#1d1d1f] dark:text-[#f8fafc] leading-relaxed">
+                                                        <div className="bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[18px] px-5 py-2.5 text-sm leading-relaxed">
                                                             Ei! A nova atualização da interface ficou incrível.
                                                         </div>
-                                                        <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 ml-2">
-                                                            10:42 AM
-                                                        </span>
+                                                        <span className="text-[10px] text-slate-400 mt-1 ml-3">10:42 AM</span>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex flex-col items-end self-end max-w-[92%] md:max-w-[80%] mt-1">
-                                                    <div className="px-6 py-2.5 rounded-full md:rounded-[24px] bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#0284c7] dark:from-[#0284c7] dark:via-[#0369a1] dark:to-[#075985] text-white font-medium text-[14px] leading-relaxed shadow-[0_4px_12px_rgba(14,165,233,0.35),inset_0_1px_1.5px_rgba(255,255,255,0.7)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.2)] border border-sky-400/40 dark:border-sky-500/20">
-                                                        Concordo! Muito suave.
+                                                <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto mt-1">
+                                                    <div className="bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-500 dark:to-blue-700 text-white shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-600/70 dark:border-sky-400/60 rounded-[18px] px-5 py-2.5 text-sm font-medium [text-shadow:0_-1px_0_rgba(0,0,0,0.2)]">
+                                                        Concordo! Formato grande ativo.
                                                     </div>
-                                                    <span className="text-[11px] text-[#86868b] dark:text-slate-400 mt-1 mr-2 flex items-center gap-1.5">
-                                                        10:44 AM <span className="text-sky-400 dark:text-sky-300 font-semibold tracking-tighter">✓✓</span>
-                                                    </span>
+                                                    <div className="flex items-center gap-1 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
+                                                        <span>10:44 AM</span>
+                                                        <span className="text-sky-500 font-bold">✓✓</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ) : (
