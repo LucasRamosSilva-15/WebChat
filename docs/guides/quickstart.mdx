@@ -4,7 +4,7 @@ sidebarTitle: "Quickstart"
 description: "Crie uma conta, gere seu token JWT e envie sua primeira mensagem em menos de 5 minutos."
 ---
 
-Este guia orienta você na realização do fluxo completo de ponta a ponta na API WebChat: registro de conta, autenticação, criação de uma sala e envio de mensagem.
+Este guia orienta você na realização do fluxo completo de ponta a ponta na API SkyRipple: registro de conta, autenticação, criação de uma sala e envio de mensagem.
 
 <Steps>
   <Step title="1. Registrar um Novo Usuário">
@@ -12,7 +12,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
 
     <CodeGroup>
     ```bash cURL
-    curl -X POST "https://webchat-9vqr.onrender.com/api/auth/register" \
+    curl -X POST "https://skyripple-9vqr.onrender.com/api/auth/register" \
       -H "Content-Type: application/json" \
       -d '{
         "name": "Dev Antigravity",
@@ -22,7 +22,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
     ```
 
     ```javascript Node.js (Fetch)
-    const response = await fetch('https://webchat-9vqr.onrender.com/api/auth/register', {
+    const response = await fetch('https://skyripple-9vqr.onrender.com/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -39,7 +39,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
     ```python Python (Requests)
     import requests
 
-    url = "https://webchat-9vqr.onrender.com/api/auth/register"
+    url = "https://skyripple-9vqr.onrender.com/api/auth/register"
     payload = {
         "name": "Dev Antigravity",
         "email": "dev.antigravity@example.com",
@@ -76,7 +76,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
 
     <CodeGroup>
     ```bash cURL
-    curl -X POST "https://webchat-9vqr.onrender.com/api/rooms" \
+    curl -X POST "https://skyripple-9vqr.onrender.com/api/rooms" \
       -H "Authorization: Bearer <SEU_TOKEN_JWT>" \
       -H "Content-Type: application/json" \
       -d '{
@@ -88,7 +88,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
     ```
 
     ```javascript Node.js
-    const roomResponse = await fetch('https://webchat-9vqr.onrender.com/api/rooms', {
+    const roomResponse = await fetch('https://skyripple-9vqr.onrender.com/api/rooms', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -116,7 +116,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
     }
 
     room_res = requests.post(
-        "https://webchat-9vqr.onrender.com/api/rooms",
+        "https://skyripple-9vqr.onrender.com/api/rooms",
         headers=headers,
         json=room_payload
     )
@@ -132,17 +132,17 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
 
     <CodeGroup>
     ```bash cURL
-    curl -X POST "https://webchat-9vqr.onrender.com/api/rooms/<ROOM_ID>/messages" \
+    curl -X POST "https://skyripple-9vqr.onrender.com/api/rooms/<ROOM_ID>/messages" \
       -H "Authorization: Bearer <SEU_TOKEN_JWT>" \
       -H "Content-Type: application/json" \
       -d '{
         "content": "Olá a todos! Primeira mensagem enviada com sucesso via API.",
-        "imageUrl": "https://storage.webchat.com/uploads/diagram.png"
+        "imageUrl": "https://storage.skyripple.com/uploads/diagram.png"
       }'
     ```
 
     ```javascript Node.js
-    const msgResponse = await fetch(`https://webchat-9vqr.onrender.com/api/rooms/${room.id}/messages`, {
+    const msgResponse = await fetch(`https://skyripple-9vqr.onrender.com/api/rooms/${room.id}/messages`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -150,7 +150,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
       },
       body: JSON.stringify({
         content: 'Olá a todos! Primeira mensagem enviada com sucesso via API.',
-        imageUrl: 'https://storage.webchat.com/uploads/diagram.png'
+        imageUrl: 'https://storage.skyripple.com/uploads/diagram.png'
       })
     });
 
@@ -161,11 +161,11 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
     ```python Python
     msg_payload = {
         "content": "Olá a todos! Primeira mensagem enviada com sucesso via API.",
-        "imageUrl": "https://storage.webchat.com/uploads/diagram.png"
+        "imageUrl": "https://storage.skyripple.com/uploads/diagram.png"
     }
 
     msg_res = requests.post(
-        f"https://webchat-9vqr.onrender.com/api/rooms/{room_id}/messages",
+        f"https://skyripple-9vqr.onrender.com/api/rooms/{room_id}/messages",
         headers=headers,
         json=msg_payload
     )
@@ -179,12 +179,12 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
 
     <CodeGroup>
     ```bash cURL
-    curl -X GET "https://webchat-9vqr.onrender.com/api/rooms/<ROOM_ID>/messages/search?q=Primeira" \
+    curl -X GET "https://skyripple-9vqr.onrender.com/api/rooms/<ROOM_ID>/messages/search?q=Primeira" \
       -H "Authorization: Bearer <SEU_TOKEN_JWT>"
     ```
 
     ```javascript Node.js
-    const searchRes = await fetch(`https://webchat-9vqr.onrender.com/api/rooms/${room.id}/messages/search?q=Primeira`, {
+    const searchRes = await fetch(`https://skyripple-9vqr.onrender.com/api/rooms/${room.id}/messages/search?q=Primeira`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const results = await searchRes.json();
@@ -193,7 +193,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
 
     ```python Python
     search_res = requests.get(
-        f"https://webchat-9vqr.onrender.com/api/rooms/{room_id}/messages/search?q=Primeira",
+        f"https://skyripple-9vqr.onrender.com/api/rooms/{room_id}/messages/search?q=Primeira",
         headers=headers
     )
     print("Resultados da Busca:", search_res.json())

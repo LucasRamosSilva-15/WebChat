@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "WebChat API & UI",
+  "name": "SkyRipple API & UI",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
@@ -23,7 +23,7 @@
   ],
   "topbarCtaButton": {
     "name": "Acessar Aplicação",
-    "url": "https://webchat-9vqr.onrender.com"
+    "url": "https://skyripple-9vqr.onrender.com"
   },
   "tabs": [
     {
@@ -146,7 +146,7 @@
     }
   ],
   "api": {
-    "baseUrl": "https://webchat-9vqr.onrender.com/api",
+    "baseUrl": "https://skyripple-9vqr.onrender.com/api",
     "auth": {
       "method": "bearer"
     }

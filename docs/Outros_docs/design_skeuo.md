@@ -1,6 +1,6 @@
 # Skeuo Design System - Documentação Técnica e Catálogo da API Visual
 
-Bem-vindo à documentação oficial do **Skeuo Design System (SDS)** utilizado no **SkyRipple (WebChat)**.  
+Bem-vindo à documentação oficial do **Skeuo Design System (SDS)** utilizado no **SkyRipple (SkyRipple)**.  
 Este documento cataloga a arquitetura visual, os design tokens, as variáveis dinâmicas, as classes CSS ativas e os padrões canônicos de componentes que compõem o sistema tátil e skeuomórfico da aplicação pós-refatoração (Tailwind CSS v4 + Módulos CSS).
 
 ---
@@ -11,12 +11,12 @@ A camada de interface do SkyRipple é dividida em dois pilares complementares:
 
 1. **Tailwind CSS v4 (Estrutura e Responsividade):** Utilizado para grids, flexbox, larguras, paddings, alinhamento, gaps e comportamento mobile em toda a aplicação.
 2. **Módulos CSS Especializados (Materiais, Chanfros e Profundidade):**
-   - [`frontend/src/index.css`](file:///home/lucasramos/Documentos/WebChat/frontend/src/index.css): Tokens globais de cores, temas dinâmicos, texturas de background e scrollbars nativas.
-   - [`frontend/src/styles/skeuo.css`](file:///home/lucasramos/Documentos/WebChat/frontend/src/styles/skeuo.css): O núcleo volumétrico (painéis, botões glossy, inputs em cavidade, badges, modais e balões).
-   - [`frontend/src/styles/avatar.css`](file:///home/lucasramos/Documentos/WebChat/frontend/src/styles/avatar.css): Anéis luminosos de status de presença e badges de avatares.
-   - [`frontend/src/styles/text.css`](file:///home/lucasramos/Documentos/WebChat/frontend/src/styles/text.css): Tipografia com letterpress e chanfros de texto.
-   - [`frontend/src/styles/animations.css`](file:///home/lucasramos/Documentos/WebChat/frontend/src/styles/animations.css): Micro-interações, efeitos de pulso, entrada física e shimmer.
-   - [`frontend/src/styles/loading.css`](file:///home/lucasramos/Documentos/WebChat/frontend/src/styles/loading.css): Spinners esféricos skeuomórficos e barras de progresso.
+   - [`frontend/src/index.css`](file:///home/lucasramos/Documentos/SkyRipple/frontend/src/index.css): Tokens globais de cores, temas dinâmicos, texturas de background e scrollbars nativas.
+   - [`frontend/src/styles/skeuo.css`](file:///home/lucasramos/Documentos/SkyRipple/frontend/src/styles/skeuo.css): O núcleo volumétrico (painéis, botões glossy, inputs em cavidade, badges, modais e balões).
+   - [`frontend/src/styles/avatar.css`](file:///home/lucasramos/Documentos/SkyRipple/frontend/src/styles/avatar.css): Anéis luminosos de status de presença e badges de avatares.
+   - [`frontend/src/styles/text.css`](file:///home/lucasramos/Documentos/SkyRipple/frontend/src/styles/text.css): Tipografia com letterpress e chanfros de texto.
+   - [`frontend/src/styles/animations.css`](file:///home/lucasramos/Documentos/SkyRipple/frontend/src/styles/animations.css): Micro-interações, efeitos de pulso, entrada física e shimmer.
+   - [`frontend/src/styles/loading.css`](file:///home/lucasramos/Documentos/SkyRipple/frontend/src/styles/loading.css): Spinners esféricos skeuomórficos e barras de progresso.
 
 ---
 

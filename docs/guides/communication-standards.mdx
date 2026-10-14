@@ -4,7 +4,7 @@ sidebarTitle: "Erros, Rate Limit & Paginação"
 description: "Convenções de respostas HTTP, catálogo de erros, políticas de Rate Limit e estratégias de consumo de dados."
 ---
 
-A API do WebChat segue contratos rígidos de comunicação para garantir que clientes Web, Mobile e microsserviços integrados operem com estabilidade, previsibilidade e resiliência.
+A API do SkyRipple segue contratos rígidos de comunicação para garantir que clientes Web, Mobile e microsserviços integrados operem com estabilidade, previsibilidade e resiliência.
 
 ---
 
@@ -36,7 +36,7 @@ Em caso de falha de validação ou exceção interna, a resposta conterá obriga
 
 O handler central de erros do backend (`src/controllers/errorHandler.js`) traduz as regras de negócio nos seguintes status:
 
-| Status Code | Tipo de Erro | Gatilho Típico no WebChat |
+| Status Code | Tipo de Erro | Gatilho Típico no SkyRipple |
 | :--- | :--- | :--- |
 | `200 OK` | Sucesso | Consulta de salas, perfil, mensagens ou deleção realizada |
 | `201 Created` | Criado | Criação de usuário, sala, mensagem, report ou feedback |
@@ -52,7 +52,7 @@ O handler central de erros do backend (`src/controllers/errorHandler.js`) traduz
 
 ## Políticas de Rate Limit (Limitação de Taxa)
 
-Para mitigar ataques de força bruta, abuso de rede e sobrecarga do banco relacional, o WebChat implementa 3 camadas de limitação:
+Para mitigar ataques de força bruta, abuso de rede e sobrecarga do banco relacional, o SkyRipple implementa 3 camadas de limitação:
 
 <CardGroup cols={3}>
   <Card title="Autenticação Geral" icon="user-shield" color="#3B82F6">

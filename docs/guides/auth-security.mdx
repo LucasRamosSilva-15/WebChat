@@ -4,7 +4,7 @@ sidebarTitle: "Segurança & JWT"
 description: "Padrões de segurança, criptografia com bcrypt, tokens de usuário versus admin e proteção de rotas."
 ---
 
-A segurança da WebChat API é baseada em padrões consolidados da indústria: assinatura criptográfica de **JSON Web Tokens (JWT)** via `HS256`, proteção estrita com saltos de hashing `bcrypt` e limitação de taxa adaptativa por IP.
+A segurança da SkyRipple API é baseada em padrões consolidados da indústria: assinatura criptográfica de **JSON Web Tokens (JWT)** via `HS256`, proteção estrita com saltos de hashing `bcrypt` e limitação de taxa adaptativa por IP.
 
 ---
 
@@ -57,14 +57,14 @@ Inclua o token precedido pelo esquema `Bearer ` no cabeçalho HTTP `Authorizatio
 
 <CodeGroup>
 ```bash cURL
-curl -X GET "https://webchat-9vqr.onrender.com/api/auth/me" \
+curl -X GET "https://skyripple-9vqr.onrender.com/api/auth/me" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 ```javascript Node.js
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
-const res = await fetch('https://webchat-9vqr.onrender.com/api/auth/me', {
+const res = await fetch('https://skyripple-9vqr.onrender.com/api/auth/me', {
   headers: {
     'Authorization': `Bearer ${token}`
   }
@@ -78,7 +78,7 @@ import requests
 token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 headers = {"Authorization": f"Bearer {token}"}
 
-res = requests.get("https://webchat-9vqr.onrender.com/api/auth/me", headers=headers)
+res = requests.get("https://skyripple-9vqr.onrender.com/api/auth/me", headers=headers)
 profile = res.json()
 ```
 </CodeGroup>
@@ -91,7 +91,7 @@ Para obter privilégios administrativos no painel e disparar operações como `/
 
 <CodeGroup>
 ```bash cURL
-curl -X POST "https://webchat-9vqr.onrender.com/api/admin/auth" \
+curl -X POST "https://skyripple-9vqr.onrender.com/api/admin/auth" \
   -H "Content-Type: application/json" \
   -d '{
     "password": "<CHAVE_MESTRA_ADMIN>"
@@ -99,7 +99,7 @@ curl -X POST "https://webchat-9vqr.onrender.com/api/admin/auth" \
 ```
 
 ```javascript Node.js
-const adminAuthRes = await fetch('https://webchat-9vqr.onrender.com/api/admin/auth', {
+const adminAuthRes = await fetch('https://skyripple-9vqr.onrender.com/api/admin/auth', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ password: process.env.ADMIN_SECRET_KEY })
@@ -110,7 +110,7 @@ console.log('Autenticado com role:', role);
 
 ```python Python
 admin_res = requests.post(
-    "https://webchat-9vqr.onrender.com/api/admin/auth",
+    "https://skyripple-9vqr.onrender.com/api/admin/auth",
     json={"password": "minha_chave_mestra_secreta"}
 )
 admin_token = admin_res.json()["token"]
@@ -131,12 +131,12 @@ admin_token = admin_res.json()["token"]
 
 ## Autenticação em Conexões WebSockets
 
-O servidor WebSocket (Socket.io) do WebChat intercepta a conexão no handshake inicial e rejeita clientes que não forneçam um token válido:
+O servidor WebSocket (Socket.io) do SkyRipple intercepta a conexão no handshake inicial e rejeita clientes que não forneçam um token válido:
 
 ```javascript
 import { io } from "socket.io-client";
 
-const socket = io("https://webchat-9vqr.onrender.com", {
+const socket = io("https://skyripple-9vqr.onrender.com", {
   auth: {
     token: "<SEU_TOKEN_JWT>"
   },

@@ -1,6 +1,6 @@
-# 🚀 Portal de Documentação WebChat (Mintlify)
+# 🚀 Portal de Documentação SkyRipple (Mintlify)
 
-Este diretório contém a documentação técnica oficial, especificações OpenAPI 3.1 e guias interativos da **WebChat API**, construídos utilizando a plataforma [Mintlify](https://mintlify.com).
+Este diretório contém a documentação técnica oficial, especificações OpenAPI 3.1 e guias interativos da **SkyRipple API**, construídos utilizando a plataforma [Mintlify](https://mintlify.com).
 
 ---
 
@@ -101,7 +101,7 @@ Para habilitar a sincronização via API do Mintlify no workflow, configure as s
 1. Acesse o dashboard do Mintlify em [https://dashboard.mintlify.com](https://dashboard.mintlify.com).
 2. Clique em **Add Deployment** ou **New Project**.
 3. Selecione a opção **Import from GitHub**.
-4. Instale o **Mintlify GitHub App** concedendo acesso ao repositório `LucasRamosSilva-15/WebChat`.
+4. Instale o **Mintlify GitHub App** concedendo acesso ao repositório `LucasRamosSilva-15/SkyRipple`.
 5. Indique o diretório raiz da documentação como: `docs`.
 6. Selecione a branch de produção padrão (`main`).
-7. Clique em **Deploy**. O Mintlify gerará sua URL pública personalizada (ex: `https://webchat.mintlify.app` ou seu domínio customizado).
+7. Clique em **Deploy**. O Mintlify gerará sua URL pública personalizada (ex: `https://skyripple.mintlify.app` ou seu domínio customizado).

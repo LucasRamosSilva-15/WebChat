@@ -5,7 +5,7 @@ description: "Comunicação bidirecional com Socket.io para envio de mensagens, 
 
 ## Conexão Realtime com Socket.io
 
-O WebChat utiliza **Socket.io v4** para gerenciar eventos em tempo real com failover automático entre WebSockets nativos e polling HTTP.
+O SkyRipple utiliza **Socket.io v4** para gerenciar eventos em tempo real com failover automático entre WebSockets nativos e polling HTTP.
 
 ### Handshake e Autenticação
 
@@ -14,7 +14,7 @@ Para se conectar ao WebSocket, você deve enviar o token JWT no objeto `auth` du
 ```javascript
 import { io } from "socket.io-client";
 
-const socket = io("https://webchat-9vqr.onrender.com", {
+const socket = io("https://skyripple-9vqr.onrender.com", {
   auth: {
     token: "<SEU_TOKEN_JWT>"
   },
@@ -23,7 +23,7 @@ const socket = io("https://webchat-9vqr.onrender.com", {
 });
 
 socket.on("connect", () => {
-  console.log("Conectado ao WebChat Realtime com Socket ID:", socket.id);
+  console.log("Conectado ao SkyRipple Realtime com Socket ID:", socket.id);
 });
 
 socket.on("connect_error", (err) => {

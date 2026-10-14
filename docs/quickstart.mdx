@@ -5,14 +5,14 @@ description: "Dê os primeiros passos: crie sua conta, obtenha seu token e envie
 
 ## Passo a Passo Inicial
 
-Siga estas 4 etapas para interagir com o WebChat via API.
+Siga estas 4 etapas para interagir com o SkyRipple via API.
 
 <Steps>
   <Step title="Criar sua Conta">
     Faça uma requisição `POST` para `/auth/register` informando seu e-mail, nome e senha.
 
     ```bash
-    curl -X POST https://webchat-9vqr.onrender.com/api/auth/register \
+    curl -X POST https://skyripple-9vqr.onrender.com/api/auth/register \
       -H "Content-Type: application/json" \
       -d '{
         "name": "Dev Explorer",
@@ -50,14 +50,14 @@ Siga estas 4 etapas para interagir com o WebChat via API.
     Liste as salas disponíveis para encontrar uma de seu interesse:
 
     ```bash
-    curl -X GET https://webchat-9vqr.onrender.com/api/rooms \
+    curl -X GET https://skyripple-9vqr.onrender.com/api/rooms \
       -H "Authorization: Bearer <SEU_TOKEN_JWT>"
     ```
 
     Ou crie uma nova sala instantaneamente:
 
     ```bash
-    curl -X POST https://webchat-9vqr.onrender.com/api/rooms \
+    curl -X POST https://skyripple-9vqr.onrender.com/api/rooms \
       -H "Authorization: Bearer <SEU_TOKEN_JWT>" \
       -H "Content-Type: application/json" \
       -d '{
@@ -73,7 +73,7 @@ Siga estas 4 etapas para interagir com o WebChat via API.
     Com o `id` da sala em mãos (por exemplo, `3fa85f64-5717-4562-b3fc-2c963f66afa6`), envie sua mensagem:
 
     ```bash
-    curl -X POST https://webchat-9vqr.onrender.com/api/rooms/3fa85f64-5717-4562-b3fc-2c963f66afa6/messages \
+    curl -X POST https://skyripple-9vqr.onrender.com/api/rooms/3fa85f64-5717-4562-b3fc-2c963f66afa6/messages \
       -H "Authorization: Bearer <SEU_TOKEN_JWT>" \
       -H "Content-Type: application/json" \
       -d '{
@@ -86,7 +86,7 @@ Siga estas 4 etapas para interagir com o WebChat via API.
 ## Exemplo em JavaScript (Node.js / Fetch)
 
 ```javascript
-const BASE_URL = 'https://webchat-9vqr.onrender.com/api';
+const BASE_URL = 'https://skyripple-9vqr.onrender.com/api';
 
 async function main() {
   // 1. Login

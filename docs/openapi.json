@@ -1,18 +1,18 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "WebChat API",
+    "title": "SkyRipple API",
     "summary": "Plataforma de Salas de Bate-Papo em Tempo Real",
-    "description": "A API RESTful do WebChat permite gerenciar usuários, autenticação JWT, criação e participação em salas temáticas, envio e busca de mensagens, canal de denúncias (reports), feedback de produto e operações administrativas avançadas.",
+    "description": "A API RESTful do SkyRipple permite gerenciar usuários, autenticação JWT, criação e participação em salas temáticas, envio e busca de mensagens, canal de denúncias (reports), feedback de produto e operações administrativas avançadas.",
     "version": "1.0.0",
     "contact": {
-      "name": "Suporte e Engenharia WebChat",
+      "name": "Suporte e Engenharia SkyRipple",
       "url": "https://github.com/LucasRamosSilva-15/WebChat"
     }
   },
   "servers": [
     {
-      "url": "https://webchat-9vqr.onrender.com/api",
+      "url": "https://skyripple-9vqr.onrender.com/api",
       "description": "Servidor de Produção (Render)"
     },
     {
@@ -186,7 +186,7 @@
                   "email": "lucas@example.com",
                   "displayName": "Lucas Ramos",
                   "name": "Lucas Ramos",
-                  "profilePhoto": "https://storage.webchat.com/avatars/lucas.png",
+                  "profilePhoto": "https://storage.skyripple.com/avatars/lucas.png",
                   "profileDesc": "Desenvolvedor Full Stack apaixonado por arquitetura.",
                   "created_at": "2026-10-14T18:00:00.000Z"
                 }
@@ -285,7 +285,7 @@
                     "type": "public",
                     "description": "Discussões avançadas sobre backend, patterns e Node.js.",
                     "category": "tecnologia",
-                    "image_url": "https://storage.webchat.com/rooms/nodejs.png",
+                    "image_url": "https://storage.skyripple.com/rooms/nodejs.png",
                     "created_by": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
                     "created_at": "2026-10-14T10:00:00.000Z",
                     "members_count": 42,
@@ -327,7 +327,7 @@
                 "type": "public",
                 "description": "Discussões avançadas sobre backend, patterns e Node.js.",
                 "category": "tecnologia",
-                "image_url": "https://storage.webchat.com/rooms/nodejs.png"
+                "image_url": "https://storage.skyripple.com/rooms/nodejs.png"
               }
             }
           }
@@ -346,7 +346,7 @@
                   "type": "public",
                   "description": "Discussões avançadas sobre backend, patterns e Node.js.",
                   "category": "tecnologia",
-                  "image_url": "https://storage.webchat.com/rooms/nodejs.png",
+                  "image_url": "https://storage.skyripple.com/rooms/nodejs.png",
                   "created_by": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
                   "created_at": "2026-10-14T10:00:00.000Z"
                 }
@@ -411,7 +411,7 @@
                   "type": "public",
                   "description": "Discussões avançadas sobre backend, patterns e Node.js.",
                   "category": "tecnologia",
-                  "image_url": "https://storage.webchat.com/rooms/nodejs.png",
+                  "image_url": "https://storage.skyripple.com/rooms/nodejs.png",
                   "created_by": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
                   "created_at": "2026-10-14T10:00:00.000Z",
                   "members_count": 42,
@@ -620,13 +620,13 @@
                     "id": "8aa1c7c8-7f5b-4c01-8b29-1a3e8b09d2cc",
                     "room_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                     "user_id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
-                    "content": "Olá a todos! Sejam muito bem-vindos ao WebChat.",
+                    "content": "Olá a todos! Sejam muito bem-vindos ao SkyRipple.",
                     "image_url": null,
                     "created_at": "2026-10-14T10:05:00.000Z",
                     "user": {
                       "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
                       "displayName": "Lucas Ramos",
-                      "profilePhoto": "https://storage.webchat.com/avatars/lucas.png"
+                      "profilePhoto": "https://storage.skyripple.com/avatars/lucas.png"
                     }
                   }
                 ]
@@ -660,7 +660,7 @@
               },
               "example": {
                 "content": "Confiram esse print da nova arquitetura de microserviços!",
-                "imageUrl": "https://storage.webchat.com/uploads/diagram.png"
+                "imageUrl": "https://storage.skyripple.com/uploads/diagram.png"
               }
             }
           }
@@ -869,7 +869,7 @@
               "example": {
                 "comment": "Gostaria de sugerir suporte a emojis customizados nas salas!",
                 "images": [
-                  "https://storage.webchat.com/feedback/screenshot1.png"
+                  "https://storage.skyripple.com/feedback/screenshot1.png"
                 ]
               }
             }
@@ -888,7 +888,7 @@
                   "user_id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
                   "comment": "Gostaria de sugerir suporte a emojis customizados nas salas!",
                   "images": [
-                    "https://storage.webchat.com/feedback/screenshot1.png"
+                    "https://storage.skyripple.com/feedback/screenshot1.png"
                   ],
                   "status": "pending",
                   "created_at": "2026-10-14T18:18:00.000Z"
@@ -1451,7 +1451,7 @@
           "profilePhoto": {
             "type": "string",
             "nullable": true,
-            "example": "https://storage.webchat.com/avatars/lucas.png"
+            "example": "https://storage.skyripple.com/avatars/lucas.png"
           },
           "profileDesc": {
             "type": "string",
@@ -1494,7 +1494,7 @@
             "type": "string",
             "format": "uri",
             "description": "Imagem de capa ou avatar da sala",
-            "example": "https://storage.webchat.com/rooms/nodejs.png"
+            "example": "https://storage.skyripple.com/rooms/nodejs.png"
           }
         }
       },
@@ -1528,7 +1528,7 @@
           "image_url": {
             "type": "string",
             "nullable": true,
-            "example": "https://storage.webchat.com/rooms/nodejs.png"
+            "example": "https://storage.skyripple.com/rooms/nodejs.png"
           },
           "created_by": {
             "type": "string",
@@ -1661,7 +1661,7 @@
             "type": "string",
             "format": "uri",
             "description": "URL de imagem anexada",
-            "example": "https://storage.webchat.com/uploads/diagram.png"
+            "example": "https://storage.skyripple.com/uploads/diagram.png"
           }
         }
       },
@@ -1687,7 +1687,7 @@
           "content": {
             "type": "string",
             "nullable": true,
-            "example": "Olá a todos! Sejam muito bem-vindos ao WebChat."
+            "example": "Olá a todos! Sejam muito bem-vindos ao SkyRipple."
           },
           "image_url": {
             "type": "string",
@@ -1826,7 +1826,7 @@
           "images": {
             "type": "array",
             "items": { "type": "string" },
-            "example": ["https://storage.webchat.com/feedback/screenshot.png"]
+            "example": ["https://storage.skyripple.com/feedback/screenshot.png"]
           },
           "status": {
             "type": "string",

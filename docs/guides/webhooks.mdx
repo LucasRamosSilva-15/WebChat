@@ -4,14 +4,14 @@ sidebarTitle: "Webhooks"
 description: "Receba notificações em tempo real no seu servidor sobre mensagens, novas salas, denúncias e alterações de usuários."
 ---
 
-Os **Webhooks do WebChat** permitem que sistemas externos, bots de atendimento, plataformas de compliance e serviços de auditoria recebam notificações instantâneas via requisições HTTP `POST` sempre que eventos relevantes ocorrem na plataforma.
+Os **Webhooks do SkyRipple** permitem que sistemas externos, bots de atendimento, plataformas de compliance e serviços de auditoria recebam notificações instantâneas via requisições HTTP `POST` sempre que eventos relevantes ocorrem na plataforma.
 
 <CardGroup cols={3}>
   <Card title="Entrega em Tempo Real" icon="bolt" color="#3B82F6">
     Disparos imediatos via chamadas assíncronas HTTP `POST` com payloads JSON.
   </Card>
   <Card title="Segurança Criptográfica" icon="shield-check" color="#10B981">
-    Assinatura digital HMAC SHA-256 no header `X-WebChat-Signature` contra adulterações.
+    Assinatura digital HMAC SHA-256 no header `X-SkyRipple-Signature` contra adulterações.
   </Card>
   <Card title="Política de Retentativas" icon="arrow-rotate-right" color="#F59E0B">
     Retry automático com backoff exponencial para endpoints instáveis (status 5xx).
@@ -25,13 +25,13 @@ Os **Webhooks do WebChat** permitem que sistemas externos, bots de atendimento, 
 Cada disparo de Webhook envia uma requisição `POST` com headers de auditoria e segurança específicos:
 
 ```http
-POST https://api.suaempresa.com/webhooks/webchat
+POST https://api.suaempresa.com/webhooks/skyripple
 Content-Type: application/json
-User-Agent: WebChat-Webhook-Dispatcher/1.0
-X-WebChat-Event: message.created
-X-WebChat-Delivery: d8f34d1b-7822-4d51-931d-b6a4a2b978e1
-X-WebChat-Timestamp: 1728931200
-X-WebChat-Signature: t=1728931200,v1=9c4a8ef71d87f58d044238e83344f6f8bb1d798be1288cba6b8cb1764eb8e348
+User-Agent: SkyRipple-Webhook-Dispatcher/1.0
+X-SkyRipple-Event: message.created
+X-SkyRipple-Delivery: d8f34d1b-7822-4d51-931d-b6a4a2b978e1
+X-SkyRipple-Timestamp: 1728931200
+X-SkyRipple-Signature: t=1728931200,v1=9c4a8ef71d87f58d044238e83344f6f8bb1d798be1288cba6b8cb1764eb8e348
 ```
 
 ### Formato do Payload
@@ -46,7 +46,7 @@ X-WebChat-Signature: t=1728931200,v1=9c4a8ef71d87f58d044238e83344f6f8bb1d798be12
     "room_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     "user_id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
     "content": "Novo release de integração disponível!",
-    "image_url": "https://storage.webchat.com/uploads/release.png",
+    "image_url": "https://storage.skyripple.com/uploads/release.png",
     "created_at": "2026-10-14T18:30:00.000Z",
     "user": {
       "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
@@ -88,11 +88,11 @@ X-WebChat-Signature: t=1728931200,v1=9c4a8ef71d87f58d044238e83344f6f8bb1d798be12
 
 ## Verificação de Segurança da Assinatura (HMAC SHA-256)
 
-Para garantir que o webhook realmente originou-se dos servidores do WebChat e não foi interceptado ou adulterado, valide a assinatura utilizando o segredo compartilhado (`WEBHOOK_SECRET`).
+Para garantir que o webhook realmente originou-se dos servidores do SkyRipple e não foi interceptado ou adulterado, valide a assinatura utilizando o segredo compartilhado (`WEBHOOK_SECRET`).
 
 <Steps>
   <Step title="Extrair o Timestamp e Assinatura">
-    O header `X-WebChat-Signature` possui o formato `t=<timestamp>,v1=<hash_hex>`.
+    O header `X-SkyRipple-Signature` possui o formato `t=<timestamp>,v1=<hash_hex>`.
   </Step>
 
   <Step title="Montar a Assinatura Esperada">
@@ -124,8 +124,8 @@ app.use(express.json({
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "whsec_minha_chave_secreta";
 
-app.post("/webhooks/webchat", (req, res) => {
-  const sigHeader = req.headers["x-webchat-signature"];
+app.post("/webhooks/skyripple", (req, res) => {
+  const sigHeader = req.headers["x-skyripple-signature"];
   if (!sigHeader) {
     return res.status(401).send("Header de assinatura ausente");
   }
@@ -177,9 +177,9 @@ from flask import Flask, request, jsonify, abort
 app = Flask(__name__)
 WEBHOOK_SECRET = "whsec_minha_chave_secreta"
 
-@app.route("/webhooks/webchat", methods=["POST"])
+@app.route("/webhooks/skyripple", methods=["POST"])
 def handle_webhook():
-    sig_header = request.headers.get("X-WebChat-Signature")
+    sig_header = request.headers.get("X-SkyRipple-Signature")
     if not sig_header:
         abort(401, "Header de assinatura ausente")
 
@@ -217,7 +217,7 @@ if __name__ == "__main__":
 
 ## Política de Retentativas e Resiliência
 
-Caso seu servidor retorne códigos `5xx` ou ocorra timeout de conexão (> 10s), o despachador do WebChat aplica uma estratégia de retentativas:
+Caso seu servidor retorne códigos `5xx` ou ocorra timeout de conexão (> 10s), o despachador do SkyRipple aplica uma estratégia de retentativas:
 
 | Tentativa | Atraso (Delay) |
 | :--- | :--- |

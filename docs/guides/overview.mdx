@@ -1,15 +1,15 @@
 ---
 title: "Visão Geral da Arquitetura"
 sidebarTitle: "Arquitetura & Ecossistema"
-description: "Compreenda o ecossistema, os módulos e a infraestrutura tecnológica que compõem o WebChat."
+description: "Compreenda o ecossistema, os módulos e a infraestrutura tecnológica que compõem o SkyRipple."
 ---
 
-O **WebChat** é uma plataforma de comunicação em tempo real de alto desempenho, projetada sob uma arquitetura híbrida que combina uma robusta API RESTful (Express/Node.js) com um pipeline de mensageria bidirecional via WebSockets (Socket.io) e persistência relacional (PostgreSQL / Supabase / Prisma).
+O **SkyRipple** é uma plataforma de comunicação em tempo real de alto desempenho, projetada sob uma arquitetura híbrida que combina uma robusta API RESTful (Express/Node.js) com um pipeline de mensageria bidirecional via WebSockets (Socket.io) e persistência relacional (PostgreSQL / Supabase / Prisma).
 
 <img
   className="w-full rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl"
   src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80"
-  alt="WebChat Cloud Infrastructure"
+  alt="SkyRipple Cloud Infrastructure"
 />
 
 ---
@@ -38,7 +38,7 @@ O diagrama abaixo ilustra o fluxo de dados entre os clientes (Web/Mobile), a cam
 
 ```mermaid
 graph TD
-    Client[Cliente WebChat / SDK] -->|HTTP REST /api/*| Express[Express Server API]
+    Client[Cliente SkyRipple / SDK] -->|HTTP REST /api/*| Express[Express Server API]
     Client -->|WSS Handshake + JWT| SocketIO[Socket.io Gateway]
     Express --> AuthMW[Middleware auth.js / adminAuth.js]
     AuthMW --> Controllers[Controllers & Services]
@@ -56,11 +56,11 @@ Para integrar suas aplicações e realizar homologações, utilize as URLs base 
 
 | Ambiente | Base URL | WebSocket URL | Protocolo de Transporte |
 | :--- | :--- | :--- | :--- |
-| **Produção (Render)** | `https://webchat-9vqr.onrender.com/api` | `wss://webchat-9vqr.onrender.com` | HTTPS / WSS |
+| **Produção (Render)** | `https://skyripple-9vqr.onrender.com/api` | `wss://skyripple-9vqr.onrender.com` | HTTPS / WSS |
 | **Desenvolvimento Local** | `http://localhost:3001/api` | `ws://localhost:3001` | HTTP / WS |
 
 <Note>
-**Healthcheck**: A rota raiz `GET /` do servidor responde `{ "status": "online", "service": "WebChat MVP API" }` sem exigir autenticação, ideal para monitoramento de liveness e readiness em orquestradores como Kubernetes ou Render.
+**Healthcheck**: A rota raiz `GET /` do servidor responde `{ "status": "online", "service": "SkyRipple MVP API" }` sem exigir autenticação, ideal para monitoramento de liveness e readiness em orquestradores como Kubernetes ou Render.
 </Note>
 
 ---

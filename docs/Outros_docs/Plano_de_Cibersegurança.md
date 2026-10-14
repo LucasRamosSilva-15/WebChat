@@ -1,4 +1,4 @@
-# Plano Detalhado de Cibersegurança: SkyRipple WebChat
+# Plano Detalhado de Cibersegurança: SkyRipple SkyRipple
 
 Este documento descreve as diretrizes, estratégias e ações recomendadas para proteger a infraestrutura e a aplicação web **SkyRipple**, que utiliza a stack: **React (Vite), Node.js (Express), Socket.IO e Supabase**.
 
@@ -89,7 +89,7 @@ Um atacante pode enviar 1.000 mensagens por segundo via socket travando os clien
 
 ### 3. Proteção Contra Cross-Site Scripting (XSS)
 
-Como um WebChat renderiza conteúdo gerado pelo usuário frequentemente, a validação do texto é essencial.
+Como um SkyRipple renderiza conteúdo gerado pelo usuário frequentemente, a validação do texto é essencial.
 
 - **Ação:** Mesmo o React mitigando XSS naturalmente (`{message}` não renderiza tags HTML), se a gente estiver pretendendo no futuro usar algo como Markdown ou links interativos (ex: `dangerouslySetInnerHTML`), é obrigatório o uso do **DOMPurify**.
 - **Implementação no Frontend:**

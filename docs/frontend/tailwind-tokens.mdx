@@ -4,7 +4,7 @@ sidebarTitle: "Design Tokens & Estilos"
 description: "Sistema de design AeroGlass & SkyRipple: variáveis CSS, temas dinâmicos, paleta de cores, tipografia e superfícies físicas."
 ---
 
-O WebChat adota **Tailwind CSS v4** integrado nativamente ao Vite através do plugin `@tailwindcss/vite`, estendido por uma camada de design tokens táteis baseados em luz zenital difusa a 90° e superfícies físicas translúcidas.
+O SkyRipple adota **Tailwind CSS v4** integrado nativamente ao Vite através do plugin `@tailwindcss/vite`, estendido por uma camada de design tokens táteis baseados em luz zenital difusa a 90° e superfícies físicas translúcidas.
 
 ---
 
@@ -43,7 +43,7 @@ A aplicação suporta múltiplos esquemas de cores primárias controladas dinami
 
 ## 🌓 Suporte a Modo Escuro (Dark Mode)
 
-O WebChat utiliza a diretiva nativa do Tailwind v4 para controle estrito via classe `.dark` na tag raiz `<html>`:
+O SkyRipple utiliza a diretiva nativa do Tailwind v4 para controle estrito via classe `.dark` na tag raiz `<html>`:
 
 ```css
 @variant dark (&:where(.dark, .dark *));
@@ -96,7 +96,7 @@ O ecossistema disponibiliza quatro classes de superfícies principais:
 
 Ajustados para dispositivos móveis, tablets e monitores widescreen:
 
-| Prefixo | Resolução Mínima | Cenário de Layout no WebChat |
+| Prefixo | Resolução Mínima | Cenário de Layout no SkyRipple |
 | :--- | :--- | :--- |
 | `sm:` | `640px` | Diálogos modais centralizados e barras de ferramentas horizontais |
 | `md:` | `768px` | Ativação das barras laterais (`ChatSidebar` e `MembersSidebar`) |

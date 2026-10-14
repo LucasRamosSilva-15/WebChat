@@ -1,6 +1,6 @@
-# Tutorial e Guia do WebChat
+# Tutorial e Guia do SkyRipple
 
-Bem-vindo ao guia de desenvolvimento do WebChat! Aqui vamos explicar os conceitos das tecnologias usadas e os passos necessários para mexer no projeto.
+Bem-vindo ao guia de desenvolvimento do SkyRipple! Aqui vamos explicar os conceitos das tecnologias usadas e os passos necessários para mexer no projeto.
 
 ## 1. O que são as tecnologias?
 
