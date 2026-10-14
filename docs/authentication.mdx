@@ -1,0 +1,70 @@
+---
+title: "Autenticação & Segurança"
+description: "Padrões de segurança, formato dos tokens JWT e níveis de permissão da API"
+---
+
+## Visão Geral de Segurança
+
+A API WebChat adota **JSON Web Tokens (JWT)** assinados digitalmente com o algoritmo `HS256` utilizando um segredo de alta entropia.
+
+Todas as rotas que exigem identificação de usuário ou permissões administrativas utilizam o middleware de autenticação baseado no padrão HTTP Bearer Token.
+
+```http
+Authorization: Bearer <SEU_TOKEN_AQUI>
+```
+
+---
+
+## Tipos de Tokens e Permissões
+
+A API possui duas categorias principais de autenticação:
+
+### 1. Token de Usuário (User Token)
+- **Emitido em**: `POST /auth/login` ou `POST /auth/register`
+- **Validade**: 7 dias corridos
+- **Payload do Token**:
+  ```json
+  {
+    "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+    "email": "usuario@example.com",
+    "iat": 1728930000,
+    "exp": 1729534800
+  }
+  ```
+- **Acesso**: Permite listar salas, entrar em salas, enviar mensagens, pesquisar histórico, criar denúncias e enviar feedbacks.
+
+### 2. Token de Administrador (Admin Token)
+- **Emitido em**: `POST /admin/auth`
+- **Validade**: 8 horas corridas
+- **Payload do Token**:
+  ```json
+  {
+    "id": "admin-system",
+    "role": "admin",
+    "iat": 1728930000,
+    "exp": 1728958800
+  }
+  ```
+- **Acesso**: Rotas sob o prefixo `/api/admin/*` e deleções irrestritas de salas ou mensagens impróprias.
+
+<Warning>
+**Proteção contra Força Bruta**: O endpoint `POST /admin/auth` possui limite restrito de requisições (`rateLimit` de 5 tentativas a cada 15 minutos por IP).
+</Warning>
+
+---
+
+## Tratamento de Erros de Autenticação
+
+Quando o token não é enviado ou é inválido, a API responde padronizadamente:
+
+| Código HTTP | Motivo | Exemplo de Resposta |
+| :--- | :--- | :--- |
+| `401 Unauthorized` | Cabeçalho ausente ou mal formatado | `{"error": "Acesso negado. Token não fornecido."}` |
+| `401 Unauthorized` | Token corrompido ou expirado | `{"error": "Token inválido ou expirado."}` |
+| `403 Forbidden` | Requisição em rota de admin sem role correspondente | `{"error": "Acesso restrito para administradores."}` |
+
+## Boas Práticas para Integrações
+
+1. **Armazenamento Seguro**: Em navegadores, prefira armazenar tokens em cookies `HttpOnly` com flag `SameSite=Strict` ou em memória local do cliente.
+2. **Renovação de Sessão**: Ao receber status `401`, redirecione o usuário para a tela de autenticação para revalidação de credenciais.
+3. **Não exponha a Chve Admin**: Nunca inclua a chave de administrador em códigos frontend públicos ou repositórios abertos.

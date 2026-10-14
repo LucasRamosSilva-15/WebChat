@@ -1,0 +1,50 @@
+---
+title: "Introdução ao WebChat API"
+description: "Documentação oficial para desenvolvedores integrarem salas, mensagens em tempo real e serviços do WebChat"
+---
+
+<img
+  className="w-full rounded-xl border border-gray-200 dark:border-gray-800 shadow-md"
+  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"
+  alt="WebChat Banner"
+/>
+
+## Bem-vindo à API do WebChat
+
+A **WebChat API** fornece uma suíte completa de recursos para construir e estender experiências de comunicação em tempo real, combinando os melhores princípios de arquitetura RESTful com transmissão bidirecional via WebSockets (Socket.io).
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Aprenda como se autenticar e fazer sua primeira requisição em menos de 5 minutos.
+  </Card>
+  <Card title="Autenticação JWT" icon="shield-check" href="/authentication">
+    Entenda a segurança baseada em Bearer Token e permissões de usuários e admins.
+  </Card>
+  <Card title="Salas & Mensagens" icon="comments" href="/api-reference/rooms/list">
+    Explore os endpoints para criação de salas, histórico e envio de anexos.
+  </Card>
+  <Card title="WebSockets em Tempo Real" icon="network-wired" href="/websockets">
+    Conecte-se aos canais Socket.io para envio de mensagens e presença instantânea.
+  </Card>
+</CardGroup>
+
+---
+
+## Principais Recursos
+
+- **Autenticação Segura**: Gerenciamento de credenciais com hashing bcrypt e emissão de tokens JWT (7 dias para usuários normais, 8 horas para administradores).
+- **Salas Temáticas (Rooms)**: Salas públicas ou restritas com contagem de membros em tempo real, suporte a categorias e imagens de capa.
+- **Histórico e Busca**: Mensagens persistidas no banco com suporte a links de mídia e pesquisa por termo textual (`q`).
+- **Moderação Ativa**: Sistema integrado de abertura de chamados de denúncias (`reports`) e feedback direto de usuários (`feedbacks`).
+- **Painel Administrativo**: Gestão de banimento de usuários (`active`, `banned`), limpeza de mensagens abusivas e estatísticas globais (`/stats`).
+
+## Ambientes e URLs Base
+
+| Ambiente | URL Base | Finalidade |
+| :--- | :--- | :--- |
+| **Produção** | `https://webchat-9vqr.onrender.com/api` | API oficial hospedada no Render |
+| **Local** | `http://localhost:3001/api` | Ambiente para desenvolvimento e testes locais |
+
+<Note>
+Todas as rotas da API requerem o prefixo `/api` antes do caminho do recurso, exceto a rota de checagem raiz `/` (`GET http://localhost:3001/`).
+</Note>

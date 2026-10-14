@@ -1,0 +1,91 @@
+---
+title: "Visão Geral da Arquitetura"
+sidebarTitle: "Arquitetura & Ecossistema"
+description: "Compreenda o ecossistema, os módulos e a infraestrutura tecnológica que compõem o WebChat."
+---
+
+O **WebChat** é uma plataforma de comunicação em tempo real de alto desempenho, projetada sob uma arquitetura híbrida que combina uma robusta API RESTful (Express/Node.js) com um pipeline de mensageria bidirecional via WebSockets (Socket.io) e persistência relacional (PostgreSQL / Supabase / Prisma).
+
+<img
+  className="w-full rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl"
+  src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1400&q=80"
+  alt="WebChat Cloud Infrastructure"
+/>
+
+---
+
+## Pilares Arquiteturais
+
+A infraestrutura foi concebida para oferecer baixa latência na entrega de mensagens, consistência transacional e isolamento estrito entre usuários e operadores administrativos.
+
+<CardGroup cols={3}>
+  <Card title="Camada RESTful" icon="server" color="#2563EB">
+    Rotas HTTP padronizadas com tratamento semântico de erros, hashing criptográfico bcrypt e emissão de JWT.
+  </Card>
+  <Card title="Realtime Engine" icon="bolt" color="#F59E0B">
+    Pipeline WebSocket com Socket.io, broadcasting por canais de salas e controle de taxa de 500ms por usuário.
+  </Card>
+  <Card title="Persistência Relacional" icon="database" color="#10B981">
+    Banco de dados PostgreSQL com modelagem transacional via Prisma/Sequelize e integridade referencial em cascata.
+  </Card>
+</CardGroup>
+
+---
+
+## Topologia do Sistema
+
+O diagrama abaixo ilustra o fluxo de dados entre os clientes (Web/Mobile), a camada de aplicação Express, o subsistema de WebSockets e o banco relacional:
+
+```mermaid
+graph TD
+    Client[Cliente WebChat / SDK] -->|HTTP REST /api/*| Express[Express Server API]
+    Client -->|WSS Handshake + JWT| SocketIO[Socket.io Gateway]
+    Express --> AuthMW[Middleware auth.js / adminAuth.js]
+    AuthMW --> Controllers[Controllers & Services]
+    Controllers --> Postgres[(PostgreSQL / Supabase)]
+    SocketIO --> RoomPresence[Room Presence & RateLimit]
+    RoomPresence --> Postgres
+    SocketIO -->|Broadcast de Mensagens| Client
+```
+
+---
+
+## Ambientes Disponíveis
+
+Para integrar suas aplicações e realizar homologações, utilize as URLs base correspondentes:
+
+| Ambiente | Base URL | WebSocket URL | Protocolo de Transporte |
+| :--- | :--- | :--- | :--- |
+| **Produção (Render)** | `https://webchat-9vqr.onrender.com/api` | `wss://webchat-9vqr.onrender.com` | HTTPS / WSS |
+| **Desenvolvimento Local** | `http://localhost:3001/api` | `ws://localhost:3001` | HTTP / WS |
+
+<Note>
+**Healthcheck**: A rota raiz `GET /` do servidor responde `{ "status": "online", "service": "WebChat MVP API" }` sem exigir autenticação, ideal para monitoramento de liveness e readiness em orquestradores como Kubernetes ou Render.
+</Note>
+
+---
+
+## Catálogo de Domínios da API
+
+A API está dividida em 5 domínios operacionais fundamentais:
+
+<CardGroup cols={2}>
+  <Card title="1. Autenticação & Usuários" icon="user-lock" href="/guides/auth-security">
+    Registro com bcrypt, login, resolução de perfil público (`/auth/me`) e deleção de conta.
+  </Card>
+  <Card title="2. Salas de Conversa (Rooms)" icon="people-roof" href="/api-reference/rooms/list">
+    Salas públicas e privadas, membros com cargos (`owner`, `admin`, `user`) e contagem ativa.
+  </Card>
+  <Card title="3. Mensageria & Mídia" icon="message" href="/api-reference/messages/list">
+    Histórico cronológico, anexos de imagem via URL e busca textual case-insensitive (`q`).
+  </Card>
+  <Card title="4. Governança & Moderação" icon="shield" href="/guides/communication-standards">
+    Abertura de denúncias contra mensagens (`reports`) e canal direto de melhorias (`feedbacks`).
+  </Card>
+  <Card title="5. Painel Administrativo" icon="gauge" href="/api-reference/admin/stats">
+    Métricas do cluster (`/stats`), banimento imediato de contas e limpeza forçada de conteúdo.
+  </Card>
+  <Card title="6. Eventos em Tempo Real" icon="network-wired" href="/guides/webhooks">
+    Sincronização de mensagens e especificações de Webhooks para sistemas externos.
+  </Card>
+</CardGroup>

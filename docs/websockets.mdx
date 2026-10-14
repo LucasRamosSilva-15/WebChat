@@ -1,0 +1,93 @@
+---
+title: "WebSockets & Tempo Real"
+description: "Comunicação bidirecional com Socket.io para envio de mensagens, status de presença e moderação instantânea."
+---
+
+## Conexão Realtime com Socket.io
+
+O WebChat utiliza **Socket.io v4** para gerenciar eventos em tempo real com failover automático entre WebSockets nativos e polling HTTP.
+
+### Handshake e Autenticação
+
+Para se conectar ao WebSocket, você deve enviar o token JWT no objeto `auth` durante o handshake:
+
+```javascript
+import { io } from "socket.io-client";
+
+const socket = io("https://webchat-9vqr.onrender.com", {
+  auth: {
+    token: "<SEU_TOKEN_JWT>"
+  },
+  transports: ["websocket", "polling"],
+  withCredentials: true
+});
+
+socket.on("connect", () => {
+  console.log("Conectado ao WebChat Realtime com Socket ID:", socket.id);
+});
+
+socket.on("connect_error", (err) => {
+  console.error("Falha na autenticação do socket:", err.message);
+});
+```
+
+---
+
+## Eventos Emitidos pelo Cliente (Client -> Server)
+
+| Evento | Payload | Descrição |
+| :--- | :--- | :--- |
+| `joinRoom` | `{ roomId: string, user: { id, name, email } }` | Entra no canal da sala e transmite atualização de presença |
+| `leaveRoom` | `{ roomId: string, userId: string }` | Sai da sala e atualiza lista de usuários online |
+| `send_message` | `{ room: string, userId: string, userName: string, content: string, imageUrl?: string }` | Envia mensagem para todos os participantes da sala |
+| `edit_message` | `{ room: string, messageId: string, message: string }` | Edita o conteúdo de uma mensagem previamente enviada |
+| `delete_message` | `{ room: string, messageId: string }` | Notifica exclusão de mensagem aos membros da sala |
+
+---
+
+## Eventos Recebidos pelo Cliente (Server -> Client)
+
+| Evento | Payload | Descrição |
+| :--- | :--- | :--- |
+| `roomPresenceUpdated` | `{ roomId: string, onlineUsers: Array, onlineCount: number }` | Lista de usuários ativos e contagem total na sala |
+| `receive_message` | Objeto completo da mensagem salva | Disparado para todos na sala ao receber nova mensagem |
+| `message_edited` | `{ messageId: string, message: string }` | Notifica a edição de uma mensagem |
+| `message_deleted` | `{ messageId: string }` | Notifica que uma mensagem foi excluída |
+| `rate_limit_error` | `{ error: string }` | Disparado se o usuário enviar mensagens mais rápido que 1 a cada 500ms |
+| `message_error` | `{ error: string }` | Notifica falhas ao persistir mensagem no banco |
+
+---
+
+## Exemplo Completo de Chat em Tempo Real
+
+```javascript
+// 1. Entrar na sala
+socket.emit("joinRoom", {
+  roomId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  user: {
+    id: "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+    name: "Lucas Ramos",
+    email: "lucas@example.com"
+  }
+});
+
+// 2. Ouvir presença de usuários
+socket.on("roomPresenceUpdated", ({ onlineUsers, onlineCount }) => {
+  console.log(`Usuários online (${onlineCount}):`, onlineUsers);
+});
+
+// 3. Ouvir novas mensagens recebidas
+socket.on("receive_message", (message) => {
+  console.log(`[${message.user_name}]: ${message.content}`);
+});
+
+// 4. Enviar mensagem
+function enviarMensagem(texto) {
+  socket.emit("send_message", {
+    room: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    userId: "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+    userName: "Lucas Ramos",
+    content: texto
+  });
+}
+```

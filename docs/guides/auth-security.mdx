@@ -1,0 +1,185 @@
+---
+title: "Segurança & Autenticação"
+sidebarTitle: "Segurança & JWT"
+description: "Padrões de segurança, criptografia com bcrypt, tokens de usuário versus admin e proteção de rotas."
+---
+
+A segurança da WebChat API é baseada em padrões consolidados da indústria: assinatura criptográfica de **JSON Web Tokens (JWT)** via `HS256`, proteção estrita com saltos de hashing `bcrypt` e limitação de taxa adaptativa por IP.
+
+---
+
+## Tabela Comparativa de Autenticação
+
+O sistema opera com duas personas distintas de autenticação, refletidas no código-fonte dos middlewares `src/middleware/auth.js` e `src/middleware/adminAuth.js`:
+
+| Critério | Token de Usuário Regular | Token de Administrador |
+| :--- | :--- | :--- |
+| **Endpoint Emissor** | `POST /api/auth/login` ou `/auth/register` | `POST /api/admin/auth` |
+| **Credenciais Exigidas** | E-mail registrado + Senha pessoal | Chve mestra (`ADMIN_SECRET_KEY`) |
+| **Tempo de Expiração** | **7 dias** (`expiresIn: '7d'`) | **8 horas** (`expiresIn: '8h'`) |
+| **Payload do JWT** | `{ "id": UUID, "email": string }` | `{ "id": "admin-system", "role": "admin" }` |
+| **Rate Limit Aplicado** | 10 tentativas / 15 minutos | 5 tentativas / 15 minutos |
+| **Header Requerido** | `Authorization: Bearer <token>` | `Authorization: Bearer <token>` |
+| **Middleware de Validação** | `authMiddleware` | `adminAuth` |
+| **Escopo de Permissão** | Salas, histórico, envio de mensagens e reports | Gestão global, banimentos e exclusão de conteúdo |
+
+---
+
+## Anatomia do Token JWT
+
+Quando um cliente se autentica com sucesso, o backend assina o token utilizando a variável de ambiente `JWT_SECRET`. 
+
+### Payload do Usuário Regular
+```json
+{
+  "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+  "email": "lucas@example.com",
+  "iat": 1728930000,
+  "exp": 1729534800
+}
+```
+
+### Payload do Administrador
+```json
+{
+  "id": "admin-system",
+  "role": "admin",
+  "iat": 1728930000,
+  "exp": 1728958800
+}
+```
+
+---
+
+## Como Autenticar Requisições
+
+Inclua o token precedido pelo esquema `Bearer ` no cabeçalho HTTP `Authorization`:
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://webchat-9vqr.onrender.com/api/auth/me" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+```javascript Node.js
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+
+const res = await fetch('https://webchat-9vqr.onrender.com/api/auth/me', {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+const profile = await res.json();
+```
+
+```python Python
+import requests
+
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+headers = {"Authorization": f"Bearer {token}"}
+
+res = requests.get("https://webchat-9vqr.onrender.com/api/auth/me", headers=headers)
+profile = res.json()
+```
+</CodeGroup>
+
+---
+
+## Login de Administrador
+
+Para obter privilégios administrativos no painel e disparar operações como `/admin/users/:id/status` ou `/stats`, realize o login administrativo enviando a chave mestra:
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://webchat-9vqr.onrender.com/api/admin/auth" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "password": "<CHAVE_MESTRA_ADMIN>"
+  }'
+```
+
+```javascript Node.js
+const adminAuthRes = await fetch('https://webchat-9vqr.onrender.com/api/admin/auth', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ password: process.env.ADMIN_SECRET_KEY })
+});
+const { token, role } = await adminAuthRes.json();
+console.log('Autenticado com role:', role);
+```
+
+```python Python
+admin_res = requests.post(
+    "https://webchat-9vqr.onrender.com/api/admin/auth",
+    json={"password": "minha_chave_mestra_secreta"}
+)
+admin_token = admin_res.json()["token"]
+```
+</CodeGroup>
+
+#### Resposta da Autenticação Admin (200 OK)
+
+<ResponseField name="token" type="string" required>
+  Token JWT com a claim `role: 'admin'`, válido por 8 horas.
+</ResponseField>
+
+<ResponseField name="role" type="string" required>
+  Identificador do perfil emitido (`admin`).
+</ResponseField>
+
+---
+
+## Autenticação em Conexões WebSockets
+
+O servidor WebSocket (Socket.io) do WebChat intercepta a conexão no handshake inicial e rejeita clientes que não forneçam um token válido:
+
+```javascript
+import { io } from "socket.io-client";
+
+const socket = io("https://webchat-9vqr.onrender.com", {
+  auth: {
+    token: "<SEU_TOKEN_JWT>"
+  },
+  transports: ["websocket", "polling"]
+});
+
+socket.on("connect_error", (error) => {
+  // Disparado se o token não for enviado ou for inválido
+  console.error("Conexão recusada:", error.message);
+});
+```
+
+---
+
+## Tratamento de Falhas e Respostas de Erro
+
+O middleware retorna códigos HTTP padronizados para garantir previsibilidade na integração:
+
+<AccordionGroup>
+  <Accordion title="Erro 401 Unauthorized (Token não fornecido ou inválido)">
+    Disparado quando o cabeçalho `Authorization` está ausente, não segue o padrão `Bearer <token>` ou contém assinatura expirada.
+    ```json
+    {
+      "error": "Acesso negado. Token não fornecido."
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Erro 403 Forbidden (Acesso negado para admin)">
+    Disparado quando um usuário autenticado com perfil regular tenta acessar rotas restritas em `/api/admin/*`.
+    ```json
+    {
+      "error": "Acesso restrito para administradores."
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Erro 429 Too Many Requests (Rate limit excedido)">
+    Disparado quando ocorrem mais de 10 tentativas de login comum ou 5 tentativas de login admin em 15 minutos.
+    ```json
+    {
+      "error": "Muitas tentativas de admin. Bloqueado por 15 minutos."
+    }
+    ```
+  </Accordion>
+</AccordionGroup>

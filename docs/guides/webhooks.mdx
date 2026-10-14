@@ -1,0 +1,232 @@
+---
+title: "Webhooks & Integrações de Eventos"
+sidebarTitle: "Webhooks"
+description: "Receba notificações em tempo real no seu servidor sobre mensagens, novas salas, denúncias e alterações de usuários."
+---
+
+Os **Webhooks do WebChat** permitem que sistemas externos, bots de atendimento, plataformas de compliance e serviços de auditoria recebam notificações instantâneas via requisições HTTP `POST` sempre que eventos relevantes ocorrem na plataforma.
+
+<CardGroup cols={3}>
+  <Card title="Entrega em Tempo Real" icon="bolt" color="#3B82F6">
+    Disparos imediatos via chamadas assíncronas HTTP `POST` com payloads JSON.
+  </Card>
+  <Card title="Segurança Criptográfica" icon="shield-check" color="#10B981">
+    Assinatura digital HMAC SHA-256 no header `X-WebChat-Signature` contra adulterações.
+  </Card>
+  <Card title="Política de Retentativas" icon="arrow-rotate-right" color="#F59E0B">
+    Retry automático com backoff exponencial para endpoints instáveis (status 5xx).
+  </Card>
+</CardGroup>
+
+---
+
+## Anatomia de uma Entrega de Webhook
+
+Cada disparo de Webhook envia uma requisição `POST` com headers de auditoria e segurança específicos:
+
+```http
+POST https://api.suaempresa.com/webhooks/webchat
+Content-Type: application/json
+User-Agent: WebChat-Webhook-Dispatcher/1.0
+X-WebChat-Event: message.created
+X-WebChat-Delivery: d8f34d1b-7822-4d51-931d-b6a4a2b978e1
+X-WebChat-Timestamp: 1728931200
+X-WebChat-Signature: t=1728931200,v1=9c4a8ef71d87f58d044238e83344f6f8bb1d798be1288cba6b8cb1764eb8e348
+```
+
+### Formato do Payload
+
+```json
+{
+  "event": "message.created",
+  "timestamp": "2026-10-14T18:30:00.000Z",
+  "delivery_id": "d8f34d1b-7822-4d51-931d-b6a4a2b978e1",
+  "data": {
+    "id": "8aa1c7c8-7f5b-4c01-8b29-1a3e8b09d2cc",
+    "room_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "user_id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+    "content": "Novo release de integração disponível!",
+    "image_url": "https://storage.webchat.com/uploads/release.png",
+    "created_at": "2026-10-14T18:30:00.000Z",
+    "user": {
+      "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+      "displayName": "Lucas Ramos"
+    }
+  }
+}
+```
+
+<ResponseField name="event" type="string" required>
+  Identificador do evento (ex: `message.created`, `report.created`).
+</ResponseField>
+
+<ResponseField name="timestamp" type="string" required>
+  Data e hora do disparo em formato ISO 8601 UTC.
+</ResponseField>
+
+<ResponseField name="delivery_id" type="string" required>
+  UUID exclusivo do disparo para prevenção de processamento duplicado (idempotência).
+</ResponseField>
+
+<ResponseField name="data" type="object" required>
+  Entidade correspondente ao evento acionado.
+</ResponseField>
+
+---
+
+## Catálogo de Eventos Suportados
+
+| Evento | Descrição | Casos de Uso Comuns |
+| :--- | :--- | :--- |
+| `message.created` | Nova mensagem enviada em uma sala | Arquivamento para auditoria, bots e moderação |
+| `room.created` | Nova sala de conversa criada | Notificação em canais de anúncios ou dashboard |
+| `report.created` | Mensagem denunciada por um usuário | Alerta no Slack/Discord da equipe de moderação |
+| `user.status_changed` | Conta banida ou reativada pelo admin | Revogação de permissões em sistemas federados |
+| `feedback.submitted` | Feedback enviado por usuário | Criação automática de chamados no Jira/GitHub |
+
+---
+
+## Verificação de Segurança da Assinatura (HMAC SHA-256)
+
+Para garantir que o webhook realmente originou-se dos servidores do WebChat e não foi interceptado ou adulterado, valide a assinatura utilizando o segredo compartilhado (`WEBHOOK_SECRET`).
+
+<Steps>
+  <Step title="Extrair o Timestamp e Assinatura">
+    O header `X-WebChat-Signature` possui o formato `t=<timestamp>,v1=<hash_hex>`.
+  </Step>
+
+  <Step title="Montar a Assinatura Esperada">
+    Concatene o timestamp, um ponto (`.`) e o corpo bruto (**raw body**) da requisição HTTP:
+    ```
+    stringToSign = timestamp + "." + rawBody;
+    ```
+  </Step>
+
+  <Step title="Calcular o HMAC SHA-256">
+    Calcule o hash HMAC utilizando o algoritmo `SHA-256` com sua chave secreta e compare usando tempo constante (`timingSafeEqual`) para evitar ataques de timing.
+  </Step>
+</Steps>
+
+### Implementação do Receptor
+
+<CodeGroup>
+```javascript Node.js (Express)
+import express from "express";
+import crypto from "crypto";
+
+const app = express();
+// Importante: capture o corpo bruto (raw body) antes de realizar JSON.parse
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
+
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "whsec_minha_chave_secreta";
+
+app.post("/webhooks/webchat", (req, res) => {
+  const sigHeader = req.headers["x-webchat-signature"];
+  if (!sigHeader) {
+    return res.status(401).send("Header de assinatura ausente");
+  }
+
+  const parts = Object.fromEntries(
+    sigHeader.split(",").map(item => item.split("="))
+  );
+  const timestamp = parts.t;
+  const receivedSig = parts.v1;
+
+  // Prevenir ataques de replay (rejeita requisições com mais de 5 minutos)
+  const fiveMinutesAgo = Math.floor(Date.now() / 1000) - 300;
+  if (parseInt(timestamp, 10) < fiveMinutesAgo) {
+    return res.status(400).send("Assinatura expirada (possível ataque de replay)");
+  }
+
+  // Validar HMAC
+  const payloadToSign = `${timestamp}.${req.rawBody}`;
+  const expectedSig = crypto
+    .createHmac("sha256", WEBHOOK_SECRET)
+    .update(payloadToSign)
+    .digest("hex");
+
+  const isValid = crypto.timingSafeEqual(
+    Buffer.from(receivedSig),
+    Buffer.from(expectedSig)
+  );
+
+  if (!isValid) {
+    return res.status(403).send("Assinatura de Webhook inválida");
+  }
+
+  // Processar evento com segurança
+  const event = req.body;
+  console.log(`[WEBHOOK RECEBIDO] Evento: ${event.event}`, event.data);
+
+  return res.status(200).json({ received: true });
+});
+
+app.listen(4000, () => console.log("Receptor de Webhooks rodando na porta 4000"));
+```
+
+```python Python (FastAPI / Flask)
+import hmac
+import hashlib
+import time
+from flask import Flask, request, jsonify, abort
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "whsec_minha_chave_secreta"
+
+@app.route("/webhooks/webchat", methods=["POST"])
+def handle_webhook():
+    sig_header = request.headers.get("X-WebChat-Signature")
+    if not sig_header:
+        abort(401, "Header de assinatura ausente")
+
+    # Extrai t e v1
+    header_parts = dict(part.split("=") for part in sig_header.split(","))
+    timestamp = header_parts.get("t")
+    received_sig = header_parts.get("v1")
+
+    # Prevenção de replay
+    if int(timestamp) < time.time() - 300:
+        abort(400, "Assinatura expirada")
+
+    raw_body = request.get_data()
+    payload_to_sign = f"{timestamp}.".encode("utf-8") + raw_body
+
+    expected_sig = hmac.new(
+        WEBHOOK_SECRET.encode("utf-8"),
+        payload_to_sign,
+        hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(received_sig, expected_sig):
+        abort(403, "Assinatura inválida")
+
+    payload = request.json
+    print(f"Evento recebido com sucesso: {payload['event']}")
+    return jsonify({"received": True}), 200
+
+if __name__ == "__main__":
+    app.run(port=4000)
+```
+</CodeGroup>
+
+---
+
+## Política de Retentativas e Resiliência
+
+Caso seu servidor retorne códigos `5xx` ou ocorra timeout de conexão (> 10s), o despachador do WebChat aplica uma estratégia de retentativas:
+
+| Tentativa | Atraso (Delay) |
+| :--- | :--- |
+| **1ª Retentativa** | 10 segundos |
+| **2ª Retentativa** | 1 minuto |
+| **3ª Retentativa** | 5 minutos |
+| **4ª Retentativa** | 30 minutos |
+| **5ª Retentativa (Final)** | 2 horas |
+
+<Tip>
+**Dica de Performance**: Responda com status `200 OK` imediatamente após validar a assinatura e enfileire o processamento pesado do evento em uma fila de background (BullMQ, Celery, SQS ou RabbitMQ).
+</Tip>

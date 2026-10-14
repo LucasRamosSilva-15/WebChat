@@ -1,0 +1,112 @@
+---
+title: "Guia Rápido (Quickstart)"
+description: "Dê os primeiros passos: crie sua conta, obtenha seu token e envie sua primeira mensagem em minutos."
+---
+
+## Passo a Passo Inicial
+
+Siga estas 4 etapas para interagir com o WebChat via API.
+
+<Steps>
+  <Step title="Criar sua Conta">
+    Faça uma requisição `POST` para `/auth/register` informando seu e-mail, nome e senha.
+
+    ```bash
+    curl -X POST https://webchat-9vqr.onrender.com/api/auth/register \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Dev Explorer",
+        "email": "devexplorer@example.com",
+        "password": "MinhaSenhaForte!2026"
+      }'
+    ```
+
+    A resposta já retorna o usuário criado e seu token de acesso JWT:
+
+    ```json
+    {
+      "user": {
+        "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+        "email": "devexplorer@example.com",
+        "displayName": "Dev Explorer",
+        "name": "Dev Explorer",
+        "profilePhoto": null,
+        "profileDesc": null
+      },
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+    ```
+  </Step>
+
+  <Step title="Configurar o Header de Autorização">
+    Para todas as requisições protegidas, inclua o token obtido no cabeçalho `Authorization`:
+
+    ```http
+    Authorization: Bearer <SEU_TOKEN_JWT>
+    ```
+  </Step>
+
+  <Step title="Listar ou Criar uma Sala de Conversa">
+    Liste as salas disponíveis para encontrar uma de seu interesse:
+
+    ```bash
+    curl -X GET https://webchat-9vqr.onrender.com/api/rooms \
+      -H "Authorization: Bearer <SEU_TOKEN_JWT>"
+    ```
+
+    Ou crie uma nova sala instantaneamente:
+
+    ```bash
+    curl -X POST https://webchat-9vqr.onrender.com/api/rooms \
+      -H "Authorization: Bearer <SEU_TOKEN_JWT>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Sala dos Desenvolvedores",
+        "description": "Espaço dedicado a APIs e Arquitetura",
+        "type": "public",
+        "category": "tecnologia"
+      }'
+    ```
+  </Step>
+
+  <Step title="Enviar sua Primeira Mensagem">
+    Com o `id` da sala em mãos (por exemplo, `3fa85f64-5717-4562-b3fc-2c963f66afa6`), envie sua mensagem:
+
+    ```bash
+    curl -X POST https://webchat-9vqr.onrender.com/api/rooms/3fa85f64-5717-4562-b3fc-2c963f66afa6/messages \
+      -H "Authorization: Bearer <SEU_TOKEN_JWT>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "content": "Olá a todos! Conectado via API com sucesso."
+      }'
+    ```
+  </Step>
+</Steps>
+
+## Exemplo em JavaScript (Node.js / Fetch)
+
+```javascript
+const BASE_URL = 'https://webchat-9vqr.onrender.com/api';
+
+async function main() {
+  // 1. Login
+  const loginRes = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: 'devexplorer@example.com',
+      password: 'MinhaSenhaForte!2026'
+    })
+  });
+  const { token } = await loginRes.json();
+
+  // 2. Buscar perfil
+  const meRes = await fetch(`${BASE_URL}/auth/me`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const profile = await meRes.json();
+  console.log('Logado como:', profile.name);
+}
+
+main().catch(console.error);
+```

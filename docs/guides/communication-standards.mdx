@@ -1,0 +1,160 @@
+---
+title: "Padrões de Comunicação"
+sidebarTitle: "Erros, Rate Limit & Paginação"
+description: "Convenções de respostas HTTP, catálogo de erros, políticas de Rate Limit e estratégias de consumo de dados."
+---
+
+A API do WebChat segue contratos rígidos de comunicação para garantir que clientes Web, Mobile e microsserviços integrados operem com estabilidade, previsibilidade e resiliência.
+
+---
+
+## Formato Padrão de Respostas
+
+Todas as respostas são serializadas como JSON com cabeçalho `Content-Type: application/json; charset=utf-8`.
+
+### Respostas de Sucesso
+Retornam o recurso criado ou manipulado, acompanhado pelo código de status semântico apropriado:
+- `200 OK`: Operações de leitura (`GET`), atualização (`PUT`) e deleção (`DELETE`).
+- `201 Created`: Criação bem-sucedida de registros (`POST`), como novos usuários, salas, mensagens, denúncias e feedbacks.
+
+### Formato Padronizado de Erro
+Em caso de falha de validação ou exceção interna, a resposta conterá obrigatoriamente a chave `error`:
+
+```json
+{
+  "error": "Descrição clara e legível da causa da falha."
+}
+```
+
+<ResponseField name="error" type="string" required>
+  Mensagem em linguagem natural explicando o motivo da recusa da requisição.
+</ResponseField>
+
+---
+
+## Tabela de Códigos de Status HTTP
+
+O handler central de erros do backend (`src/controllers/errorHandler.js`) traduz as regras de negócio nos seguintes status:
+
+| Status Code | Tipo de Erro | Gatilho Típico no WebChat |
+| :--- | :--- | :--- |
+| `200 OK` | Sucesso | Consulta de salas, perfil, mensagens ou deleção realizada |
+| `201 Created` | Criado | Criação de usuário, sala, mensagem, report ou feedback |
+| `400 Bad Request` | Validação | Falta de campos obrigatórios (ex: nome da sala em branco) |
+| `401 Unauthorized` | Autenticação | Token ausente, assinatura inválida ou credenciais incorretas |
+| `403 Forbidden` | Permissão | Tentativa de deletar sala/mensagem de outro autor |
+| `404 Not Found` | Não Encontrado | UUID de sala, mensagem, report ou usuário inexistente |
+| `409 Conflict` | Conflito | Tentativa de cadastrar e-mail já existente no banco |
+| `429 Too Many Requests` | Rate Limit | Mais de 10 tentativas de login ou 5 de admin em 15 minutos |
+| `500 Internal Server` | Falha do Servidor | Erro de infraestrutura não tratado no banco de dados |
+
+---
+
+## Políticas de Rate Limit (Limitação de Taxa)
+
+Para mitigar ataques de força bruta, abuso de rede e sobrecarga do banco relacional, o WebChat implementa 3 camadas de limitação:
+
+<CardGroup cols={3}>
+  <Card title="Autenticação Geral" icon="user-shield" color="#3B82F6">
+    **10 requisições / 15 min** por IP nos endpoints `/api/auth/register` e `/api/auth/login`.
+  </Card>
+  <Card title="Login Administrativo" icon="lock" color="#EF4444">
+    **5 requisições / 15 min** por IP no endpoint `/api/admin/auth`.
+  </Card>
+  <Card title="Mensagens WebSocket" icon="gauge-high" color="#F59E0B">
+    Intervalo mínimo de **500 ms** entre mensagens por usuário no evento `send_message`.
+  </Card>
+</CardGroup>
+
+### Resposta ao Exceder o Rate Limit HTTP (429)
+
+```json
+{
+  "error": "Muitas tentativas. Tente novamente mais tarde."
+}
+```
+
+### Resposta ao Exceder o Rate Limit no WebSocket
+Quando o usuário envia mensagens em intervalo inferior a 500ms, o servidor não persiste a mensagem e emite de volta para o socket emissor o evento:
+
+```json
+// Evento: rate_limit_error
+{
+  "error": "Você está enviando mensagens muito rápido. Aguarde um momento."
+}
+```
+
+---
+
+## Estratégias de Listagem e Paginação
+
+### Listagem de Salas
+O endpoint `GET /api/rooms` retorna todas as salas ativas complementadas dinamicamente com o contador `members_count`:
+
+```json
+[
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "name": "Devs TypeScript & Node",
+    "type": "public",
+    "members_count": 42,
+    "creator": {
+      "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+      "displayName": "Lucas Ramos"
+    }
+  }
+]
+```
+
+### Busca Textual e Filtros de Histórico
+Para consultar mensagens de uma sala, utilize:
+- `GET /api/rooms/:roomId/messages`: Retorna o histórico completo ordenado cronologicamente (`created_at ASC`).
+- `GET /api/rooms/:roomId/messages/search?q=termo`: Executa busca textual filtrada (case-insensitive via `iLike`).
+
+---
+
+## Boas Práticas de Consumo com Retentativa (Exponential Backoff)
+
+Abaixo estão exemplos em Node.js e Python para lidar elegantemente com erros e respeitar o status `429 Too Many Requests`:
+
+<CodeGroup>
+```javascript Node.js (com Backoff)
+async function fetchWithRetry(url, options = {}, retries = 3, backoff = 1000) {
+  try {
+    const res = await fetch(url, options);
+
+    if (res.status === 429 && retries > 0) {
+      console.warn(`Rate limit atingido. Aguardando ${backoff}ms antes de retentar...`);
+      await new Promise(r => setTimeout(r, backoff));
+      return fetchWithRetry(url, options, retries - 1, backoff * 2);
+    }
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error('Erro na requisição:', error.message);
+    throw error;
+  }
+}
+```
+
+```python Python (com Backoff)
+import time
+import requests
+
+def request_with_retry(method, url, retries=3, backoff=1.0, **kwargs):
+    for attempt in range(retries):
+        response = requests.request(method, url, **kwargs)
+        if response.status_code == 429:
+            wait_time = backoff * (2 ** attempt)
+            print(f"Rate limit atingido (429). Aguardando {wait_time}s...")
+            time.sleep(wait_time)
+            continue
+        return response
+    return response
+```
+</CodeGroup>

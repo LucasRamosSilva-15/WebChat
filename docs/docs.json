@@ -1,0 +1,134 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "WebChat API",
+  "colors": {
+    "primary": "#2563EB",
+    "light": "#60A5FA",
+    "dark": "#1D4ED8"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guias & Arquitetura",
+        "groups": [
+          {
+            "group": "Visão Geral",
+            "pages": [
+              "guides/overview",
+              "guides/quickstart"
+            ]
+          },
+          {
+            "group": "Segurança & Autenticação",
+            "pages": [
+              "guides/auth-security"
+            ]
+          },
+          {
+            "group": "Padrões de Comunicação (Erros, Paginação e Rate Limit)",
+            "pages": [
+              "guides/communication-standards",
+              "websockets"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "guides/webhooks"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Referência da API",
+        "groups": [
+          {
+            "group": "Visão Geral da API",
+            "pages": [
+              "api-reference/index"
+            ]
+          },
+          {
+            "group": "Autenticação & Contas",
+            "pages": [
+              "api-reference/auth/register",
+              "api-reference/auth/login",
+              "api-reference/auth/me",
+              "api-reference/auth/delete-me"
+            ]
+          },
+          {
+            "group": "Salas de Chat (Rooms)",
+            "pages": [
+              "api-reference/rooms/list",
+              "api-reference/rooms/create",
+              "api-reference/rooms/get",
+              "api-reference/rooms/join",
+              "api-reference/rooms/members",
+              "api-reference/rooms/delete"
+            ]
+          },
+          {
+            "group": "Mensagens (Messages)",
+            "pages": [
+              "api-reference/messages/list",
+              "api-reference/messages/send",
+              "api-reference/messages/search",
+              "api-reference/messages/delete"
+            ]
+          },
+          {
+            "group": "Moderação & Feedbacks",
+            "pages": [
+              "api-reference/reports/create",
+              "api-reference/feedbacks/create"
+            ]
+          },
+          {
+            "group": "Painel Administrativo",
+            "pages": [
+              "api-reference/admin/auth",
+              "api-reference/admin/stats",
+              "api-reference/admin/users",
+              "api-reference/admin/update-user-status",
+              "api-reference/admin/rooms",
+              "api-reference/admin/delete-room",
+              "api-reference/admin/delete-message",
+              "api-reference/admin/reports",
+              "api-reference/admin/update-report",
+              "api-reference/admin/delete-report",
+              "api-reference/admin/feedbacks",
+              "api-reference/admin/update-feedback",
+              "api-reference/admin/delete-feedback"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "openapi": "openapi.json",
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/LucasRamosSilva-15/WebChat"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Acessar Aplicação",
+      "href": "https://webchat-9vqr.onrender.com"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/LucasRamosSilva-15/WebChat"
+    }
+  }
+}

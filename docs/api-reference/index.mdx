@@ -1,0 +1,48 @@
+---
+title: "Visão Geral da API"
+description: "Acesse e teste todos os endpoints do WebChat de maneira interativa através desta documentação"
+---
+
+## Recursos Disponíveis
+
+A API do WebChat é organizada em torno dos seguintes domínios centrais:
+
+<CardGroup cols={2}>
+  <Card title="Autenticação" icon="key" href="/api-reference/auth/login">
+    Gerenciamento de contas, emissão de JWT, perfil do usuário e encerramento de conta.
+  </Card>
+  <Card title="Salas de Chat" icon="users" href="/api-reference/rooms/list">
+    Criação, listagem, entrada e gerenciamento de participantes de salas.
+  </Card>
+  <Card title="Mensagens & Mídia" icon="message" href="/api-reference/messages/list">
+    Histórico, envio com suporte a imagens, busca textual e exclusão.
+  </Card>
+  <Card title="Moderação & Feedbacks" icon="flag" href="/api-reference/reports/create">
+    Canal de denúncias de mensagens ofensivas e envio de feedback com imagens.
+  </Card>
+  <Card title="Painel Administrativo" icon="shield-halved" href="/api-reference/admin/stats">
+    Estatísticas globais, controle de usuários (banimento/ativação) e moderação forçada.
+  </Card>
+  <Card title="WebSockets" icon="bolt" href="/websockets">
+    Especificação completa de eventos bidirecionais via Socket.io.
+  </Card>
+</CardGroup>
+
+---
+
+## Formato de Respostas
+
+Todas as respostas da API utilizam codificação `application/json; charset=utf-8`.
+
+### Códigos de Retorno Padronizados
+
+| Código | Significado | Descrição |
+| :--- | :--- | :--- |
+| `200 OK` | Sucesso | A requisição foi atendida com êxito. |
+| `201 Created` | Criado | Novo recurso instanciado (usuário, sala, mensagem, report, feedback). |
+| `400 Bad Request` | Requisição Inválida | Campos obrigatórios ausentes ou valores com tipos incorretos. |
+| `401 Unauthorized` | Não Autorizado | Token JWT ausente, corrompido ou expirado. |
+| `403 Forbidden` | Proibido | O usuário autenticado não possui privilégios para executar a ação. |
+| `404 Not Found` | Não Encontrado | O ID do recurso pesquisado não existe no banco. |
+| `409 Conflict` | Conflito | Tentativa de registrar e-mail que já existe. |
+| `500 Server Error` | Erro Interno | Falha inesperada durante a execução no servidor. |
