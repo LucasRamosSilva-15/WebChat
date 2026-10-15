@@ -183,6 +183,11 @@ io.on('connection', (socket) => {
       return;
     }
 
+    if (content && typeof content === 'string' && content.length > 1000) {
+      socket.emit('message_error', { error: 'A mensagem excede o limite máximo de 1.000 caracteres.' });
+      return;
+    }
+
     const now = Date.now();
     const lastMessageTime = messageRateLimits.get(userId) || 0;
     if (now - lastMessageTime < 500) {

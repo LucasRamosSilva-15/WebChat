@@ -6,6 +6,10 @@ class MessageService {
       throw new Error('O conteúdo da mensagem ou a imagem não podem estar vazios.');
     }
 
+    if (content && content.length > 1000) {
+      throw new Error('A mensagem excede o limite máximo de 1.000 caracteres.');
+    }
+
     const newMessage = await MessageRepository.create({
       room_id: roomId,
       user_id: userId,

@@ -133,5 +133,24 @@ describe('WebChat Integration Tests', () => {
         }, 150);
       }, 550);
     });
+
+    it('should reject message exceeding 1000 characters', (done) => {
+      setTimeout(() => {
+        const longContent = 'a'.repeat(1001);
+        socket.emit('send_message', {
+          room: 'test_room',
+          userId: 'test_user_id',
+          userName: 'Test User',
+          content: longContent,
+          imageUrl: null
+        });
+
+        socket.on('message_error', (err) => {
+          expect(err.error).toMatch(/1\.000 caracteres/);
+          socket.off('message_error');
+          done();
+        });
+      }, 550);
+    });
   });
 });

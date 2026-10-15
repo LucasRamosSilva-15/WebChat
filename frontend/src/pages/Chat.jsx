@@ -12,6 +12,7 @@ import SkeuoLoading from '../components/SkeuoLoading';
 // Código de criptografia
 // Provisório! deve ser mudado para JWT e bcrypt no futuro
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
+const MAX_MESSAGE_LENGTH = 1000;
 
 
 
@@ -894,6 +895,10 @@ const Chat = () => {
 
     const sendMessage = async (e) => {
         e.preventDefault();
+        if (currentMessage.length > MAX_MESSAGE_LENGTH) {
+            alert(`A mensagem excede o limite máximo de ${MAX_MESSAGE_LENGTH.toLocaleString('pt-BR')} caracteres.`);
+            return;
+        }
         if (currentMessage.trim() !== "" || imagePreview) {
             const storedName = localStorage.getItem('chat_displayName');
             const currentSender = (storedName && storedName !== 'null') ? storedName : 'Usuário';
@@ -1357,13 +1362,29 @@ const Chat = () => {
                                 <FaCamera size={14} className="drop-shadow-xs" />
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                             </label>
-                            <input
-                                type="text"
-                                className="skeuo-input w-full px-4 py-2 flex-grow"
-                                placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
-                                value={currentMessage}
-                                onChange={(e) => setCurrentMessage(e.target.value)}
-                            />
+                            <div className="relative flex-grow flex items-center">
+                                <input
+                                    type="text"
+                                    maxLength={MAX_MESSAGE_LENGTH}
+                                    className={`skeuo-input w-full px-4 py-2 flex-grow ${currentMessage.length > 750 ? 'pr-20' : ''}`}
+                                    placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
+                                    value={currentMessage}
+                                    onChange={(e) => setCurrentMessage(e.target.value)}
+                                />
+                                {currentMessage.length > 0 && (
+                                    <span
+                                        className={`absolute right-3 text-[11px] font-semibold pointer-events-none select-none transition-colors ${
+                                            currentMessage.length >= MAX_MESSAGE_LENGTH
+                                                ? 'text-rose-500 dark:text-rose-400 font-bold'
+                                                : currentMessage.length >= 850
+                                                    ? 'text-amber-500 dark:text-amber-400'
+                                                    : 'text-slate-400 dark:text-slate-500'
+                                        }`}
+                                    >
+                                        {currentMessage.length}/{MAX_MESSAGE_LENGTH}
+                                    </span>
+                                )}
+                            </div>
                             <button
                                 type="submit"
                                 disabled={!currentMessage.trim() && !imagePreview}

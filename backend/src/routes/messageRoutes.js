@@ -74,11 +74,12 @@ router.get('/rooms/:roomId/messages/search', authMiddleware, MessageController.s
  *             properties:
  *               content:
  *                 type: string
+ *                 maxLength: 1000
  *     responses:
  *       201:
  *         description: Mensagem criada
  *       400:
- *         description: Conteúdo vazio
+ *         description: Conteúdo vazio ou excede 1.000 caracteres
  */
 router.post('/rooms/:roomId/messages', authMiddleware, MessageController.send);
 
