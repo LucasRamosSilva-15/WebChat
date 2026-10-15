@@ -1,16 +1,227 @@
-# React + Vite
+# 🌐 SkyRipple — Documentação do Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bem-vindo à documentação técnica do cliente web do **SkyRipple**. Esta aplicação foi construída com foco em comunicação instantânea, alta fidelidade visual baseada no **Skeuomorphic Design System (SDS)** / estética Frutiger Aero, e reatividade ponta a ponta.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Stack Tecnológica
 
-## React Compiler
+- **Core & Runtime**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Roteamento**: [React Router DOM v7](https://reactrouter.com/)
+- **Estilização**: [Tailwind CSS v4](https://tailwindcss.com/) + CSS Customizado (`skeuo.css`, `skeuo-extra.css`)
+- **Comunicação em Tempo Real**: [Socket.IO Client](https://socket.io/)
+- **Criptografia Client-side**: [Crypto-JS](https://cryptojs.gitbook.io/) (AES-256)
+- **Iconografia**: [Lucide React](https://lucide.dev/) & [React Icons](https://react-icons.github.io/react-icons/)
+- **Animações & Efeitos**: Backdrop filters, reflexos de vidro, gradientes HSL e chanfros tridimensionais
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🗺️ Arquitetura de Roteamento
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guardas de autenticação:
+
+| Rota | Componente | Acesso | Descrição Resumida |
+| :--- | :--- | :--- | :--- |
+| `/` | `Home.jsx` | Público | Landing page inicial e ponto de entrada |
+| `/login` | `Login.jsx` | Público | Autenticação de usuários existentes |
+| `/register` | `Register.jsx` | Público | Criação de conta com medidor de senha |
+| `/about` | `About.jsx` | Público | Apresentação institucional e acadêmica |
+| `/rooms` | `Rooms.jsx` | Protegido (`PrivateRoute`) | Lobby de salas de conversação |
+| `/chat` | `Chat.jsx` | Protegido (`PrivateRoute`) | Sala de chat ativa em tempo real |
+| `/custom` | `Custom.jsx` | Protegido (`PrivateRoute`) | Customização de perfil e avatar |
+| `/settings` | `Settings.jsx` | Protegido (`PrivateRoute`) | Preferências visuais e temas |
+| `/feedback` | `Feedback.jsx` | Protegido (`PrivateRoute`) | Envio de avaliações, bugs e sugestões |
+| `/suporte` | `Suporte.jsx` | Protegido (`PrivateRoute`) | Central de ajuda, FAQ e status |
+| `/admin-login` | `AdminLogin.jsx` | Público | Portal de acesso de administradores |
+| `/admin` | `Admin.jsx` | Admin (`AdminRoute`) | Painel de moderação e métricas |
+| `/buttons` | `ButtonsTest.jsx` | Público | Bancada de validação de componentes SDS |
+| `*` | `NotFound.jsx` | Público | Página de erro 404 personalizada |
+
+---
+
+## 📄 Catálogo Detalhado das Páginas
+
+### 1. `Home.jsx` (Página Inicial)
+- **Para que serve:**
+  É o cartão de visitas do SkyRipple. Apresenta a proposta de valor da plataforma e guia o visitante para criar conta, fazer login ou acessar as salas caso já esteja autenticado.
+- **Como é feito:**
+  - **Estado & Lógica:** Inspeciona o `localStorage` (`chat_isLoggedIn`) na montagem. Se o usuário já estiver autenticado, exibe um CTA direto para `/rooms` ("Entrar em uma sala"); caso contrário, renderiza botões duplos para `/register` e `/login`.
+  - **Design & Componentes:** Utiliza uma placa centralizada `.skeuo-card` com logo translúcido flutuante, sombra difusa (`drop-shadow`), títulos `.hero-title` e botões com transição de relevo ativo (`.skeuo-btn` e `.btn-secondary-glossy`).
+
+---
+
+### 2. `Login.jsx` (Autenticação)
+- **Para que serve:**
+  Permite que usuários registrados acessem suas contas utilizando e-mail e senha.
+- **Como é feito:**
+  - **Estado & Lógica:** Gerencia `email`, `password`, visibilidade de senha (`showPassword`), `loading`, `error` e mensagens de sessão expirada (`sessionExpiredNotice`) via `location.state`.
+  - **Integração:** Submete credenciais para o endpoint `POST /api/auth/login`. Em caso de sucesso, armazena o token JWT (`setAuthToken`), inicializa os dados no `localStorage`, atualiza a autenticação do socket (`socket.auth = { token }`), reconecta o socket e dispara o evento global `profileUpdated`.
+  - **Design:** Card tátil com inputs chanfrados `.skeuo-input`, botões com gradientes glossy e feedback de erro em alerta contextual.
+
+---
+
+### 3. `Register.jsx` (Cadastro)
+- **Para que serve:**
+  Registro de novos usuários na plataforma, com validação de robustez de senha e conformidade com termos legais.
+- **Como é feito:**
+  - **Estado & Lógica:** Controla `username`, `email`, `password`, checkboxes de termos (`termsAccepted` e `privacyAccepted`) e modais informativos via `createPortal`.
+  - **Medidor de Força de Senha:** A função `getPasswordStrength(pwd)` avalia tamanho, caracteres maiúsculos, minúsculos, números e símbolos em tempo real, renderizando uma barra de progresso reativa com badges de status ("Fraca", "Média", "Forte", "Excelente").
+  - **Integração:** Envia os dados para `POST /api/auth/register`, gravando o token retornado e sincronizando a sessão via WebSocket antes de redirecionar para `/rooms`.
+
+---
+
+### 4. `Rooms.jsx` (Lobby de Salas)
+- **Para que serve:**
+  Atua como o centro de navegação comunitária onde o usuário pode explorar, filtrar, criar e ingressar em salas de chat temáticas.
+- **Como é feito:**
+  - **Cards de Métricas:** Exibe três `StatCard` no topo com métricas em tempo real (Salas Ativas, Mensagens Enviadas, Usuários Online) integrando cavidades táteis `.skeuo-well`.
+  - **Filtros e Pesquisa:** Possui input com debounce para pesquisa textual e seletor de categorias ("Tecnologia", "Jogos", "Geral", "Música", etc.).
+  - **Criação de Sala (`CreateRoomModal`):** Permite criar novas salas com título, categoria, descrição e upload de ícone/imagem com conversão para Base64.
+  - **Comunicação em Tempo Real:** Conecta ouvintes de eventos do Socket.IO (`room_list_update`, `user_count_change`) para atualizar a contagem de membros e o status das salas sem recarregar a página.
+  - **Paginação:** Controles com visual tátil que dividem as salas em páginas configuráveis.
+
+---
+
+### 5. `Chat.jsx` (Sala de Conversação em Tempo Real)
+- **Para que serve:**
+  É o núcleo operacional do SkyRipple. Gerencia toda a troca de mensagens instantâneas dentro de uma sala selecionada.
+- **Como é feito:**
+  - **Socket.IO & Criptografia:** Estabelece conexão com a sala via evento `join_room`. As mensagens são criptografadas e decodificadas client-side utilizando AES-256 (`CryptoJS.AES`).
+  - **Renderização de Balões (`MessageBubble`):** Suporta modos de visualização configuráveis ("Grande", "Suave", "Compacto"), estados de mensagem própria (`isMe`), timestamps inteligentes com formatação humanizada ("Hoje às 14:30", "Ontem às..."), e indicadores visuais de mensagem editada ou fixada.
+  - **Interações Avançadas:**
+    - Reações de curtida (`onToggleLike`)
+    - Favoritar mensagens para consulta rápida
+    - Exclusão permitida em janela de até 24 horas
+    - Envio e preview de imagens com compressão e modal de zoom
+    - Denúncia in-chat (`onReportClick`) com modal de justificativa
+    - Busca textual intra-chat com navegação por ocorrências (anterior/próxima)
+  - **Sidebars:** Painel esquerdo colapsável para navegação rápida entre salas e painel direito (`MembersSidebar`) exibindo membros online/offline com insígnias hierárquicas (`Dono`, `Admin`, `Moderador`, `Membro`).
+
+---
+
+### 6. `Custom.jsx` (Personalização do Perfil)
+- **Para que serve:**
+  Permite ao usuário customizar sua identidade visual no ecossistema (foto de exibição, nome público e bio/status).
+- **Como é feito:**
+  - **Estado & Manipulação de Arquivos:** Carrega dados salvos do `localStorage` e utiliza um `FileReader` vinculado a um input escondido (`fileInputRef`) para processar imagens selecionadas.
+  - **Preview em Tempo Real:** Exibe um avatar skeuomórfico dinâmico que reflete instantaneamente a nova imagem antes mesmo de salvar.
+  - **Propagação de Eventos:** Ao salvar, dispara `window.dispatchEvent(new Event('profileUpdated'))`, fazendo com que a Navbar e os avatares em todas as páginas atualizem sem refresh.
+
+---
+
+### 7. `Feedback.jsx` (Central de Feedback dos Usuários)
+- **Para que serve:**
+  Canal oficial para envio de sugestões, relatos de bugs, elogios e ideias de melhorias diretamente para a equipe de moderação.
+- **Como é feito:**
+  - **Cabeçalho com Pílula Tátil:** Envolto em `.skeuo-card` com badge tátil de relevo e ícone `MessageSquarePlus`.
+  - **Seleção Interativa:** Placa lateral `.skeuo-card` com 4 botões táteis (`sugestao`, `erro`, `elogio`, `ideia`) estilizados com `.skeuo-surface-orb-badge` e transições dinâmicas ao selecionar.
+  - **Área de Anexos em Cavidade:** Implementa `.skeuo-well` com drag-and-drop responsivo, limite de até 3 imagens e conversão assíncrona para Base64.
+  - **Submissão:** Dispara `POST /api/feedbacks` com severidade calculada automaticamente e overlay de sucesso animado com opção de novo envio.
+
+---
+
+### 8. `Settings.jsx` (Preferências & Sistema de Temas)
+- **Para que serve:**
+  Permite configurar a estética global e acessibilidade da interface.
+- **Como é feito:**
+  - **Gerenciamento de Temas:**
+    - Modo de cor: Claro (`light`) ou Escuro (`dark`) aplicando a classe `.dark` em `document.documentElement`.
+    - Cores de destaque: Azul, Verde, Roxo, Vermelho e Slate, alterando classes dinâmicas no `document.body`.
+    - Fundos de céu Frutiger Aero: opções como `bg-classic-blue`, `bg-smooth-gradient` e `bg-clean-light`.
+  - **Acessibilidade & Ergonomia:** Toggles táteis para densidade de layout ("Compacto" vs. "Confortável"), ativação de acabamento glossy, sombras profundas e micro-animações.
+  - **Sincronização:** Todas as alterações disparam o evento customizado `themeUpdated`.
+
+---
+
+### 9. `Suporte.jsx` (Central de Ajuda)
+- **Para que serve:**
+  Página de suporte com perguntas frequentes, busca de tópicos de ajuda, canais de contato e transparência de moderação.
+- **Como é feito:**
+  - **Header Skeuomórfico:** Cartão com título de alto impacto e campo de busca côncavo `.skeuo-input` com bordas arredondadas.
+  - **FAQ Acordeão:** Seção interativa onde o clique alterna o estado `faqOpen`, exibindo respostas explicativas com transição suave.
+  - **Quadro de Transparência:** Cartões `.skeuo-card` listando salas suspensas ou banidas por violação de termos de uso e atalhos para abertura de tickets.
+
+---
+
+### 10. `About.jsx` (Sobre o Projeto)
+- **Para que serve:**
+  Apresenta a história do projeto, suas motivações acadêmicas, visão de design e a equipe de desenvolvedores.
+- **Como é feito:**
+  - **Aero Backgrounds:** Orbes coloridos com desfoque gaussiano profundo (`blur-3xl`) posicionados de forma absoluta no fundo.
+  - **Hero Tridimensional:** Painel translúcido em ângulo de perspectiva contendo badge de projeto acadêmico e mockup interativo de um chat de Campina Grande.
+  - **Grade de Cards Informativos (`InfoCard`):** Destaca os pilares do sistema (Segurança, WebSocket em Tempo Real, Design Skeuomórfico e Comunidade) com animações escalonadas (`staggered fade-in`).
+
+---
+
+### 11. `AdminLogin.jsx` (Login Administrativo)
+- **Para que serve:**
+  Portão de acesso exclusivo para moderadores e administradores da plataforma.
+- **Como é feito:**
+  - **Estrutura:** Card compacto `.skeuo-card` exibindo o emblema vetorial de segurança (`/admin_shield.svg`) com efeito de escala no hover.
+  - **Segurança:** Autenticação via senha mestre no endpoint `POST /api/admin/auth`. Em caso de sucesso, armazena `admin_token` e redireciona para a rota protegida `/admin`.
+
+---
+
+### 12. `Admin.jsx` (Painel Administrativo & Moderação)
+- **Para que serve:**
+  Console central para gestão de segurança, usuários, salas, denúncias, banimentos e feedbacks recebidos.
+- **Como é feito:**
+  - **Guarda de Rota:** Envolvido por `<AdminRoute>`, validando a existência e autorização do `admin_token`.
+  - **Estatísticas em Tempo Real:** Carrega indicadores de usuários totais, salas abertas, denúncias pendentes e banimentos ativos a partir de `GET /api/stats`.
+  - **Navegação em Abas:**
+    - `denuncias`: Análise de infrações, mensagens reportadas, visualização de prints anexados em modal e aplicação de penalidades.
+    - `usuarios`: Listagem de cadastros, gerenciamento de permissões/cargos e revogação de acessos.
+    - `salas`: Moderação de salas ativas, encerramento forçado ou alteração de visibilidade.
+    - `banimentos`: Gestão e histórico de punições com justificativas editáveis.
+    - `feedbacks`: Triagem dos feedbacks enviados pela comunidade com filtros por severidade.
+
+---
+
+### 13. `ButtonsTest.jsx` (Laboratório de Design & Componentes)
+- **Para que serve:**
+  Ambiente de desenvolvimento e showcase de todos os tokens e componentes do **Skeuomorphic Design System (SDS)**.
+- **Como é feito:**
+  - Renderiza uma bancada completa de testes:
+    - Badges de cargos (`skeuo-badge-dono`, `skeuo-badge-mod`, `skeuo-badge-online`, etc.)
+    - Variações de botões (`skeuo-btn-primary`, `btn-secondary-glossy`, `skeuo-btn-danger`, `skeuo-btn-metallic`, `skeuo-btn-aqua-pill`)
+    - Inputs côncavos, controles deslizantes, radio buttons e checkboxes com relevo físico
+    - Simulador de chat interativo com balões e reações para validação visual em modo Claro e Escuro.
+
+---
+
+### 14. `NotFound.jsx` (Página 404)
+- **Para que serve:**
+  Captura rotas inválidas ou salas inexistentes, oferecendo navegação de resgate intuitiva.
+- **Como é feito:**
+  - **Elementos:** Painel centralizado `.skeuo-panel` com bússola 3D em esfera espelhada, tipografia `404` em tamanho display e botões de retorno inteligente (`Voltar ao Início` ou `Ir para Salas`).
+
+---
+
+## 🎨 Design Tokens & Classes Principais
+
+| Classe CSS | Propósito | Efeito Visual |
+| :--- | :--- | :--- |
+| `.skeuo-card` | Placa de conteúdo principal | Fundo translúcido com `backdrop-blur`, chanfro superior branco e sombra difusa |
+| `.skeuo-well` | Cavidade entalhada | Sombra interna profunda (`inset`), borda superior escura e relevo rebaixado |
+| `.skeuo-input` | Campos de formulário | Efeito côncavo tátil com anel de foco azul acetinado |
+| `.skeuo-btn-primary` | Botões de ação principal | Gradiente azul vivo com brilho superior e sombra de clique físico |
+| `.btn-secondary-glossy` | Botões neutros/secundários | Efeito de vidro acetinado com alta luminosidade no hover |
+| `.skeuo-surface-orb-badge` | Badges circulares de ícones | Orbe esférico com reflexo especular superior |
+
+---
+
+## 🚀 Como Executar o Projeto Localmente
+
+```bash
+# 1. Navegue até a pasta do frontend
+cd frontend
+
+# 2. Instale as dependências
+npm install
+
+# 3. Inicie o servidor de desenvolvimento
+npm run dev
+
+# 4. Para validar a compilação de produção
+npm run build
+```
