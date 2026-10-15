@@ -1370,6 +1370,14 @@ const Chat = () => {
                                     placeholder={editingMessageId ? "Editar mensagem..." : "Digite uma mensagem..."}
                                     value={currentMessage}
                                     onChange={(e) => setCurrentMessage(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            const enterToSend = localStorage.getItem('chat_enterToSend') !== 'false';
+                                            if (!enterToSend) {
+                                                e.preventDefault();
+                                            }
+                                        }
+                                    }}
                                 />
                                 {currentMessage.length > 0 && (
                                     <span
