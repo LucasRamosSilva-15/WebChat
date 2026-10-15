@@ -19,18 +19,19 @@ describe('ChatSidebar Unit Tests', () => {
     expect(screen.getByText('Início')).toBeInTheDocument();
     expect(screen.getByText('Salas')).toBeInTheDocument();
     expect(screen.getByText('Diretas')).toBeInTheDocument();
+    expect(screen.getByText('Favoritos')).toBeInTheDocument();
     expect(screen.getByText('Perfil')).toBeInTheDocument();
     expect(screen.getByText('Ajustes')).toBeInTheDocument();
   });
 
-  it('renders disabled items correctly', () => {
+  it('renders favorites navigation link properly', () => {
     render(
-      <MemoryRouter initialEntries={['/rooms']}>
+      <MemoryRouter initialEntries={['/favorites']}>
         <ChatSidebar />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Favoritos (Em breve)')).toBeInTheDocument();
+    expect(screen.getByText('Favoritos')).toBeInTheDocument();
   });
 
   it('renders the user profile info in the footer', () => {

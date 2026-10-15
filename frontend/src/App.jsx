@@ -22,6 +22,8 @@ import AdminRoute from './components/AdminRoute';
 import Suporte from './pages/Suporte';
 import Settings from './pages/Settings';
 import ButtonsTest from './pages/ButtonsTest';
+import Favorites from './pages/Favorites';
+import Directs from './pages/Directs';
 
 
 function App() {
@@ -37,6 +39,9 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/rooms" element={<PrivateRoute><Rooms /></PrivateRoute>} />
           <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
+          <Route path="/directs" element={<PrivateRoute><Directs /></PrivateRoute>} />
+          <Route path="/direct" element={<PrivateRoute><Directs /></PrivateRoute>} />
+          <Route path="/favorites" element={<PrivateRoute><Favorites /></PrivateRoute>} />
           <Route path="/custom" element={<PrivateRoute><Custom /></PrivateRoute>} />
           <Route path="/feedback" element={<PrivateRoute><Feedback /></PrivateRoute>} />
           <Route path="/admin-login" element={<AdminLogin />} />

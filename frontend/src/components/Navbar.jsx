@@ -139,12 +139,12 @@ const Navbar = () => {
                                     <Link to="/rooms" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
                                         <FaComments className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Salas
                                     </Link>
-                                    <Link to="/chat" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                    <Link to="/directs" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
                                         <FaEnvelope className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Diretas
                                     </Link>
-                                    <span className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 flex items-center gap-3 w-full text-left border-t border-[#e5e5e5] dark:border-white/5 opacity-50 cursor-not-allowed">
-                                        <FaStar className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Favoritos (Em breve)
-                                    </span>
+                                    <Link to="/favorites" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
+                                        <FaStar className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Favoritos
+                                    </Link>
                                     <Link to="/custom" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-[15px] font-medium text-[#1d1d1f] dark:text-slate-50 transition-colors duration-150 flex items-center gap-3 w-full text-left hover:bg-gradient-to-r hover:from-[#e8f4ff] hover:to-transparent dark:hover:from-slate-700 dark:hover:to-transparent border-t border-[#e5e5e5] dark:border-white/5">
                                         <FaUser className="text-[#86868b] dark:text-[#94a3b8]" size={16} /> Perfil
                                     </Link>

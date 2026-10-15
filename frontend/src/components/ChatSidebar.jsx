@@ -14,8 +14,8 @@ const ChatSidebar = ({ isMobileOpen, onClose }) => {
     const navItems = [
         { id: '/', icon: <FaHome size={16} />, label: 'Início', badge: null },
         { id: '/rooms', icon: <FaComments size={16} />, label: 'Salas', badge: null },
-        { id: '/chat', icon: <FaEnvelope size={16} />, label: 'Diretas', badge: null },
-        { id: '/favorites', icon: <FaStar size={16} />, label: 'Favoritos', badge: null, disabled: true },
+        { id: '/directs', icon: <FaEnvelope size={16} />, label: 'Diretas', badge: null },
+        { id: '/favorites', icon: <FaStar size={16} />, label: 'Favoritos', badge: null },
         { id: '/custom', icon: <FaUser size={16} />, label: 'Perfil', badge: null },
         { id: '/settings', icon: <FaCog size={16} />, label: 'Ajustes', badge: null },
     ];
@@ -32,7 +32,7 @@ const ChatSidebar = ({ isMobileOpen, onClose }) => {
                     <div className="text-[11px] mb-2 ml-2 mt-1 font-bold text-[#86868b] dark:text-[#94a3b8] uppercase tracking-widest">Navegação</div>
                     <div className="skeuo-well p-1 rounded-2xl flex flex-col w-full gap-1 border border-slate-200/80 dark:border-slate-700/60">
                         {navItems.map(item => {
-                            const isActive = activeTab === item.id;
+                            const isActive = activeTab === item.id || (item.id === '/directs' && (activeTab === '/direct' || activeTab === '/directs'));
                             return item.disabled ? (
                                 <span
                                     key={item.id}

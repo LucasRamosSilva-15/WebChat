@@ -2,7 +2,10 @@ import { useLocation } from 'react-router-dom';
 
 const Footer = () => {
     const location = useLocation();
-    if (location.pathname === '/chat') return null;
+    const hideFooterPrefixes = ['/chat', '/directs', '/direct', '/favorites'];
+    if (hideFooterPrefixes.some(path => location.pathname === path || location.pathname.startsWith(`${path}/`))) {
+        return null;
+    }
 
     return (
         <footer className="bg-transparent border-t-0 py-8 text-center mt-auto w-full flex flex-col items-center justify-center px-4 gap-2.5 z-10">
