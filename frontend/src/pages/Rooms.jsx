@@ -242,7 +242,6 @@ const Rooms = () => {
 
     const [isCreatingRoom, setIsCreatingRoom] = useState(false);
     const [roomsLoading, setRoomsLoading] = useState(true);
-    const [roomsProgress, setRoomsProgress] = useState(25);
     const [roomsError, setRoomsError] = useState("");
     const [customRooms, setCustomRooms] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -308,11 +307,9 @@ const Rooms = () => {
     useEffect(() => {
         const fetchRooms = async () => {
             setRoomsLoading(true);
-            setRoomsProgress(25);
             setRoomsError("");
             try {
                 const apiRooms = await apiRequest('/rooms');
-                setRoomsProgress(75);
                 const mappedRooms = apiRooms.map(room => ({
                     id: room.id,
                     title: room.name,
@@ -325,8 +322,6 @@ const Rooms = () => {
                     date: new Date(room.created_at).toLocaleDateString('pt-BR')
                 }));
                 setCustomRooms(mappedRooms);
-                setRoomsProgress(100);
-                await new Promise((resolve) => setTimeout(resolve, 200));
             } catch (error) {
                 console.error("Erro ao carregar salas da API:", error);
                 if (error.message && (error.message.includes('Token') || error.message.includes('expirado') || error.message.includes('Acesso negado'))) {
@@ -453,7 +448,6 @@ const Rooms = () => {
             <SkeuoLoading
                 title="Carregando salas..."
                 subtitle="Buscando salas, membros e estatísticas no banco de dados."
-                progress={roomsProgress}
             />
         );
     }
