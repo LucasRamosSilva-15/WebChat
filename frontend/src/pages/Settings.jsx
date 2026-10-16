@@ -13,8 +13,19 @@ import {
 } from 'react-icons/fa';
 import { Sun, Moon, Check } from 'lucide-react';
 import UserAvatar from '../components/UserAvatar';
+import { useNotifications } from '../context/NotificationContext';
 
 const Settings = () => {
+    const {
+        notifications,
+        unreadCount,
+        soundEnabled,
+        setSoundEnabled,
+        toastsEnabled,
+        setToastsEnabled,
+        simulateNotification,
+        clearAll
+    } = useNotifications();
     const [activeTab, setActiveTab] = useState('Appearance');
 
     const [colorMode, setColorMode] = useState(localStorage.getItem('chat_colorMode') || 'light');
@@ -329,6 +340,88 @@ const Settings = () => {
                                         <button className="btn-secondary-glossy text-xs px-3 py-1.5 self-start mt-1">
                                             Alterar Foto
                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'Notifications' && (
+                            <div className="flex flex-col gap-8 animate-fade-in">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-slate-800 text-amber-500 flex items-center justify-center">
+                                        <FaBell size={14} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-[16px] font-bold admin-hero-title">Notificações</h3>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                                            Controle sons, avisos flutuantes e veja o estado das notificações
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-gray-400 text-[11px] font-bold uppercase tracking-wider mb-4">Comportamento e Alertas</h4>
+                                    <div className="flex flex-col gap-4 skeuo-panel p-5 max-w-lg">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <span className="text-sm font-semibold admin-table-text block">Sons de Notificação</span>
+                                                <span className="text-[11px] text-slate-500 dark:text-slate-400">Tocar um sino sutil quando chegar uma nova mensagem ou aviso.</span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSoundEnabled(!soundEnabled)}
+                                                className={`w-11 h-6 rounded-full relative flex items-center px-1 transition-colors cursor-pointer shrink-0 ${
+                                                    soundEnabled ? 'bg-sky-500 shadow-inner' : 'bg-slate-300 dark:bg-slate-700'
+                                                }`}
+                                            >
+                                                <div className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${
+                                                    soundEnabled ? 'translate-x-5' : 'translate-x-0'
+                                                }`}></div>
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between border-t border-slate-200/70 dark:border-white/5 pt-3">
+                                            <div>
+                                                <span className="text-sm font-semibold admin-table-text block">Avisos Flutuantes (Toasts)</span>
+                                                <span className="text-[11px] text-slate-500 dark:text-slate-400">Exibir balão temporário no canto superior da tela.</span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setToastsEnabled(!toastsEnabled)}
+                                                className={`w-11 h-6 rounded-full relative flex items-center px-1 transition-colors cursor-pointer shrink-0 ${
+                                                    toastsEnabled ? 'bg-sky-500 shadow-inner' : 'bg-slate-300 dark:bg-slate-700'
+                                                }`}
+                                            >
+                                                <div className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${
+                                                    toastsEnabled ? 'translate-x-5' : 'translate-x-0'
+                                                }`}></div>
+                                            </button>
+                                        </div>
+
+                                        <div className="border-t border-slate-200/70 dark:border-white/5 pt-3 flex items-center justify-between">
+                                            <div>
+                                                <span className="text-sm font-semibold admin-table-text block">Histórico</span>
+                                                <span className="text-[11px] text-slate-500 dark:text-slate-400">{notifications.length} armazenadas ({unreadCount} não lidas)</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => simulateNotification()}
+                                                    className="btn-secondary-glossy text-xs px-3 py-1.5 cursor-pointer text-sky-600 dark:text-sky-400"
+                                                >
+                                                    Testar
+                                                </button>
+                                                {notifications.length > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={clearAll}
+                                                        className="btn-secondary-glossy text-xs px-3 py-1.5 cursor-pointer text-rose-500 dark:text-rose-400"
+                                                    >
+                                                        Limpar
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

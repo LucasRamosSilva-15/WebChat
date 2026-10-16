@@ -48,7 +48,6 @@ export const apiRequest = async (endpoint, options = {}) => {
             errorMessage = response.statusText;
         }
 
-        // Tratamento automático de 401 (Token Inválido ou Sessão Expirada)
         if (response.status === 401) {
             const isAuthEndpoint = endpoint.startsWith('/auth/') || endpoint.startsWith('/admin/login') || endpoint === '/login';
             if (!isAuthEndpoint && (token || errorMessage.toLowerCase().includes('token') || errorMessage.toLowerCase().includes('acesso negado'))) {

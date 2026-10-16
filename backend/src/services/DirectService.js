@@ -31,7 +31,7 @@ class DirectService {
         avatar: partner?.profilePhoto || null,
         lastMessage: conv.last_message || 'Conversa iniciada',
         time: timeFormatted,
-        online: partner?.status === 'active',
+        online: partner?.id ? Boolean(global.globalOnlineUsers && global.globalOnlineUsers.has(partner.id)) || partner?.status === 'active' : false,
         unread: 0
       };
     });
@@ -196,7 +196,8 @@ class DirectService {
         name: u.displayName || u.email.split('@')[0],
         email: u.email,
         avatar: u.profilePhoto || null,
-        status: u.status || 'active'
+        status: u.status || 'active',
+        isOnline: Boolean(global.globalOnlineUsers && global.globalOnlineUsers.has(u.id))
       }));
   }
 }

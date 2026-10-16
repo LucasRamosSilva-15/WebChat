@@ -24,14 +24,18 @@ import Settings from './pages/Settings';
 import ButtonsTest from './pages/ButtonsTest';
 import Favorites from './pages/Favorites';
 import Directs from './pages/Directs';
+import { NotificationProvider } from './context/NotificationContext';
+import NotificationToastContainer from './components/NotificationToastContainer';
 
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col relative overflow-x-hidden">
-        <SkyBackground />
-        <Navbar />
+    <NotificationProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col relative overflow-x-hidden">
+          <SkyBackground />
+          <Navbar />
+          <NotificationToastContainer />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -55,6 +59,7 @@ function App() {
         <Footer />
       </div>
     </Router>
+  </NotificationProvider>
   );
 }
 

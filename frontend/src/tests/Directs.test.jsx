@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import Directs from '../pages/Directs';
@@ -29,8 +29,14 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('Directs Page Tests', () => {
+  let socketCallbacks = {};
+
   beforeEach(() => {
     vi.clearAllMocks();
+    socketCallbacks = {};
+    socket.on.mockImplementation((event, cb) => {
+      socketCallbacks[event] = cb;
+    });
     localStorage.clear();
     localStorage.setItem('chat_displayName', 'Lucas Ramos');
     localStorage.setItem('chat_uniqueUserId', 'lucas_123');
@@ -200,6 +206,41 @@ describe('Directs Page Tests', () => {
     await waitFor(() => {
       expect(screen.queryByText('1')).not.toBeInTheDocument();
       expect(likeBtn).toHaveAttribute('title', 'Curtir');
+    });
+  });
+
+  it('atualiza o status de presenca para Online agora e Offline em tempo real', async () => {
+    render(
+      <MemoryRouter initialEntries={['/directs']}>
+        <Directs />
+      </MemoryRouter>
+    );
+
+    const moderacaoConv = screen.getByText('Moderação Geral');
+    fireEvent.click(moderacaoConv);
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline')).toBeInTheDocument();
+    });
+
+    act(() => {
+      if (socketCallbacks['user_presence_changed']) {
+        socketCallbacks['user_presence_changed']({ userId: 'comunidade', isOnline: true });
+      }
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Online agora')).toBeInTheDocument();
+    });
+
+    act(() => {
+      if (socketCallbacks['user_presence_changed']) {
+        socketCallbacks['user_presence_changed']({ userId: 'comunidade', isOnline: false });
+      }
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline')).toBeInTheDocument();
     });
   });
 });

@@ -31,6 +31,7 @@ const INITIAL_CONVERSATIONS = [
         id: 'privado-suporte',
         name: 'Suporte SkyRipple',
         username: 'suporte',
+        partnerId: 'suporte',
         avatar: null,
         lastMessage: 'Olá! Como podemos ajudar você hoje?',
         time: 'Agora',
@@ -41,10 +42,11 @@ const INITIAL_CONVERSATIONS = [
         id: 'privado-comunidade',
         name: 'Moderação Geral',
         username: 'moderacao',
+        partnerId: 'comunidade',
         avatar: null,
         lastMessage: 'Bem-vindo ao canal de mensagens diretas.',
         time: 'Hoje',
-        online: true,
+        online: false,
         unread: 0
     }
 ];
@@ -68,6 +70,8 @@ const Directs = () => {
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [openMenuId, setOpenMenuId] = useState(null);
+    const [onlineUserIds, setOnlineUserIds] = useState(new Set());
+    const [roomOnlineUserIds, setRoomOnlineUserIds] = useState(new Set());
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
 
@@ -246,16 +250,107 @@ const Directs = () => {
             });
         };
 
+        const handlePresenceUpdated = ({ roomId, onlineUsers }) => {
+            if (roomId === convId) {
+                const isPartnerHere = Array.isArray(onlineUsers) && onlineUsers.some(u => u.id !== currentUserId);
+                setRoomOnlineUserIds(new Set(isPartnerHere ? ['partner'] : []));
+                setSelectedConv(prev => (prev && prev.id === convId ? { ...prev, online: isPartnerHere } : prev));
+                setConversations(prev => prev.map(c => c.id === convId ? { ...c, online: isPartnerHere } : c));
+            }
+        };
+
         socket.on('receive_message', handleReceiveMessage);
         socket.on('message_deleted', handleMessageDeleted);
         socket.on('like_toggled', handleLikeToggled);
+        socket.on('roomPresenceUpdated', handlePresenceUpdated);
 
         return () => {
+            socket.emit('leaveRoom', { roomId: convId, userId: currentUserId });
             socket.off('receive_message', handleReceiveMessage);
             socket.off('message_deleted', handleMessageDeleted);
             socket.off('like_toggled', handleLikeToggled);
+            socket.off('roomPresenceUpdated', handlePresenceUpdated);
         };
     }, [selectedConv]);
+
+    useEffect(() => {
+        const handleUserPresenceChanged = ({ userId, isOnline }) => {
+            if (!userId) return;
+            setOnlineUserIds(prev => {
+                const next = new Set(prev);
+                if (isOnline) {
+                    next.add(userId);
+                } else {
+                    next.delete(userId);
+                }
+                return next;
+            });
+            setConversations(prev => prev.map(c => {
+                const isMatch = c.partnerId === userId || (c.id && String(c.id).includes(userId));
+                if (isMatch) {
+                    return { ...c, online: isOnline };
+                }
+                return c;
+            }));
+            setSelectedConv(prev => {
+                if (prev && (prev.partnerId === userId || (prev.id && String(prev.id).includes(userId)))) {
+                    return { ...prev, online: isOnline };
+                }
+                return prev;
+            });
+        };
+
+        const handleOnlineUsersList = (usersList) => {
+            if (!Array.isArray(usersList)) return;
+            const onlineSet = new Set(usersList);
+            setOnlineUserIds(onlineSet);
+            setConversations(prev => prev.map(c => {
+                if (c.username === 'suporte' || c.name === 'Suporte SkyRipple') {
+                    return { ...c, online: true };
+                }
+                const isOnline = c.partnerId ? onlineSet.has(c.partnerId) : false;
+                return { ...c, online: isOnline };
+            }));
+            setSelectedConv(prev => {
+                if (!prev) return prev;
+                if (prev.username === 'suporte' || prev.name === 'Suporte SkyRipple') {
+                    return { ...prev, online: true };
+                }
+                if (prev.partnerId) {
+                    return { ...prev, online: onlineSet.has(prev.partnerId) };
+                }
+                return prev;
+            });
+        };
+
+        socket.on('user_presence_changed', handleUserPresenceChanged);
+        socket.on('online_users_list', handleOnlineUsersList);
+        socket.emit('get_online_users');
+
+        return () => {
+            socket.off('user_presence_changed', handleUserPresenceChanged);
+            socket.off('online_users_list', handleOnlineUsersList);
+        };
+    }, [currentUserId]);
+
+    const isConversationOnline = (conv) => {
+        if (!conv) return false;
+        if (conv.username === 'suporte' || conv.name === 'Suporte SkyRipple') {
+            return true;
+        }
+        if (selectedConv && conv.id === selectedConv.id && roomOnlineUserIds.size > 0) {
+            return true;
+        }
+        if (conv.partnerId && onlineUserIds.has(conv.partnerId)) {
+            return true;
+        }
+        const parts = conv.id ? String(conv.id).replace('privado-', '').split('-') : [];
+        const partnerFromId = parts.find(p => p !== currentUserId);
+        if (partnerFromId && onlineUserIds.has(partnerFromId)) {
+            return true;
+        }
+        return Boolean(conv.online);
+    };
 
     useEffect(() => {
         if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
@@ -574,7 +669,7 @@ const Directs = () => {
                                     >
                                         <div className="relative shrink-0">
                                             <UserAvatar src={conv.avatar} name={conv.name} size="sm" showStatus={false} />
-                                            {conv.online && (
+                                            {isConversationOnline(conv) && (
                                                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-white dark:border-slate-900 shadow-xs"></span>
                                             )}
                                         </div>
@@ -627,8 +722,8 @@ const Directs = () => {
                                         </h3>
                                         <p className="text-[11px] flex items-center gap-1.5 mt-0.5 text-[#86868b] dark:text-slate-400">
                                             <span className="flex items-center gap-1 font-medium">
-                                                <span className={`w-1.5 h-1.5 rounded-full ${selectedConv.online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]' : 'bg-slate-400'}`} />
-                                                {selectedConv.online ? 'Online agora' : 'Offline'}
+                                                <span className={`w-1.5 h-1.5 rounded-full ${isConversationOnline(selectedConv) ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]' : 'bg-slate-400'}`} />
+                                                {isConversationOnline(selectedConv) ? 'Online agora' : 'Offline'}
                                             </span>
                                             <span>•</span>
                                             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">

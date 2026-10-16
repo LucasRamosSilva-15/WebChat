@@ -162,7 +162,6 @@ const Feedback = () => {
   return (
     <div className="flex-1 w-full flex flex-col items-center">
       <div className="w-full max-w-[1080px] px-4 py-8 md:py-12">
-        {/* 1. Cabeçalho com Pílula Tátil envolto em skeuo-card */}
         <div className="skeuo-card p-6 sm:p-8 mb-8 animate-fade-in-up-1">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-100/90 dark:bg-sky-950/60 border border-sky-300/70 dark:border-sky-700/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(0,113,227,0.1)] mb-3">
             <MessageSquarePlus className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
@@ -177,7 +176,6 @@ const Feedback = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* 3. Formulário Principal à Esquerda */}
           <div className="lg:col-span-7 xl:col-span-8">
             <form onSubmit={handleSubmit} className="skeuo-card p-6 sm:p-8 relative animate-fade-in-up-2">
               {success && (
@@ -201,7 +199,6 @@ const Feedback = () => {
                 </div>
               )}
 
-              {/* Campo: Resumo */}
               <div className="mb-6">
                 <label className="block font-bold text-xs text-slate-700 dark:text-slate-200 mb-2 uppercase tracking-wider">
                   Resumo do Feedback
@@ -216,7 +213,6 @@ const Feedback = () => {
                 />
               </div>
 
-              {/* Campo: Detalhes */}
               <div className="mb-6">
                 <label className="block font-bold text-xs text-slate-700 dark:text-slate-200 mb-2 uppercase tracking-wider">
                   Detalhes
@@ -230,7 +226,6 @@ const Feedback = () => {
                 ></textarea>
               </div>
 
-              {/* Área de Anexos */}
               <div className="mb-6">
                 <label className="block font-bold text-xs text-slate-700 dark:text-slate-200 mb-2 uppercase tracking-wider">
                   Anexos (Opcional - Máx 3)
@@ -267,7 +262,6 @@ const Feedback = () => {
                   </span>
                 </div>
 
-                {/* Lista de Arquivos Selecionados */}
                 {files.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {files.map((file, index) => (
@@ -293,7 +287,6 @@ const Feedback = () => {
                 )}
               </div>
 
-              {/* 4. Botão de Envio */}
               <div className="flex justify-end mt-6">
                 <button
                   type="submit"
@@ -307,7 +300,6 @@ const Feedback = () => {
             </form>
           </div>
 
-          {/* 2. Seletores de Tipo de Feedback à Direita */}
           <div className="lg:col-span-5 xl:col-span-4 animate-fade-in-up-3">
             <div className="skeuo-card p-6 sm:p-7 flex flex-col">
               <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider">

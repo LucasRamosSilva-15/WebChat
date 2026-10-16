@@ -4,6 +4,7 @@ import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, Fa
 import { X } from 'lucide-react';
 import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
+import NotificationsDropdown from './NotificationsDropdown';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -188,6 +189,8 @@ const Navbar = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {isLoggedIn && <NotificationsDropdown />}
 
                         {isLoggedIn && (
                             <div className="relative" ref={profileRef}>

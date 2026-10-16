@@ -97,6 +97,8 @@ const supabase = createClient(
 
 const roomPresence = new Map();
 const messageRateLimits = new Map();
+const globalOnlineUsers = new Map();
+global.globalOnlineUsers = globalOnlineUsers;
 
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
@@ -111,6 +113,18 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
+  const authUserId = socket.user?.id;
+  if (authUserId) {
+    if (!globalOnlineUsers.has(authUserId)) {
+      globalOnlineUsers.set(authUserId, new Set());
+    }
+    globalOnlineUsers.get(authUserId).add(socket.id);
+    io.emit('user_presence_changed', { userId: authUserId, isOnline: true });
+  }
+
+  socket.on('get_online_users', () => {
+    socket.emit('online_users_list', Array.from(globalOnlineUsers.keys()));
+  });
 
   const handleLeaveOrDisconnect = (socketId, roomId, userId) => {
     if (!roomId || !userId) return;
@@ -145,6 +159,12 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     socket.currentRoom = roomId;
     socket.userId = user.id;
+
+    if (!globalOnlineUsers.has(user.id)) {
+      globalOnlineUsers.set(user.id, new Set());
+    }
+    globalOnlineUsers.get(user.id).add(socket.id);
+    io.emit('user_presence_changed', { userId: user.id, isOnline: true });
 
     if (!roomPresence.has(roomId)) {
       roomPresence.set(roomId, new Map());
@@ -269,6 +289,15 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     handleLeaveOrDisconnect(socket.id, socket.currentRoom, socket.userId);
+    const uid = socket.userId || socket.user?.id;
+    if (uid && globalOnlineUsers.has(uid)) {
+      const userSockets = globalOnlineUsers.get(uid);
+      userSockets.delete(socket.id);
+      if (userSockets.size === 0) {
+        globalOnlineUsers.delete(uid);
+        io.emit('user_presence_changed', { userId: uid, isOnline: false });
+      }
+    }
   });
 });
 
@@ -280,4 +309,4 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-module.exports = { app, server };
+module.exports = { app, server, globalOnlineUsers };
