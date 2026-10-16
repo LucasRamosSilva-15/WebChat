@@ -319,11 +319,469 @@ O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, 
 
 ## Diagrama ER
 
-![Diagrama Entidade-Relacionamento](docs/screenshots/Diagrama%20Entidade-Relacionamento.svg)
+```mermaid
+erDiagram
+    USERS ||--o{ ROOMS : "cria (owner)"
+    USERS ||--o{ ROOM_MEMBERS : "ingressa"
+    ROOMS ||--o{ ROOM_MEMBERS : "possui"
+    USERS ||--o{ MESSAGES : "envia"
+    ROOMS ||--o{ MESSAGES : "contem"
+    USERS ||--o{ DIRECT_CONVERSATIONS : "inicia (user1)"
+    USERS ||--o{ DIRECT_CONVERSATIONS : "recebe (user2)"
+    DIRECT_CONVERSATIONS ||--o{ DIRECT_MESSAGES : "contem"
+    USERS ||--o{ DIRECT_MESSAGES : "envia (sender)"
+    USERS ||--o{ NOTIFICATIONS : "recebe"
+    USERS ||--o{ FAVORITES : "salva"
+    USERS ||--o{ REPORTS : "denuncia"
+    MESSAGES ||--o{ REPORTS : "alvo"
+    USERS ||--o{ FEEDBACKS : "submete"
+
+    USERS {
+        uuid id PK
+        string email UK
+        string password
+        string displayName
+        string profilePhoto
+        text profileDesc
+        string role
+        string status
+        timestamp created_at
+    }
+
+    ROOMS {
+        uuid id PK
+        string name
+        string type
+        text description
+        string category
+        text image_url
+        uuid created_by FK
+        timestamp created_at
+    }
+
+    ROOM_MEMBERS {
+        uuid room_id PK,FK
+        uuid user_id PK,FK
+        string role
+        timestamp joined_at
+    }
+
+    MESSAGES {
+        uuid id PK
+        uuid room_id FK
+        uuid user_id FK
+        text content
+        text image_url
+        timestamp created_at
+    }
+
+    DIRECT_CONVERSATIONS {
+        uuid id PK
+        uuid user1_id FK
+        uuid user2_id FK
+        text last_message
+        timestamp last_message_at
+        timestamp created_at
+    }
+
+    DIRECT_MESSAGES {
+        uuid id PK
+        uuid conversation_id FK
+        uuid sender_id FK
+        text content
+        text image_url
+        timestamp created_at
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        uuid user_id FK
+        string type
+        string title
+        text content
+        string link
+        boolean read
+        text data
+        timestamp created_at
+    }
+
+    FAVORITES {
+        uuid id PK
+        uuid user_id FK
+        string item_type
+        string item_id
+        string title
+        text content
+        text meta
+        timestamp created_at
+    }
+
+    REPORTS {
+        uuid id PK
+        uuid message_id FK
+        uuid user_id FK
+        string reason
+        string status
+        timestamp created_at
+    }
+
+    FEEDBACKS {
+        uuid id PK
+        uuid user_id FK
+        text comment
+        json images
+        string status
+        timestamp created_at
+    }
+```
 
 ## Diagrama de Classes
 
-![Diagrama de Classes](docs/screenshots/Diagrama%20de%20Classes%20SkyRippleProject%20(5).svg)
+```mermaid
+classDiagram
+    direction TB
+
+    %% ==========================================
+    %% CAMADA DE CONTROLADORES (HTTP / REST API)
+    %% ==========================================
+    class UsuarioController {
+        +register(req, res)
+        +login(req, res)
+        +getMe(req, res)
+        +updateProfile(req, res)
+        +getAllUsers(req, res)
+    }
+
+    class RoomController {
+        +getAllRooms(req, res)
+        +getRoomById(req, res)
+        +createRoom(req, res)
+        +updateRoom(req, res)
+        +deleteRoom(req, res)
+        +joinRoom(req, res)
+        +leaveRoom(req, res)
+        +promoteModerator(req, res)
+        +demoteModerator(req, res)
+        +kickMember(req, res)
+        +transferOwnership(req, res)
+    }
+
+    class MessageController {
+        +getMessagesByRoom(req, res)
+        +sendMessage(req, res)
+        +deleteMessage(req, res)
+    }
+
+    class DirectController {
+        +listConversations(req, res)
+        +getMessages(req, res)
+        +sendMessage(req, res)
+    }
+
+    class NotificationController {
+        +getNotifications(req, res)
+        +markAsRead(req, res)
+        +markAllAsRead(req, res)
+        +deleteNotification(req, res)
+    }
+
+    class FavoriteController {
+        +listFavorites(req, res)
+        +addFavorite(req, res)
+        +removeFavorite(req, res)
+    }
+
+    class ReportController {
+        +createReport(req, res)
+        +getAllReports(req, res)
+        +resolveReport(req, res)
+        +deleteReport(req, res)
+    }
+
+    class FeedbackController {
+        +submitFeedback(req, res)
+        +getAllFeedbacks(req, res)
+        +resolveFeedback(req, res)
+        +deleteFeedback(req, res)
+    }
+
+    class AdminController {
+        +login(req, res)
+        +getStats(req, res)
+        +getAllUsers(req, res)
+        +updateUserRole(req, res)
+        +banUser(req, res)
+    }
+
+    %% ==========================================
+    %% CAMADA DE SERVIÇOS (REGRAS DE NEGÓCIO)
+    %% ==========================================
+    class UserService {
+        +register(userData) User
+        +login(email, password) Object
+        +getAllUsers() List~User~
+        +getUserById(id) User
+        +updateProfile(id, data) User
+    }
+
+    class RoomService {
+        +createRoom(data, userId) Room
+        +getAllRooms() List~Room~
+        +getRoomById(id) Room
+        +updateRoom(id, data, userId) Room
+        +deleteRoom(id, userId, isAdmin) boolean
+        +promoteMember(roomId, targetId, requesterId) Object
+        +demoteMember(roomId, targetId, requesterId) Object
+        +kickMember(roomId, targetId, requesterId) Object
+        +transferOwnership(roomId, targetId, requesterId) Object
+    }
+
+    class MessageService {
+        +sendMessage(roomId, userId, content, image) Message
+        +getMessagesByRoom(roomId) List~Message~
+        +deleteMessage(id, userId, isAdmin) boolean
+    }
+
+    class DirectService {
+        +listConversations(userId) List~DirectConversation~
+        +getMessages(conversationId, userId) List~DirectMessage~
+        +sendMessage(senderId, recipientId, content, image) DirectMessage
+    }
+
+    class NotificationService {
+        +getUserNotifications(userId) List~Notification~
+        +createNotification(data) Notification
+        +markAsRead(id, userId) boolean
+        +markAllAsRead(userId) boolean
+    }
+
+    class FavoriteService {
+        +listFavorites(userId) List~Favorite~
+        +addFavorite(userId, data) Favorite
+        +removeFavorite(id, userId) boolean
+    }
+
+    class ReportService {
+        +createReport(userId, messageId, reason) Report
+        +getAllReports() List~Report~
+        +resolveReport(id, status) Report
+        +deleteReport(id) boolean
+    }
+
+    class FeedbackService {
+        +submitFeedback(userId, comment, images) Feedback
+        +getAllFeedbacks() List~Feedback~
+        +resolveFeedback(id, status) Feedback
+        +deleteFeedback(id) boolean
+    }
+
+    %% ==========================================
+    %% CAMADA DE REPOSITÓRIOS (ACESSO A DADOS)
+    %% ==========================================
+    class UserRepository {
+        +findByEmail(email) User
+        +findById(id) User
+        +create(data) User
+        +findAll() List~User~
+        +update(id, data) User
+        +delete(id) boolean
+    }
+
+    class RoomRepository {
+        +create(data) Room
+        +findAll() List~Room~
+        +findById(id) Room
+        +update(id, data) Room
+        +delete(id) boolean
+    }
+
+    class RoomMemberRepository {
+        +addMember(roomId, userId, role) RoomMember
+        +getMember(roomId, userId) RoomMember
+        +getMembersByRoom(roomId) List~RoomMember~
+        +updateRole(roomId, userId, role) RoomMember
+        +removeMember(roomId, userId) boolean
+    }
+
+    class MessageRepository {
+        +create(data) Message
+        +findByRoomId(roomId) List~Message~
+        +findById(id) Message
+        +delete(id) boolean
+    }
+
+    class DirectRepository {
+        +findOrCreateConversation(user1, user2) DirectConversation
+        +listConversations(userId) List~DirectConversation~
+        +createMessage(data) DirectMessage
+        +getMessages(convId) List~DirectMessage~
+    }
+
+    class NotificationRepository {
+        +findByUserId(userId) List~Notification~
+        +create(data) Notification
+        +markAsRead(id, userId) boolean
+        +markAllAsRead(userId) boolean
+    }
+
+    class FavoriteRepository {
+        +findByUserId(userId) List~Favorite~
+        +create(data) Favorite
+        +delete(id, userId) boolean
+    }
+
+    class ReportRepository {
+        +create(data) Report
+        +findAll() List~Report~
+        +findById(id) Report
+        +updateStatus(id, status) Report
+        +delete(id) boolean
+    }
+
+    class FeedbackRepository {
+        +create(data) Feedback
+        +findAll() List~Feedback~
+        +findById(id) Feedback
+        +updateStatus(id, status) Feedback
+        +delete(id) boolean
+    }
+
+    %% ==========================================
+    %% CAMADA DE MODELOS (SEQUELIZE ORM)
+    %% ==========================================
+    class User {
+        +UUID id
+        +String email
+        +String password
+        +String displayName
+        +String profilePhoto
+        +String profileDesc
+        +String role
+        +String status
+        +Date created_at
+    }
+
+    class Room {
+        +UUID id
+        +String name
+        +String type
+        +String description
+        +String category
+        +String image_url
+        +UUID created_by
+        +Date created_at
+    }
+
+    class RoomMember {
+        +UUID room_id
+        +UUID user_id
+        +String role
+        +Date joined_at
+    }
+
+    class Message {
+        +UUID id
+        +UUID room_id
+        +UUID user_id
+        +String content
+        +String image_url
+        +Date created_at
+    }
+
+    class DirectConversation {
+        +UUID id
+        +UUID user1_id
+        +UUID user2_id
+        +String last_message
+        +Date last_message_at
+        +Date created_at
+    }
+
+    class DirectMessage {
+        +UUID id
+        +UUID conversation_id
+        +UUID sender_id
+        +String content
+        +String image_url
+        +Date created_at
+    }
+
+    class Notification {
+        +UUID id
+        +UUID user_id
+        +String type
+        +String title
+        +String content
+        +String link
+        +Boolean read
+        +String data
+        +Date created_at
+    }
+
+    class Favorite {
+        +UUID id
+        +UUID user_id
+        +String item_type
+        +String item_id
+        +String title
+        +String content
+        +String meta
+        +Date created_at
+    }
+
+    class Report {
+        +UUID id
+        +UUID message_id
+        +UUID user_id
+        +String reason
+        +String status
+        +Date created_at
+    }
+
+    class Feedback {
+        +UUID id
+        +UUID user_id
+        +String comment
+        +Array images
+        +String status
+        +Date created_at
+    }
+
+    %% ==========================================
+    %% RELACIONAMENTOS E DEPENDÊNCIAS
+    %% ==========================================
+    UsuarioController --> UserService
+    RoomController --> RoomService
+    MessageController --> MessageService
+    DirectController --> DirectService
+    NotificationController --> NotificationService
+    FavoriteController --> FavoriteService
+    ReportController --> ReportService
+    FeedbackController --> FeedbackService
+    AdminController --> UserService
+    AdminController --> RoomService
+
+    UserService --> UserRepository
+    RoomService --> RoomRepository
+    RoomService --> RoomMemberRepository
+    MessageService --> MessageRepository
+    DirectService --> DirectRepository
+    NotificationService --> NotificationRepository
+    FavoriteService --> FavoriteRepository
+    ReportService --> ReportRepository
+    FeedbackService --> FeedbackRepository
+
+    UserRepository ..> User
+    RoomRepository ..> Room
+    RoomMemberRepository ..> RoomMember
+    MessageRepository ..> Message
+    DirectRepository ..> DirectConversation
+    DirectRepository ..> DirectMessage
+    NotificationRepository ..> Notification
+    FavoriteRepository ..> Favorite
+    ReportRepository ..> Report
+    FeedbackRepository ..> Feedback
+```
 
 ## Autor
 
