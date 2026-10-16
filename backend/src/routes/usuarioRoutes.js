@@ -19,13 +19,21 @@ const authLimiter = rateLimit({
  *   - name: Auth
  *     description: Registo, login e dados do usuário autenticado
  *   - name: Rooms
- *     description: Criação e listagem de salas
+ *     description: Criação, listagem e moderação de salas
  *   - name: Messages
  *     description: Mensagens de uma sala
+ *   - name: Directs
+ *     description: Mensagens diretas privadas e conversas
+ *   - name: Notifications
+ *     description: Notificações do usuário e avisos em tempo real
+ *   - name: Favorites
+ *     description: Gestão de salas e conversas favoritas
  *   - name: Reports
  *     description: Denúncias de mensagens
  *   - name: Feedbacks
  *     description: Feedbacks dos usuários
+ *   - name: Admin
+ *     description: Painel e endpoints administrativos
  */
 
 /**

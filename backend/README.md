@@ -357,6 +357,23 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 | POST | `/rooms/:roomId/messages` | Bearer Token | Envia mensagem com texto e/ou anexo de imagem via HTTP REST. |
 | DELETE | `/messages/:id` | Bearer Token / Mod / Owner / Admin | Exclusão hierárquica: autor (até 24h), moderador da sala (apenas mensagens de membros regulares), dono da sala (qualquer mensagem) ou administrador global. |
 
+##### Módulo: Mensagens Diretas (`/api/directs`)
+| Método | Endpoint | Proteção | Descrição |
+| ------ | ------ | ------ | ------ |
+| GET | `/directs/conversations` | Bearer Token | Lista todas as conversas diretas ativas com status, dados do interlocutor e última mensagem. |
+| POST | `/directs/conversations` | Bearer Token | Obtém conversa existente ou inicia nova conversa direta 1x1 com `targetUserId`. |
+| GET | `/directs/conversations/:id/messages` | Bearer Token | Retorna o histórico de mensagens diretas da conversa. |
+| POST | `/directs/conversations/:id/messages` | Bearer Token | Envia mensagem de texto e/ou imagem na conversa direta. |
+| DELETE | `/directs/conversations/:id` | Bearer Token | Oculta/remove a conversa direta para o usuário autenticado. |
+| GET | `/directs/users` | Bearer Token | Lista e pesquisa usuários cadastrados disponíveis para iniciar chat privado. |
+
+##### Módulo: Favoritos (`/api/favorites`)
+| Método | Endpoint | Proteção | Descrição |
+| ------ | ------ | ------ | ------ |
+| GET | `/favorites` | Bearer Token | Lista todas as salas ou conversas marcadas como favoritas pelo usuário. |
+| POST | `/favorites` | Bearer Token | Adiciona sala (`item_type: 'room'`) ou conversa (`item_type: 'conversation'`) aos favoritos. |
+| DELETE | `/favorites/:itemType/:itemId` | Bearer Token | Remove o item dos favoritos do usuário. |
+
 ##### Módulo: Notificações em Tempo Real (`/api/notifications`)
 | Método | Endpoint | Proteção | Descrição |
 | ------ | ------ | ------ | ------ |
