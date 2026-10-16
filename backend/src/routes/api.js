@@ -9,6 +9,7 @@ const reportRoutes = require('./reportRoutes');
 const feedbackRoutes = require('./feedbackRoutes');
 const favoriteRoutes = require('./favoriteRoutes');
 const directRoutes = require('./directRoutes');
+const notificationRoutes = require('./notificationRoutes');
 const StatsController = require('../controllers/StatsController');
 const authMiddleware = require('../middleware/auth');
 
@@ -49,6 +50,7 @@ router.use('/reports', reportRoutes);
 router.use('/feedbacks', feedbackRoutes);
 router.use('/favorites', favoriteRoutes);
 router.use('/directs', directRoutes);
+router.use('/notifications', notificationRoutes);
 router.use('/', messageRoutes);
 
 /**

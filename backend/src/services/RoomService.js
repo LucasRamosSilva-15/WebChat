@@ -1,16 +1,18 @@
 const RoomRepository = require('../repositories/RoomRepository');
 const RoomMemberRepository = require('../repositories/RoomMemberRepository');
+const { sanitizeText } = require('../utils/security');
 
 class RoomService {
   async createRoom(roomData, userId) {
-    if (!roomData.name || roomData.name.trim() === '') {
+    const cleanName = roomData.name ? sanitizeText(roomData.name) : '';
+    if (!cleanName || cleanName.trim() === '') {
       throw new Error('O nome da sala é obrigatório.');
     }
 
     const newRoom = await RoomRepository.create({
-      name: roomData.name,
+      name: cleanName,
       type: roomData.type || 'public',
-      description: roomData.description?.trim(),
+      description: roomData.description ? sanitizeText(roomData.description) : null,
       category: roomData.category,
       image_url: roomData.image_url,
       created_by: userId

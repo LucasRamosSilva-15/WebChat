@@ -103,9 +103,16 @@ class DirectService {
         }
       }
 
+      const senderDisplayName = msg.sender?.displayName || msg.sender?.name || (msg.sender?.email ? msg.sender.email.split('@')[0] : 'Usuário');
       return {
         messageId: msg.id,
-        sender: msg.sender?.displayName || 'Usuário',
+        sender: senderDisplayName,
+        sender_name: senderDisplayName,
+        author: senderDisplayName,
+        user: msg.sender,
+        avatar: msg.sender?.profilePhoto || null,
+        user_id: msg.sender_id,
+        userId: msg.sender_id,
         text: msg.content || '',
         time: timeFormatted,
         isMe: msg.sender_id === userId,
@@ -151,9 +158,31 @@ class DirectService {
       }
     }
 
+    const senderDisplayName = newMsg.sender?.displayName || newMsg.sender?.name || (newMsg.sender?.email ? newMsg.sender.email.split('@')[0] : 'Usuário');
+
+    try {
+      const recipientId = conv.user1_id === senderId ? conv.user2_id : conv.user1_id;
+      if (recipientId) {
+        const NotificationService = require('./NotificationService');
+        await NotificationService.addNotification(recipientId, {
+          type: 'message',
+          title: `Nova mensagem de ${senderDisplayName}`,
+          content: content ? (content.length > 60 ? content.substring(0, 60) + '...' : content) : 'Enviou uma foto',
+          link: `/directs?conv=${conversationId}`
+        });
+      }
+    } catch (e) {
+      console.error('Falha ao gerar notificação de mensagem direta:', e);
+    }
     return {
       messageId: newMsg.id,
-      sender: newMsg.sender?.displayName || 'Usuário',
+      sender: senderDisplayName,
+      sender_name: senderDisplayName,
+      author: senderDisplayName,
+      user: newMsg.sender,
+      avatar: newMsg.sender?.profilePhoto || null,
+      user_id: newMsg.sender_id,
+      userId: newMsg.sender_id,
       text: newMsg.content || '',
       time: timeFormatted,
       isMe: true,

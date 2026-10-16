@@ -45,8 +45,25 @@ const formatMessageTime = (timeStr) => {
     return timeStr;
 };
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'grande', visualStyle }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'grande', visualStyle, roomMembers }) => {
     const msgTime = formatMessageTime(msg.time);
+
+    const senderName =
+        (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) ||
+        msg.sender_name ||
+        msg.user?.displayName ||
+        msg.user?.name ||
+        msg.user?.username ||
+        msg.author_name ||
+        msg.author ||
+        msg.userName ||
+        msg.user_name ||
+        msg.username ||
+        (Array.isArray(roomMembers) ? roomMembers.find(m => m.id === (msg.userId || msg.user_id))?.name : null) ||
+        msg.sender ||
+        'Usuário';
+
+    const senderInitial = senderName.charAt(0).toUpperCase();
 
     let canDelete = false;
     if (msg.isMe && msg.time && msg.messageId) {
@@ -247,22 +264,22 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
             <div ref={innerRef} className="px-3 py-1 flex justify-start group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
                 <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%] group/msg relative z-1 hover:z-50">
                     <UserAvatar
-                        src={msg.avatar}
-                        name={msg.sender}
-                        onClick={() => onAvatarClick(msg)}
+                        src={msg.avatar || msg.user?.profilePhoto}
+                        name={senderName}
+                        onClick={() => onAvatarClick({ ...msg, sender: senderName })}
                         size="sm"
                         className="shrink-0 transition-opacity hover:opacity-85 cursor-pointer"
                     />
 
                     <div className="flex flex-col items-start min-w-0">
-                        <span onClick={() => onAvatarClick(msg)} className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5 cursor-pointer hover:underline">
-                            {msg.sender}
-                            {mockRoles && mockRoles[msg.sender] === 'Dono' && (
+                        <span onClick={() => onAvatarClick({ ...msg, sender: senderName })} className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5 cursor-pointer hover:underline">
+                            {senderName}
+                            {mockRoles && mockRoles[senderName] === 'Dono' && (
                                 <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
                                     <FaCrown size={8} /> DONO
                                 </span>
                             )}
-                            {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
+                            {mockRoles && mockRoles[senderName] === 'Moderador' && (
                                 <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-blue-200 bg-gradient-to-b from-blue-200 to-blue-100 text-blue-700">
                                     <FaShieldAlt size={8} /> MOD
                                 </span>
@@ -338,16 +355,16 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
 
     return (
         <div ref={innerRef} className="px-3 py-0.5 flex justify-start gap-2 group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
-            <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 transition-opacity hover:opacity-80 cursor-pointer" />
+            <UserAvatar src={msg.avatar || msg.user?.profilePhoto} name={senderName} onClick={() => onAvatarClick({ ...msg, sender: senderName })} size="sm" className="mt-1 transition-opacity hover:opacity-80 cursor-pointer" />
             <div className="flex flex-col max-w-[80%] items-start group/msg relative z-1 hover:z-50">
-                <span onClick={() => onAvatarClick(msg)} className="font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] text-[11.5px] ml-1 cursor-pointer hover:underline">
-                    {msg.sender}
-                    {mockRoles && mockRoles[msg.sender] === 'Dono' && (
+                <span onClick={() => onAvatarClick({ ...msg, sender: senderName })} className="font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] text-[11.5px] ml-1 cursor-pointer hover:underline">
+                    {senderName}
+                    {mockRoles && mockRoles[senderName] === 'Dono' && (
                         <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
                             <FaCrown size={8} /> DONO
                         </span>
                     )}
-                    {mockRoles && mockRoles[msg.sender] === 'Moderador' && (
+                    {mockRoles && mockRoles[senderName] === 'Moderador' && (
                         <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-blue-200 bg-gradient-to-b from-blue-200 to-blue-100 text-blue-700">
                             <FaShieldAlt size={8} /> MOD
                         </span>
@@ -739,19 +756,36 @@ const Chat = () => {
 
             try {
                 const apiMessages = await apiRequest(`/rooms/${room}/messages`);
-                const mappedMessages = Array.isArray(apiMessages) ? apiMessages.map(msg => ({
-                    messageId: msg.id,
-                    text: msg.content,
-                    sender: msg.user_name || 'Usuário',
-                    userId: msg.user_id,
-                    isMe: msg.user_id === currentUserId,
-                    time: msg.created_at,
-                    image: msg.image_url || null,
-                    avatar: null,
-                    likes: [],
-                    isFavorite: false,
-                    isEdited: false
-                })) : [];
+                const mappedMessages = Array.isArray(apiMessages) ? apiMessages.map(msg => {
+                    const senderName =
+                        msg.sender_name ||
+                        msg.user?.displayName ||
+                        msg.user?.name ||
+                        msg.user?.username ||
+                        msg.author_name ||
+                        msg.author ||
+                        msg.userName ||
+                        msg.user_name ||
+                        msg.username ||
+                        (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) ||
+                        'Usuário';
+
+                    return {
+                        messageId: msg.id,
+                        text: msg.content,
+                        sender: senderName,
+                        sender_name: senderName,
+                        userId: msg.user_id,
+                        user: msg.user,
+                        isMe: msg.user_id === currentUserId,
+                        time: msg.created_at,
+                        image: msg.image_url || null,
+                        avatar: msg.avatar || msg.user?.profilePhoto || null,
+                        likes: [],
+                        isFavorite: false,
+                        isEdited: false
+                    };
+                }) : [];
 
                 if (mappedMessages.length > 0) {
                     setMessages(mappedMessages);
@@ -888,13 +922,28 @@ const Chat = () => {
             setMessages((list) => {
                 if (list.some(m => m.messageId === data.id)) return list;
 
+                const senderName =
+                    data.sender_name ||
+                    data.user?.displayName ||
+                    data.user?.name ||
+                    data.user?.username ||
+                    data.author_name ||
+                    data.author ||
+                    data.user_name ||
+                    data.userName ||
+                    data.username ||
+                    (data.sender && data.sender !== 'Usuário' ? data.sender : null) ||
+                    'Usuário';
+
                 return [...list, {
                     messageId: data.id,
                     text: data.content,
                     image: data.image_url,
-                    sender: data.user_name || 'Usuário',
+                    sender: senderName,
+                    sender_name: senderName,
                     userId: data.user_id,
-                    avatar: null,
+                    user: data.user,
+                    avatar: data.avatar || data.user?.profilePhoto || null,
                     status: "Disponível",
                     isMe: data.user_id === currentUserId,
                     time: data.created_at,
@@ -988,6 +1037,7 @@ const Chat = () => {
                     room: room,
                     userId: currentUserId,
                     userName: currentSender,
+                    sender_name: currentSender,
                     content: currentMessage,
                     imageUrl: imagePreview || null
                 };
@@ -1310,7 +1360,7 @@ const Chat = () => {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-[11px] text-amber-900 dark:text-amber-200">{pinnedMessage.sender}</span>
+                                            <span className="font-bold text-[11px] text-amber-900 dark:text-amber-200">{pinnedMessage.sender_name || pinnedMessage.sender || 'Usuário'}</span>
                                         </div>
                                         <button onClick={() => setPinnedMessage(null)} className="p-0.5 rounded-full shrink-0 flex items-center justify-center text-amber-800/50 hover:text-amber-700 hover:bg-amber-100 dark:text-amber-400/50 dark:hover:text-amber-300 dark:hover:bg-amber-900/50 transition-colors cursor-pointer">
                                             <FaTimes size={10} />
@@ -1357,6 +1407,7 @@ const Chat = () => {
                                         setOpenMenuId={setOpenMenuId}
                                         bubbleFormat={bubbleFormat}
                                         visualStyle={bubbleFormat}
+                                        roomMembers={onlinePresence.users}
                                     />
                                 </div>
                             );

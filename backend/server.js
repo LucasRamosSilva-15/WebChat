@@ -4,13 +4,16 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
+const { verifyToken, isAllowedOrigin } = require('./src/utils/security');
 const path = require('path');
 const apiRoutes = require('./src/routes/api');
 const adminRoutes = require('./src/routes/admin');
 const { createClient } = require('@supabase/supabase-js');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { initModels } = require('./src/models');
 
 const app = express();
 
@@ -43,22 +46,36 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 console.log('[SWAGGER] Procurando arquivos em:', swaggerOptions.apis[0]);
 console.log(`[SWAGGER] ${Object.keys(swaggerDocs.paths || {}).length} rota(s) encontrada(s)`);
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true }
+}));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin === process.env.FRONTEND_URL) {
+    if (isAllowedOrigin(origin, process.env.FRONTEND_URL)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true
-}));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+};
+
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+const globalApiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 600,
+  message: { error: 'Limite de requisições excedido. Tente novamente mais tarde.' },
+  skip: () => process.env.NODE_ENV === 'test'
+});
+app.use('/api', globalApiLimiter);
 
 app.use('/api', apiRoutes);
 app.use('/api/admin', adminRoutes);
@@ -70,18 +87,8 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: function (origin, callback) {
-      if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin === process.env.FRONTEND_URL) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: ['GET', 'POST'],
-    credentials: true
-  },
-  maxHttpBufferSize: 5e7 // 50 MB
+  cors: corsOptions,
+  maxHttpBufferSize: 1e7
 });
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -99,27 +106,34 @@ const roomPresence = new Map();
 const messageRateLimits = new Map();
 const globalOnlineUsers = new Map();
 global.globalOnlineUsers = globalOnlineUsers;
+global.io = io;
 
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) {
     return next(new Error('Erro de Autenticação: Token não fornecido'));
   }
-  jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, decoded) => {
-    if (err) return next(new Error('Erro de Autenticação: Token inválido'));
+  try {
+    const decoded = verifyToken(token);
     socket.user = decoded;
     next();
-  });
+  } catch {
+    return next(new Error('Erro de Autenticação: Token inválido'));
+  }
 });
 
 io.on('connection', (socket) => {
   const authUserId = socket.user?.id;
   if (authUserId) {
+    socket.join(`user_${authUserId}`);
+    const wasAlreadyOnline = globalOnlineUsers.has(authUserId) && globalOnlineUsers.get(authUserId).size > 0;
     if (!globalOnlineUsers.has(authUserId)) {
       globalOnlineUsers.set(authUserId, new Set());
     }
     globalOnlineUsers.get(authUserId).add(socket.id);
-    io.emit('user_presence_changed', { userId: authUserId, isOnline: true });
+    if (!wasAlreadyOnline) {
+      io.emit('user_presence_changed', { userId: authUserId, isOnline: true });
+    }
   }
 
   socket.on('get_online_users', () => {
@@ -157,14 +171,18 @@ io.on('connection', (socket) => {
     if (!roomId || !user || !user.id) return;
 
     socket.join(roomId);
+    socket.join(`user_${user.id}`);
     socket.currentRoom = roomId;
     socket.userId = user.id;
 
+    const wasAlreadyOnline = globalOnlineUsers.has(user.id) && globalOnlineUsers.get(user.id).size > 0;
     if (!globalOnlineUsers.has(user.id)) {
       globalOnlineUsers.set(user.id, new Set());
     }
     globalOnlineUsers.get(user.id).add(socket.id);
-    io.emit('user_presence_changed', { userId: user.id, isOnline: true });
+    if (!wasAlreadyOnline) {
+      io.emit('user_presence_changed', { userId: user.id, isOnline: true });
+    }
 
     if (!roomPresence.has(roomId)) {
       roomPresence.set(roomId, new Map());
@@ -197,7 +215,8 @@ io.on('connection', (socket) => {
 
   socket.on('send_message', async (data) => {
     console.log('[DEBUG] Recebido send_message:', data);
-    const { room, userId, userName, content, imageUrl } = data;
+    const { room, userId, userName, sender_name, content, imageUrl } = data;
+    const authorName = userName || sender_name || data.author || data.user?.displayName || data.user?.name;
     if (!room || (!content && !imageUrl)) {
       console.log('[DEBUG] send_message ignorado por falta de dados (room, content ou imageUrl)');
       return;
@@ -222,7 +241,7 @@ io.on('connection', (socket) => {
         .insert([{
           room_id: room,
           user_id: userId,
-          user_name: userName,
+          user_name: authorName,
           content,
           image_url: imageUrl
         }])
@@ -236,7 +255,15 @@ io.on('connection', (socket) => {
       }
 
       if (savedMessage) {
-        io.to(room).emit('receive_message', savedMessage);
+        const resolvedName = savedMessage.user_name || savedMessage.userName || authorName || 'Usuário';
+        const payload = {
+          ...savedMessage,
+          user_name: resolvedName,
+          userName: resolvedName,
+          sender_name: resolvedName,
+          sender: resolvedName
+        };
+        io.to(room).emit('receive_message', payload);
       }
     } catch (err) {
       console.error('Falha ao processar mensagem via WebSocket:', err);
@@ -304,6 +331,7 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 
 if (process.env.NODE_ENV !== 'test') {
+  initModels();
   server.listen(PORT, () => {
     console.log(`[SERVER] Rodando na porta ${PORT}`);
   });

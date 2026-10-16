@@ -8,6 +8,7 @@ const RoomMember = require('./RoomMember');
 const Favorite = require('./Favorite');
 const DirectConversation = require('./DirectConversation');
 const DirectMessage = require('./DirectMessage');
+const Notification = require('./Notification');
 
 User.belongsToMany(Room, { through: RoomMember, foreignKey: 'user_id' });
 Room.belongsToMany(User, { through: RoomMember, foreignKey: 'room_id' });
@@ -18,6 +19,9 @@ RoomMember.belongsTo(Room, { foreignKey: 'room_id' });
 
 User.hasMany(Favorite, { foreignKey: 'user_id', as: 'favorites', onDelete: 'CASCADE' });
 Favorite.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications', onDelete: 'CASCADE' });
+Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 User.hasMany(DirectConversation, { foreignKey: 'user1_id', as: 'initiatedConversations' });
 User.hasMany(DirectConversation, { foreignKey: 'user2_id', as: 'receivedConversations' });
@@ -32,6 +36,10 @@ const initModels = async () => {
   try {
     await sequelize.authenticate();
     console.log('[Sequelize] Conexão com o banco de dados estabelecida com sucesso.');
+    if (process.env.NODE_ENV !== 'test') {
+      await sequelize.sync();
+      console.log('[Sequelize] Tabelas verificadas/sincronizadas com sucesso.');
+    }
   } catch (error) {
     console.error('[Sequelize] Não foi possível conectar ao banco de dados:', error);
   }
@@ -48,5 +56,6 @@ module.exports = {
   RoomMember,
   Favorite,
   DirectConversation,
-  DirectMessage
+  DirectMessage,
+  Notification
 };

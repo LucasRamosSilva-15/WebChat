@@ -10,9 +10,10 @@ function statusFromError(error) {
   if (error && error.name === 'SequelizeValidationError') return 400;
   if (error && typeof error.name === 'string' && error.name.startsWith('Sequelize')) return 500;
 
+  if (msg.includes('bloqueada')) return 429;
   if (msg.includes('não encontrad')) return 404;
   if (msg.includes('permissão')) return 403;
-  if (msg.includes('credenciais')) return 401;
+  if (msg.includes('credenciais') || msg.includes('revogad')) return 401;
   if (msg.includes('já existe')) return 409;
   return 400;
 }

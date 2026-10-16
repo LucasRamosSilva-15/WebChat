@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { socket } from '../socket';
+import { apiRequest, getAuthToken } from '../services/api';
 
 const NotificationContext = createContext();
 
@@ -71,6 +72,17 @@ const DEFAULT_NOTIFICATIONS = [
     }
 ];
 
+const mapNotification = (item) => ({
+    id: item.id,
+    type: item.type || 'system',
+    title: item.title || 'Nova Notificação',
+    content: item.content || '',
+    time: item.created_at || item.time || new Date().toISOString(),
+    read: Boolean(item.read),
+    link: item.link || null,
+    data: item.data || null
+});
+
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState(() => {
         try {
@@ -110,21 +122,56 @@ export const NotificationProvider = ({ children }) => {
         localStorage.setItem(TOAST_KEY, String(toastsEnabled));
     }, [toastsEnabled]);
 
+    const fetchServerNotifications = useCallback(async () => {
+        const token = getAuthToken();
+        if (!token) return;
+        try {
+            const res = await apiRequest('/notifications');
+            if (res && Array.isArray(res.notifications)) {
+                setNotifications(res.notifications.map(mapNotification));
+            }
+        } catch (e) {
+            console.error('Erro ao buscar notificações do servidor:', e);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchServerNotifications();
+
+        const handleAuthOrProfileChange = () => {
+            fetchServerNotifications();
+        };
+
+        const handleStorage = (e) => {
+            if (e.key === 'chat_token') {
+                fetchServerNotifications();
+            }
+        };
+
+        window.addEventListener('profileUpdated', handleAuthOrProfileChange);
+        window.addEventListener('storage', handleStorage);
+
+        return () => {
+            window.removeEventListener('profileUpdated', handleAuthOrProfileChange);
+            window.removeEventListener('storage', handleStorage);
+        };
+    }, [fetchServerNotifications]);
+
     const unreadCount = notifications.filter(n => !n.read).length;
 
     const addNotification = useCallback((item) => {
         const newNotif = {
-            id: 'notif_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            id: item.id || ('notif_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6)),
             type: item.type || 'system',
             title: item.title || 'Nova Notificação',
             content: item.content || '',
-            time: new Date().toISOString(),
-            read: false,
+            time: item.created_at || item.time || new Date().toISOString(),
+            read: Boolean(item.read),
             link: item.link || null,
             data: item.data || null
         };
 
-        setNotifications(prev => [newNotif, ...prev].slice(0, 50));
+        setNotifications(prev => [newNotif, ...prev.filter(n => n.id !== newNotif.id)].slice(0, 50));
 
         if (soundEnabled) {
             playChime();
@@ -137,6 +184,24 @@ export const NotificationProvider = ({ children }) => {
             }, 4500);
         }
 
+        if (getAuthToken() && !item.skipServer) {
+            apiRequest('/notifications', {
+                method: 'POST',
+                body: JSON.stringify({
+                    type: newNotif.type,
+                    title: newNotif.title,
+                    content: newNotif.content,
+                    link: newNotif.link,
+                    data: newNotif.data
+                })
+            }).then(res => {
+                if (res && res.notification) {
+                    const serverNotif = mapNotification(res.notification);
+                    setNotifications(prev => prev.map(n => n.id === newNotif.id ? serverNotif : n));
+                }
+            }).catch(() => {});
+        }
+
         return newNotif;
     }, [soundEnabled, toastsEnabled]);
 
@@ -144,20 +209,32 @@ export const NotificationProvider = ({ children }) => {
         setNotifications(prev =>
             prev.map(n => n.id === id ? { ...n, read: true } : n)
         );
+        if (getAuthToken()) {
+            apiRequest(`/notifications/${id}/read`, { method: 'PATCH' }).catch(() => {});
+        }
     }, []);
 
     const markAllAsRead = useCallback(() => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        if (getAuthToken()) {
+            apiRequest('/notifications/read-all', { method: 'PATCH' }).catch(() => {});
+        }
     }, []);
 
     const removeNotification = useCallback((id) => {
         setNotifications(prev => prev.filter(n => n.id !== id));
         setToasts(prev => prev.filter(t => t.id !== id));
+        if (getAuthToken()) {
+            apiRequest(`/notifications/${id}`, { method: 'DELETE' }).catch(() => {});
+        }
     }, []);
 
     const clearAll = useCallback(() => {
         setNotifications([]);
         setToasts([]);
+        if (getAuthToken()) {
+            apiRequest('/notifications/all', { method: 'DELETE' }).catch(() => {});
+        }
     }, []);
 
     const dismissToast = useCallback((id) => {
@@ -203,6 +280,25 @@ export const NotificationProvider = ({ children }) => {
         };
         window.addEventListener('skyripple:notification', handleCustomNotify);
 
+        const handleServerNotification = (notif) => {
+            if (!notif) return;
+            const formatted = mapNotification(notif);
+            setNotifications(prev => {
+                if (prev.some(n => n.id === formatted.id)) return prev;
+                return [formatted, ...prev].slice(0, 50);
+            });
+            if (soundEnabled) {
+                playChime();
+            }
+            if (toastsEnabled) {
+                setToasts(prev => [formatted, ...prev].slice(0, 3));
+                setTimeout(() => {
+                    setToasts(prev => prev.filter(t => t.id !== formatted.id));
+                }, 4500);
+            }
+        };
+        socket.on('new_notification', handleServerNotification);
+
         const handlePrivateInvite = (invite) => {
             if (invite && invite.from) {
                 addNotification({
@@ -235,10 +331,11 @@ export const NotificationProvider = ({ children }) => {
 
         return () => {
             window.removeEventListener('skyripple:notification', handleCustomNotify);
+            socket.off('new_notification', handleServerNotification);
             socket.off('private_invite', handlePrivateInvite);
             socket.off('receive_message', handleReceiveMessage);
         };
-    }, [addNotification]);
+    }, [addNotification, soundEnabled, toastsEnabled]);
 
     return (
         <NotificationContext.Provider
@@ -250,6 +347,7 @@ export const NotificationProvider = ({ children }) => {
                 toastsEnabled,
                 setToastsEnabled,
                 toasts,
+                fetchServerNotifications,
                 addNotification,
                 markAsRead,
                 markAllAsRead,

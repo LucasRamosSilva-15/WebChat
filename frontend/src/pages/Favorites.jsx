@@ -310,7 +310,7 @@ const Favorites = () => {
                                             <div className="flex items-center justify-between gap-2">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-bold text-xs text-slate-800 dark:text-slate-100">
-                                                        {msg.sender || 'Usuário'}
+                                                        {msg.sender_name || msg.user?.name || msg.user?.displayName || msg.user?.username || msg.author_name || msg.author || (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) || 'Usuário'}
                                                     </span>
                                                     {msg.roomName && (
                                                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium">

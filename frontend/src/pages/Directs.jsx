@@ -144,10 +144,11 @@ const Directs = () => {
                     id: `privado-${[currentUserId, targetUser].sort().join('-')}`,
                     name: targetUser,
                     username: targetUser,
+                    partnerId: targetUser,
                     avatar: null,
                     lastMessage: 'Conversa iniciada',
                     time: 'Agora',
-                    online: true,
+                    online: false,
                     unread: 0
                 };
                 const updatedList = [newC, ...list];
@@ -158,10 +159,16 @@ const Directs = () => {
         }
     }, [searchParams]);
 
+    const selectedConvRef = useRef(selectedConv);
     useEffect(() => {
-        if (!selectedConv) return;
+        selectedConvRef.current = selectedConv;
+    }, [selectedConv]);
+
+    useEffect(() => {
+        if (!selectedConv?.id) return;
 
         const convId = selectedConv.id;
+        const convName = selectedConv.name;
         const savedMessages = localStorage.getItem(`chat_messages_${convId}`);
         if (savedMessages) {
             try {
@@ -173,7 +180,7 @@ const Directs = () => {
             const initialMsgs = [
                 {
                     messageId: 'sys-start',
-                    sender: selectedConv.name,
+                    sender: convName,
                     text: selectedConv.lastMessage || 'Conversa direta iniciada com sucesso.',
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     isMe: false,
@@ -184,12 +191,48 @@ const Directs = () => {
             localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(initialMsgs));
         }
 
-        if (selectedConv.id && !String(selectedConv.id).startsWith('privado-')) {
-            apiRequest(`/directs/conversations/${selectedConv.id}/messages`)
+        if (convId && !String(convId).startsWith('privado-')) {
+            apiRequest(`/directs/conversations/${convId}/messages`)
                 .then(serverMessages => {
                     if (Array.isArray(serverMessages) && serverMessages.length > 0) {
-                        setMessages(serverMessages);
-                        localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(serverMessages));
+                        const mapped = serverMessages.map(msg => {
+                            const isMe = (msg.user_id && msg.user_id === currentUserId) ||
+                                (msg.userId && msg.userId === currentUserId) ||
+                                msg.sender_id === currentUserId ||
+                                msg.isMe;
+
+                            const senderName = isMe
+                                ? currentUserDisplayName
+                                : (
+                                    (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) ||
+                                    msg.sender_name ||
+                                    msg.user?.displayName ||
+                                    msg.user?.name ||
+                                    msg.user?.username ||
+                                    msg.author_name ||
+                                    msg.author ||
+                                    msg.userName ||
+                                    msg.user_name ||
+                                    msg.username ||
+                                    (registeredUsers.find(u => u.id === (msg.userId || msg.user_id || msg.sender_id))?.displayName) ||
+                                    (registeredUsers.find(u => u.id === (msg.userId || msg.user_id || msg.sender_id))?.name) ||
+                                    convName ||
+                                    'Usuário'
+                                );
+
+                            return {
+                                ...msg,
+                                messageId: msg.messageId || msg.id,
+                                text: msg.text || msg.content || '',
+                                sender: senderName,
+                                sender_name: senderName,
+                                avatar: msg.avatar || msg.user?.profilePhoto || null,
+                                user: msg.user,
+                                isMe: Boolean(isMe)
+                            };
+                        });
+                        setMessages(mapped);
+                        localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(mapped));
                     }
                 })
                 .catch(() => {});
@@ -205,13 +248,44 @@ const Directs = () => {
                 setMessages(prev => {
                     const alreadyExists = prev.some(m => m.messageId === (msg.messageId || msg.id));
                     if (alreadyExists) return prev;
+
+                    const isMe = (msg.user_id && msg.user_id === currentUserId) ||
+                        (msg.userId && msg.userId === currentUserId) ||
+                        msg.sender_id === currentUserId ||
+                        msg.author === currentUserDisplayName ||
+                        msg.sender === currentUserDisplayName ||
+                        msg.userName === currentUserDisplayName ||
+                        msg.sender_name === currentUserDisplayName;
+
+                    const senderName = isMe
+                        ? currentUserDisplayName
+                        : (
+                            (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) ||
+                            msg.sender_name ||
+                            msg.user?.displayName ||
+                            msg.user?.name ||
+                            msg.user?.username ||
+                            msg.author_name ||
+                            msg.author ||
+                            msg.userName ||
+                            msg.user_name ||
+                            msg.username ||
+                            (registeredUsers.find(u => u.id === (msg.userId || msg.user_id || msg.sender_id))?.displayName) ||
+                            (registeredUsers.find(u => u.id === (msg.userId || msg.user_id || msg.sender_id))?.name) ||
+                            convName ||
+                            'Usuário'
+                        );
+
                     const newMsg = {
                         messageId: msg.messageId || msg.id || 'msg_' + Date.now(),
-                        sender: msg.author || msg.sender || selectedConv.name,
-                        text: msg.message || msg.text || '',
-                        time: msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        isMe: (msg.user_id && msg.user_id === currentUserId) || msg.author === currentUserDisplayName,
-                        image: msg.image || null,
+                        sender: senderName,
+                        sender_name: senderName,
+                        user: msg.user,
+                        avatar: msg.avatar || msg.user?.profilePhoto || null,
+                        text: msg.message || msg.content || msg.text || '',
+                        time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
+                        isMe: Boolean(isMe),
+                        image: msg.image || msg.imageUrl || msg.image_url || null,
                         likes: []
                     };
                     const updated = [...prev, newMsg];
@@ -254,8 +328,6 @@ const Directs = () => {
             if (roomId === convId) {
                 const isPartnerHere = Array.isArray(onlineUsers) && onlineUsers.some(u => u.id !== currentUserId);
                 setRoomOnlineUserIds(new Set(isPartnerHere ? ['partner'] : []));
-                setSelectedConv(prev => (prev && prev.id === convId ? { ...prev, online: isPartnerHere } : prev));
-                setConversations(prev => prev.map(c => c.id === convId ? { ...c, online: isPartnerHere } : c));
             }
         };
 
@@ -271,7 +343,7 @@ const Directs = () => {
             socket.off('like_toggled', handleLikeToggled);
             socket.off('roomPresenceUpdated', handlePresenceUpdated);
         };
-    }, [selectedConv]);
+    }, [selectedConv?.id, currentUserId, currentUserDisplayName]);
 
     useEffect(() => {
         const handleUserPresenceChanged = ({ userId, isOnline }) => {
@@ -285,15 +357,24 @@ const Directs = () => {
                 }
                 return next;
             });
+
+            if (userId === currentUserId) return;
+
             setConversations(prev => prev.map(c => {
-                const isMatch = c.partnerId === userId || (c.id && String(c.id).includes(userId));
-                if (isMatch) {
+                const parts = c.id ? String(c.id).replace('privado-', '').split('-') : [];
+                const partnerFromId = parts.find(p => p !== currentUserId);
+                const isMatch = c.partnerId === userId || partnerFromId === userId || c.username === userId;
+                if (isMatch && c.online !== isOnline) {
                     return { ...c, online: isOnline };
                 }
                 return c;
             }));
             setSelectedConv(prev => {
-                if (prev && (prev.partnerId === userId || (prev.id && String(prev.id).includes(userId)))) {
+                if (!prev) return prev;
+                const parts = prev.id ? String(prev.id).replace('privado-', '').split('-') : [];
+                const partnerFromId = parts.find(p => p !== currentUserId);
+                const isMatch = prev.partnerId === userId || partnerFromId === userId || prev.username === userId;
+                if (isMatch && prev.online !== isOnline) {
                     return { ...prev, online: isOnline };
                 }
                 return prev;
@@ -308,18 +389,24 @@ const Directs = () => {
                 if (c.username === 'suporte' || c.name === 'Suporte SkyRipple') {
                     return { ...c, online: true };
                 }
-                const isOnline = c.partnerId ? onlineSet.has(c.partnerId) : false;
-                return { ...c, online: isOnline };
+                const parts = c.id ? String(c.id).replace('privado-', '').split('-') : [];
+                const partnerFromId = parts.find(p => p !== currentUserId);
+                const isOnline = (c.partnerId && onlineSet.has(c.partnerId)) ||
+                                 (partnerFromId && onlineSet.has(partnerFromId)) ||
+                                 (c.username && onlineSet.has(c.username));
+                return { ...c, online: Boolean(isOnline) };
             }));
             setSelectedConv(prev => {
                 if (!prev) return prev;
                 if (prev.username === 'suporte' || prev.name === 'Suporte SkyRipple') {
                     return { ...prev, online: true };
                 }
-                if (prev.partnerId) {
-                    return { ...prev, online: onlineSet.has(prev.partnerId) };
-                }
-                return prev;
+                const parts = prev.id ? String(prev.id).replace('privado-', '').split('-') : [];
+                const partnerFromId = parts.find(p => p !== currentUserId);
+                const isOnline = (prev.partnerId && onlineSet.has(prev.partnerId)) ||
+                                 (partnerFromId && onlineSet.has(partnerFromId)) ||
+                                 (prev.username && onlineSet.has(prev.username));
+                return { ...prev, online: Boolean(isOnline) };
             });
         };
 
@@ -342,6 +429,9 @@ const Directs = () => {
             return true;
         }
         if (conv.partnerId && onlineUserIds.has(conv.partnerId)) {
+            return true;
+        }
+        if (conv.username && onlineUserIds.has(conv.username)) {
             return true;
         }
         const parts = conv.id ? String(conv.id).replace('privado-', '').split('-') : [];
@@ -389,7 +479,9 @@ const Directs = () => {
             userId: currentUserId,
             user_id: currentUserId,
             userName: currentUserDisplayName,
+            sender_name: currentUserDisplayName,
             author: currentUserDisplayName,
+            sender: currentUserDisplayName,
             content: textToSend,
             message: textToSend,
             time: timeStr,
@@ -852,6 +944,26 @@ const Directs = () => {
                                     const isMatch = chatSearchTerm && msg.text && msg.text.toLowerCase().includes(chatSearchTerm.toLowerCase());
                                     const matchClass = isMatch ? 'ring-2 ring-sky-400 shadow-md' : '';
 
+                                    const senderName =
+                                        (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) ||
+                                        msg.sender_name ||
+                                        msg.user?.displayName ||
+                                        msg.user?.name ||
+                                        msg.user?.username ||
+                                        msg.author_name ||
+                                        msg.author ||
+                                        msg.userName ||
+                                        msg.user_name ||
+                                        msg.username ||
+                                        (registeredUsers.find(u => u.id === (msg.userId || msg.user_id || msg.sender_id))?.displayName) ||
+                                        (registeredUsers.find(u => u.id === (msg.userId || msg.user_id || msg.sender_id))?.name) ||
+                                        (selectedConv ? selectedConv.name : null) ||
+                                        msg.sender ||
+                                        'Usuário';
+
+                                    const senderInitial = senderName.charAt(0).toUpperCase();
+                                    const senderAvatar = msg.avatar || msg.user?.profilePhoto || (msg.isMe ? null : selectedConv?.avatar);
+
                                     if (msg.isMe) {
                                         return (
                                             <div
@@ -990,8 +1102,8 @@ const Directs = () => {
                                         >
                                             <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%] group/msg relative z-1 hover:z-50">
                                                 <UserAvatar
-                                                    src={selectedConv.avatar}
-                                                    name={msg.sender}
+                                                    src={senderAvatar}
+                                                    name={senderName}
                                                     size="sm"
                                                     showStatus={false}
                                                     className="shrink-0 mb-1"
@@ -999,7 +1111,7 @@ const Directs = () => {
 
                                                 <div className="flex flex-col items-start min-w-0">
                                                     <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5">
-                                                        {msg.sender}
+                                                        {senderName}
                                                     </span>
 
                                                     <div className={`bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[18px] px-5 py-2.5 text-sm relative transition-all duration-300 ${matchClass}`}>

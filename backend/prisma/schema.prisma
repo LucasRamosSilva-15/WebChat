@@ -17,10 +17,11 @@ model User {
   profileDesc  String?
   created_at   DateTime  @default(now())
 
-  messages     Message[]
-  reports      Report[]
-  feedbacks    Feedback[]
-  rooms        Room[]    @relation("RoomCreator")
+  messages      Message[]
+  reports       Report[]
+  feedbacks     Feedback[]
+  notifications Notification[]
+  rooms         Room[]    @relation("RoomCreator")
 
   @@map("users")
 }
@@ -77,4 +78,69 @@ model Feedback {
   user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("feedbacks")
+}
+
+model DirectConversation {
+  id              String          @id @default(uuid()) @db.Uuid
+  user1_id        String          @db.Uuid
+  user2_id        String          @db.Uuid
+  last_message    String?
+  last_message_at DateTime?       @default(now())
+  created_at      DateTime?       @default(now())
+
+  messages        DirectMessage[]
+
+  @@map("direct_conversations")
+}
+
+model DirectMessage {
+  id              String             @id @default(uuid()) @db.Uuid
+  conversation_id String             @db.Uuid
+  sender_id       String             @db.Uuid
+  content         String?
+  image_url       String?
+  created_at      DateTime?          @default(now())
+
+  conversation    DirectConversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@map("direct_messages")
+}
+
+model Favorite {
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String    @db.Uuid
+  item_type  String
+  item_id    String
+  title      String?
+  content    String?
+  meta       String?
+  created_at DateTime? @default(now())
+
+  @@map("favorites")
+}
+
+model RoomMember {
+  room_id   String    @db.Uuid
+  user_id   String    @db.Uuid
+  role      String?   @default("user")
+  joined_at DateTime? @default(now())
+
+  @@id([room_id, user_id])
+  @@map("room_members")
+}
+
+model Notification {
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String?   @db.Uuid
+  type       String    @default("system")
+  title      String
+  content    String?
+  link       String?
+  read       Boolean   @default(false)
+  data       String?
+  created_at DateTime? @default(now())
+
+  user       User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

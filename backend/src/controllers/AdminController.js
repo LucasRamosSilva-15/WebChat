@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
+const { safeTimingCompare, generateAdminToken } = require('../utils/security');
+const { logSecurityEvent } = require('../utils/auditLogger');
 
-// Login do painel admin: não usa banco, compara com ADMIN_SECRET_KEY do .env.
 class AdminController {
   auth(req, res) {
     const { password } = req.body;
@@ -13,15 +13,30 @@ class AdminController {
       return res.status(500).json({ error: 'Servidor não configurado para admin' });
     }
 
-    if (password !== secret) {
+    const isMatch = safeTimingCompare(password, secret);
+    if (!isMatch) {
+      logSecurityEvent({
+        eventType: 'ADMIN_ACCESS_FAILED',
+        level: 'SECURITY',
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        action: 'admin_login',
+        status: 'FAILURE'
+      });
       return res.status(401).json({ error: 'Senha de administrador incorreta' });
     }
 
-    const token = jwt.sign(
-      { id: 'admin-system', role: 'admin' },
-      process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: '8h' }
-    );
+    logSecurityEvent({
+      eventType: 'ADMIN_ACCESS_SUCCESS',
+      level: 'INFO',
+      actor: { id: 'admin-system', role: 'admin' },
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      action: 'admin_login',
+      status: 'SUCCESS'
+    });
+
+    const token = generateAdminToken();
     return res.json({ token, role: 'admin' });
   }
 }
