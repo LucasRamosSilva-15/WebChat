@@ -12,7 +12,7 @@ import {
     Info,
     Sparkles,
     Sliders,
-    PlusCircle
+    Plus
 } from 'lucide-react';
 
 const formatRelativeTime = (timeStr) => {
@@ -77,6 +77,12 @@ const NotificationsDropdown = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const filterTabs = [
+        { id: 'all', label: 'Todas', count: notifications.length },
+        { id: 'unread', label: 'Não Lidas', count: unreadCount },
+        { id: 'system', label: 'Sistema', count: notifications.filter(n => n.type === 'system' || n.type === 'info').length }
+    ];
+
     const filteredNotifications = notifications.filter(item => {
         if (filterTab === 'unread') return !item.read;
         if (filterTab === 'system') return item.type === 'system' || item.type === 'info';
@@ -117,82 +123,78 @@ const NotificationsDropdown = () => {
             </button>
 
             <div
-                className={`fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-[52px] sm:top-[48px] max-w-[calc(100vw-24px)] sm:w-[380px] overflow-hidden transition-all duration-300 origin-top-right rounded-2xl !p-0 skeuo-panel shadow-2xl z-[160] ${
+                className={`skeuo-card w-96 max-w-[calc(100vw-2rem)] p-0 overflow-hidden shadow-[0_20px_50px_rgba(15,23,42,0.18)] border border-white/80 dark:border-slate-700/80 fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-[52px] sm:top-[48px] origin-top-right z-[160] transition-all duration-300 ${
                     isOpen ? 'scale-100 opacity-100 visible pointer-events-auto' : 'scale-95 opacity-0 invisible pointer-events-none'
                 }`}
             >
-                <div className="p-4 border-b border-slate-200/80 dark:border-white/5 flex items-center justify-between bg-gradient-to-b from-white/90 to-slate-50/80 dark:from-slate-850 dark:to-slate-900">
-                    <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/70 dark:border-slate-800/60">
+                    <div className="flex items-center gap-2.5">
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
                             Notificações
                         </h3>
                         {unreadCount > 0 ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-300/60 dark:border-sky-700/60">
+                            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-100/90 dark:bg-sky-950/60 border border-sky-300/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                                 {unreadCount} {unreadCount === 1 ? 'nova' : 'novas'}
                             </span>
                         ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                            <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                                 Em dia
                             </span>
                         )}
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                         <button
                             type="button"
                             onClick={() => simulateNotification()}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
-                            title="Simular nova notificação de teste"
+                            title="Criar notificação ou anúncio"
                             aria-label="Simular notificação"
+                            className="btn-secondary-glossy !w-7 !h-7 !p-0 rounded-full inline-flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
                         >
-                            <PlusCircle className="w-3.5 h-3.5" />
+                            <Plus className="w-3.5 h-3.5" />
                         </button>
-
                         {unreadCount > 0 && (
                             <button
                                 type="button"
                                 onClick={markAllAsRead}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
                                 title="Marcar todas como lidas"
                                 aria-label="Marcar todas como lidas"
+                                className="btn-secondary-glossy !w-7 !h-7 !p-0 rounded-full inline-flex items-center justify-center text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 cursor-pointer"
                             >
-                                <CheckCheck className="w-4 h-4" />
+                                <CheckCheck className="w-3.5 h-3.5" />
                             </button>
                         )}
                     </div>
                 </div>
 
-                <div className="px-3 py-2 bg-slate-100/70 dark:bg-slate-900/60 border-b border-slate-200/70 dark:border-white/5 flex gap-1">
-                    {[
-                        { id: 'all', label: 'Todas', count: notifications.length },
-                        { id: 'unread', label: 'Não Lidas', count: unreadCount },
-                        { id: 'system', label: 'Sistema', count: notifications.filter(n => n.type === 'system' || n.type === 'info').length }
-                    ].map(tab => (
-                        <button
-                            key={tab.id}
-                            type="button"
-                            onClick={() => setFilterTab(tab.id)}
-                            className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                                filterTab === tab.id
-                                    ? 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200 dark:border-slate-700'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                            }`}
-                        >
-                            <span>{tab.label}</span>
-                            {tab.count > 0 && (
-                                <span className={`text-[9px] px-1 rounded-full ${
-                                    filterTab === tab.id
-                                        ? 'bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300'
-                                        : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                                }`}>
-                                    {tab.count}
-                                </span>
-                            )}
-                        </button>
-                    ))}
+                <div className="px-4 py-2.5 bg-slate-50/60 dark:bg-slate-900/40 border-b border-slate-200/60 dark:border-slate-800/40">
+                    <div className="p-1 rounded-xl bg-slate-200/60 dark:bg-slate-800/80 border border-slate-300/60 dark:border-slate-700/60 flex items-center gap-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)]">
+                        {filterTabs.map((tab) => {
+                            const isActive = filterTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => setFilterTab(tab.id)}
+                                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                        isActive
+                                            ? 'btn-secondary-glossy text-sky-700 dark:text-sky-300 shadow-xs'
+                                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                                    }`}
+                                >
+                                    <span>{tab.label}</span>
+                                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                                        isActive ? 'bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold' : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300'
+                                    }`}>
+                                        {tab.count}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
-                <div className="max-h-[340px] overflow-y-auto skeuo-scrollbar divide-y divide-slate-100 dark:divide-slate-800/60">
+                <div className="max-h-[340px] overflow-y-auto skeuo-scrollbar divide-y divide-slate-100 dark:divide-slate-800/50">
                     {filteredNotifications.length === 0 ? (
                         <div className="py-10 px-4 text-center flex flex-col items-center justify-center">
                             <div className="skeuo-surface-orb-badge w-12 h-12 rounded-full flex items-center justify-center mb-3 text-slate-400 dark:text-slate-500">
@@ -219,29 +221,29 @@ const NotificationsDropdown = () => {
                             <div
                                 key={item.id}
                                 onClick={() => handleItemClick(item)}
-                                className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer group relative ${
+                                className={`p-4 border-b border-slate-100 dark:border-slate-800/50 flex items-start gap-3.5 transition-colors relative group cursor-pointer ${
                                     !item.read
-                                        ? 'bg-sky-50/70 dark:bg-sky-950/25 hover:bg-sky-100/60 dark:hover:bg-sky-950/40'
-                                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                                        ? 'bg-sky-50/50 dark:bg-sky-950/20'
+                                        : 'bg-transparent hover:bg-slate-50/60 dark:hover:bg-slate-850/40'
                                 }`}
                             >
-                                <div className="skeuo-surface-orb-badge w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                                <div className="skeuo-surface-orb-badge w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-amber-500 shadow-sm">
                                     {getNotificationIcon(item.type)}
                                 </div>
 
-                                <div className="flex-1 min-w-0 pr-6">
+                                <div className="flex-1 min-w-0 pr-4">
                                     <div className="flex items-center gap-1.5 mb-0.5">
-                                        <h4 className={`text-xs truncate ${!item.read ? 'font-bold text-slate-900 dark:text-slate-50' : 'font-medium text-slate-700 dark:text-slate-300'}`}>
+                                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                                             {item.title}
                                         </h4>
                                         {!item.read && (
-                                            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0 shadow-[0_0_6px_rgba(14,165,233,0.8)]" />
+                                            <span className="w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_6px_rgba(14,165,233,0.7),inset_0_0.5px_0.5px_rgba(255,255,255,0.9)] shrink-0" />
                                         )}
                                     </div>
-                                    <p className="text-[11.5px] text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
                                         {item.content}
                                     </p>
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 block">
+                                    <span className="text-[10px] text-slate-400 mt-1.5 block">
                                         {formatRelativeTime(item.time)}
                                     </span>
                                 </div>
@@ -252,9 +254,9 @@ const NotificationsDropdown = () => {
                                         e.stopPropagation();
                                         removeNotification(item.id);
                                     }}
-                                    className="opacity-0 group-hover:opacity-100 focus:opacity-100 absolute top-3 right-3 p-1 rounded-md text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all cursor-pointer"
-                                    title="Remover notificação"
                                     aria-label="Remover notificação"
+                                    title="Remover notificação"
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md hover:bg-white/80 dark:hover:bg-slate-800 absolute right-3 top-3 cursor-pointer"
                                 >
                                     <X className="w-3.5 h-3.5" />
                                 </button>
@@ -263,26 +265,25 @@ const NotificationsDropdown = () => {
                     )}
                 </div>
 
-                <div className="p-3 bg-gradient-to-b from-[#f8fafc] to-[#eef2f6] dark:from-[#0f172a] dark:to-[#090d16] border-t border-slate-200/80 dark:border-white/5 flex items-center justify-between text-xs">
+                <div className="px-4 py-3 bg-slate-50/70 dark:bg-slate-900/60 border-t border-slate-200/70 dark:border-slate-800/60 flex items-center justify-between text-xs font-semibold">
                     <button
                         type="button"
                         onClick={() => {
                             setIsOpen(false);
                             navigate('/settings');
                         }}
-                        className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1.5 text-[11px] font-medium transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer"
                     >
-                        <Sliders className="w-3.5 h-3.5" />
+                        <Sliders className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                         Ajustes de Som
                     </button>
-
                     {notifications.length > 0 && (
                         <button
                             type="button"
                             onClick={clearAll}
-                            className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 flex items-center gap-1 text-[11px] font-medium transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
                         >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                             Limpar Tudo
                         </button>
                     )}
