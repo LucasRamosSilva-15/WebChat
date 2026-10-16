@@ -271,6 +271,30 @@ npm run test:backend && npm run test:frontend
 └── README.md
 ```
 
+## Catálogo de Páginas Principais (Frontend)
+
+A aplicação web é composta por 16 telas com design skeuomórfico reativo:
+
+| Página | Rota | Componente | Guarda | Propósito & Funcionalidades |
+| :--- | :--- | :--- | :--- | :--- |
+| **Página Inicial** | `/` | `Home.jsx` | Pública | Landing page de apresentação e ponto de entrada da aplicação. |
+| **Login** | `/login` | `Login.jsx` | Pública | Autenticação com e-mail/senha, emissão de JWT e alertas contextuais. |
+| **Cadastro** | `/register` | `Register.jsx` | Pública | Criação de conta com medidor de força de senha em tempo real. |
+| **Lobby de Salas** | `/rooms` | `Rooms.jsx` | `PrivateRoute` | Catálogo de salas temáticas, métricas em tempo real (`StatCard`) e filtros. |
+| **Sala de Chat** | `/chat` | `Chat.jsx` | `PrivateRoute` | Mensageria instantânea com Socket.io, criptografia e moderação hierárquica. |
+| **Mensagens Diretas** | `/directs` | `Directs.jsx` | `PrivateRoute` | Bate-papo 1x1 confidencial em tempo real, lista de conversas e busca de contatos. |
+| **Chat Direto (Alias)** | `/direct` | `Directs.jsx` | `PrivateRoute` | Rota alternativa de acesso rápido ao chat privado. |
+| **Favoritos** | `/favorites` | `Favorites.jsx` | `PrivateRoute` | Hub de salas e conversas favoritas para acesso rápido. |
+| **Personalização** | `/custom` | `Custom.jsx` | `PrivateRoute` | Edição de foto de perfil, avatar dinâmico, nome público e bio. |
+| **Configurações** | `/settings` | `Settings.jsx` | `PrivateRoute` | Temas (Claro/Escuro), densidade de layout, cores de destaque e sons. |
+| **Feedback** | `/feedback` | `Feedback.jsx` | `PrivateRoute` | Canal de envio de sugestões e bugs com upload de fotos em cavidade `.skeuo-well`. |
+| **Central de Suporte**| `/suporte` | `Suporte.jsx` | `PrivateRoute` | FAQ acordeão interativo, status da plataforma e transparência de moderação. |
+| **Sobre o Projeto** | `/about` | `About.jsx` | Pública | Apresentação acadêmica, história do projeto e equipe de desenvolvedores. |
+| **Portal Admin Login**| `/admin-login`| `AdminLogin.jsx` | Pública | Autenticação administrativa com chave mestra do sistema. |
+| **Painel de Moderação**| `/admin` | `Admin.jsx` | `AdminRoute` | Console de métricas `/stats`, banimentos, gestão de denúncias e salas. |
+| **Bancada de Testes** | `/buttons` | `ButtonsTest.jsx`| Pública | Showcase vivo de todos os tokens e componentes táteis SDS. |
+| **Não Encontrado** | `*` | `NotFound.jsx` | Pública | Página 404 personalizada com bússola 3D e navegação de resgate. |
+
 ## Status atual
 
 O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, estabilidade e conformidade arquitetural:

@@ -1,0 +1,72 @@
+---
+title: "Catálogo de Páginas do Frontend"
+sidebarTitle: "Catálogo de Páginas"
+description: "Mapeamento completo das páginas e telas do SkyRipple, rotas ativas, guardas de autenticação e funcionalidades táteis."
+---
+
+O frontend do **SkyRipple** é composto por 16 telas e visões concebidas sob a estética **Skeuomorphic Design System (SDS) / Frutiger Aero**, integrando navegação reativa com **React Router DOM v7**, persistência de sessão e WebSockets em tempo real.
+
+---
+
+## 🗺️ Tabela Geral das Páginas Principais
+
+| Página | Rota | Componente | Guarda | Descrição & Funcionalidades Principais |
+| :--- | :--- | :--- | :--- | :--- |
+| **Página Inicial** | `/` | `Home.jsx` | Pública | Landing page de apresentação, proposta de valor, CTA dinâmico e acesso rápido. |
+| **Login** | `/login` | `Login.jsx` | Pública | Formulário de autenticação com e-mail/senha, emissão de JWT e feedback tátil de erro. |
+| **Cadastro** | `/register` | `Register.jsx` | Pública | Registro de novos usuários com medidor dinâmico de força de senha e termos legais. |
+| **Lobby de Salas** | `/rooms` | `Rooms.jsx` | `PrivateRoute` | Catálogo de salas temáticas, métricas em tempo real (`StatCard`), filtros e criação de sala. |
+| **Sala de Chat** | `/chat` | `Chat.jsx` | `PrivateRoute` | Mensageria instantânea com Socket.io, criptografia AES-256 e moderação hierárquica. |
+| **Mensagens Diretas** | `/directs` | `Directs.jsx` | `PrivateRoute` | Bate-papo 1x1 confidencial em tempo real, lista de conversas e busca de contatos. |
+| **Chat Direto (Alias)** | `/direct` | `Directs.jsx` | `PrivateRoute` | Rota alternativa de acesso rápido ao painel de mensagens diretas. |
+| **Favoritos** | `/favorites` | `Favorites.jsx` | `PrivateRoute` | Central de curadoria e acesso instantâneo a salas e conversas favoritas do usuário. |
+| **Personalização** | `/custom` | `Custom.jsx` | `PrivateRoute` | Customização de avatar, bio e perfil com pré-visualização tátil em tempo real. |
+| **Configurações** | `/settings` | `Settings.jsx` | `PrivateRoute` | Sistema de temas (Claro/Escuro), densidade de layout, cores de destaque e acessibilidade. |
+| **Feedback** | `/feedback` | `Feedback.jsx` | `PrivateRoute` | Envio de sugestões, bugs e elogios com upload de imagens em cavidade `.skeuo-well`. |
+| **Central de Suporte** | `/suporte` | `Suporte.jsx` | `PrivateRoute` | FAQ interativo tipo acordeão, quadro de transparência de moderação e canais de contato. |
+| **Sobre o Projeto** | `/about` | `About.jsx` | Pública | Apresentação acadêmica, história da plataforma, equipe de desenvolvedores e pilares. |
+| **Portal Admin Login** | `/admin-login` | `AdminLogin.jsx` | Pública | Ponto de entrada exclusivo para administradores autenticarem com a chave mestra. |
+| **Painel de Moderação** | `/admin` | `Admin.jsx` | `AdminRoute` | Console de governança global: triagem de denúncias, métricas `/stats`, banimentos e salas. |
+| **Bancada de Testes** | `/buttons` | `ButtonsTest.jsx` | Pública | Vitrine viva de componentes SDS, botões táteis, controles e simulador de chat. |
+| **Não Encontrado (404)** | `*` | `NotFound.jsx` | Pública | Página de resgate com bússola 3D espelhada e botões de retorno inteligente. |
+
+---
+
+## 🎯 Domínios Operacionais das Telas
+
+<CardGroup cols={3}>
+  <Card title="Entrada & Autenticação" icon="key" color="#2563EB">
+    `Home`, `Login`, `Register` e `AdminLogin`: controle de acesso com JWT e proteção contra força bruta.
+  </Card>
+  <Card title="Comunicação & Mensageria" icon="comments" color="#10B981">
+    `Chat`, `Directs` e `Rooms`: troca instantânea de mensagens com streaming WebSocket e criptografia.
+  </Card>
+  <Card title="Curadoria & Preferências" icon="sliders" color="#F59E0B">
+    `Favorites`, `Custom` e `Settings`: personalização de visual, acessibilidade e atalhos prioritários.
+  </Card>
+  <Card title="Governança & Suporte" icon="shield-halved" color="#8B5CF6">
+    `Admin`, `Feedback` e `Suporte`: painel de moderação de conteúdo, auditoria e canal direto com a comunidade.
+  </Card>
+  <Card title="Institucional & Showcase" icon="compass" color="#06B6D4">
+    `About` e `ButtonsTest`: apresentação acadêmica e laboratório de componentes do Skeuomorphic Design System.
+  </Card>
+  <Card title="Tratamento de Rotas" icon="circle-exclamation" color="#EF4444">
+    `NotFound`: captura de rotas inválidas com navegação intuitiva de resgate.
+  </Card>
+</CardGroup>
+
+---
+
+## 🛡️ Guardas de Rota e Segurança no Cliente
+
+O roteamento em `src/App.jsx` aplica duas barreiras de segurança reativas:
+
+### 1. `PrivateRoute` (`src/components/PrivateRoute.jsx`)
+Intercepta rotas restritas a membros registrados:
+* Verifica a existência e validade do token em `localStorage('chat_token')`.
+* Caso ausente ou expirado, preserva a URL de destino original via `location.state.from` e redireciona para `/login`.
+
+### 2. `AdminRoute` (`src/components/AdminRoute.jsx`)
+Garante acesso restrito ao console `/admin`:
+* Inspeciona a presença do `admin_token`.
+* Se não autenticado como administrador, bloqueia a renderização e redireciona para `/admin-login`.

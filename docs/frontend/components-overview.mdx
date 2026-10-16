@@ -6,7 +6,7 @@ description: "Mapeamento completo dos componentes reutilizáveis, módulos de UI
 
 O SkyRipple conta com um conjunto coeso de componentes e classes de estilo concebidos para proporcionar uma experiência tátil, elegante e moderna.
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Botões & Ações" icon="hand-pointer" href="/frontend/components/button">
     Classes e variações de botões primários, secundários, perigo e ícones circulares.
   </Card>
@@ -16,8 +16,14 @@ O SkyRipple conta com um conjunto coeso de componentes e classes de estilo conce
   <Card title="Janelas Modais" icon="window-restore" href="/frontend/components/modal">
     Diálogos de confirmação flutuantes com cabeçalho de sistema e efeito de vidro.
   </Card>
-  <Card title="Balões de Mensagem (ChatBubble)" icon="comment-dots" href="/frontend/components/chat-bubble">
+  <Card title="Balões de Mensagem" icon="comment-dots" href="/frontend/components/chat-bubble">
     Balões de fala com relevo 3D para mensagens enviadas e recebidas com anexos.
+  </Card>
+  <Card title="Avatares de Usuário" icon="circle-user" href="/frontend/components/avatar">
+    Molduras translúcidas, iniciais e indicadores de presença online.
+  </Card>
+  <Card title="Central de Notificações" icon="bell" href="/frontend/components/notifications">
+    Contexto global, dropdown com contador pulsante e toasts flutuantes.
   </Card>
 </CardGroup>
 
@@ -30,9 +36,14 @@ O SkyRipple conta com um conjunto coeso de componentes e classes de estilo conce
 | `<UserAvatar />` | `src/components/UserAvatar.jsx` | Exibe imagem de perfil ou iniciais com moldura gradiente e anéis de presença online/offline. |
 | `<SkeuoLoading />` | `src/components/SkeuoLoading.jsx` | Tela e indicador de progresso com animação de shimmer e barra física preenchida. |
 | `<SkyBackground />`| `src/components/SkyBackground.jsx` | Fundo de céu atmosférico animado que se adapta ao tema e paleta de cores ativa. |
-| `<Navbar />` | `src/components/Navbar.jsx` | Barra superior com controle de modo escuro, seleção de cores, perfil e logout. |
-| `<ChatSidebar />` | `src/components/ChatSidebar.jsx` | Menu lateral com lista de canais disponíveis e botão de criar sala. |
-| `<MembersSidebar />`| `src/components/MembersSidebar.jsx`| Lista lateral de membros da sala com separação por papéis (`Dono`, `Admin`, `Membro`). |
+| `<Navbar />` | `src/components/Navbar.jsx` | Barra superior com busca, status de conexão, menus de Salas, Directs, Favoritos e tema. |
+| `<ChatSidebar />` | `src/components/ChatSidebar.jsx` | Menu lateral com lista de salas ativas e alternância rápida. |
+| `<MembersSidebar />`| `src/components/MembersSidebar.jsx`| Lista lateral com moderação hierárquica (`Dono`, `Mod`, `Membro`), expulsão e transferência de posse. |
+| `<NotificationsDropdown />` | `src/components/NotificationsDropdown.jsx` | Popover na Navbar com badge pulsante de contagem, leitura em lote e filtros. |
+| `<NotificationToastContainer />` | `src/components/NotificationToastContainer.jsx` | Contêiner de avisos flutuantes (*toasts*) que surgem no topo da tela com temporizador. |
+| `<NewDirectMessageModal />` | `src/components/NewDirectMessageModal.jsx` | Modal de busca com debounce para localizar contatos e iniciar chats 1x1. |
+| `<ChatQuickSettings />` | `src/components/ChatQuickSettings.jsx` | Menu popover para controle de densidade visual de balões (Compacto/Confortável/Grande) e som. |
+| `<CookieBanner />` | `src/components/CookieBanner.jsx` | Banner tátil de conformidade de privacidade LGPD/GDPR com botões de consentimento. |
 | `<PrivateRoute />` | `src/components/PrivateRoute.jsx` | Guarda de rota que redireciona usuários não autenticados para `/login`. |
 | `<AdminRoute />` | `src/components/AdminRoute.jsx` | Guarda de rota que valida privilégios de administrador antes de abrir `/admin`. |
 

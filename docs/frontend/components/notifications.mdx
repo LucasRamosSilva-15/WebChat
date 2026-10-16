@@ -1,0 +1,111 @@
+---
+title: "Sistema de Notificações (Notifications)"
+sidebarTitle: "Notificações"
+description: "Pipeline reativo de notificações em tempo real com NotificationContext, NotificationsDropdown e NotificationToastContainer."
+---
+
+O subsistema de notificações do **SkyRipple** opera de forma global e reativa, combinando **Socket.io**, persistência no **LocalStorage** / API REST, feedback sonoro suave e interface skeuomórfica com contador e banners flutuantes.
+
+---
+
+## Componentes do Módulo
+
+O sistema é dividido em três blocos arquiteturais integrados:
+
+<CardGroup cols={3}>
+  <Card title="NotificationContext" icon="database" color="#2563EB">
+    Provider global que encapsula o estado das notificações, escuta eventos WebSocket e emite áudio.
+  </Card>
+  <Card title="NotificationsDropdown" icon="bell" color="#F59E0B">
+    Menu popover na Navbar com contador pulsante, filtros e marcação de leitura em lote.
+  </Card>
+  <Card title="NotificationToastContainer" icon="message-exclamation" color="#10B981">
+    Contêiner de avisos flutuantes táteis (*toasts*) que surgem no topo da tela com temporizador.
+  </Card>
+</CardGroup>
+
+---
+
+## 1. `NotificationContext` (Estado Global)
+
+Disponibilizado na raiz da aplicação em `src/App.jsx`, permite que qualquer componente consuma ou emita notificações via hook `useNotifications()`:
+
+```jsx
+import { useNotifications } from '../context/NotificationContext';
+
+export function MeuComponente() {
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    clearAll,
+    addNotification
+  } = useNotifications();
+
+  return (
+    <div>Notificações não lidas: {unreadCount}</div>
+  );
+}
+```
+
+### Métodos e Valores Exportados
+
+<ResponseField name="notifications" type="Array<Notification>">
+  Lista de notificações ativas ordenadas cronologicamente (`created_at DESC`).
+</ResponseField>
+
+<ResponseField name="unreadCount" type="number">
+  Contador de notificações pendentes de leitura. Atualiza dinamicamente o badge na Navbar.
+</ResponseField>
+
+<ResponseField name="markAsRead" type="(id: string) => Promise<void>">
+  Marca uma notificação individual como lida e atualiza o estado local e a API.
+</ResponseField>
+
+<ResponseField name="markAllAsRead" type="() => Promise<void>">
+  Marca todas as notificações como lidas em lote via `PATCH /api/notifications/read-all`.
+</ResponseField>
+
+<ResponseField name="clearAll" type="() => Promise<void>">
+  Remove permanentemente todas as notificações via `DELETE /api/notifications/all`.
+</ResponseField>
+
+<ResponseField name="addNotification" type="(notif: Object) => void">
+  Injeta manualmente uma notificação no estado local com disparo de som e toast.
+</ResponseField>
+
+---
+
+## 2. `NotificationsDropdown` (Menu Popover na Navbar)
+
+Localizado em `src/components/NotificationsDropdown.jsx`, exibe um sino tátil com indicador pulsante quando há mensagens não lidas:
+
+<CodeGroup>
+```jsx Integração na Navbar
+import NotificationsDropdown from './NotificationsDropdown';
+
+export default function Navbar() {
+  return (
+    <header className="navbar-container">
+      {/* Outros controles */}
+      <NotificationsDropdown />
+    </header>
+  );
+}
+```
+</CodeGroup>
+
+### Recursos do Menu
+* **Cavidade Tátil `.skeuo-well`**: Área rolável que isola os itens de notificação com sensação de profundidade física.
+* **Ícones Contextuais**: Distinção automática por tipo (`message`, `system`, `room_invite`, `moderation`).
+* **Ações Rápidas**: Botão para marcar notificação individual como lida ao passar o mouse e link de redirecionamento imediato (ex: abrir a conversa direta).
+
+---
+
+## 3. `NotificationToastContainer` (Avisos Flutuantes)
+
+Renderizado no nível raiz do layout em `src/App.jsx`, apresenta cartões táteis translúcidos que alertam o usuário sem interromper sua atividade:
+
+* **Efeito Visual**: Placa `.skeuo-card` com chanfro brilhante, sombra profunda e barra de progresso regressiva.
+* **Comportamento**: Desaparece automaticamente após 4 segundos ou manualmente no botão fechar.

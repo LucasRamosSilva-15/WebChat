@@ -70,6 +70,7 @@
       "group": "Arquitetura & Design System",
       "pages": [
         "frontend/architecture",
+        "frontend/pages",
         "frontend/tailwind-tokens"
       ]
     },
@@ -81,7 +82,8 @@
         "frontend/components/input",
         "frontend/components/modal",
         "frontend/components/chat-bubble",
-        "frontend/components/avatar"
+        "frontend/components/avatar",
+        "frontend/components/notifications"
       ]
     },
     {

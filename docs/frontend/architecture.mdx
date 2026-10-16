@@ -24,19 +24,35 @@ frontend/src/
 │   ├── UserAvatar.jsx   # Avatar tátil com anéis de presença e iniciais
 │   ├── SkeuoLoading.jsx # Indicador de carregamento com shimmer e barra física
 │   ├── SkyBackground.jsx# Fundo dinâmico com gradiente atmosférico
-│   ├── Navbar.jsx       # Barra de navegação e controle de perfil/tema
-│   ├── ChatSidebar.jsx  # Barra lateral de navegação entre canais
-│   ├── MembersSidebar.jsx# Lista lateral de participantes da sala ativa
+│   ├── Navbar.jsx       # Barra superior com busca, status de conexão e menus
+│   ├── ChatSidebar.jsx  # Barra lateral de navegação entre salas ativas
+│   ├── MembersSidebar.jsx# Moderação e presença de membros (Dono, Mod, Membro)
+│   ├── ChatQuickSettings.jsx# Menu de densidade visual e preferências sonoras
+│   ├── NotificationsDropdown.jsx# Menu popover de notificações com contador pulsante
+│   ├── NotificationToastContainer.jsx# Banners táteis flutuantes de alertas
+│   ├── NewDirectMessageModal.jsx# Modal de busca e criação de conversas diretas
+│   ├── CookieBanner.jsx # Banner de privacidade LGPD/GDPR
 │   ├── PrivateRoute.jsx # HOC de proteção para rotas de usuário autenticado
 │   └── AdminRoute.jsx   # HOC de proteção para rotas administrativas
+├── context/             # Gerenciamento de estado global reativo
+│   └── NotificationContext.jsx # Provider global de notificações e feedback sonoro
 ├── pages/               # Visões completas roteadas pelo React Router DOM v7
 │   ├── Home.jsx         # Landing page de apresentação
 │   ├── Login.jsx        # Formulário de entrada com JWT
-│   ├── Register.jsx     # Cadastro de novas contas
-│   ├── Rooms.jsx        # Catálogo e criação de salas
-│   ├── Chat.jsx         # Interface principal de mensageria em tempo real
+│   ├── Register.jsx     # Cadastro com medidor de força de senha
+│   ├── Rooms.jsx        # Lobby de salas com filtros e métricas
+│   ├── Chat.jsx         # Interface principal de mensageria e moderação
+│   ├── Directs.jsx      # Mensagens Diretas 1x1 privadas e busca de contatos
+│   ├── Favorites.jsx    # Central de curadoria de salas e conversas favoritas
+│   ├── Custom.jsx       # Personalização de avatar e perfil
+│   ├── Settings.jsx     # Preferências visuais, temas e acessibilidade
+│   ├── Feedback.jsx     # Central de sugestões, bugs e elogios com anexos
+│   ├── Suporte.jsx      # FAQ acordeão, canais de contato e transparência
+│   ├── About.jsx        # Apresentação institucional e acadêmica
+│   ├── AdminLogin.jsx   # Acesso ao painel com senha mestra
 │   ├── Admin.jsx        # Painel operacional de moderação e métricas
-│   └── ButtonsTest.jsx  # Bancada de testes e vitrine viva de componentes
+│   ├── ButtonsTest.jsx  # Bancada de testes e vitrine viva de componentes
+│   └── NotFound.jsx     # Página 404 personalizada com bússola 3D
 ├── services/            # Camada de comunicação HTTP
 │   └── api.js           # Cliente fetch com interceptor de token e auto-logout
 ├── styles/              # Módulos CSS do Design System Skeuomórfico
@@ -45,6 +61,7 @@ frontend/src/
 │   ├── animations.css   # Keyframes de pulso, shimmer e transições
 │   ├── avatar.css       # Molduras, anéis e cores de status
 │   └── loading.css      # Barras de progresso e spinners
+├── tests/               # Suíte de testes automatizados com Vitest (11 arquivos)
 ├── socket.js            # Instância singleton do cliente Socket.io
 ├── index.css            # Ponto de entrada Tailwind v4 e variáveis de tema
 └── main.jsx             # Bootstrap da aplicação React
@@ -52,19 +69,42 @@ frontend/src/
 
 ---
 
+## Tabela de Rotas da Aplicação (`App.jsx`)
+
+| Rota | Componente | Guarda de Acesso | Propósito |
+| :--- | :--- | :--- | :--- |
+| `/` | `Home.jsx` | Pública | Landing page inicial |
+| `/login` | `Login.jsx` | Pública | Autenticação com e-mail e senha |
+| `/register` | `Register.jsx` | Pública | Criação de conta com medidor de senha |
+| `/about` | `About.jsx` | Pública | Apresentação institucional |
+| `/rooms` | `Rooms.jsx` | `PrivateRoute` | Catálogo de salas de chat e métricas |
+| `/chat` | `Chat.jsx` | `PrivateRoute` | Sala de chat ativa e moderação |
+| `/directs` | `Directs.jsx` | `PrivateRoute` | Bate-papo direto privado 1x1 |
+| `/favorites`| `Favorites.jsx`| `PrivateRoute` | Hub de salas e conversas favoritas |
+| `/custom` | `Custom.jsx` | `PrivateRoute` | Personalização de avatar e status |
+| `/settings`| `Settings.jsx`| `PrivateRoute` | Temas Claro/Escuro e acessibilidade |
+| `/feedback`| `Feedback.jsx`| `PrivateRoute` | Envio de avaliações e bugs com fotos |
+| `/suporte` | `Suporte.jsx` | `PrivateRoute` | Central de ajuda e FAQ interativo |
+| `/admin-login`| `AdminLogin.jsx`| Pública | Acesso com chave mestra admin |
+| `/admin` | `Admin.jsx` | `AdminRoute` | Console de governança e métricas |
+| `/buttons` | `ButtonsTest.jsx`| Pública | Laboratório de componentes visuais |
+| `*` | `NotFound.jsx` | Pública | Rota 404 personalizada |
+
+---
+
 ## Gerenciamento de Estado e Ciclo de Vida da Sessão
 
-A aplicação adota uma estratégia de estado leve e desacoplada, utilizando **LocalStorage** sincronizado com **Custom Events** do navegador para comunicação inter-componentes sem overhead de bibliotecas pesadas:
+A aplicação adota uma estratégia de estado leve e desacoplada, utilizando **NotificationContext**, **LocalStorage** e **Custom Events** do navegador para comunicação inter-componentes sem overhead de bibliotecas pesadas:
 
 <CardGroup cols={3}>
   <Card title="Autenticação JWT" icon="id-card" color="#2563EB">
     Armazenamento seguro do token no `localStorage('chat_token')` com inclusão automática em headers `Authorization: Bearer`.
   </Card>
-  <Card title="Event Bus Nativo" icon="satellite-dish" color="#10B981">
-    Disparo de `window.dispatchEvent(new Event('profileUpdated'))` e `sessionExpired` para reagir a alterações de perfil e logout.
+  <Card title="Central de Notificações" icon="bell" color="#8B5CF6">
+    Estado reativo com `NotificationContext`, persistência em cache local e bips de áudio em tempo real.
   </Card>
-  <Card title="Sincronização de Salas" icon="layer-group" color="#F59E0B">
-    Persistência das salas conectadas em `chat_joinedRooms` para reconexão automática após refresh de página.
+  <Card title="Event Bus Nativo" icon="satellite-dish" color="#10B981">
+    Disparo de `profileUpdated` e `sessionExpired` para reagir a alterações de perfil e logout imediato.
   </Card>
 </CardGroup>
 

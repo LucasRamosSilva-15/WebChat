@@ -26,10 +26,13 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 | `/login` | `Login.jsx` | Público | Autenticação de usuários existentes |
 | `/register` | `Register.jsx` | Público | Criação de conta com medidor de senha |
 | `/about` | `About.jsx` | Público | Apresentação institucional e acadêmica |
-| `/rooms` | `Rooms.jsx` | Protegido (`PrivateRoute`) | Lobby de salas de conversação |
-| `/chat` | `Chat.jsx` | Protegido (`PrivateRoute`) | Sala de chat ativa em tempo real |
+| `/rooms` | `Rooms.jsx` | Protegido (`PrivateRoute`) | Lobby de salas de conversação com filtros e métricas |
+| `/chat` | `Chat.jsx` | Protegido (`PrivateRoute`) | Sala de chat ativa com moderação e tempo real |
+| `/directs` | `Directs.jsx` | Protegido (`PrivateRoute`) | Mensagens Diretas 1x1 privadas e busca de contatos |
+| `/direct` | `Directs.jsx` | Protegido (`PrivateRoute`) | Rota alternativa de acesso ao chat direto |
+| `/favorites` | `Favorites.jsx` | Protegido (`PrivateRoute`) | Central de salas e conversas favoritas |
 | `/custom` | `Custom.jsx` | Protegido (`PrivateRoute`) | Customização de perfil e avatar |
-| `/settings` | `Settings.jsx` | Protegido (`PrivateRoute`) | Preferências visuais e temas |
+| `/settings` | `Settings.jsx` | Protegido (`PrivateRoute`) | Preferências visuais, temas e acessibilidade |
 | `/feedback` | `Feedback.jsx` | Protegido (`PrivateRoute`) | Envio de avaliações, bugs e sugestões |
 | `/suporte` | `Suporte.jsx` | Protegido (`PrivateRoute`) | Central de ajuda, FAQ e status |
 | `/admin-login` | `AdminLogin.jsx` | Público | Portal de acesso de administradores |
@@ -84,22 +87,66 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ### 5. `Chat.jsx` (Sala de Conversação em Tempo Real)
 - **Para que serve:**
-  É o núcleo operacional do SkyRipple. Gerencia toda a troca de mensagens instantâneas dentro de uma sala selecionada.
+  É o núcleo operacional do SkyRipple. Gerencia toda a troca de mensagens instantâneas dentro de uma sala selecionada, integrando moderação hierárquica completa, presença de membros e ferramentas táteis de comunicação.
 - **Como é feito:**
-  - **Socket.IO & Criptografia:** Estabelece conexão com a sala via evento `join_room`. As mensagens são criptografadas e decodificadas client-side utilizando AES-256 (`CryptoJS.AES`).
+  - **Socket.IO & Criptografia:** Estabelece conexão com a sala via evento `joinRoom`. As mensagens são transmitidas com compressão e criptografia simétrica client-side via AES-256 (`CryptoJS.AES`).
   - **Renderização de Balões (`MessageBubble`):** Suporta modos de visualização configuráveis ("Grande", "Suave", "Compacto"), estados de mensagem própria (`isMe`), timestamps inteligentes com formatação humanizada ("Hoje às 14:30", "Ontem às..."), e indicadores visuais de mensagem editada ou fixada.
   - **Interações Avançadas:**
     - Reações de curtida (`onToggleLike`)
     - Favoritar mensagens para consulta rápida
-    - Exclusão permitida em janela de até 24 horas
+    - Exclusão permitida com regras de negócio (autor até 24h, moderador ou dono da sala)
     - Envio e preview de imagens com compressão e modal de zoom
     - Denúncia in-chat (`onReportClick`) com modal de justificativa
     - Busca textual intra-chat com navegação por ocorrências (anterior/próxima)
-  - **Sidebars:** Painel esquerdo colapsável para navegação rápida entre salas e painel direito (`MembersSidebar`) exibindo membros online/offline com insígnias hierárquicas (`Dono`, `Admin`, `Moderador`, `Membro`).
+  - **Sidebars & Moderação Hierárquica da Sala (`MembersSidebar.jsx`):**
+    - Painel esquerdo colapsável para navegação e alternância rápida entre salas.
+    - Painel direito com listagem em tempo real de membros online e offline, organizados por badges hierárquicos:
+      - 👑 **Dono da Sala (`Owner`)**: Distintivo dourado tátil com poderes para editar sala, promover/rebaixar moderadores, expulsar membros e transferir posse.
+      - 🛡️ **Moderador (`Moderator`)**: Distintivo azul acetinado com permissão para expulsar membros comuns e moderar mensagens.
+      - 👤 **Membro Regular (`User`)**: Participante da sala.
+    - **Ações de Moderação:**
+      - *Promover / Rebaixar*: Dispara `PATCH /api/rooms/:roomId/members/:userId/role`.
+      - *Expulsar Membro*: Dispara `DELETE /api/rooms/:roomId/members/:userId` com justificativa opcional e alerta imediato via WebSocket (`member_kicked` e `kicked_from_room`).
+      - *Transferência de Dono*: Modal de confirmação segura disparando `POST /api/rooms/:id/transfer-ownership`.
+      - *Iniciar Direct*: Atalho direto para iniciar mensagem 1x1 confidencial com qualquer membro da sala.
+  - **Ajustes Rápidos (`ChatQuickSettings.jsx`):** Menu popover com sliders táteis para densidade de balões, preferências sonoras de novas mensagens e alternância de tema.
 
 ---
 
-### 6. `Custom.jsx` (Personalização do Perfil)
+### 6. `Directs.jsx` (Mensagens Diretas 1x1 Privadas)
+- **Para que serve:**
+  Hub dedicado a conversas privadas e confidenciais entre dois usuários, desacoplado das salas públicas.
+- **Como é feito:**
+  - **Estado & Gerenciamento:**
+    - Controla a lista de conversas ativas (`conversations`), a conversa selecionada (`activeConversation`), mensagens carregadas (`messages`) e termo de busca (`searchQuery`).
+    - Modal de Novo Chat (`NewDirectMessageModal`): Permite buscar qualquer usuário cadastrado no sistema via `GET /api/directs/users?q=...` e iniciar o chat com um clique.
+  - **Comunicação em Tempo Real:**
+    - Integra-se ao Socket.IO escutando `receive_direct_message`, atualizando instantaneamente o chat ativo e o resumo da conversa na lista lateral.
+    - Notifica o usuário globalmente via `NotificationContext` com som e banner flutuante (*toast*).
+  - **Ações da Conversa:**
+    - Envio de texto e anexos de imagem com preview.
+    - Remoção ou ocultação de conversas pelo endpoint `DELETE /api/directs/conversations/:id`.
+    - Atalho para favoritar a conversa diretamente pelo cabeçalho do chat.
+  - **Design Tátil:** Layout bifásico responsivo em `.skeuo-card` com avatares com anel de status online verde, balões com acabamento glossy e feedback tátil em botões.
+
+---
+
+### 7. `Favorites.jsx` (Central de Favoritos)
+- **Para que serve:**
+  Área de curadoria e acesso rápido onde o usuário encontra todas as salas e conversas diretas que marcou com estrela.
+- **Como é feito:**
+  - **Abas de Filtragem Tátil:** Alternância com botões côncavos entre:
+    - *Todos*: Visão unificada com contagem total.
+    - *Salas*: Filtro exclusivo para salas de chat temáticas favoritadas.
+    - *Conversas*: Filtro exclusivo para conversas privadas 1x1.
+  - **Integração REST:**
+    - Carrega dados persistidos via `GET /api/favorites`.
+    - Remoção instantânea de favoritos através de `DELETE /api/favorites/:itemType/:itemId`.
+  - **Ações Diretas:** Cards com botões táteis "Entrar na Sala" ou "Abrir Conversa", redirecionando instantaneamente para `/chat?room=...` ou `/directs?conversation=...`.
+
+---
+
+### 8. `Custom.jsx` (Personalização do Perfil)
 - **Para que serve:**
   Permite ao usuário customizar sua identidade visual no ecossistema (foto de exibição, nome público e bio/status).
 - **Como é feito:**
@@ -109,7 +156,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 7. `Feedback.jsx` (Central de Feedback dos Usuários)
+### 9. `Feedback.jsx` (Central de Feedback dos Usuários)
 - **Para que serve:**
   Canal oficial para envio de sugestões, relatos de bugs, elogios e ideias de melhorias diretamente para a equipe de moderação.
 - **Como é feito:**
@@ -120,7 +167,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 8. `Settings.jsx` (Preferências & Sistema de Temas)
+### 10. `Settings.jsx` (Preferências & Sistema de Temas)
 - **Para que serve:**
   Permite configurar a estética global e acessibilidade da interface.
 - **Como é feito:**
@@ -133,7 +180,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 9. `Suporte.jsx` (Central de Ajuda)
+### 11. `Suporte.jsx` (Central de Ajuda)
 - **Para que serve:**
   Página de suporte com perguntas frequentes, busca de tópicos de ajuda, canais de contato e transparência de moderação.
 - **Como é feito:**
@@ -143,7 +190,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 10. `About.jsx` (Sobre o Projeto)
+### 12. `About.jsx` (Sobre o Projeto)
 - **Para que serve:**
   Apresenta a história do projeto, suas motivações acadêmicas, visão de design e a equipe de desenvolvedores.
 - **Como é feito:**
@@ -153,7 +200,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 11. `AdminLogin.jsx` (Login Administrativo)
+### 13. `AdminLogin.jsx` (Login Administrativo)
 - **Para que serve:**
   Portão de acesso exclusivo para moderadores e administradores da plataforma.
 - **Como é feito:**
@@ -162,7 +209,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 12. `Admin.jsx` (Painel Administrativo & Moderação)
+### 14. `Admin.jsx` (Painel Administrativo & Moderação)
 - **Para que serve:**
   Console central para gestão de segurança, usuários, salas, denúncias, banimentos e feedbacks recebidos.
 - **Como é feito:**
@@ -177,7 +224,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 13. `ButtonsTest.jsx` (Laboratório de Design & Componentes)
+### 15. `ButtonsTest.jsx` (Laboratório de Design & Componentes)
 - **Para que serve:**
   Ambiente de desenvolvimento e showcase de todos os tokens e componentes do **Skeuomorphic Design System (SDS)**.
 - **Como é feito:**
@@ -189,11 +236,70 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 14. `NotFound.jsx` (Página 404)
+### 16. `NotFound.jsx` (Página 404)
 - **Para que serve:**
   Captura rotas inválidas ou salas inexistentes, oferecendo navegação de resgate intuitiva.
 - **Como é feito:**
   - **Elementos:** Painel centralizado `.skeuo-panel` com bússola 3D em esfera espelhada, tipografia `404` em tamanho display e botões de retorno inteligente (`Voltar ao Início` ou `Ir para Salas`).
+
+---
+
+## 🔔 Central de Notificações em Tempo Real
+
+A aplicação conta com um pipeline global e reativo de notificações em tempo real, orquestrado através do `NotificationContext` e componentes desacoplados:
+
+### 1. `NotificationContext.jsx` (Gerenciador de Estado Global)
+- **Escuta Contínua via Socket.io**: Conecta ouvinte no evento `new_notification`, adicionando novos avisos ao topo da lista sem recarregar a interface.
+- **Persistência & Cache Local**: Sincroniza a lista e o contador com a API REST (`GET /api/notifications`) e mantém cache no `localStorage` para carregamento instantâneo.
+- **Feedback Sonoro Tátil**: Dispara bips sonoros suaves em formato Web Audio para alertar sobre novas mensagens diretas ou menções.
+- **Operações em Lote**: Expõe métodos assíncronos `markAsRead(id)`, `markAllAsRead()` e `clearAll()` para consumo por qualquer componente filho.
+
+### 2. `NotificationsDropdown.jsx` (Menu Interativo na Navbar)
+- Emblema em formato de sino com anel de foco tátil e badge vermelho pulsante exibindo a contagem de não lidas (`unreadCount`).
+- Popover suspenso com lista rolável em cavidade `.skeuo-well`, botões de ação rápida para marcar como lida e atalhos para redirecionamento contextuais (ex: abrir conversa no Direct).
+
+### 3. `NotificationToastContainer.jsx` (Banners Flutuantes)
+- Renderiza toasts translúcidos com visual Frutiger Aero no canto superior direito da tela com temporizador automático de saída e botão de fechamento manual.
+
+---
+
+## 🧩 Componentes Globais Reutilizáveis
+
+| Componente | Arquivo | Responsabilidade |
+| :--- | :--- | :--- |
+| **Navbar** | `src/components/Navbar.jsx` | Barra de navegação principal com logo líquido, pesquisa global, links para Salas, Directs e Favoritos, status de conexão Socket e perfil do usuário. |
+| **MembersSidebar** | `src/components/MembersSidebar.jsx` | Painel de moderação e presença de membros na sala, com badges de Dono, Mod e Membro, modais de promoção, expulsão e transferência de posse. |
+| **NewDirectMessageModal** | `src/components/NewDirectMessageModal.jsx` | Modal com campo de busca com debounce para localizar contatos e iniciar chats privados 1x1. |
+| **ChatQuickSettings** | `src/components/ChatQuickSettings.jsx` | Painel popover para controle de densidade visual de balões (Compacto/Confortável/Grande) e som. |
+| **SkyBackground** | `src/components/SkyBackground.jsx` | Fundo dinâmico com iluminação volumétrica, gradientes celestes e orbes de vidro animados. |
+| **CookieBanner** | `src/components/CookieBanner.jsx` | Banner de conformidade de privacidade LGPD/GDPR com botões táteis de aceite. |
+
+---
+
+## 🧪 Estratégia de Testes Automatizados (Vitest)
+
+O frontend implementa uma suíte de testes robusta utilizando [Vitest](https://vitest.dev/) e [React Testing Library](https://testing-library.com/):
+
+```bash
+# Executar todos os testes automatizados do frontend
+npm test
+
+# Executar testes em modo watch (re-execução em edições)
+npm run test:watch
+```
+
+### Cobertura da Suíte (11 Arquivos, 59 Testes Aprovados):
+1. **`auth.test.jsx`**: Validação de formulários de login e cadastro, medidor de força de senha e persistência de token JWT.
+2. **`chat.test.jsx`**: Envio de mensagens, edição, exclusão hierárquica, criptografia e abertura de Direct a partir de membro.
+3. **`Directs.test.jsx`**: Listagem de conversas, envio de mensagens diretas, busca de contatos e remoção de conversas.
+4. **`Favorites.test.jsx`**: Listagem de favoritos, filtros por abas ("Salas" e "Conversas") e ação de desfavoritar.
+5. **`Notifications.test.jsx`**: Notificações recebidas, marcação de leitura e renderização de toasts.
+6. **`Rooms.test.jsx`**: Lobby de salas, filtros de categoria, modais de criação e tratamento de falhas de rede.
+7. **`MembersSidebar.test.jsx`**: Renderização de insígnias de moderação, botões de kick e promoção de cargos.
+8. **`ChatSidebar.test.jsx`**: Alternância rápida e renderização de salas ativas.
+9. **`PrivateRoute.test.jsx`**: Proteção de rotas autenticadas e redirecionamento de usuários deslogados.
+10. **`Footer.test.jsx`**: Renderização institucional e links institucionais.
+11. **`api.test.js`**: Interceptação de tokens Bearer, injeção de cabeçalhos e expiração automática de sessão.
 
 ---
 
