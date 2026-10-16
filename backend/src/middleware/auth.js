@@ -18,6 +18,10 @@ module.exports = (req, res, next) => {
     const decoded = verifyToken(token);
     req.userId = decoded.id;
     req.userEmail = decoded.email;
+    req.userRole = decoded.role;
+    if (decoded.role === 'admin') {
+      req.admin = decoded;
+    }
     return next();
   } catch (err) {
     return res.status(401).json({ error: 'Token inválido ou expirado.' });

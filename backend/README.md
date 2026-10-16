@@ -19,6 +19,7 @@ Documentação técnica oficial do motor de backend do **SkyRipple**. Este servi
 12. [Estratégia de Testes Automatizados](#12-estratégia-de-testes-automatizados)
 13. [Guia de Execução Local](#13-guia-de-execução-local)
 14. [Documentação Interativa (Swagger & Mintlify)](#14-documentação-interativa-swagger--mintlify)
+15. [Roadmap & Próximos Passos (Futuras Implementações)](#15-roadmap--próximos-passos-futuras-implementações)
 
 ---
 
@@ -89,12 +90,17 @@ O código adota o padrão **Controller-Service-Repository** sobre um ecossistema
 * **pg & pg-hstore (v8.23)**: Driver de conexão para PostgreSQL com suporte a pooling e conexões seguras SSL.
 * **Prisma Schema (`prisma/schema.prisma`)**: Definição declarativa complementar do banco relacional.
 
-##### Segurança & Criptografia
-* **bcryptjs (v2.4)**: Hashing unidirecional salgado para proteção de senhas no cadastro.
-* **jsonwebtoken (v9.0)**: Assinatura e verificação digital de tokens JWT com algoritmo HS256.
-* **helmet (v8.2)**: Configuração de cabeçalhos de segurança HTTP contra vulnerabilidades comuns (XSS, Clickjacking, Sniffing).
-* **cors (v2.8)**: Restrição rigorosa de Cross-Origin Resource Sharing.
-* **express-rate-limit (v8.5)**: Mitigação contra ataques de negação de serviço (DoS) e força bruta em endpoints de autenticação.
+##### Segurança & Criptografia (Baseline CIS Controls IG1 & OWASP ASVS L1)
+* **argon2 (v0.45)**: Padrão-ouro recomendado pela OWASP (Argon2id) com custo de memória (64MB), tempo (3 iterações) e paralelismo (4 threads) contra ataques acelerados por GPU/ASIC.
+* **bcryptjs (v2.4)**: Suporte a hashes legados com motor de verificação híbrido e migração transparente (*auto-rehash*) no login.
+* **jsonwebtoken (v9.0)**: Assinatura e verificação digital com algoritmo fixo (*algorithm pinning* `HS256`), ciclo de vida restrito e suporte a revogação de tokens.
+* **crypto (Node.js nativo)**: Comparações em tempo constante (`timingSafeEqual`) com digests SHA-256 para neutralização de *timing side-channel attacks*.
+* **helmet (v8.2)**: Cabeçalhos HTTP avançados com HSTS de 1 ano (`maxAge: 31536000`), `noSniff` e proteção contra clickjacking.
+* **cors (v2.8)**: Whitelisting estrito com expressão regular ancorada para prevenir ataques de bypass de origem.
+* **express-rate-limit (v8.5)**: Mitigação de DoS e bloqueio progressivo de contas após tentativas excessivas de login.
+* **Módulos Corporativos Próprios**:
+  - `src/utils/security.js`: Motor de criptografia, mitigação de enumeração de usuários, bloqueio de contas e sanitização contra XSS.
+  - `src/utils/auditLogger.js`: Trilha forense estruturada em JSON com ofuscação automática de credenciais e PII.
 
 ##### Documentação & Testes
 * **swagger-jsdoc (v6.3) & swagger-ui-express (v5.0)**: Geração e renderização interativa da especificação OpenAPI 3.0 no endpoint `/api-docs`.
@@ -117,6 +123,9 @@ erDiagram
     messages ||--o{ reports : "recebe denúncia"
     users ||--o{ reports : "denuncia"
     users ||--o{ feedbacks : "envia sugestão"
+    users ||--o{ notifications : "recebe notificação"
+    users ||--o{ direct_conversations : "inicia (user1)"
+    users ||--o{ direct_conversations : "recebe (user2)"
 
     users {
         uuid id PK
@@ -154,6 +163,27 @@ erDiagram
         uuid user_id FK
         text content
         text image_url
+        datetime created_at
+    }
+
+    direct_conversations {
+        uuid id PK
+        uuid user1_id FK
+        uuid user2_id FK
+        text last_message
+        datetime last_message_at
+        datetime created_at
+    }
+
+    notifications {
+        uuid id PK
+        uuid user_id FK
+        string type "system | message | invite | reaction | info"
+        string title
+        text content
+        string link
+        boolean read
+        jsonb data
         datetime created_at
     }
 
@@ -200,6 +230,29 @@ Todas as requisições privadas exigem o cabeçalho HTTP:
 ```http
 Authorization: Bearer <SEU_TOKEN_JWT>
 ```
+
+##### Endurecimento de Segurança — Baseline CIS Controls IG1 & OWASP ASVS L1
+O backend implementa um conjunto rigoroso de controles de cibersegurança:
+
+1. **Hashing de Senhas com Argon2id (Padrão OWASP)**:
+   - Configuração de alta resistência contra supercomputadores e GPUs: `type: argon2id`, `memoryCost: 65536` (64 MB), `timeCost: 3`, `parallelism: 4`.
+   - **Motor Híbrido Retrocompatível**: Usuários antigos com hashes Bcrypt continuam autenticando normalmente e seus registros sofrem *upgrade* transparente automático para Argon2id no primeiro login com sucesso (*auto-rehash*).
+2. **Mitigação de Enumeração de Usuários (Timing Attacks)**:
+   - Quando um e-mail inexistente tenta login, o servidor computa uma verificação contra um *Dummy Hash* pré-calculado (`DUMMY_ARGON2_HASH`), equalizando o tempo de resposta em relação a um usuário existente e impedindo que atacantes descubram e-mails cadastrados medindo a latência da requisição.
+3. **Comparação de Segredos em Tempo Constante**:
+   - A autenticação administrativa em `/api/admin/auth` utiliza `crypto.timingSafeEqual` sobre digests SHA-256 padronizados de 32 bytes, eliminando ataques de temporização de strings.
+4. **Proteção contra Força Bruta & Bloqueio Progressivo de Contas (CIS Control 5.3)**:
+   - Além do rate limit de rede por IP, contas que acumularem **5 tentativas consecutivas de senha incorreta** no mesmo e-mail são bloqueadas temporariamente por **15 minutos** com resposta `429 Too Many Requests`.
+5. **Revogação Instantânea de Sessões & Tokens (CIS Control 6.1)**:
+   - Na exclusão de perfil ou encerramento de sessão, um carimbo de data/hora invalida em tempo real qualquer token JWT emitido antes da revogação, mesmo dentro de sua janela de expiração original.
+6. **Higienização de Entradas & Defesa contra Stored XSS (CIS Control 10.3 & 16.11)**:
+   - Todas as mensagens, buscas e nomes de salas passam pela função `sanitizeText` em `src/utils/security.js`, que neutraliza scripts embutidos, tags `<script>`, `<iframe>` e handlers inline (`onerror`, `onload`).
+7. **Trilha Forense de Auditoria Estruturada (CIS Control 8.2 & 8.5)**:
+   - Módulo `src/utils/auditLogger.js` registra formalmente eventos de login, bloqueios, exclusões e escalonamentos administrativos com ofuscação automática de credenciais e tokens.
+8. **Blindagem de Rede, CORS Estrito e HSTS (CIS Control 4.1 & 13.4)**:
+   - CORS com regex estrita ancorada (`isAllowedOrigin`) para impedir bypasses com subdomínios `localhost`.
+   - HSTS de 1 ano (`maxAge: 31536000`, `includeSubDomains: true`, `preload: true`).
+   - Rate limit global para a API REST (`600 reqs/5min`) e limite de payload JSON reduzido de 50MB para **10MB** para mitigar exaustão de memória (OOM DoS).
 
 ##### Supabase RLS Desativado por Design
 Por decisão arquitetural explicada no plano de cibersegurança:
@@ -257,6 +310,11 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 | `receive_message` | Objeto completo da mensagem persistida | Entrega a nova mensagem com autor, timestamp e URL de anexo a todos os clientes da sala. |
 | `message_edited` | `{ messageId, message }` | Notifica que o texto de uma mensagem foi editado. |
 | `message_deleted` | `{ messageId }` | Informa a remoção de uma mensagem para atualização da interface. |
+| `room_updated` | `{ id, name, description }` | Notifica a todos os membros que detalhes da sala foram alterados pelo dono/admin. |
+| `member_role_updated` | `{ roomId, userId, role }` | Notifica promoção ou rebaixamento de cargo de um membro da sala (`moderator`/`user`). |
+| `member_kicked` | `{ roomId, userId, reason }` | Notifica a expulsão de um integrante para remoção imediata da listagem de membros. |
+| `ownership_transferred` | `{ roomId, oldOwnerId, newOwnerId }` | Transfere a posse e liderança da sala em tempo real. |
+| `kicked_from_room` | `{ roomId, reason }` | Enviado diretamente ao socket do usuário expulso para notificação e redirecionamento. |
 | `rate_limit_error` | `{ error }` | Alerta disparado individualmente para o socket que exceder 1 msg/500ms. |
 | `message_error` | `{ error }` | Notifica falhas de conexão ou persistência durante a gravação. |
 
@@ -283,9 +341,13 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 | GET | `/rooms` | Bearer Token | Lista todas as salas existentes com contagem dinâmica `members_count`. |
 | POST | `/rooms` | Bearer Token | Cria nova sala, define o criador como owner e registra na tabela `room_members`. |
 | GET | `/rooms/:id` | Bearer Token | Retorna detalhes da sala, membros ativos e perfil do requisitante (`is_member`, `current_user_role`). |
+| PUT | `/rooms/:id` | Bearer Token / Owner | Atualiza título e descrição da sala (restrito ao criador/dono ou administrador). |
 | DELETE | `/rooms/:id` | Bearer Token / Admin | Apaga a sala (permitido ao criador original ou a administradores). |
 | POST | `/rooms/:id/join` | Bearer Token | Inscreve o usuário na lista de membros da sala (`role: 'user'`). |
 | GET | `/rooms/:id/members` | Bearer Token | Lista todos os integrantes registrados na sala com papéis e data de adesão. |
+| PATCH | `/rooms/:roomId/members/:userId/role` | Bearer Token / Owner | Promove ou rebaixa membro da sala (`role: 'moderator'` ou `'user'`). |
+| DELETE | `/rooms/:roomId/members/:userId` | Bearer Token / Mod / Owner | Expulsa membro da sala (kick hierárquico: dono expulsa qualquer membro; moderador expulsa membros comuns). |
+| POST | `/rooms/:id/transfer-ownership` | Bearer Token / Owner | Transfere atomicamente a titularidade e posse da sala para outro membro. |
 
 ##### Módulo: Mensagens & Histórico (`/api`)
 | Método | Endpoint | Proteção | Descrição |
@@ -293,7 +355,17 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 | GET | `/rooms/:roomId/messages` | Bearer Token | Retorna o histórico de mensagens da sala ordenado cronologicamente (`created_at ASC`). |
 | GET | `/rooms/:roomId/messages/search` | Bearer Token | Pesquisa mensagens pelo query param `?q=termo` (case-insensitive). |
 | POST | `/rooms/:roomId/messages` | Bearer Token | Envia mensagem com texto e/ou anexo de imagem via HTTP REST. |
-| DELETE | `/messages/:id` | Bearer Token / Admin | Remove a mensagem (autor ou administrador). |
+| DELETE | `/messages/:id` | Bearer Token / Mod / Owner / Admin | Exclusão hierárquica: autor (até 24h), moderador da sala (apenas mensagens de membros regulares), dono da sala (qualquer mensagem) ou administrador global. |
+
+##### Módulo: Notificações em Tempo Real (`/api/notifications`)
+| Método | Endpoint | Proteção | Descrição |
+| ------ | ------ | ------ | ------ |
+| GET | `/notifications` | Bearer Token | Lista as notificações do usuário autenticado (com semente amigável no primeiro acesso). |
+| POST | `/notifications` | Bearer Token | Cria uma notificação programática ou broadcastada. |
+| PATCH | `/notifications/:id/read` | Bearer Token | Marca uma notificação individual como lida (`read: true`). |
+| PATCH | `/notifications/read-all` | Bearer Token | Marca todas as notificações do usuário como lidas em lote. |
+| DELETE | `/notifications/:id` | Bearer Token | Exclui uma notificação específica. |
+| DELETE | `/notifications/all` | Bearer Token | Limpa todo o histórico de notificações do usuário. |
 
 ##### Módulo: Moderação & Feedbacks (`/api`)
 | Método | Endpoint | Proteção | Descrição |
@@ -487,11 +559,12 @@ npm test
 * Os rate limiters (`express-rate-limit`) são desativados automaticamente em testes (`skip: () => process.env.NODE_ENV === 'test'`) para permitir execução maciça sem falsos positivos.
 * O helper `tests/helpers.js` recria as tabelas do zero de forma atômica (`sequelize.sync({ force: true })`) antes de cada bateria, garantindo isolamento total entre os testes.
 
-##### Escopo Coberto:
-1. **Modelos**: Validação de constraints, integridade de campos, tipos UUID e chaves estrangeiras (`models.test.js`).
-2. **Middlewares**: Comportamento na ausência de headers, tokens com assinatura corrompida e rejeição de usuários comuns em rotas administrativas (`authMiddleware.test.js`).
-3. **Controladores & Serviços**: Validação de hashing de senha com salt, rejeição de e-mails duplicados e proteção de mensagens/salas contra exclusão por terceiros (`usuario.test.js`, `room.test.js`, `message.test.js`).
-4. **Fluxos de Ponta a Ponta (E2E)**: Simulação completa: Registro ➔ Login ➔ Criação de Sala ➔ Adesão ➔ Envio de Mensagem ➔ Busca Textual ➔ Denúncia ➔ Resolução pelo Admin (`e2e-flow.test.js`).
+##### Escopo Coberto (13 Suítes & 109 Testes Automatizados):
+1. **Segurança & Criptografia (CIS Controls IG1 & OWASP ASVS)**: Hashing Argon2id, motor híbrido com upgrade transparente de Bcrypt, equalização temporal contra enumeração (*Dummy Hash*), comparações em tempo constante (`safeTimingCompare`), algoritmo fixo JWT `HS256`, revogação instantânea de tokens, bloqueio progressivo contra força bruta, sanitização contra XSS e ofuscação de logs forenses (`security.test.js`).
+2. **Modelos**: Validação de constraints, integridade de campos, tipos UUID e chaves estrangeiras (`models.test.js`).
+3. **Middlewares**: Comportamento na ausência de headers, tokens com assinatura corrompida e rejeição de usuários comuns em rotas administrativas (`authMiddleware.test.js`).
+4. **Controladores & Serviços**: Validação de hashing de senha com salt, rejeição de e-mails duplicados e proteção de mensagens/salas contra exclusão por terceiros (`usuario.test.js`, `room.test.js`, `message.test.js`, `directs.test.js`, `favorites.test.js`, `feedback.test.js`, `report.test.js`).
+5. **Fluxos de Ponta a Ponta (E2E)**: Simulação completa: Registro ➔ Login ➔ Criação de Sala ➔ Adesão ➔ Envio de Mensagem ➔ Busca Textual ➔ Denúncia ➔ Resolução pelo Admin (`e2e-flow.test.js`).
 
 ---
 
@@ -542,6 +615,45 @@ No Swagger UI é possível autenticar interativamente através do botão **Autho
 
 ##### 2. Portal Mintlify
 Documentação completa de design system, arquitetura de sistemas, especificações de WebSockets e referência OpenAPI detalhada localizada na pasta `docs/` do repositório, pronta para deploy na plataforma Mintlify.
+
+---
+
+#### 15. Roadmap & Próximos Passos (Futuras Implementações)
+
+Com a arquitetura base, o motor em tempo real e o endurecimento **CIS Controls IG1 & OWASP ASVS** consolidados, os próximos saltos de maturidade técnica do backend contemplam:
+
+##### 15.1. Sistema Avançado de Histórico & Paginação Baseada em Cursor (Cursor-Based Pagination)
+* **Paginação por Cursor (`before` / `since` / `limit`)**:
+  - Substituição de paginações convencionais por `OFFSET` (que sofrem degradação $O(N)$ em tabelas com milhões de registros) por busca indexada em árvore B-Tree sobre `(room_id, created_at, id)`.
+  - Suporte a rolagem infinita contínua (*infinite scroll*) no frontend com carregamento instantâneo de fatias de 30 a 50 mensagens.
+* **Filtros Temporais & Agrupamento Semântico**:
+  - Filtros avançados na API: `GET /api/rooms/:roomId/messages?from=2026-01-01&to=2026-01-31`.
+  - Agrupamento nativo por calendário e exportação de transcrições de salas em formatos estruturados (`.json`, `.txt`).
+* **Cache L2 de Mensagens Recentes**:
+  - Armazenamento em memória (Redis) das últimas 100 mensagens de salas ativas para entrega em sub-milissegundos na entrada de novos participantes.
+
+##### 15.2. Criptografia Ponta-a-Ponta (E2EE) para Mensagens Diretas (Directs 1x1)
+* **Arquitetura de Chaves com Web Crypto API (`SubtleCrypto`)**:
+  - Geração de par de chaves assimétricas **ECDH (Curva P-256 ou X25519)** no dispositivo do usuário durante o cadastro.
+  - O backend armazena apenas a **Chave Pública** do usuário em seu perfil.
+  - Na abertura de um chat direto, os clientes derivam um segredo compartilhado (*shared secret*) via troca Diffie-Hellman e cifram o conteúdo com **AES-GCM de 256 bits**.
+  - O backend e o banco de dados armazenam e transitam exclusivamente o *ciphertext* cifrado e o vetor de inicialização (*IV*), tornando impossível a leitura por terceiros ou administradores.
+
+##### 15.3. Armazenamento de Arquivos em Object Storage (S3 / Cloudflare R2 / Supabase Storage)
+* **Upload Direto via URLs Pré-Assinadas (*Presigned URLs*)**:
+  - Eliminação de payloads de imagem em Base64 no corpo das mensagens HTTP/Socket, reduzindo o tráfego de rede e o uso de memória do Node.js em até 70%.
+  - Endpoint `POST /api/media/presigned-url` para emissão de links seguros temporários com upload direto do cliente para buckets S3/R2.
+  - **Validação Estrita de Magic Bytes**: Checagem de cabeçalhos binários reais dos arquivos para mitigar ataques de camuflagem de executáveis maliciosos em extensões de imagem.
+
+##### 15.4. Presença Distribuída & Escalabilidade Horizontal com Redis Adapter
+* **Clusterização de WebSockets (`@socket.io/redis-adapter`)**:
+  - Desacoplamento da memória local do processo (`roomPresence` e `globalOnlineUsers`) para um barramento Pub/Sub no Redis.
+  - Capacidade de escalar o backend horizontalmente em múltiplos containers ou nós Kubernetes mantendo broadcast de eventos e presença sincronizada globalmente.
+
+##### 15.5. Notificações Push Nativas (WebPush / FCM)
+* **Entrega em Segundo Plano**:
+  - Registro de *Service Workers* e subscrições WebPush (`web-push` RFC 8291) com chaves VAPID.
+  - Disparo de notificações na área de trabalho e dispositivos móveis quando o usuário receber mensagens diretas ou menções (@usuario) com o navegador em segundo plano ou fechado.
 
 ---
 

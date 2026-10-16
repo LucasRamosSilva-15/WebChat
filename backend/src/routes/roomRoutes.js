@@ -136,4 +136,9 @@ router.post('/:id/join', authMiddleware, RoomController.join);
  */
 router.get('/:id/members', authMiddleware, RoomController.getMembers);
 
+router.put('/:id', authMiddleware, RoomController.update);
+router.patch('/:roomId/members/:userId/role', authMiddleware, RoomController.updateMemberRole);
+router.delete('/:roomId/members/:userId', authMiddleware, RoomController.kickMember);
+router.post('/:id/transfer-ownership', authMiddleware, RoomController.transferOwnership);
+
 module.exports = router;

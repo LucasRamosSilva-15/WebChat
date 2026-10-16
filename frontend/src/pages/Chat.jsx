@@ -9,8 +9,6 @@ import ChatSidebar from '../components/ChatSidebar';
 import MembersSidebar from '../components/MembersSidebar';
 import UserAvatar from '../components/UserAvatar';
 import SkeuoLoading from '../components/SkeuoLoading';
-// Código de criptografia
-// Provisório! deve ser mudado para JWT e bcrypt no futuro
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
 const MAX_MESSAGE_LENGTH = 1000;
 
@@ -45,7 +43,7 @@ const formatMessageTime = (timeStr) => {
     return timeStr;
 };
 
-const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'grande', visualStyle, roomMembers }) => {
+const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onDeleteMessage, onEditClick, onToggleLike, currentUserId, mockRoles, onReportClick, searchTerm, isCurrentSearch, innerRef, openMenuId, setOpenMenuId, bubbleFormat = 'grande', visualStyle, roomMembers, currentUserRole }) => {
     const msgTime = formatMessageTime(msg.time);
 
     const senderName =
@@ -59,11 +57,20 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         msg.userName ||
         msg.user_name ||
         msg.username ||
-        (Array.isArray(roomMembers) ? roomMembers.find(m => m.id === (msg.userId || msg.user_id))?.name : null) ||
+        (Array.isArray(roomMembers) ? roomMembers.find(m => (m.id === (msg.userId || msg.user_id) || m.user_id === (msg.userId || msg.user_id)))?.name : null) ||
         msg.sender ||
         'Usuário';
 
     const senderInitial = senderName.charAt(0).toUpperCase();
+
+    const authorId = msg.userId || msg.user_id || (msg.isMe ? currentUserId : null);
+    const authorMember = Array.isArray(roomMembers) ? roomMembers.find(m => (m.id === authorId || m.user_id === authorId)) : null;
+    let authorRole = authorMember?.role;
+    if (!authorRole) {
+        if (mockRoles && mockRoles[senderName] === 'Dono') authorRole = 'owner';
+        else if (mockRoles && mockRoles[senderName] === 'Moderador') authorRole = 'moderator';
+        else authorRole = 'user';
+    }
 
     let canDelete = false;
     if (msg.isMe && msg.time && msg.messageId) {
@@ -71,6 +78,13 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         const now = new Date();
         const diffHours = (now - msgDate) / (1000 * 60 * 60);
         if (diffHours < 24) canDelete = true;
+    }
+    if (currentUserRole === 'owner' || currentUserRole === 'admin') {
+        canDelete = true;
+    } else if (currentUserRole === 'moderator') {
+        if (authorRole !== 'owner' && authorRole !== 'admin') {
+            canDelete = true;
+        }
     }
 
     const isMatch = searchTerm && msg.text && msg.text.toLowerCase().includes(searchTerm);
@@ -274,12 +288,12 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     <div className="flex flex-col items-start min-w-0">
                         <span onClick={() => onAvatarClick({ ...msg, sender: senderName })} className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5 cursor-pointer hover:underline">
                             {senderName}
-                            {mockRoles && mockRoles[senderName] === 'Dono' && (
+                            {(authorRole === 'owner' || (mockRoles && mockRoles[senderName] === 'Dono')) && (
                                 <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
                                     <FaCrown size={8} /> DONO
                                 </span>
                             )}
-                            {mockRoles && mockRoles[senderName] === 'Moderador' && (
+                            {(authorRole === 'moderator' || (mockRoles && mockRoles[senderName] === 'Moderador')) && (
                                 <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-blue-200 bg-gradient-to-b from-blue-200 to-blue-100 text-blue-700">
                                     <FaShieldAlt size={8} /> MOD
                                 </span>
@@ -319,6 +333,20 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                                     >
                                         <FaFlag size={10} className="drop-shadow-xs" /> Denunciar
                                     </button>
+                                    {canDelete && (
+                                        <>
+                                            <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                            <button
+                                                onClick={() => {
+                                                    setOpenMenuId(null);
+                                                    onDeleteMessage(msg.messageId);
+                                                }}
+                                                className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 first:rounded-t-xl last:rounded-b-xl"
+                                            >
+                                                <FaTrash size={10} className="drop-shadow-xs" /> Apagar
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -359,12 +387,12 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
             <div className="flex flex-col max-w-[80%] items-start group/msg relative z-1 hover:z-50">
                 <span onClick={() => onAvatarClick({ ...msg, sender: senderName })} className="font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] text-[11.5px] ml-1 cursor-pointer hover:underline">
                     {senderName}
-                    {mockRoles && mockRoles[senderName] === 'Dono' && (
+                    {(authorRole === 'owner' || (mockRoles && mockRoles[senderName] === 'Dono')) && (
                         <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
                             <FaCrown size={8} /> DONO
                         </span>
                     )}
-                    {mockRoles && mockRoles[senderName] === 'Moderador' && (
+                    {(authorRole === 'moderator' || (mockRoles && mockRoles[senderName] === 'Moderador')) && (
                         <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-blue-200 bg-gradient-to-b from-blue-200 to-blue-100 text-blue-700">
                             <FaShieldAlt size={8} /> MOD
                         </span>
@@ -403,6 +431,20 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                             >
                                 <FaFlag size={10} className="drop-shadow-xs" /> Denunciar
                             </button>
+                            {canDelete && (
+                                <>
+                                    <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                    <button
+                                        onClick={() => {
+                                            setOpenMenuId(null);
+                                            onDeleteMessage(msg.messageId);
+                                        }}
+                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 first:rounded-t-xl last:rounded-b-xl"
+                                    >
+                                        <FaTrash size={10} className="drop-shadow-xs" /> Apagar
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                     {msg.image && (
@@ -581,6 +623,15 @@ const Chat = () => {
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [pinnedMessage, setPinnedMessage] = useState({ text: "Bem-vindos! Lembrem-se de manter o respeito e ler as regras da sala.", sender: "Admin" });
     const [currentUserId, setCurrentUserId] = useState(() => localStorage.getItem('chat_uniqueUserId') || 'user_' + Math.random().toString(36).substr(2, 9));
+    const [roomMembers, setRoomMembers] = useState([]);
+    const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
+    const [editRoomName, setEditRoomName] = useState("");
+    const [editRoomDescription, setEditRoomDescription] = useState("");
+    const [savingRoom, setSavingRoom] = useState(false);
+
+    const currentUserRole = (currentRoom && (currentRoom.created_by === currentUserId || currentRoom.owner_id === currentUserId))
+        ? 'owner'
+        : (roomMembers.find(m => (m.id === currentUserId || m.user_id === currentUserId))?.role || 'user');
     const fileInputRef = useRef(null);
     const chatContainerRef = useRef(null);
 
@@ -640,8 +691,13 @@ const Chat = () => {
         });
     };
 
-    const deleteMessage = (messageId) => {
+    const deleteMessage = async (messageId) => {
         socket.emit("delete_message", { room, messageId });
+        try {
+            await apiRequest(`/messages/${messageId}`, { method: 'DELETE' });
+        } catch (e) {
+            console.error("Erro ao apagar mensagem via API:", e.message);
+        }
         setMessages(prev => {
             const updated = prev.filter(m => m.messageId !== messageId);
             try {
@@ -752,6 +808,14 @@ const Chat = () => {
             } catch (err) {
                 console.error("Erro ao carregar detalhes da sala:", err);
                 setCurrentRoom({ name: room });
+            }
+
+            try {
+                const membersData = await apiRequest(`/rooms/${room}/members`);
+                const safeMembers = Array.isArray(membersData) ? membersData : (membersData?.members || []);
+                setRoomMembers(safeMembers);
+            } catch (err) {
+                console.error("Erro ao carregar membros da sala:", err);
             }
 
             try {
@@ -869,8 +933,6 @@ const Chat = () => {
                 const updated = prev.map(m => {
                     if (m.messageId === data.messageId) {
                         try {
-                            // Código de criptografia
-                            // Provisório! deve ser mudado para JWT e bcrypt no futuro
                             const bytes = CryptoJS.AES.decrypt(data.message, SECRET_KEY);
                             const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
                             let text = decryptedString;
@@ -975,6 +1037,41 @@ const Chat = () => {
             alert(`Aviso: ${data.error}`);
         });
 
+        socket.on("kicked_from_room", (data) => {
+            if (data?.roomId === room) {
+                alert(data.reason || "Você foi expulso desta sala.");
+                navigate('/rooms');
+            }
+        });
+
+        socket.on("room_updated", (data) => {
+            if (data && (data.id === room || data.id === currentRoom?.id)) {
+                setCurrentRoom(prev => ({ ...prev, ...data }));
+            }
+        });
+
+        socket.on("ownership_transferred", (data) => {
+            if (data?.roomId === room) {
+                setCurrentRoom(prev => ({ ...prev, created_by: data.newOwnerId, owner_id: data.newOwnerId }));
+            }
+        });
+
+        socket.on("member_role_updated", (data) => {
+            if (data?.roomId === room) {
+                setRoomMembers(prev => prev.map(m => {
+                    const mid = m.id || m.user_id;
+                    if (mid === data.userId) return { ...m, role: data.role };
+                    return m;
+                }));
+            }
+        });
+
+        socket.on("member_kicked", (data) => {
+            if (data?.roomId === room) {
+                setRoomMembers(prev => prev.filter(m => (m.id !== data.userId && m.user_id !== data.userId)));
+            }
+        });
+
         return () => {
             socket.emit("leaveRoom", { roomId: room, userId: localStorage.getItem('chat_uniqueUserId') || currentUserId });
             socket.off("roomPresenceUpdated");
@@ -986,6 +1083,11 @@ const Chat = () => {
             socket.off("message_deleted");
             socket.off("message_edited");
             socket.off("like_toggled");
+            socket.off("kicked_from_room");
+            socket.off("room_updated");
+            socket.off("ownership_transferred");
+            socket.off("member_role_updated");
+            socket.off("member_kicked");
         };
     }, [room, currentUserId]);
 
@@ -1062,6 +1164,28 @@ const Chat = () => {
         } catch (error) {
             console.error("Erro ao excluir sala:", error);
             alert("Não foi possível excluir a sala: " + (error.message || "Erro desconhecido"));
+        }
+    };
+
+    const handleSaveRoom = async (e) => {
+        e.preventDefault();
+        if (!editRoomName.trim()) return;
+        setSavingRoom(true);
+        try {
+            const updated = await apiRequest(`/rooms/${room}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name: editRoomName.trim(),
+                    description: editRoomDescription.trim()
+                })
+            });
+            setCurrentRoom(prev => ({ ...prev, ...updated }));
+            setIsEditRoomModalOpen(false);
+        } catch (error) {
+            console.error("Erro ao atualizar sala:", error);
+            alert("Não foi possível atualizar a sala: " + (error.message || "Erro desconhecido"));
+        } finally {
+            setSavingRoom(false);
         }
     };
 
@@ -1295,14 +1419,27 @@ const Chat = () => {
                             >
                                 <FaSignOutAlt size={14} className="text-gray-500 hover:text-rose-500" />
                             </button>
-                            {currentRoom && currentRoom.created_by === currentUserId && (
-                                <button
-                                    onClick={handleDeleteRoom}
-                                    className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
-                                    title="Excluir Sala (Apenas Dono)"
-                                >
-                                    <FaTrash size={14} className="text-rose-500" />
-                                </button>
+                            {currentRoom && (currentRoom.created_by === currentUserId || currentUserRole === 'owner') && (
+                                <>
+                                    <button
+                                        onClick={() => {
+                                            setEditRoomName(currentRoom.name || '');
+                                            setEditRoomDescription(currentRoom.description || '');
+                                            setIsEditRoomModalOpen(true);
+                                        }}
+                                        className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all text-sky-600 dark:text-sky-400"
+                                        title="Editar Sala (Apenas Dono)"
+                                    >
+                                        <FaPencilAlt size={13} />
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteRoom}
+                                        className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                                        title="Excluir Sala (Apenas Dono)"
+                                    >
+                                        <FaTrash size={14} className="text-rose-500" />
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -1407,7 +1544,8 @@ const Chat = () => {
                                         setOpenMenuId={setOpenMenuId}
                                         bubbleFormat={bubbleFormat}
                                         visualStyle={bubbleFormat}
-                                        roomMembers={onlinePresence.users}
+                                        roomMembers={roomMembers.length > 0 ? roomMembers : onlinePresence.users}
+                                        currentUserRole={currentUserRole}
                                     />
                                 </div>
                             );
@@ -1492,8 +1630,67 @@ const Chat = () => {
                     onlineCount={onlinePresence.count}
                     isMobileOpen={isMobileMembersOpen}
                     onClose={() => setIsMobileMembersOpen(false)}
+                    onMembersChange={(updated) => setRoomMembers(updated)}
+                    socket={socket}
                 />
             </div>
+
+            {isEditRoomModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in-up">
+                    <div className="skeuo-panel p-6 w-full max-w-md border border-black/10 dark:border-white/10 shadow-2xl bg-white dark:bg-slate-900 rounded-2xl">
+                        <div className="flex items-center justify-between pb-3 mb-4 border-b border-black/10 dark:border-white/10">
+                            <h4 className="text-base font-bold text-[#1d1d1f] dark:text-slate-100 flex items-center gap-2">
+                                <FaPencilAlt size={14} className="text-[#0071e3]" /> Editar Sala
+                            </h4>
+                            <button
+                                onClick={() => setIsEditRoomModalOpen(false)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-full cursor-pointer"
+                            >
+                                <FaTimes size={16} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSaveRoom} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Nome da Sala</label>
+                                <input
+                                    type="text"
+                                    value={editRoomName}
+                                    onChange={(e) => setEditRoomName(e.target.value)}
+                                    required
+                                    className="skeuo-input w-full px-3 py-2 text-sm rounded-xl"
+                                    placeholder="Nome da sala"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Descrição</label>
+                                <textarea
+                                    value={editRoomDescription}
+                                    onChange={(e) => setEditRoomDescription(e.target.value)}
+                                    rows={3}
+                                    className="skeuo-input w-full px-3 py-2 text-sm rounded-xl resize-none"
+                                    placeholder="Descrição da sala..."
+                                />
+                            </div>
+                            <div className="flex gap-2 justify-end pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditRoomModalOpen(false)}
+                                    className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={savingRoom || !editRoomName.trim()}
+                                    className="skeuo-btn px-4 py-2 text-xs font-semibold text-white bg-gradient-to-b from-sky-400 to-sky-600 rounded-xl cursor-pointer disabled:opacity-50"
+                                >
+                                    {savingRoom ? "Salvando..." : "Salvar Alterações"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {privateInvite && (
                 <div className="fixed bottom-6 right-6 z-[200] skeuo-panel p-4 animate-fade-in-up border-l-4 border-[#0071e3] shadow-2xl w-80">

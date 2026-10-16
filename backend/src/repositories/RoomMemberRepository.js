@@ -12,6 +12,18 @@ class RoomMemberRepository {
     return await RoomMember.findOne({ where: { room_id: roomId, user_id: userId } });
   }
 
+  async updateRole(roomId, userId, role) {
+    const member = await this.findByRoomAndUser(roomId, userId);
+    if (!member) return null;
+    return await member.update({ role });
+  }
+
+  async removeMember(roomId, userId) {
+    return await RoomMember.destroy({
+      where: { room_id: roomId, user_id: userId }
+    });
+  }
+
   async countMembers(roomId) {
     return await RoomMember.count({ where: { room_id: roomId } });
   }

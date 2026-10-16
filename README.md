@@ -149,28 +149,26 @@ npm run test:backend && npm run test:frontend
 ## Funcionalidades
 
 * [x] Página inicial (Home)
-* [x] Login e Cadastro de contas
+* [x] Login e Cadastro de contas com autenticação JWT e senhas criptografadas com bcrypt
 * [x] Listagem e favoritação de salas
-* [x] Chat em tempo real (envio e recebimento de mensagens)
-* [x] Busca avançada dentro do chat
-* [x] Customização de perfil do usuário (nome de exibição e recado)
-* [x] Temas visuais: Modo Claro e Modo Escuro
+* [x] Chat em tempo real (envio e recebimento de mensagens instantâneas via WebSockets)
+* [x] Busca avançada dentro do chat (filtro em tempo real e navegação entre resultados)
+* [x] Customização de perfil do usuário (avatar, nome de exibição e recado/status)
+* [x] Temas visuais: Modo Claro e Modo Escuro com estética Skeuomórfica / Web 2.0 Gloss
 * [x] Layout responsivo e menus modais
-* [x] Envio de imagens e armazenamento em nuvem (Storage)
-* [X] Refinamentos na persistência e histórico longo de mensagens
-* [X] Testes automatizados
-* [ ] Documentação
-* [ ] Sistema de criptografia de email, senhas, mensagens e etc
-* [ ] Otimizações no frontend, backend e banco de dados
-* [ ] Aumentar a segurança do sistema e do banco de dados
-* [x] Página de Feedback
-* [x] Administração do sistema (painel de controle) (está quase completo)
-* [ ] Sistema de administração das salas (moderação avançada, cargos, etc) (está em boa parte implementado mas em incompleto ainda)
-* [ ] Sistema de amizades e mensagens privadas
-* [ ] Sistema de denúncias e bloqueios (está em boa parte implementado mas em incompleto ainda)
-* [ ] O Projeto está escalável? (para chat, servidor, banco de dados, etc)
-* [x] Página de suporte (só falta a parte do backend)
-* [ ] Adaptação para telas menores (como notebooks e celulares e etc)
+* [x] Envio de imagens e anexos com compressão no cliente
+* [x] Refinamentos na persistência e histórico de mensagens
+* [x] Testes automatizados (125 testes no backend com Jest/Supertest e 59 testes no frontend com Vitest)
+* [x] Documentação interativa da API (Swagger UI local/produção e Mintlify)
+* [x] Endurecimento de Segurança CIS Controls IG1 & OWASP ASVS (Rate Limiting rigoroso, Helmet com HSTS, Sanitização XSS, Auditoria de Segurança)
+* [x] Mensagens Diretas (Directs / Chat Privado) com histórico persistido e conversas individuais
+* [x] Central de Notificações em tempo real com contador de não-lidas e sincronização via WebSockets
+* [x] Sistema de Dono de Sala e Moderação Hierárquica (Promover/Rebaixar moderadores, Expulsar participantes, Transferir liderança da sala e Moderação de mensagens)
+* [x] Edição de dados da sala (nome e descrição) pelo Dono da Sala
+* [x] Sistema de denúncias (Reports) e feedback integrado
+* [x] Painel Administrativo centralizado (Admin Dashboard)
+* [ ] Histórico com paginação baseada em cursor (*Cursor-Based Pagination*) (Próximo passo)
+* [ ] Criptografia Ponta-a-Ponta (*E2EE*) com chaves assimétricas via Web Crypto API (Próximo passo)
 
 ## Estrutura do projeto
 
@@ -179,66 +177,95 @@ npm run test:backend && npm run test:frontend
 ├── backend/
 │   ├── src/
 │   │   ├── config/
-│   │   │   └── database.js
+│   │   │   └── database.js             # Conexão e pooling Sequelize / Supabase
 │   │   ├── controllers/
+│   │   │   ├── AuthController.js
+│   │   │   ├── DirectController.js
 │   │   │   ├── MessageController.js
+│   │   │   ├── NotificationController.js
 │   │   │   ├── RoomController.js
 │   │   │   └── ...
 │   │   ├── middleware/
-│   │   │   ├── auth.js
-│   │   │   └── adminAuth.js
+│   │   │   ├── auth.js                 # Validação JWT e identificação de usuário
+│   │   │   └── adminAuth.js            # Proteção de rotas administrativas
 │   │   ├── models/
 │   │   │   ├── User.js
 │   │   │   ├── Room.js
+│   │   │   ├── RoomMember.js
+│   │   │   ├── Message.js
+│   │   │   ├── DirectConversation.js
+│   │   │   ├── DirectMessage.js
+│   │   │   ├── Notification.js
 │   │   │   └── ...
 │   │   ├── repositories/
 │   │   │   ├── UserRepository.js
 │   │   │   ├── RoomRepository.js
-│   │   │   └── ...
+│   │   │   ├── RoomMemberRepository.js
+│   │   │   ├── MessageRepository.js
+│   │   │   ├── DirectRepository.js
+│   │   │   └── NotificationRepository.js
 │   │   ├── routes/
-│   │   │   ├── api.js
-│   │   │   ├── admin.js
-│   │   │   └── ...
-│   │   └── services/
-│   │       ├── UserService.js
-│   │       ├── RoomService.js
-│   │       └── ...
-│   ├── tests/
-│   │   │   ├── authMiddleware.test.js
-│   │   │   ├── chat.test.js
-│   │   │   └── ...
-│   │   ├── App.js
-│   │   ├── socket.js
-│   ├── server.js
+│   │   │   ├── api.js                  # Roteador central de APIs
+│   │   │   ├── admin.js                # Rotas do painel administrativo
+│   │   │   ├── roomRoutes.js           # Rotas de salas e moderação
+│   │   │   ├── directRoutes.js         # Mensagens diretas privadas
+│   │   │   └── notificationRoutes.js   # Notificações em tempo real
+│   │   ├── services/
+│   │   │   ├── UserService.js
+│   │   │   ├── RoomService.js          # Lógica de negócio, cargos e moderação
+│   │   │   ├── MessageService.js
+│   │   │   ├── DirectService.js
+│   │   │   └── NotificationService.js
+│   │   └── utils/
+│   │       ├── security.js             # Criptografia, JWT e sanitização XSS
+│   │       └── auditLogger.js          # Auditoria de segurança estruturada
+│   ├── tests/                          # 14 suítes e 125 testes Jest/Supertest
+│   │   ├── roomModeration.test.js
+│   │   ├── room.test.js
+│   │   ├── message.test.js
+│   │   ├── directs.test.js
+│   │   ├── authMiddleware.test.js
+│   │   └── ...
+│   ├── server.js                       # Servidor Express, WebSockets e Swagger
 │   ├── package.json
-│   └── .env
-├── docs/
+│   └── README.md                       # Documentação técnica profunda do backend
+├── docs/                               # Documentação técnica e Mintlify
 ├── frontend/
 │   ├── src/
-│   │   ├── assets/
+│   │   ├── assets/                     # SVGs, ícones e recursos visuais
 │   │   ├── components/
+│   │   │   ├── MembersSidebar.jsx      # Painel de membros e moderação tátil
+│   │   │   ├── ChatSidebar.jsx         # Lista de conversas e salas no chat
+│   │   │   ├── Navbar.jsx              # Barra superior e navegação
+│   │   │   ├── NotificationsDropdown.jsx # Dropdown de notificações em tempo real
+│   │   │   ├── UserAvatar.jsx          # Avatar com indicador de presença
+│   │   │   └── ...
+│   │   ├── context/
+│   │   │   └── NotificationContext.jsx # Estado global de notificações
 │   │   ├── pages/
-│   │   │   ├── Chat.jsx
 │   │   │   ├── Home.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Rooms.jsx
+│   │   │   ├── Chat.jsx                # Interface principal de conversação
+│   │   │   ├── Directs.jsx             # Mensagens diretas (1-a-1)
+│   │   │   ├── Rooms.jsx               # Catálogo e criação de salas
+│   │   │   ├── Admin.jsx               # Painel administrativo do sistema
+│   │   │   ├── Feedback.jsx            # Formulário de feedback e suporte
+│   │   │   ├── Settings.jsx            # Configurações do perfil
 │   │   │   └── ...
 │   │   ├── services/
-│   │   |   ├── api.js
+│   │   │   └── api.js                  # Cliente fetch autenticado
 │   │   ├── styles/
-│   │   │   ├── chat.css
-│   │   │   ├── skeuo.css
-│   │   │   └── ...
-│   │   │
-│   │   ├── tests/
+│   │   │   ├── skeuo.css               # Tokens de design Web 2.0 Gloss
+│   │   │   └── chat.css
+│   │   ├── tests/                      # 11 suítes e 59 testes Vitest
 │   │   │   ├── chat.test.jsx
-│   │   │   ├── ChatSidebar.test.jsx
+│   │   │   ├── Directs.test.jsx
+│   │   │   ├── MembersSidebar.test.jsx
 │   │   │   └── ...
-│   │   │
-│   │   ├── App.jsx
-│   │   ├── socket.js
-│   │   ├── webchat-components.css
-│   │   └── index.css
+│   │   ├── App.jsx                     # Rotas e layout principal
+│   │   ├── socket.js                   # Instância global do Socket.IO Client
+│   │   ├── main.jsx                    # Ponto de montagem React 19
+│   │   └── index.css                   # Tailwind 4 e estilos base
+│   ├── vite.config.js
 │   ├── package.json
 │   └── .env
 └── README.md
@@ -246,29 +273,25 @@ npm run test:backend && npm run test:frontend
 
 ## Status atual
 
-O projeto **SkyRipple** encontra-se em desenvolvimento ativo.
-O frontend já está bastante avançado, com a maioria das páginas construídas, responsividade implementada e a identidade visual skeuomórfica bem estruturada em modo claro e escuro. A estrutura base de WebSockets e comunicação em tempo real já ocorre com o backend.
-Ainda existem funcionalidades que estão sendo aprimoradas, como detalhes finais de moderação nas salas e otimizações gerais do Frontend, Backend, Banco de Dados, criação de novas páginas, testes automatizados e segurança.
+O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, estabilidade e conformidade arquitetural:
+* **Frontend**: Totalmente integrado via REST e WebSockets, contando com interface skeuomórfica refinada (Modo Claro/Escuro), chat em salas públicas e privadas, mensagens diretas (Directs), central de notificações em tempo real, painel administrativo e interface tátil de moderação de sala (promover/rebaixar, expulsar participantes e transferir dono).
+* **Backend**: Arquitetura profissional em camadas (Controllers, Services, Repositories e Models ORM com Sequelize e Supabase PostgreSQL), endurecimento de segurança baseado nos padrões **CIS Controls IG1 & OWASP ASVS**, logs estruturados de auditoria, suíte robusta com 125 testes automatizados aprovados e documentação Swagger 3.0 interativa.
 
-## link da documentação SWAGGER
+## Link da documentação Swagger
 
-<https://webchat-9vqr.onrender.com/api-docs/>
+* **Produção:** <https://webchat-9vqr.onrender.com/api-docs/>
+* **Local:** <http://localhost:3001/api-docs/>
 
-## link da documentação Mintlify
+## Link da documentação Mintlify
 
 <https://lucas-ramos.mintlify.site/guides/overview>
 
 ## Próximos passos
 
-* Finalizar e polir a integração total entre o backend, frontend e Supabase.
-* Melhorar a persistência, paginação e carregamento otimizado de mensagens antigas.
-* Refinamentos, melhorias e mudanças (não extremas) na identidade visual e layout.
-* Otimizar o Frontend, Backend e o Banco de dados.
-* Criar um sistema de administração do site (página do administrador com um panel de controle) e das salas
-* Criar novas páginas (como o Admin.jsx e Feedback.jsx)
-* Refinar a validação de dados em rotas do backend.
-* Adicionar testes automatizados
-* Capturar as telas finais e adicionar screenshots no README.
+* **Paginação por Cursor no Histórico**: Implementar parâmetros `before`/`since`/`limit` com índices B-Tree sobre mensagens para rolagem infinita escalável em salas com milhões de registros.
+* **Criptografia Ponta-a-Ponta (E2EE)**: Implementação de criptografia assimétrica ponta-a-ponta no cliente para canais privados (Directs) através da Web Crypto API.
+* **Mídias e Arquivos**: Suporte nativo a envio e pré-visualização de áudio gravado e documentos em anexo.
+* **Testes End-to-End (E2E)**: Criação de suíte de testes de ponta a ponta com Playwright automatizando a jornada completa do usuário.
 
 ## Diagrama ER
 
