@@ -109,7 +109,8 @@ class DirectService {
         text: msg.content || '',
         time: timeFormatted,
         isMe: msg.sender_id === userId,
-        image: msg.image_url || null
+        image: msg.image_url || null,
+        likes: []
       };
     });
   }

@@ -100,7 +100,7 @@ describe('Directs Page Tests', () => {
 
     expect(screen.getByText('Nova Conversa Direta')).toBeInTheDocument();
 
-    const nameInput = screen.getByPlaceholderText(/Ex: Carlos, Ana, Suporte.../i);
+    const nameInput = screen.getByPlaceholderText(/Digite um nome/i);
     fireEvent.change(nameInput, { target: { value: 'Beatriz' } });
 
     const iniciarBtn = screen.getByRole('button', { name: 'Iniciar' });
@@ -109,6 +109,30 @@ describe('Directs Page Tests', () => {
     await waitFor(() => {
       expect(screen.getAllByText('Beatriz').length).toBeGreaterThan(0);
       expect(screen.getByPlaceholderText(/Mensagem para Beatriz/i)).toBeInTheDocument();
+    });
+  });
+
+  it('permite selecionar um usuário sugerido no modal e iniciar conversa', async () => {
+    render(
+      <MemoryRouter initialEntries={['/directs']}>
+        <Directs />
+      </MemoryRouter>
+    );
+
+    const newBtn = screen.getByTitle('Nova Mensagem Direta');
+    fireEvent.click(newBtn);
+
+    expect(screen.getByText('Utilizadores sugeridos')).toBeInTheDocument();
+
+    const userBtn = screen.getByText('Ana Oliveira');
+    fireEvent.click(userBtn);
+
+    const iniciarBtn = screen.getByRole('button', { name: 'Iniciar' });
+    fireEvent.click(iniciarBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Ana Oliveira').length).toBeGreaterThan(0);
+      expect(screen.getByPlaceholderText(/Mensagem para Ana Oliveira/i)).toBeInTheDocument();
     });
   });
 
@@ -139,6 +163,43 @@ describe('Directs Page Tests', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText('Mariana Silva').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('permite curtir e descurtir uma mensagem na conversa direta', async () => {
+    render(
+      <MemoryRouter initialEntries={['/directs']}>
+        <Directs />
+      </MemoryRouter>
+    );
+
+    const conv = screen.getAllByText('Suporte SkyRipple')[0];
+    fireEvent.click(conv);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Curtir mensagem' })).toBeInTheDocument();
+    });
+
+    const likeBtn = screen.getByRole('button', { name: 'Curtir mensagem' });
+    expect(likeBtn).toHaveAttribute('title', 'Curtir');
+
+    fireEvent.click(likeBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(likeBtn).toHaveAttribute('title', 'Descurtir');
+    });
+
+    expect(socket.emit).toHaveBeenCalledWith('toggle_like', expect.objectContaining({
+      messageId: 'sys-start',
+      userId: 'lucas_123'
+    }));
+
+    fireEvent.click(likeBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText('1')).not.toBeInTheDocument();
+      expect(likeBtn).toHaveAttribute('title', 'Curtir');
     });
   });
 });

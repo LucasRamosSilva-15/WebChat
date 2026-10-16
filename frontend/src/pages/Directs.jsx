@@ -1,8 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FaEnvelope, FaPaperPlane, FaPlus, FaSearch, FaUser, FaTimes, FaCamera, FaBars, FaTrashAlt, FaCheck, FaComments } from 'react-icons/fa';
+import {
+    FaEnvelope,
+    FaPaperPlane,
+    FaPlus,
+    FaSearch,
+    FaTimes,
+    FaCamera,
+    FaBars,
+    FaTrashAlt,
+    FaTrash,
+    FaCheck,
+    FaComments,
+    FaStar,
+    FaHeart,
+    FaRegHeart,
+    FaEllipsisV,
+    FaChevronUp,
+    FaChevronDown,
+    FaCopy
+} from 'react-icons/fa';
 import ChatSidebar from '../components/ChatSidebar';
 import UserAvatar from '../components/UserAvatar';
+import NewDirectMessageModal from '../components/NewDirectMessageModal';
 import { socket } from '../socket';
 import { apiRequest } from '../services/api';
 
@@ -42,10 +62,23 @@ const Directs = () => {
     const [isNewConvModalOpen, setIsNewConvModalOpen] = useState(false);
     const [newContactName, setNewContactName] = useState('');
     const [registeredUsers, setRegisteredUsers] = useState([]);
+    const [isChatSearchOpen, setIsChatSearchOpen] = useState(false);
+    const [chatSearchTerm, setChatSearchTerm] = useState('');
+    const [chatSearchIndex, setChatSearchIndex] = useState(0);
+    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [openMenuId, setOpenMenuId] = useState(null);
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
 
-    const currentUserId = localStorage.getItem('chat_uniqueUserId') || 'user_local';
+    const [currentUserId] = useState(() => {
+        let uid = localStorage.getItem('chat_uniqueUserId');
+        if (!uid) {
+            uid = 'user_' + Math.random().toString(36).substring(2, 11);
+            try { localStorage.setItem('chat_uniqueUserId', uid); } catch {}
+        }
+        return uid;
+    });
     const currentUserDisplayName = localStorage.getItem('chat_displayName') || 'Eu';
 
     useEffect(() => {
@@ -139,7 +172,8 @@ const Directs = () => {
                     sender: selectedConv.name,
                     text: selectedConv.lastMessage || 'Conversa direta iniciada com sucesso.',
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    isMe: false
+                    isMe: false,
+                    likes: []
                 }
             ];
             setMessages(initialMsgs);
@@ -173,7 +207,8 @@ const Directs = () => {
                         text: msg.message || msg.text || '',
                         time: msg.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         isMe: (msg.user_id && msg.user_id === currentUserId) || msg.author === currentUserDisplayName,
-                        image: msg.image || null
+                        image: msg.image || null,
+                        likes: []
                     };
                     const updated = [...prev, newMsg];
                     localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated.slice(-100)));
@@ -182,10 +217,43 @@ const Directs = () => {
             }
         };
 
+        const handleMessageDeleted = ({ messageId }) => {
+            setMessages(prev => {
+                const updated = prev.filter(m => m.messageId !== messageId);
+                localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated));
+                return updated;
+            });
+        };
+
+        const handleLikeToggled = ({ messageId, userId }) => {
+            if (userId === currentUserId) return;
+            setMessages(prev => {
+                const updated = prev.map(m => {
+                    if (m.messageId === messageId || m.id === messageId) {
+                        const likes = Array.isArray(m.likes) ? [...m.likes] : [];
+                        const index = likes.indexOf(userId);
+                        if (index > -1) {
+                            likes.splice(index, 1);
+                        } else {
+                            likes.push(userId);
+                        }
+                        return { ...m, likes };
+                    }
+                    return m;
+                });
+                localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated));
+                return updated;
+            });
+        };
+
         socket.on('receive_message', handleReceiveMessage);
+        socket.on('message_deleted', handleMessageDeleted);
+        socket.on('like_toggled', handleLikeToggled);
 
         return () => {
             socket.off('receive_message', handleReceiveMessage);
+            socket.off('message_deleted', handleMessageDeleted);
+            socket.off('like_toggled', handleLikeToggled);
         };
     }, [selectedConv]);
 
@@ -211,7 +279,8 @@ const Directs = () => {
             text: textToSend,
             time: timeStr,
             isMe: true,
-            image: imagePreview || null
+            image: imagePreview || null,
+            likes: []
         };
 
         setMessages(prev => {
@@ -267,15 +336,18 @@ const Directs = () => {
         reader.readAsDataURL(file);
     };
 
-    const handleStartNewConversation = async (e) => {
-        e?.preventDefault();
-        const trimmed = newContactName.trim();
+    const handleStartNewConversation = async (contactInput) => {
+        const targetNameOrUser = typeof contactInput === 'string' ? contactInput : contactInput?.name || newContactName;
+        const trimmed = (targetNameOrUser || '').trim();
         if (!trimmed) return;
 
-        const matchedRegistered = registeredUsers.find(u =>
-            (u.name && u.name.toLowerCase() === trimmed.toLowerCase()) ||
-            (u.email && u.email.toLowerCase() === trimmed.toLowerCase())
-        );
+        const matchedRegistered = typeof contactInput === 'object' && contactInput?.id
+            ? contactInput
+            : registeredUsers.find(u =>
+                (u.name && u.name.toLowerCase() === trimmed.toLowerCase()) ||
+                (u.email && u.email.toLowerCase() === trimmed.toLowerCase()) ||
+                (u.username && u.username.toLowerCase() === trimmed.toLowerCase())
+            );
 
         if (matchedRegistered?.id) {
             try {
@@ -338,10 +410,97 @@ const Directs = () => {
         }
     };
 
+    const handleToggleFavorite = (msg) => {
+        const isCurrentlyFav = !!msg.isFavorite;
+        const updated = messages.map(m => {
+            if (m.messageId === msg.messageId) {
+                return { ...m, isFavorite: !isCurrentlyFav };
+            }
+            return m;
+        });
+        setMessages(updated);
+        if (selectedConv) {
+            localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
+        }
+
+        if (isCurrentlyFav) {
+            apiRequest(`/favorites/message/${msg.messageId}`, { method: 'DELETE' }).catch(() => {});
+        } else {
+            apiRequest('/favorites', {
+                method: 'POST',
+                body: JSON.stringify({
+                    item_type: 'message',
+                    item_id: msg.messageId,
+                    title: msg.sender,
+                    content: msg.text,
+                    meta: {
+                        time: msg.time,
+                        roomId: selectedConv?.id || null,
+                        roomName: `Direta: ${selectedConv?.name || 'Contato'}`
+                    }
+                })
+            }).catch(() => {});
+        }
+    };
+
+    const handleToggleLike = (messageId) => {
+        if (!messageId) return;
+        setMessages(prev => {
+            const updated = prev.map(m => {
+                if (m.messageId === messageId || m.id === messageId) {
+                    const likes = Array.isArray(m.likes) ? [...m.likes] : [];
+                    const idx = likes.indexOf(currentUserId);
+                    if (idx > -1) {
+                        likes.splice(idx, 1);
+                    } else {
+                        likes.push(currentUserId);
+                    }
+                    return { ...m, likes };
+                }
+                return m;
+            });
+            if (selectedConv) {
+                localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
+                socket.emit('toggle_like', {
+                    room: selectedConv.id,
+                    messageId,
+                    userId: currentUserId
+                });
+            }
+            return updated;
+        });
+    };
+
+    const handleDeleteMessage = (messageId) => {
+        const updated = messages.filter(m => m.messageId !== messageId);
+        setMessages(updated);
+        if (selectedConv) {
+            localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
+            socket.emit('delete_message', {
+                room: selectedConv.id,
+                messageId
+            });
+        }
+    };
+
+    const handleCopyText = (text) => {
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+    };
+
     const filteredConversations = conversations.filter(c =>
         c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const chatSearchResults = chatSearchTerm.trim()
+        ? messages.filter(m => m.text && m.text.toLowerCase().includes(chatSearchTerm.toLowerCase()))
+        : [];
+
+    const displayedMessages = messages.filter(msg => {
+        if (showFavoritesOnly && !msg.isFavorite) return false;
+        return true;
+    });
 
     return (
         <div className="animate-chat-shell flex w-full h-[calc(100vh-48px)] overflow-hidden">
@@ -449,7 +608,9 @@ const Directs = () => {
                 <div className={`flex-1 flex flex-col h-full bg-[#f8fafc] dark:bg-[#020617] relative ${!selectedConv ? 'hidden md:flex' : 'flex'}`}>
                     {selectedConv ? (
                         <>
-                            <div className="px-4 py-2.5 border-b border-[#d2d2d7] dark:border-white/5 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] flex items-center justify-between shrink-0">
+                            <div className="absolute top-0 left-0 right-0 h-1 z-10 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-400 dark:from-sky-600 dark:via-sky-700 dark:to-sky-600 shadow-[0_1px_2px_rgba(14,165,233,0.3)]" />
+
+                            <div className="px-4 py-2.5 flex items-center justify-between shrink-0 border-b border-[#d2d2d7] dark:border-white/5 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a]">
                                 <div className="flex items-center gap-3">
                                     <button
                                         type="button"
@@ -460,96 +621,476 @@ const Directs = () => {
                                         <FaTimes size={16} />
                                     </button>
                                     <UserAvatar src={selectedConv.avatar} name={selectedConv.name} size="sm" showStatus={false} />
-                                    <div>
-                                        <h3 className="font-bold text-sm text-[#1d1d1f] dark:text-[#f8fafc] leading-tight">
+                                    <div className="flex flex-col justify-center">
+                                        <h3 className="font-bold text-[15px] leading-tight text-[#1d1d1f] dark:text-[#f8fafc]">
                                             {selectedConv.name}
                                         </h3>
-                                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
-                                            Conversa Direta Privada
-                                        </span>
+                                        <p className="text-[11px] flex items-center gap-1.5 mt-0.5 text-[#86868b] dark:text-slate-400">
+                                            <span className="flex items-center gap-1 font-medium">
+                                                <span className={`w-1.5 h-1.5 rounded-full ${selectedConv.online ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]' : 'bg-slate-400'}`} />
+                                                {selectedConv.online ? 'Online agora' : 'Offline'}
+                                            </span>
+                                            <span>•</span>
+                                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
+                                                Conversa Direta Privada
+                                            </span>
+                                        </p>
                                     </div>
+                                </div>
+
+                                <div className="flex items-center gap-1 sm:gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsChatSearchOpen(!isChatSearchOpen)}
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${
+                                            isChatSearchOpen
+                                                ? '!bg-gradient-to-b !from-sky-400 !to-sky-600 dark:!from-sky-600 dark:!to-sky-800 !text-white !border-transparent !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]'
+                                                : 'border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 dark:hover:from-slate-600 dark:hover:to-slate-700'
+                                        }`}
+                                        title="Buscar mensagens"
+                                    >
+                                        <FaSearch size={13} className={isChatSearchOpen ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                                        className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${
+                                            showFavoritesOnly
+                                                ? '!bg-gradient-to-b !from-sky-400 !to-sky-600 dark:!from-sky-600 dark:!to-sky-800 !text-white !border-transparent !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]'
+                                                : 'border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 dark:hover:from-slate-600 dark:hover:to-slate-700'
+                                        }`}
+                                        title={showFavoritesOnly ? "Mostrar todas as mensagens" : "Mostrar apenas favoritas"}
+                                    >
+                                        <FaStar size={13} className={showFavoritesOnly ? 'text-white' : 'text-gray-500 dark:text-slate-400'} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={(e) => handleDeleteConversation(e, selectedConv.id)}
+                                        className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:!from-rose-50 hover:!to-rose-100 hover:!text-rose-600 dark:hover:!from-rose-950/40 dark:hover:!to-rose-950/60 dark:hover:!text-rose-400 transition-all"
+                                        title="Excluir conversa"
+                                    >
+                                        <FaTrash size={13} className="text-gray-500 hover:text-rose-500" />
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3 skeuo-scrollbar">
-                                {messages.map(msg => (
-                                    <div
-                                        key={msg.messageId}
-                                        className={`flex flex-col ${msg.isMe ? 'items-end' : 'items-start'}`}
-                                    >
-                                        <div
-                                            className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm ${
-                                                msg.isMe
-                                                    ? 'skeuo-segmented-item-active !justify-start !text-left'
-                                                    : 'skeuo-panel !shadow-xs border border-slate-200 dark:border-slate-800'
-                                            }`}
-                                        >
-                                            {msg.image && (
-                                                <img
-                                                    src={msg.image}
-                                                    alt="Anexo"
-                                                    className="rounded-lg max-h-48 w-auto mb-2 object-cover border border-white/20"
-                                                />
-                                            )}
-                                            <p className="whitespace-pre-wrap break-words">{msg.text}</p>
-                                        </div>
-                                        <span className="text-[10px] text-slate-400 px-1 mt-0.5 font-medium">
-                                            {msg.time}
-                                        </span>
+                            <div className={`overflow-hidden shrink-0 z-10 transition-all duration-300 ease-out bg-[#f5f5f7]/90 dark:bg-slate-800/90 backdrop-blur-md shadow-xs border-b ${
+                                isChatSearchOpen
+                                    ? 'max-h-20 py-2 opacity-100 translate-y-0 border-b-[#d2d2d7] dark:border-b-white/5'
+                                    : 'max-h-0 py-0 opacity-0 -translate-y-2 border-b-transparent pointer-events-none'
+                            }`}>
+                                <div className="px-4 flex items-center gap-3">
+                                    <div className="relative flex-1">
+                                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b] dark:text-slate-400" size={12} />
+                                        <input
+                                            type="text"
+                                            value={chatSearchTerm}
+                                            onChange={(e) => setChatSearchTerm(e.target.value)}
+                                            placeholder="Buscar mensagens na conversa..."
+                                            className="skeuo-input w-full px-8 py-1.5 text-[13px] rounded-full"
+                                        />
+                                        {chatSearchTerm && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setChatSearchTerm('')}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#86868b] hover:text-[#1d1d1f] dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
+                                            >
+                                                <FaTimes size={12} />
+                                            </button>
+                                        )}
                                     </div>
-                                ))}
+                                    {chatSearchResults.length > 0 && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium text-[11px] whitespace-nowrap text-[#86868b] dark:text-slate-400">
+                                                {chatSearchIndex + 1} de {chatSearchResults.length}
+                                            </span>
+                                            <div className="border border-[#d2d2d7] dark:border-white/10 rounded-full shadow-xs flex items-center overflow-hidden">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setChatSearchIndex(prev => (prev - 1 + chatSearchResults.length) % chatSearchResults.length)}
+                                                    className="px-2 py-1 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#86868b] dark:text-slate-400 transition-colors first:border-r first:border-[#d2d2d7] dark:first:border-r-white/10 cursor-pointer"
+                                                    title="Resultado anterior"
+                                                >
+                                                    <FaChevronUp size={10} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setChatSearchIndex(prev => (prev + 1) % chatSearchResults.length)}
+                                                    className="px-2 py-1 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#86868b] dark:text-slate-400 transition-colors cursor-pointer"
+                                                    title="Próximo resultado"
+                                                >
+                                                    <FaChevronDown size={10} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => { setIsChatSearchOpen(false); setChatSearchTerm(''); }}
+                                        className="font-medium text-xs whitespace-nowrap text-[#0071e3] hover:underline transition-colors cursor-pointer"
+                                    >
+                                        Fechar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex-grow overflow-y-auto pt-3 px-3 pb-3 space-y-2 skeuo-scrollbar">
+                                {displayedMessages.length === 0 && (
+                                    <div className="opacity-80 animate-fade-in-up flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4">
+                                        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-gradient-to-b from-gray-50 to-gray-200 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)] text-[#86868b] dark:text-slate-400">
+                                            <FaComments size={24} className="drop-shadow-xs text-[#0071e3]/60" />
+                                        </div>
+                                        <h3 className="text-[15px] font-semibold mb-1 text-[#1d1d1f] dark:text-[#f8fafc]">
+                                            Nenhuma mensagem ainda
+                                        </h3>
+                                        <p className="text-[13px] text-[#86868b] dark:text-slate-400">
+                                            {showFavoritesOnly
+                                                ? "Você não possui mensagens favoritas nesta conversa."
+                                                : "Inicie uma conversa direta privada e segura."}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {displayedMessages.map(msg => {
+                                    const isMatch = chatSearchTerm && msg.text && msg.text.toLowerCase().includes(chatSearchTerm.toLowerCase());
+                                    const matchClass = isMatch ? 'ring-2 ring-sky-400 shadow-md' : '';
+
+                                    if (msg.isMe) {
+                                        return (
+                                            <div
+                                                key={msg.messageId}
+                                                className="px-2 py-0.5 flex justify-end group animate-fade-in-up relative z-1 hover:z-50"
+                                                style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined }}
+                                            >
+                                                <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto group/msg relative z-1 hover:z-50">
+                                                    <div className={`bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-500 dark:to-blue-700 text-white shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-600/70 dark:border-sky-400/60 rounded-[18px] px-5 py-2.5 text-sm font-medium [text-shadow:0_-1px_0_rgba(0,0,0,0.2)] relative transition-all duration-300 ${matchClass}`}>
+                                                        <div className="message-bubble-actions absolute top-2 right-full mr-2 z-10">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setOpenMenuId(prev => prev === msg.messageId ? null : msg.messageId);
+                                                                }}
+                                                                className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${
+                                                                    openMenuId === msg.messageId ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
+                                                                }`}
+                                                                title="Mais opções"
+                                                            >
+                                                                <FaEllipsisV size={12} className="drop-shadow-xs" />
+                                                            </button>
+
+                                                            <div className={`absolute top-0 right-full mr-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
+                                                                openMenuId === msg.messageId ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
+                                                            }`}>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenMenuId(null);
+                                                                        handleToggleLike(msg.messageId || msg.id);
+                                                                    }}
+                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl"
+                                                                >
+                                                                    {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                        <>
+                                                                            <FaHeart size={10} className="text-red-500 drop-shadow-xs" />
+                                                                            <span>Descurtir</span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <FaRegHeart size={10} className="text-[#86868b] dark:text-slate-400" />
+                                                                            <span>Curtir</span>
+                                                                        </>
+                                                                    )}
+                                                                </button>
+                                                                <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenMenuId(null);
+                                                                        handleToggleFavorite(msg);
+                                                                    }}
+                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                >
+                                                                    <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} />
+                                                                    {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                                                </button>
+                                                                <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenMenuId(null);
+                                                                        handleCopyText(msg.text);
+                                                                    }}
+                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                >
+                                                                    <FaCopy size={10} className="text-slate-500" /> Copiar texto
+                                                                </button>
+                                                                <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenMenuId(null);
+                                                                        handleDeleteMessage(msg.messageId);
+                                                                    }}
+                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 last:rounded-b-xl"
+                                                                >
+                                                                    <FaTrash size={10} className="drop-shadow-xs" /> Apagar
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {msg.image && (
+                                                            <div className="rounded-2xl overflow-hidden border border-white/20 dark:border-white/10 shadow-sm mb-1.5 mt-0.5">
+                                                                <img
+                                                                    onClick={() => setSelectedImage(msg.image)}
+                                                                    src={msg.image}
+                                                                    alt="Anexo"
+                                                                    className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {msg.text && (
+                                                            <p className="break-words whitespace-pre-wrap leading-relaxed">
+                                                                {msg.text}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1.5 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
+                                                        <button
+                                                            type="button"
+                                                            aria-label="Curtir mensagem"
+                                                            title={msg.likes && msg.likes.includes(currentUserId) ? "Descurtir" : "Curtir"}
+                                                            onClick={() => handleToggleLike(msg.messageId || msg.id)}
+                                                            className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
+                                                                msg.likes && msg.likes.includes(currentUserId)
+                                                                    ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                                                    : msg.likes && msg.likes.length > 0
+                                                                        ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                                                        : 'opacity-70 sm:opacity-0 sm:group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                                            }`}
+                                                        >
+                                                            {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                <FaHeart size={10} className="drop-shadow-xs" />
+                                                            ) : (
+                                                                <FaRegHeart size={10} />
+                                                            )}
+                                                            {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                                                        </button>
+                                                        <span>{msg.time}</span>
+                                                        <span className="text-sky-500 dark:text-sky-400 font-bold">✓✓</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div
+                                            key={msg.messageId}
+                                            className="px-2 py-0.5 flex justify-start group animate-fade-in-up relative z-1 hover:z-50"
+                                            style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined }}
+                                        >
+                                            <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%] group/msg relative z-1 hover:z-50">
+                                                <UserAvatar
+                                                    src={selectedConv.avatar}
+                                                    name={msg.sender}
+                                                    size="sm"
+                                                    showStatus={false}
+                                                    className="shrink-0 mb-1"
+                                                />
+
+                                                <div className="flex flex-col items-start min-w-0">
+                                                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5">
+                                                        {msg.sender}
+                                                    </span>
+
+                                                    <div className={`bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[18px] px-5 py-2.5 text-sm relative transition-all duration-300 ${matchClass}`}>
+                                                        <div className="message-bubble-actions absolute top-2 left-full ml-2 z-10">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setOpenMenuId(prev => prev === msg.messageId ? null : msg.messageId);
+                                                                }}
+                                                                className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${
+                                                                    openMenuId === msg.messageId ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
+                                                                }`}
+                                                                title="Mais opções"
+                                                            >
+                                                                <FaEllipsisV size={12} className="drop-shadow-xs" />
+                                                            </button>
+
+                                                            <div className={`absolute top-0 left-full ml-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
+                                                                openMenuId === msg.messageId ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
+                                                            }`}>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenMenuId(null);
+                                                                        handleToggleLike(msg.messageId || msg.id);
+                                                                    }}
+                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl"
+                                                                >
+                                                                    {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                        <>
+                                                                            <FaHeart size={10} className="text-red-500 drop-shadow-xs" />
+                                                                            <span>Descurtir</span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <FaRegHeart size={10} className="text-[#86868b] dark:text-slate-400" />
+                                                                            <span>Curtir</span>
+                                                                        </>
+                                                                    )}
+                                                                </button>
+                                                                <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenMenuId(null);
+                                                                        handleToggleFavorite(msg);
+                                                                    }}
+                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                >
+                                                                    <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} />
+                                                                    {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                                                </button>
+                                                                <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setOpenMenuId(null);
+                                                                        handleCopyText(msg.text);
+                                                                    }}
+                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 last:rounded-b-xl"
+                                                                >
+                                                                    <FaCopy size={10} className="text-slate-500" /> Copiar texto
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {msg.image && (
+                                                            <div className="rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-sm mb-1.5 mt-0.5">
+                                                                <img
+                                                                    onClick={() => setSelectedImage(msg.image)}
+                                                                    src={msg.image}
+                                                                    alt="Anexo"
+                                                                    className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {msg.text && (
+                                                            <p className="break-words whitespace-pre-wrap leading-relaxed">
+                                                                {msg.text}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 mt-1 ml-3 text-[10px] text-slate-400 dark:text-slate-500">
+                                                        <span>{msg.time}</span>
+                                                        <button
+                                                            type="button"
+                                                            aria-label="Curtir mensagem"
+                                                            title={msg.likes && msg.likes.includes(currentUserId) ? "Descurtir" : "Curtir"}
+                                                            onClick={() => handleToggleLike(msg.messageId || msg.id)}
+                                                            className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
+                                                                msg.likes && msg.likes.includes(currentUserId)
+                                                                    ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                                                    : msg.likes && msg.likes.length > 0
+                                                                        ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                                                        : 'opacity-70 sm:opacity-0 sm:group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                                            }`}
+                                                        >
+                                                            {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                <FaHeart size={10} className="drop-shadow-xs" />
+                                                            ) : (
+                                                                <FaRegHeart size={10} />
+                                                            )}
+                                                            {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                                 <div ref={messagesEndRef} />
                             </div>
 
-                            {imagePreview && (
-                                <div className="px-4 py-2 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-3">
-                                    <img src={imagePreview} alt="Preview" className="w-12 h-12 object-cover rounded-lg border border-sky-400" />
-                                    <span className="text-xs text-slate-600 dark:text-slate-300 flex-1 truncate">Foto anexada pronta para envio</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => setImagePreview(null)}
-                                        className="text-rose-500 hover:text-rose-600 p-1"
-                                    >
-                                        <FaTimes size={14} />
-                                    </button>
-                                </div>
-                            )}
+                            <footer className="shrink-0 relative p-3 border-t border-[#d2d2d7] dark:border-t-white/5 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a]">
+                                {imagePreview && (
+                                    <div className="absolute left-4 bottom-[calc(100%+10px)] p-2 flex items-center gap-2 z-10 skeuo-panel shadow-lg animate-fade-in-up">
+                                        <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-sky-400" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setImagePreview(null)}
+                                            className="p-1.5 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 text-[#1d1d1f] transition-colors cursor-pointer"
+                                            title="Remover anexo"
+                                        >
+                                            <FaTimes size={12} />
+                                        </button>
+                                    </div>
+                                )}
 
-                            <form onSubmit={handleSendMessage} className="p-3 bg-gradient-to-b from-[#f5f5f7] to-[#ebebed] dark:from-[#1e293b] dark:to-[#0f172a] border-t border-[#d2d2d7] dark:border-white/5 flex items-center gap-2">
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleImageSelect}
-                                    accept="image/*"
-                                    className="hidden"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="btn-secondary-glossy w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-slate-500 dark:text-slate-400 hover:text-sky-500"
-                                    title="Anexar imagem"
-                                    aria-label="Anexar imagem"
-                                >
-                                    <FaCamera size={14} />
-                                </button>
-                                <input
-                                    type="text"
-                                    name="message"
-                                    value={inputMessage}
-                                    onChange={(e) => setInputMessage(e.target.value)}
-                                    placeholder={`Mensagem para ${selectedConv.name}...`}
-                                    className="skeuo-input flex-1 px-4 py-2 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 rounded-xl"
-                                />
-                                <button
-                                    type="submit"
-                                    onClick={handleSendMessage}
-                                    className={`btn-primary-glossy px-4 py-2 rounded-xl flex items-center gap-1.5 text-xs font-semibold shrink-0 cursor-pointer ${!inputMessage.trim() && !imagePreview ? 'opacity-50' : ''}`}
-                                    aria-label="Enviar mensagem"
-                                >
-                                    <FaPaperPlane size={12} />
-                                    <span className="hidden sm:inline">Enviar</span>
-                                </button>
-                            </form>
+                                <form onSubmit={handleSendMessage} className="flex gap-2">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleImageSelect}
+                                        accept="image/*"
+                                        className="hidden"
+                                    />
+                                    <label
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer rounded-full bg-gradient-to-b from-white to-gray-100 hover:from-gray-50 hover:to-gray-200 dark:from-slate-700 dark:to-slate-800 dark:hover:from-slate-600 dark:hover:to-slate-700 text-[#86868b] hover:text-[#1d1d1f] dark:text-slate-300 dark:hover:text-white border border-gray-200 dark:border-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.3)] transition-all"
+                                        title="Anexar imagem"
+                                        aria-label="Anexar imagem"
+                                    >
+                                        <FaCamera size={14} className="drop-shadow-xs" />
+                                    </label>
+
+                                    <div className="relative flex-grow flex items-center">
+                                        <input
+                                            type="text"
+                                            name="message"
+                                            maxLength={1000}
+                                            value={inputMessage}
+                                            onChange={(e) => setInputMessage(e.target.value)}
+                                            placeholder={`Mensagem para ${selectedConv.name}...`}
+                                            className={`skeuo-input w-full px-4 py-2 flex-grow text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 rounded-xl ${
+                                                inputMessage.length > 750 ? 'pr-20' : 'pr-14'
+                                            }`}
+                                        />
+                                        {inputMessage.length > 0 && (
+                                            <span
+                                                className={`absolute right-3 text-[11px] font-semibold pointer-events-none select-none transition-colors ${
+                                                    inputMessage.length >= 1000
+                                                        ? 'text-rose-500 dark:text-rose-400 font-bold'
+                                                        : inputMessage.length >= 850
+                                                            ? 'text-amber-500 dark:text-amber-400'
+                                                            : 'text-slate-400 dark:text-slate-500'
+                                                }`}
+                                            >
+                                                {inputMessage.length}/1000
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        onClick={handleSendMessage}
+                                        disabled={!inputMessage.trim() && !imagePreview}
+                                        className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] transition-all enabled:hover:scale-105 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                        title="Enviar mensagem"
+                                        aria-label="Enviar mensagem"
+                                    >
+                                        <FaPaperPlane size={12} className="ml-[-2px]" />
+                                    </button>
+                                </form>
+                            </footer>
                         </>
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-4">
@@ -577,84 +1118,35 @@ const Directs = () => {
                 </div>
             </div>
 
-            {isNewConvModalOpen && (
+            {selectedImage && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in"
-                    onClick={() => setIsNewConvModalOpen(false)}
+                    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-fade-in p-4"
+                    onClick={() => setSelectedImage(null)}
                 >
-                    <div
-                        className="skeuo-panel p-6 max-w-sm w-full space-y-4"
-                        onClick={(e) => e.stopPropagation()}
+                    <button
+                        type="button"
+                        onClick={() => setSelectedImage(null)}
+                        className="absolute top-6 right-6 rounded-full p-2 text-white bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
+                        title="Fechar imagem"
                     >
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">Nova Conversa Direta</h3>
-                            <button
-                                type="button"
-                                onClick={() => setIsNewConvModalOpen(false)}
-                                className="text-slate-400 hover:text-slate-600"
-                            >
-                                <FaTimes size={16} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleStartNewConversation} className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                                    Nome ou Usuário
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newContactName}
-                                    onChange={(e) => setNewContactName(e.target.value)}
-                                    placeholder="Ex: Carlos, Ana, Suporte..."
-                                    className="skeuo-input w-full px-3 py-2 text-xs text-slate-800 dark:text-slate-100 rounded-xl"
-                                    autoFocus
-                                    required
-                                />
-                            </div>
-
-                            {registeredUsers.length > 0 && (
-                                <div className="space-y-1.5 pt-1">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                                        Usuários disponíveis no sistema:
-                                    </span>
-                                    <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto skeuo-scrollbar pr-1">
-                                        {registeredUsers.map(u => (
-                                            <button
-                                                key={u.id}
-                                                type="button"
-                                                onClick={() => {
-                                                    setNewContactName(u.name);
-                                                }}
-                                                className="px-2.5 py-1 rounded-lg text-xs bg-black/5 dark:bg-white/5 hover:bg-sky-500/10 hover:text-sky-500 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer"
-                                            >
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                <span className="font-medium">{u.name}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="flex gap-2 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsNewConvModalOpen(false)}
-                                    className="btn-secondary-glossy flex-1 py-2 text-xs font-semibold rounded-xl"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="btn-primary-glossy flex-1 py-2 text-xs font-semibold rounded-xl"
-                                >
-                                    Iniciar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <FaTimes size={18} />
+                    </button>
+                    <img
+                        src={selectedImage}
+                        alt="Visualização"
+                        className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    />
                 </div>
             )}
+
+            <NewDirectMessageModal
+                isOpen={isNewConvModalOpen}
+                onClose={() => setIsNewConvModalOpen(false)}
+                onStartConversation={handleStartNewConversation}
+                registeredUsers={registeredUsers}
+                currentUserId={currentUserId}
+            />
         </div>
     );
 };

@@ -215,4 +215,45 @@ describe('Chat Component Integration Tests', () => {
     expect(screen.getByText('Acesso Negado')).toBeInTheDocument();
     expect(screen.getByText('A sala está com capacidade máxima.')).toBeInTheDocument();
   });
+
+  it('7. Permite clicar em um usuário e adicioná-lo como contato para o directs', async () => {
+    api.apiRequest.mockImplementation(async (url) => {
+      if (url.includes('/messages')) {
+        return [{
+          id: 'msg-mock-other',
+          content: 'Olá pessoal',
+          user_id: 'other-user-id',
+          user_name: 'Mariana Silva',
+          created_at: new Date().toISOString()
+        }];
+      }
+      if (url.includes('/rooms/')) {
+        return { name: 'Sala de Teste', description: 'Sala mockada' };
+      }
+      if (url.includes('/directs/conversations')) {
+        return { id: 'conv-mariana-1', name: 'Mariana Silva' };
+      }
+      return {};
+    });
+
+    renderChat();
+
+    await waitFor(() => {
+      expect(screen.getByText('Mariana Silva')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Mariana Silva'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Adicionar Contato' })).toBeInTheDocument();
+    });
+
+    const addContactBtn = screen.getByRole('button', { name: 'Adicionar Contato' });
+    fireEvent.click(addContactBtn);
+
+    await waitFor(() => {
+      const stored = JSON.parse(localStorage.getItem('chat_direct_conversations') || '[]');
+      expect(stored.some(c => c.name === 'Mariana Silva')).toBe(true);
+    });
+  });
 });

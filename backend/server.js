@@ -264,8 +264,7 @@ io.on('connection', (socket) => {
 
   socket.on('toggle_like', ({ room, messageId, userId }) => {
     if (!room || !messageId || !userId) return;
-    // Em um sistema real, salvaria os likes no banco
-    io.to(room).emit('like_toggled', { messageId, userId });
+    socket.to(room).emit('like_toggled', { messageId, userId });
   });
 
   socket.on('disconnect', () => {

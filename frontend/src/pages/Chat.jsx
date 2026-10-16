@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown, FaBars, FaUsers } from 'react-icons/fa';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown, FaBars, FaUsers, FaUserPlus } from 'react-icons/fa';
 import { socket } from '../socket';
 import { apiRequest } from '../services/api';
 import ChatSidebar from '../components/ChatSidebar';
@@ -255,7 +255,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     />
 
                     <div className="flex flex-col items-start min-w-0">
-                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5">
+                        <span onClick={() => onAvatarClick(msg)} className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5 cursor-pointer hover:underline">
                             {msg.sender}
                             {mockRoles && mockRoles[msg.sender] === 'Dono' && (
                                 <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
@@ -340,7 +340,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         <div ref={innerRef} className="px-3 py-0.5 flex justify-start gap-2 group animate-fade-in-up relative z-1 hover:z-50" style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined, position: openMenuId === msg.messageId ? 'relative' : undefined }}>
             <UserAvatar src={msg.avatar} name={msg.sender} onClick={() => onAvatarClick(msg)} size="sm" className="mt-1 transition-opacity hover:opacity-80 cursor-pointer" />
             <div className="flex flex-col max-w-[80%] items-start group/msg relative z-1 hover:z-50">
-                <span className="font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] text-[11.5px] ml-1">
+                <span onClick={() => onAvatarClick(msg)} className="font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] text-[11.5px] ml-1 cursor-pointer hover:underline">
                     {msg.sender}
                     {mockRoles && mockRoles[msg.sender] === 'Dono' && (
                         <span className="inline-flex items-center text-[8px] px-1 py-0.5 gap-0.5 rounded-full font-bold uppercase tracking-wide shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.15)] border border-white/20 bg-gradient-to-b from-amber-400 to-amber-500 text-amber-800">
@@ -661,6 +661,62 @@ const Chat = () => {
             try { localStorage.setItem(`chat_messages_${room}`, JSON.stringify(updated.slice(-50))); } catch (e) { }
             return updated;
         });
+    };
+
+    const handleAddContact = async (user) => {
+        if (!user) return;
+        const targetName = user.sender || user.name || 'Contato';
+        const targetUsername = user.username || targetName.toLowerCase().replace(/\s+/g, '_');
+        const targetUserId = user.userId || user.user_id || user.id;
+
+        let conversationId = null;
+
+        if (targetUserId && !String(targetUserId).startsWith('user_')) {
+            try {
+                const serverConv = await apiRequest('/directs/conversations', {
+                    method: 'POST',
+                    body: JSON.stringify({ targetUserId })
+                });
+                if (serverConv?.id) {
+                    conversationId = serverConv.id;
+                }
+            } catch (err) {
+                console.error('Erro ao integrar contato no backend:', err);
+            }
+        }
+
+        const convId = conversationId || `privado-${[currentUserId, targetUserId || targetUsername].sort().join('-')}`;
+
+        try {
+            const stored = localStorage.getItem('chat_direct_conversations');
+            const list = stored ? JSON.parse(stored) : [];
+            const existingIndex = list.findIndex(c => c.id === convId || c.name.toLowerCase() === targetName.toLowerCase());
+
+            const newContactItem = {
+                id: convId,
+                name: targetName,
+                username: targetUsername,
+                avatar: user.avatar || null,
+                lastMessage: 'Conversa iniciada pelo chat',
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                online: true,
+                unread: 0,
+                partnerId: targetUserId || null
+            };
+
+            if (existingIndex > -1) {
+                list[existingIndex] = { ...list[existingIndex], ...newContactItem };
+            } else {
+                list.unshift(newContactItem);
+            }
+
+            localStorage.setItem('chat_direct_conversations', JSON.stringify(list));
+        } catch (err) {
+            console.error('Erro ao salvar contato localmente:', err);
+        }
+
+        setSelectedUser(null);
+        navigate(`/directs?user=${encodeURIComponent(targetName)}`);
     };
 
     const currentRoomRef = useRef(null);
@@ -1100,39 +1156,13 @@ const Chat = () => {
 
                         <div className="flex flex-col gap-3 mt-4">
                             {selectedUser.sender !== ((localStorage.getItem('chat_displayName') && localStorage.getItem('chat_displayName') !== 'null') ? localStorage.getItem('chat_displayName') : 'Usuário') && (
-                                <button onClick={() => {
-                                    const storedName = localStorage.getItem('chat_displayName');
-                                    const currentUser = (storedName && storedName !== 'null') ? storedName : 'Usuário';
-                                    const targetId = selectedUser.userId || selectedUser.sender;
-                                    const privateRoomName = `privado-${[currentUserId, targetId].sort().join('-')}`;
-
-                                    const savedRooms = JSON.parse(localStorage.getItem('chat_customRooms') || '[]');
-                                    if (!savedRooms.find(r => r.roomParam === privateRoomName)) {
-                                        savedRooms.push({
-                                            title: `Chat Privado: ${selectedUser.sender}`,
-                                            description: `Mensagens diretas.`,
-                                            roomParam: privateRoomName,
-                                            category: "Privado",
-                                            status: "Ativa",
-                                            members: 2,
-                                            date: new Date().toLocaleDateString('pt-BR')
-                                        });
-                                        localStorage.setItem('chat_customRooms', JSON.stringify(savedRooms));
-                                    }
-
-                                    socket.emit("private_invite", {
-                                        to: targetId,
-                                        from: currentUser,
-                                        room: privateRoomName,
-                                        senderId: currentUserId
-                                    });
-
-                                    navigate(`/chat?room=${privateRoomName}`);
-                                    setSelectedUser(null);
-                                    rebellion:
-                                    setSelectedUser(null);
-                                }} className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff]">
-                                    <FaCommentAlt size={12} /> Mensagem Privada
+                                <button
+                                    type="button"
+                                    onClick={() => handleAddContact(selectedUser)}
+                                    className="btn-secondary-glossy w-full py-2 flex items-center justify-center gap-2 text-[#0071e3] hover:bg-[#e6f0ff] cursor-pointer"
+                                    title="Adicionar aos contatos e abrir no Directs"
+                                >
+                                    <FaUserPlus size={12} /> Adicionar Contato
                                 </button>
                             )}
                             <div className="flex gap-3">
