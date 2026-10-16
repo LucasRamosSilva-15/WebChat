@@ -67,25 +67,31 @@ Para integrar suas aplicações e realizar homologações, utilize as URLs base 
 
 ## Catálogo de Domínios da API
 
-A API está dividida em 5 domínios operacionais fundamentais:
+A API está dividida em 8 domínios operacionais fundamentais:
 
 <CardGroup cols={2}>
   <Card title="1. Autenticação & Usuários" icon="user-lock" href="/guides/auth-security">
-    Registro com bcrypt, login, resolução de perfil público (`/auth/me`) e deleção de conta.
+    Registro com Argon2id/bcrypt, login, resolução de perfil público (`/auth/me`) e deleção de conta.
   </Card>
-  <Card title="2. Salas de Conversa (Rooms)" icon="people-roof" href="/api-reference/rooms/list">
-    Salas públicas e privadas, membros com cargos (`owner`, `admin`, `user`) e contagem ativa.
+  <Card title="2. Salas & Moderação" icon="people-roof" href="/api-reference/rooms/list">
+    Salas temáticas, cargos hierárquicos (`owner`, `moderator`, `user`), expulsão de membros e transferência de dono.
   </Card>
-  <Card title="3. Mensageria & Mídia" icon="message" href="/api-reference/messages/list">
+  <Card title="3. Mensageria & Histórico" icon="message" href="/api-reference/messages/list">
     Histórico cronológico, anexos de imagem via URL e busca textual case-insensitive (`q`).
   </Card>
-  <Card title="4. Governança & Moderação" icon="shield" href="/guides/communication-standards">
+  <Card title="4. Mensagens Diretas (Directs)" icon="comments" href="/api-reference/directs/list-conversations">
+    Conversas privadas 1x1, busca de contatos e histórico confidencial.
+  </Card>
+  <Card title="5. Notificações em Tempo Real" icon="bell" href="/api-reference/notifications/list">
+    Central de avisos em tempo real com persistência, leitura individual ou em lote.
+  </Card>
+  <Card title="6. Favoritos" icon="star" href="/api-reference/favorites/list">
+    Acesso rápido aos canais e conversas favoritas do usuário.
+  </Card>
+  <Card title="7. Governança & Moderação" icon="shield" href="/guides/communication-standards">
     Abertura de denúncias contra mensagens (`reports`) e canal direto de melhorias (`feedbacks`).
   </Card>
-  <Card title="5. Painel Administrativo" icon="gauge" href="/api-reference/admin/stats">
-    Métricas do cluster (`/stats`), banimento imediato de contas e limpeza forçada de conteúdo.
-  </Card>
-  <Card title="6. Eventos em Tempo Real" icon="network-wired" href="/guides/webhooks">
-    Sincronização de mensagens e especificações de Webhooks para sistemas externos.
+  <Card title="8. Painel Administrativo" icon="gauge" href="/api-reference/admin/stats">
+    Métricas do cluster (`/stats`), banimento imediato de contas e moderação administrativa forçada.
   </Card>
 </CardGroup>

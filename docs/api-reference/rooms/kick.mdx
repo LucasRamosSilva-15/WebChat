@@ -1,0 +1,6 @@
+---
+title: "Expulsar Membro da Sala"
+openapi: "DELETE /rooms/{roomId}/members/{userId}"
+---
+
+Remove forçadamente um participante de uma sala de chat com justificativa opcional (`reason`). Segue as regras de moderação hierárquica: o dono da sala pode expulsar qualquer membro, enquanto moderadores podem expulsar apenas participantes regulares.

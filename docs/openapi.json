@@ -30,7 +30,9 @@
       "post": {
         "summary": "Registrar novo usuário",
         "description": "Cria uma nova conta de usuário no sistema com hash seguro de senha via bcrypt e retorna imediatamente o perfil público junto ao token de acesso JWT.",
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -103,7 +105,9 @@
       "post": {
         "summary": "Autenticar usuário (Login)",
         "description": "Valida as credenciais (e-mail e senha) e gera um JSON Web Token (JWT) válido por 7 dias para uso nos cabeçalhos de autorização das requisições subsequentes.",
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -172,7 +176,9 @@
       "get": {
         "summary": "Obter perfil do usuário autenticado",
         "description": "Recupera as informações públicas do usuário autenticado a partir do token JWT fornecido no header `Authorization`.",
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "responses": {
           "200": {
             "description": "Dados do usuário autenticado.",
@@ -224,7 +230,9 @@
       "delete": {
         "summary": "Excluir conta do usuário autenticado",
         "description": "Exclui permanentemente o perfil do usuário logado, revogando o acesso aos seus recursos.",
-        "tags": ["Autenticação"],
+        "tags": [
+          "Autenticação"
+        ],
         "responses": {
           "200": {
             "description": "Perfil removido com sucesso.",
@@ -266,7 +274,9 @@
       "get": {
         "summary": "Listar todas as salas",
         "description": "Retorna uma coleção de todas as salas disponíveis no chat, incluindo detalhes do criador e a contagem total de membros ativos.",
-        "tags": ["Salas (Rooms)"],
+        "tags": [
+          "Salas (Rooms)"
+        ],
         "responses": {
           "200": {
             "description": "Lista de salas cadastradas.",
@@ -314,7 +324,9 @@
       "post": {
         "summary": "Criar nova sala de conversa",
         "description": "Cria uma nova sala de bate-papo associando o usuário autenticado como proprietário (`owner`) inicial do grupo.",
-        "tags": ["Salas (Rooms)"],
+        "tags": [
+          "Salas (Rooms)"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -383,7 +395,9 @@
       "get": {
         "summary": "Obter detalhes de uma sala por ID",
         "description": "Retorna informações detalhadas sobre a sala, incluindo o total de membros, se o usuário requisitante é membro (`is_member`) e seu cargo/papel (`current_user_role`).",
-        "tags": ["Salas (Rooms)"],
+        "tags": [
+          "Salas (Rooms)"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -439,7 +453,9 @@
       "delete": {
         "summary": "Deletar sala",
         "description": "Remove permanentemente a sala especificada, excluindo mensagens associadas e membros. Apenas o criador original ou administradores do sistema têm permissão.",
-        "tags": ["Salas (Rooms)"],
+        "tags": [
+          "Salas (Rooms)"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -490,13 +506,96 @@
             }
           }
         }
+      },
+      "put": {
+        "summary": "Atualizar dados da sala",
+        "description": "Atualiza informações cadastrais da sala como título, descrição, categoria ou avatar. Restrito ao dono original da sala ou administradores globais.",
+        "tags": [
+          "Salas (Rooms)"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Identificador UUID da sala",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRoomRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sala atualizada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token de autenticação inválido ou ausente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão para alterar esta sala.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sala não encontrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/rooms/{id}/join": {
       "post": {
         "summary": "Entrar em uma sala",
         "description": "Registra o usuário autenticado como participante/membro da sala.",
-        "tags": ["Salas (Rooms)"],
+        "tags": [
+          "Salas (Rooms)"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -547,7 +646,9 @@
       "get": {
         "summary": "Listar membros da sala",
         "description": "Retorna todos os usuários registrados como membros da sala, incluindo seus papéis (`owner`, `admin`, `user`).",
-        "tags": ["Salas (Rooms)"],
+        "tags": [
+          "Salas (Rooms)"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -591,7 +692,9 @@
       "get": {
         "summary": "Listar histórico de mensagens de uma sala",
         "description": "Busca todas as mensagens enviadas em uma determinada sala em ordem cronológica crescente, populando os dados do remetente.",
-        "tags": ["Mensagens (Messages)"],
+        "tags": [
+          "Mensagens (Messages)"
+        ],
         "parameters": [
           {
             "name": "roomId",
@@ -638,7 +741,9 @@
       "post": {
         "summary": "Enviar mensagem para uma sala",
         "description": "Cria uma nova mensagem de texto e/ou com anexo de imagem em uma sala.",
-        "tags": ["Mensagens (Messages)"],
+        "tags": [
+          "Mensagens (Messages)"
+        ],
         "parameters": [
           {
             "name": "roomId",
@@ -696,7 +801,9 @@
       "get": {
         "summary": "Pesquisar mensagens na sala",
         "description": "Realiza busca por termo/palavra-chave no conteúdo de mensagens de uma sala específica (case-insensitive).",
-        "tags": ["Mensagens (Messages)"],
+        "tags": [
+          "Mensagens (Messages)"
+        ],
         "parameters": [
           {
             "name": "roomId",
@@ -750,7 +857,9 @@
       "delete": {
         "summary": "Apagar mensagem",
         "description": "Remove uma mensagem específica. Permitido apenas para o próprio autor da mensagem ou administradores.",
-        "tags": ["Mensagens (Messages)"],
+        "tags": [
+          "Mensagens (Messages)"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -807,7 +916,9 @@
       "post": {
         "summary": "Denunciar mensagem",
         "description": "Cria um chamado de denúncia contra uma mensagem ofensiva ou inadequada para análise pela equipe de moderação.",
-        "tags": ["Moderação"],
+        "tags": [
+          "Moderação"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -858,7 +969,9 @@
       "post": {
         "summary": "Enviar feedback",
         "description": "Permite aos usuários enviarem sugestões, relatórios de bugs e anexar capturas de tela para melhoria contínua da aplicação.",
-        "tags": ["Suporte e Feedback"],
+        "tags": [
+          "Suporte e Feedback"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -913,7 +1026,9 @@
       "post": {
         "summary": "Autenticar no painel de administração",
         "description": "Autentica o operador do painel administrativo via chave mestre (`ADMIN_SECRET_KEY`) e emite um token com role de admin com validade de 8 horas. Protegido por rate-limiting restrito (5 tentativas / 15 min).",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -921,7 +1036,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["password"],
+                "required": [
+                  "password"
+                ],
                 "properties": {
                   "password": {
                     "type": "string",
@@ -967,7 +1084,9 @@
       "get": {
         "summary": "Obter estatísticas globais do sistema",
         "description": "Retorna contadores consolidados do banco de dados (total de usuários, salas ativas, denúncias pendentes e contas banidas).",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "responses": {
           "200": {
             "description": "Estatísticas agregadas.",
@@ -992,7 +1111,9 @@
       "get": {
         "summary": "Listar todos os usuários (Admin)",
         "description": "Retorna a lista completa de usuários cadastrados no banco com seus respectivos dados de perfil.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "responses": {
           "200": {
             "description": "Lista de usuários.",
@@ -1024,7 +1145,9 @@
       "put": {
         "summary": "Atualizar status de um usuário (Admin)",
         "description": "Permite banir, suspender ou reativar um usuário alterando o campo `status` ('active', 'banned', etc.).",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1043,11 +1166,17 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["status"],
+                "required": [
+                  "status"
+                ],
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": ["active", "banned", "suspended"],
+                    "enum": [
+                      "active",
+                      "banned",
+                      "suspended"
+                    ],
                     "example": "banned"
                   }
                 }
@@ -1073,7 +1202,9 @@
       "get": {
         "summary": "Listar todas as salas (Admin)",
         "description": "Visualização administrativa de todas as salas, inclusive privadas ou arquivadas.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "responses": {
           "200": {
             "description": "Coleção de salas.",
@@ -1095,7 +1226,9 @@
       "delete": {
         "summary": "Deletar qualquer sala forçadamente (Admin)",
         "description": "Remove a sala e limpa vínculos de membros e histórico de mensagens sem exigir autoria do criador.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1126,7 +1259,9 @@
       "delete": {
         "summary": "Apagar mensagem via moderação (Admin)",
         "description": "Remove uma mensagem que infrinja os termos de uso diretamente pelo painel administrativo.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1157,7 +1292,9 @@
       "get": {
         "summary": "Listar denúncias pendentes e resolvidas (Admin)",
         "description": "Retorna o feed de denúncias associando o autor da denúncia e a mensagem denunciada.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "responses": {
           "200": {
             "description": "Lista de denúncias.",
@@ -1179,7 +1316,9 @@
       "put": {
         "summary": "Alterar status da denúncia (Admin)",
         "description": "Muda a denúncia para 'resolved' ou 'dismissed' e opcionalmente anota justificativa de resolução.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1201,7 +1340,11 @@
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": ["pending", "resolved", "dismissed"],
+                    "enum": [
+                      "pending",
+                      "resolved",
+                      "dismissed"
+                    ],
                     "example": "resolved"
                   },
                   "reason": {
@@ -1229,7 +1372,9 @@
       "delete": {
         "summary": "Apagar registro de denúncia (Admin)",
         "description": "Remove o registro de denúncia do banco de dados.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1260,7 +1405,9 @@
       "get": {
         "summary": "Listar feedbacks de usuários (Admin)",
         "description": "Retorna todos os feedbacks recebidos ordenados por data de criação com os dados do autor.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "responses": {
           "200": {
             "description": "Feedbacks de usuários.",
@@ -1282,7 +1429,9 @@
       "put": {
         "summary": "Alterar status do feedback (Admin)",
         "description": "Marca um feedback como resolvido ou pendente.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1301,11 +1450,16 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["status"],
+                "required": [
+                  "status"
+                ],
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": ["pending", "resolved"],
+                    "enum": [
+                      "pending",
+                      "resolved"
+                    ],
                     "example": "resolved"
                   }
                 }
@@ -1329,7 +1483,9 @@
       "delete": {
         "summary": "Apagar feedback (Admin)",
         "description": "Remove um item de feedback do sistema.",
-        "tags": ["Administração"],
+        "tags": [
+          "Administração"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1355,6 +1511,982 @@
           }
         }
       }
+    },
+    "/rooms/{roomId}/members/{userId}/role": {
+      "patch": {
+        "summary": "Alterar cargo de membro na sala",
+        "description": "Promove membro da sala a moderador ou rebaixa para usuário comum. Permitido exclusivamente ao dono da sala ou administradores globais.",
+        "tags": [
+          "Salas (Rooms)"
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "description": "ID da sala",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "ID do usuário membro",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cargo atualizado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessFlagResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cargo inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas o dono da sala ou admin pode alterar cargos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Membro ou sala não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms/{roomId}/members/{userId}": {
+      "delete": {
+        "summary": "Expulsar membro da sala",
+        "description": "Remove o participante da sala especificada. Donos podem expulsar qualquer membro; moderadores podem expulsar apenas usuários comuns.",
+        "tags": [
+          "Salas (Rooms)"
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "description": "ID da sala",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "ID do membro a ser expulso",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KickMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Membro expulso com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permissão insuficiente para expulsar o membro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Membro ou sala não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rooms/{id}/transfer-ownership": {
+      "post": {
+        "summary": "Transferir posse da sala",
+        "description": "Transfere irreversivelmente a titularidade de dono da sala para outro membro. Permitido apenas ao dono atual da sala ou a administradores.",
+        "tags": [
+          "Salas (Rooms)"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da sala",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferOwnershipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Posse transferida com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Novo proprietário inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Apenas o proprietário atual pode transferir a posse.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sala ou novo proprietário não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/directs/conversations": {
+      "get": {
+        "summary": "Listar conversas diretas",
+        "description": "Retorna a lista de todas as conversas 1x1 do usuário autenticado, com dados do interlocutor e a última mensagem trocada.",
+        "tags": [
+          "Mensagens Diretas (Directs)"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de conversas retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DirectConversation"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Obter ou criar conversa direta",
+        "description": "Busca conversa existente entre o requisitante e o destinatário ou cria uma nova conversa privada se ainda não existir.",
+        "tags": [
+          "Mensagens Diretas (Directs)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDirectConversationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversa obtida ou criada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectConversation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Usuário inválido ou tentativa de conversar consigo mesmo.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/directs/conversations/{id}/messages": {
+      "get": {
+        "summary": "Histórico de mensagens da conversa direta",
+        "description": "Retorna as mensagens trocadas na conversa direta especificada ordenadas cronologicamente.",
+        "tags": [
+          "Mensagens Diretas (Directs)"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da conversa direta",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de mensagens da conversa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DirectMessage"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Usuário não faz parte desta conversa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversa não encontrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Enviar mensagem direta",
+        "description": "Envia mensagem de texto e/ou anexo de imagem em uma conversa direta.",
+        "tags": [
+          "Mensagens Diretas (Directs)"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da conversa direta",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendDirectMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mensagem direta criada e transmitida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Conteúdo vazio ou superior a 1000 caracteres.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Usuário não autorizado a enviar mensagem nesta conversa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/directs/conversations/{id}": {
+      "delete": {
+        "summary": "Remover conversa direta",
+        "description": "Oculta a conversa direta da listagem do usuário autenticado.",
+        "tags": [
+          "Mensagens Diretas (Directs)"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da conversa direta",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversa ocultada/removida com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Conversa não encontrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/directs/users": {
+      "get": {
+        "summary": "Buscar usuários para conversa direta",
+        "description": "Lista e filtra usuários registrados para iniciar novas conversas diretas.",
+        "tags": [
+          "Mensagens Diretas (Directs)"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Termo de busca por nome ou e-mail",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuários disponíveis.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicUser"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "Listar notificações do usuário",
+        "description": "Retorna a lista de notificações do usuário autenticado, com histórico persistido.",
+        "tags": [
+          "Notificações (Notifications)"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de notificações recuperada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notification"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Criar notificação",
+        "description": "Emite e persiste nova notificação para o usuário.",
+        "tags": [
+          "Notificações (Notifications)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Notificação criada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/read-all": {
+      "patch": {
+        "summary": "Marcar todas as notificações como lidas",
+        "description": "Marca todas as notificações pendentes do usuário como lidas.",
+        "tags": [
+          "Notificações (Notifications)"
+        ],
+        "responses": {
+          "200": {
+            "description": "Notificações marcadas como lidas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "summary": "Marcar notificação como lida",
+        "description": "Atualiza o status de leitura de uma notificação individual.",
+        "tags": [
+          "Notificações (Notifications)"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da notificação",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notificação marcada como lida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notificação não encontrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/all": {
+      "delete": {
+        "summary": "Limpar todas as notificações",
+        "description": "Exclui permanentemente todo o histórico de notificações do usuário.",
+        "tags": [
+          "Notificações (Notifications)"
+        ],
+        "responses": {
+          "200": {
+            "description": "Todas as notificações foram apagadas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{id}": {
+      "delete": {
+        "summary": "Excluir notificação específica",
+        "description": "Remove uma notificação individual.",
+        "tags": [
+          "Notificações (Notifications)"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID da notificação",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notificação removida com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notificação não encontrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/favorites": {
+      "get": {
+        "summary": "Listar favoritos do usuário",
+        "description": "Retorna a lista de salas e conversas diretas favoritadas pelo usuário logado.",
+        "tags": [
+          "Favoritos (Favorites)"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de favoritos obtida com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Favorite"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Adicionar item aos favoritos",
+        "description": "Favorita uma sala temática ou conversa direta.",
+        "tags": [
+          "Favoritos (Favorites)"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFavoriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item favoritado com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Favorite"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campos obrigatórios ausentes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/favorites/{itemType}/{itemId}": {
+      "delete": {
+        "summary": "Remover item dos favoritos",
+        "description": "Remove uma sala ou conversa direta dos favoritos do usuário.",
+        "tags": [
+          "Favoritos (Favorites)"
+        ],
+        "parameters": [
+          {
+            "name": "itemType",
+            "in": "path",
+            "required": true,
+            "description": "Tipo do item",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "room",
+                "conversation"
+              ]
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "description": "ID do item favoritado",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Favorito removido com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Favorito não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1369,7 +2501,10 @@
     "schemas": {
       "RegisterRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -1397,7 +2532,10 @@
       },
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -1413,7 +2551,10 @@
       },
       "AuthSuccessResponse": {
         "type": "object",
-        "required": ["user", "token"],
+        "required": [
+          "user",
+          "token"
+        ],
         "properties": {
           "user": {
             "$ref": "#/components/schemas/PublicUser"
@@ -1427,7 +2568,10 @@
       },
       "PublicUser": {
         "type": "object",
-        "required": ["id", "email"],
+        "required": [
+          "id",
+          "email"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -1467,7 +2611,9 @@
       },
       "CreateRoomRequest": {
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "properties": {
           "name": {
             "type": "string",
@@ -1476,7 +2622,10 @@
           },
           "type": {
             "type": "string",
-            "enum": ["public", "private"],
+            "enum": [
+              "public",
+              "private"
+            ],
             "default": "public",
             "example": "public"
           },
@@ -1500,7 +2649,11 @@
       },
       "Room": {
         "type": "object",
-        "required": ["id", "name", "type"],
+        "required": [
+          "id",
+          "name",
+          "type"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -1598,7 +2751,10 @@
       },
       "JoinRoomResponse": {
         "type": "object",
-        "required": ["success", "member"],
+        "required": [
+          "success",
+          "member"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -1607,18 +2763,38 @@
           "member": {
             "type": "object",
             "properties": {
-              "id": { "type": "string", "format": "uuid" },
-              "room_id": { "type": "string", "format": "uuid" },
-              "user_id": { "type": "string", "format": "uuid" },
-              "role": { "type": "string", "example": "user" },
-              "joined_at": { "type": "string", "format": "date-time" }
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "room_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "user_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "role": {
+                "type": "string",
+                "example": "user"
+              },
+              "joined_at": {
+                "type": "string",
+                "format": "date-time"
+              }
             }
           }
         }
       },
       "RoomMemberItem": {
         "type": "object",
-        "required": ["id", "name", "email", "role"],
+        "required": [
+          "id",
+          "name",
+          "email",
+          "role"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -1667,7 +2843,11 @@
       },
       "Message": {
         "type": "object",
-        "required": ["id", "room_id", "user_id"],
+        "required": [
+          "id",
+          "room_id",
+          "user_id"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -1702,16 +2882,27 @@
           "user": {
             "type": "object",
             "properties": {
-              "id": { "type": "string", "format": "uuid" },
-              "displayName": { "type": "string" },
-              "profilePhoto": { "type": "string", "nullable": true }
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "profilePhoto": {
+                "type": "string",
+                "nullable": true
+              }
             }
           }
         }
       },
       "CreateReportRequest": {
         "type": "object",
-        "required": ["message_id", "reason"],
+        "required": [
+          "message_id",
+          "reason"
+        ],
         "properties": {
           "message_id": {
             "type": "string",
@@ -1728,7 +2919,13 @@
       },
       "Report": {
         "type": "object",
-        "required": ["id", "message_id", "user_id", "reason", "status"],
+        "required": [
+          "id",
+          "message_id",
+          "user_id",
+          "reason",
+          "status"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -1749,7 +2946,11 @@
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "resolved", "dismissed"],
+            "enum": [
+              "pending",
+              "resolved",
+              "dismissed"
+            ],
             "example": "pending"
           },
           "created_at": {
@@ -1770,17 +2971,33 @@
               "user": {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string", "format": "uuid" },
-                  "displayName": { "type": "string" },
-                  "email": { "type": "string", "format": "email" }
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
                 }
               },
               "message": {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string", "format": "uuid" },
-                  "content": { "type": "string" },
-                  "created_at": { "type": "string", "format": "date-time" }
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
                 }
               }
             }
@@ -1789,7 +3006,9 @@
       },
       "CreateFeedbackRequest": {
         "type": "object",
-        "required": ["comment"],
+        "required": [
+          "comment"
+        ],
         "properties": {
           "comment": {
             "type": "string",
@@ -1808,7 +3027,12 @@
       },
       "Feedback": {
         "type": "object",
-        "required": ["id", "user_id", "comment", "status"],
+        "required": [
+          "id",
+          "user_id",
+          "comment",
+          "status"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -1825,12 +3049,19 @@
           },
           "images": {
             "type": "array",
-            "items": { "type": "string" },
-            "example": ["https://storage.skyripple.com/feedback/screenshot.png"]
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "https://storage.skyripple.com/feedback/screenshot.png"
+            ]
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "resolved"],
+            "enum": [
+              "pending",
+              "resolved"
+            ],
             "example": "pending"
           },
           "created_at": {
@@ -1841,7 +3072,10 @@
       },
       "AdminAuthResponse": {
         "type": "object",
-        "required": ["token", "role"],
+        "required": [
+          "token",
+          "role"
+        ],
         "properties": {
           "token": {
             "type": "string",
@@ -1855,7 +3089,12 @@
       },
       "GlobalStatsResponse": {
         "type": "object",
-        "required": ["total_users", "active_rooms", "pending_reports", "active_bans"],
+        "required": [
+          "total_users",
+          "active_rooms",
+          "pending_reports",
+          "active_bans"
+        ],
         "properties": {
           "total_users": {
             "type": "integer",
@@ -1877,7 +3116,9 @@
       },
       "MessageResponse": {
         "type": "object",
-        "required": ["message"],
+        "required": [
+          "message"
+        ],
         "properties": {
           "message": {
             "type": "string",
@@ -1887,7 +3128,9 @@
       },
       "SuccessFlagResponse": {
         "type": "object",
-        "required": ["success"],
+        "required": [
+          "success"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -1897,12 +3140,358 @@
       },
       "ErrorResponse": {
         "type": "object",
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "properties": {
           "error": {
             "type": "string",
             "description": "Mensagem descritiva do erro",
             "example": "Erro ao processar a solicitação."
+          }
+        }
+      },
+      "UpdateRoomRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Sala Geral Renovada"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Nova descrição oficial da sala."
+          },
+          "category": {
+            "type": "string",
+            "nullable": true,
+            "example": "tecnologia"
+          },
+          "image_url": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://storage.skyripple.com/rooms/geral.png"
+          }
+        }
+      },
+      "UpdateMemberRoleRequest": {
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "moderator",
+              "user"
+            ],
+            "example": "moderator"
+          }
+        }
+      },
+      "KickMemberRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Violação reiterada das regras da sala."
+          }
+        }
+      },
+      "TransferOwnershipRequest": {
+        "type": "object",
+        "required": [
+          "newOwnerId"
+        ],
+        "properties": {
+          "newOwnerId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "d3b07384-d113-4015-89b5-4b0c2e391782"
+          }
+        }
+      },
+      "DirectConversation": {
+        "type": "object",
+        "required": [
+          "id",
+          "user1_id",
+          "user2_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          },
+          "user1_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef"
+          },
+          "user2_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "last_message": {
+            "type": "string",
+            "nullable": true,
+            "example": "Olá! Como vai o projeto?"
+          },
+          "last_message_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-16T18:00:00.000Z"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-15T12:00:00.000Z"
+          },
+          "otherUser": {
+            "$ref": "#/components/schemas/PublicUser"
+          }
+        }
+      },
+      "CreateDirectConversationRequest": {
+        "type": "object",
+        "required": [
+          "targetUserId"
+        ],
+        "properties": {
+          "targetUserId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          }
+        }
+      },
+      "DirectMessage": {
+        "type": "object",
+        "required": [
+          "id",
+          "conversation_id",
+          "sender_id",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "8f123456-7890-abcd-ef12-34567890abcd"
+          },
+          "conversation_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          },
+          "sender_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef"
+          },
+          "content": {
+            "type": "string",
+            "example": "Tudo ótimo por aqui, e contigo?"
+          },
+          "image_url": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-16T18:01:00.000Z"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/PublicUser"
+          }
+        }
+      },
+      "SendDirectMessageRequest": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1000,
+            "example": "Olá, podemos alinhar a entrega amanhã?"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "a0b1c2d3-e4f5-6789-0123-456789abcdef"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef"
+          },
+          "type": {
+            "type": "string",
+            "example": "message"
+          },
+          "title": {
+            "type": "string",
+            "example": "Nova Mensagem"
+          },
+          "content": {
+            "type": "string",
+            "example": "Você recebeu uma mensagem direta de Wssi."
+          },
+          "link": {
+            "type": "string",
+            "nullable": true,
+            "example": "/directs"
+          },
+          "read": {
+            "type": "boolean",
+            "example": false
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-16T18:05:00.000Z"
+          }
+        }
+      },
+      "CreateNotificationRequest": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "system"
+          },
+          "title": {
+            "type": "string",
+            "example": "Aviso do Sistema"
+          },
+          "content": {
+            "type": "string",
+            "example": "Manutenção programada às 22h."
+          },
+          "link": {
+            "type": "string",
+            "nullable": true,
+            "example": "/news"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "Favorite": {
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "item_type",
+          "item_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "b1c2d3e4-f5a6-7890-1234-56789abcdef0"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef"
+          },
+          "item_type": {
+            "type": "string",
+            "enum": [
+              "room",
+              "conversation"
+            ],
+            "example": "room"
+          },
+          "item_id": {
+            "type": "string",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "example": "Devs TypeScript & Node"
+          },
+          "content": {
+            "type": "string",
+            "nullable": true,
+            "example": "Canal de discussões técnicas"
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-10-16T18:10:00.000Z"
+          }
+        }
+      },
+      "CreateFavoriteRequest": {
+        "type": "object",
+        "required": [
+          "item_type",
+          "item_id"
+        ],
+        "properties": {
+          "item_type": {
+            "type": "string",
+            "enum": [
+              "room",
+              "conversation"
+            ],
+            "example": "room"
+          },
+          "item_id": {
+            "type": "string",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "example": "Devs TypeScript & Node"
+          },
+          "content": {
+            "type": "string",
+            "nullable": true,
+            "example": "Canal favorito"
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true
           }
         }
       }

@@ -1,0 +1,6 @@
+---
+title: "Alterar Cargo de Membro"
+openapi: "PATCH /rooms/{roomId}/members/{userId}/role"
+---
+
+Promove um membro da sala a moderador (`role: 'moderator'`) ou rebaixa para participante regular (`role: 'user'`). Operação permitida exclusivamente ao dono atual da sala ou a administradores globais.

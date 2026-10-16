@@ -23,7 +23,10 @@ docs/
 ├── api-reference/             # Referência interativa de endpoints
 │   ├── index.mdx              # Visão geral e status codes
 │   ├── auth/                  # Registro, login, perfil e deleção de conta
-│   ├── rooms/                 # Criação, listagem, membros e remoção de salas
+│   ├── rooms/                 # Criação, listagem, membros, moderação e remoção de salas
+│   ├── directs/               # Conversas diretas privadas 1x1 e busca de contatos
+│   ├── notifications/         # Central de notificações e leitura em lote
+│   ├── favorites/             # Gestão de salas e conversas favoritas
 │   ├── messages/              # Histórico, envio, busca e deleção
 │   ├── reports/               # Denúncias de mensagens
 │   ├── feedbacks/             # Sugestões e bugs
@@ -50,7 +53,7 @@ Ou dentro da própria pasta `docs/`:
 
 ```bash
 cd docs
-npx mintlify dev
+npx -y mintlify@4.2.1051 dev
 ```
 
 O portal estará disponível em: **`http://localhost:3000`** (ou `3002` caso a porta 3000 esteja ocupada). O servidor possui hot-reload automático para qualquer edição em arquivos `.mdx` ou `.json`.
@@ -60,7 +63,7 @@ Execute o verificador de links e rotas:
 
 ```bash
 cd docs
-npx mintlify broken-links
+npx -y mintlify@4.2.1051 broken-links
 ```
 
 ---

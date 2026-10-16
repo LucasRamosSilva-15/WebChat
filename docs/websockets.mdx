@@ -53,6 +53,10 @@ socket.on("connect_error", (err) => {
 | `receive_message` | Objeto completo da mensagem salva | Disparado para todos na sala ao receber nova mensagem |
 | `message_edited` | `{ messageId: string, message: string }` | Notifica a edição de uma mensagem |
 | `message_deleted` | `{ messageId: string }` | Notifica que uma mensagem foi excluída |
+| `member_kicked` | `{ roomId: string, userId: string, reason: string }` | Notifica membros da sala sobre a expulsão de um usuário |
+| `kicked_from_room` | `{ roomId: string, roomName: string, reason: string }` | Enviado diretamente para o usuário expulso da sala |
+| `receive_direct_message` | Objeto completo da mensagem direta | Entregue em tempo real para o destinatário da conversa privada |
+| `new_notification` | Objeto de notificação | Notifica o usuário em tempo real sobre menções, convites e avisos |
 | `rate_limit_error` | `{ error: string }` | Disparado se o usuário enviar mensagens mais rápido que 1 a cada 500ms |
 | `message_error` | `{ error: string }` | Notifica falhas ao persistir mensagem no banco |
 

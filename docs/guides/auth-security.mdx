@@ -4,7 +4,12 @@ sidebarTitle: "Segurança & JWT"
 description: "Padrões de segurança, criptografia com bcrypt, tokens de usuário versus admin e proteção de rotas."
 ---
 
-A segurança da SkyRipple API é baseada em padrões consolidados da indústria: assinatura criptográfica de **JSON Web Tokens (JWT)** via `HS256`, proteção estrita com saltos de hashing `bcrypt` e limitação de taxa adaptativa por IP.
+A segurança da SkyRipple API é baseada no baseline **CIS Controls IG1 & OWASP ASVS (Application Security Verification Standard)**:
+* **Criptografia de Senhas**: Padrão-ouro **Argon2id** (64MB de memória, 3 iterações, 4 threads em paralelo) com migração automática (*auto-rehash*) de hashes legados `bcrypt`.
+* **Neutralização de Timing Attacks**: Comparações de credenciais e segredos em tempo constante via `crypto.timingSafeEqual` com digests SHA-256.
+* **Algorithm Pinning no JWT**: Verificação forçada com algoritmo fixo `HS256` para mitigar ataques de confusão de algoritmo (`none` ou chaves públicas assimétricas).
+* **Auditoria Estruturada**: Registro de eventos de segurança (`LOGIN_FAILURE`, `ROOM_MEMBER_KICKED`, `ADMIN_ACTION`) com nível, ator, IP e recurso.
+* **Rate Limiting em Camadas**: Throttling de requisições por IP na API e controle estrito em endpoints de autenticação.
 
 ---
 
@@ -15,13 +20,14 @@ O sistema opera com duas personas distintas de autenticação, refletidas no có
 | Critério | Token de Usuário Regular | Token de Administrador |
 | :--- | :--- | :--- |
 | **Endpoint Emissor** | `POST /api/auth/login` ou `/auth/register` | `POST /api/admin/auth` |
-| **Credenciais Exigidas** | E-mail registrado + Senha pessoal | Chve mestra (`ADMIN_SECRET_KEY`) |
+| **Credenciais Exigidas** | E-mail registrado + Senha pessoal | Chave mestra (`ADMIN_SECRET_KEY`) |
+| **Algoritmo de Hash** | **Argon2id** (fallback compatível bcrypt) | `timingSafeEqual(SHA256)` |
 | **Tempo de Expiração** | **7 dias** (`expiresIn: '7d'`) | **8 horas** (`expiresIn: '8h'`) |
 | **Payload do JWT** | `{ "id": UUID, "email": string }` | `{ "id": "admin-system", "role": "admin" }` |
 | **Rate Limit Aplicado** | 10 tentativas / 15 minutos | 5 tentativas / 15 minutos |
 | **Header Requerido** | `Authorization: Bearer <token>` | `Authorization: Bearer <token>` |
 | **Middleware de Validação** | `authMiddleware` | `adminAuth` |
-| **Escopo de Permissão** | Salas, histórico, envio de mensagens e reports | Gestão global, banimentos e exclusão de conteúdo |
+| **Escopo de Permissão** | Salas, direct messages, notificações e favoritos | Gestão global, banimentos e exclusão de conteúdo |
 
 ---
 

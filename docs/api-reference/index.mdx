@@ -7,15 +7,24 @@ description: "Acesse e teste todos os endpoints do SkyRipple de maneira interati
 
 A API do SkyRipple é organizada em torno dos seguintes domínios centrais:
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Autenticação" icon="key" href="/api-reference/auth/login">
     Gerenciamento de contas, emissão de JWT, perfil do usuário e encerramento de conta.
   </Card>
-  <Card title="Salas de Chat" icon="users" href="/api-reference/rooms/list">
-    Criação, listagem, entrada e gerenciamento de participantes de salas.
+  <Card title="Salas & Moderação" icon="users" href="/api-reference/rooms/list">
+    Criação, listagem, entrada, promoção a moderador, expulsão e transferência de posse.
   </Card>
   <Card title="Mensagens & Mídia" icon="message" href="/api-reference/messages/list">
-    Histórico, envio com suporte a imagens, busca textual e exclusão.
+    Histórico de mensagens, envio com suporte a imagens, busca textual e exclusão.
+  </Card>
+  <Card title="Mensagens Diretas" icon="comments" href="/api-reference/directs/list-conversations">
+    Conversas privadas 1x1, busca de contatos e histórico confidencial.
+  </Card>
+  <Card title="Notificações" icon="bell" href="/api-reference/notifications/list">
+    Central de avisos em tempo real, leitura individual ou em lote.
+  </Card>
+  <Card title="Favoritos" icon="star" href="/api-reference/favorites/list">
+    Acesso rápido com marcação de salas e conversas favoritas.
   </Card>
   <Card title="Moderação & Feedbacks" icon="flag" href="/api-reference/reports/create">
     Canal de denúncias de mensagens ofensivas e envio de feedback com imagens.

@@ -92,9 +92,43 @@
               "api-reference/rooms/list",
               "api-reference/rooms/create",
               "api-reference/rooms/get",
+              "api-reference/rooms/update",
               "api-reference/rooms/join",
               "api-reference/rooms/members",
+              "api-reference/rooms/role",
+              "api-reference/rooms/kick",
+              "api-reference/rooms/transfer-ownership",
               "api-reference/rooms/delete"
+            ]
+          },
+          {
+            "group": "Mensagens Diretas (Directs)",
+            "pages": [
+              "api-reference/directs/list-conversations",
+              "api-reference/directs/create-conversation",
+              "api-reference/directs/list-messages",
+              "api-reference/directs/send-message",
+              "api-reference/directs/delete-conversation",
+              "api-reference/directs/list-users"
+            ]
+          },
+          {
+            "group": "Central de Notificações (Notifications)",
+            "pages": [
+              "api-reference/notifications/list",
+              "api-reference/notifications/create",
+              "api-reference/notifications/read-all",
+              "api-reference/notifications/read",
+              "api-reference/notifications/delete-all",
+              "api-reference/notifications/delete"
+            ]
+          },
+          {
+            "group": "Favoritos (Favorites)",
+            "pages": [
+              "api-reference/favorites/list",
+              "api-reference/favorites/create",
+              "api-reference/favorites/delete"
             ]
           },
           {
