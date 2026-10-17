@@ -31,10 +31,28 @@ import NotificationToastContainer from './components/NotificationToastContainer'
 
 import { useEffect } from 'react';
 import { supabase, syncOAuthUserSession } from './services/supabase';
+import { socket } from './socket';
 
 function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
+        localStorage.removeItem('chat_token');
+        localStorage.removeItem('chat_isLoggedIn');
+        localStorage.removeItem('chat_displayName');
+        localStorage.removeItem('chat_uniqueUserId');
+        localStorage.removeItem('chat_profilePhoto');
+        localStorage.removeItem('chat_profileDesc');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('skyripple_session');
+        if (socket?.disconnect) {
+          socket.disconnect();
+        }
+        window.dispatchEvent(new Event('profileUpdated'));
+        return;
+      }
+
       if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
         const hasToken = localStorage.getItem('chat_token');
         if (!hasToken) {

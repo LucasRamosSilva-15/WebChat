@@ -17,6 +17,51 @@ const { initModels } = require('./src/models');
 
 const app = express();
 
+// ==========================================
+// 1. CONFIGURAÇÃO DE CORS (EXECUTADO NO TOPO)
+// ==========================================
+const allowedOrigins = [
+  'https://web-chat-project-web2.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Permite chamadas locais, server-to-server ou ferramentas como curl/Postman
+    if (!origin) return callback(null, true);
+
+    const isExplicitlyAllowed = allowedOrigins.includes(origin);
+    const isVercelPreview = /^https:\/\/web-chat-project-web2.*\.vercel\.app$/.test(origin);
+
+    if (isExplicitlyAllowed || isVercelPreview || isAllowedOrigin(origin, process.env.FRONTEND_URL)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 200 // Suporte para browsers legados / preflight
+};
+
+// 1. Aplica o CORS globalmente no topo
+app.use(cors(corsOptions));
+
+// 2. Garante resposta imediata para preflight requests
+app.options('*', cors(corsOptions));
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true }
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
@@ -46,28 +91,7 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 console.log('[SWAGGER] Procurando arquivos em:', swaggerOptions.apis[0]);
 console.log(`[SWAGGER] ${Object.keys(swaggerDocs.paths || {}).length} rota(s) encontrada(s)`);
 
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
-  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true }
-}));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (isAllowedOrigin(origin, process.env.FRONTEND_URL)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  credentials: true
-};
-
-app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 const globalApiLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,

@@ -230,7 +230,17 @@ const sanitizeText = (input) => {
 
 const isAllowedOrigin = (origin, frontendUrl) => {
   if (!origin) return true;
-  if (frontendUrl && origin === frontendUrl) return true;
+  const allowed = [
+    'http://localhost:5173',
+    'https://web-chat-project-web2.vercel.app',
+    frontendUrl,
+    process.env.FRONTEND_URL,
+    process.env.CLIENT_URL
+  ].filter(Boolean);
+
+  if (allowed.includes(origin)) return true;
+  if (/^https:\/\/web-chat-project-web2.*\.vercel\.app$/.test(origin)) return true;
+
   const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]{1,5})?$/;
   return localhostRegex.test(origin);
 };

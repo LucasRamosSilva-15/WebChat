@@ -5,6 +5,8 @@ import { X } from 'lucide-react';
 import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
 import NotificationsDropdown from './NotificationsDropdown';
+import { supabase } from '../services/supabase';
+import { socket } from '../socket';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -94,6 +96,43 @@ const Navbar = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
+    const handleLogout = async () => {
+        try {
+            if (supabase?.auth?.signOut) {
+                await supabase.auth.signOut();
+            }
+
+            if (socket?.disconnect) {
+                socket.disconnect();
+            }
+
+            removeAuthToken();
+            localStorage.removeItem('chat_isLoggedIn');
+            localStorage.removeItem('chat_displayName');
+            localStorage.removeItem('chat_uniqueUserId');
+            localStorage.removeItem('chat_profilePhoto');
+            localStorage.removeItem('chat_profileDesc');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('skyripple_session');
+            localStorage.removeItem('admin_token');
+            sessionStorage.clear();
+
+            setIsLoggedIn(false);
+            setIsMenuOpen(false);
+            setIsProfileOpen(false);
+
+            window.dispatchEvent(new Event('profileUpdated'));
+
+            window.location.href = '/login';
+        } catch (err) {
+            console.error('Erro ao sair:', err);
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/login';
+        }
+    };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -174,15 +213,7 @@ const Navbar = () => {
                                         <FaShieldAlt className="text-red-500" size={16} /> Área Admin
                                     </Link>
                                     {isLoggedIn && (
-                                        <button onClick={() => {
-                                            localStorage.removeItem('chat_isLoggedIn');
-                                            localStorage.removeItem('chat_displayName');
-                                            localStorage.removeItem('chat_uniqueUserId');
-                                            removeAuthToken();
-                                            window.dispatchEvent(new Event('profileUpdated'));
-                                            setIsMenuOpen(false);
-                                            window.location.href = '/login';
-                                        }} className="px-5 py-3 text-[15px] font-medium transition-colors duration-150 flex items-center gap-3 w-full text-left border-t border-[#e5e5e5] dark:border-white/5 text-red-500 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-100 dark:hover:from-red-950/40 hover:to-transparent">
+                                        <button onClick={handleLogout} className="px-5 py-3 text-[15px] font-medium transition-colors duration-150 flex items-center gap-3 w-full text-left border-t border-[#e5e5e5] dark:border-white/5 text-red-500 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-100 dark:hover:from-red-950/40 hover:to-transparent cursor-pointer">
                                             <FaSignOutAlt className="text-red-500 dark:text-red-400" size={16} /> Sair
                                         </button>
                                     )}
@@ -220,6 +251,9 @@ const Navbar = () => {
                                     </div>
                                     <div className="p-3 bg-gradient-to-b from-[#f0f0f0] to-[#e5e5e5] border-t border-[#d2d2d7] dark:from-[#0f172a] dark:to-[#020617] dark:border-white/5 flex flex-col gap-2">
                                         <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy w-full py-2 block text-center text-[13px]">Editar Perfil</Link>
+                                        <button onClick={handleLogout} className="btn-secondary-glossy w-full py-2 block text-center text-[13px] !text-red-500 hover:!text-red-600 flex items-center justify-center gap-2 cursor-pointer">
+                                            <FaSignOutAlt size={12} /> Sair da Conta
+                                        </button>
                                         {isAdmin && (
                                             <button onClick={() => {
                                                 localStorage.removeItem('admin_token');
@@ -277,11 +311,10 @@ const Navbar = () => {
                                             type="button"
                                             onClick={() => setPrimaryColor(c.id)}
                                             style={{ background: c.gradient }}
-                                            className={`w-9 h-9 rounded-full relative transition-transform active:scale-95 shadow-[0_3px_8px_rgba(0,0,0,0.5),inset_0_1.5px_1px_rgba(255,255,255,0.6),inset_0_-1.5px_2px_rgba(0,0,0,0.4)] border border-white/20 flex items-center justify-center cursor-pointer ${
-                                                isSelected
+                                            className={`w-9 h-9 rounded-full relative transition-transform active:scale-95 shadow-[0_3px_8px_rgba(0,0,0,0.5),inset_0_1.5px_1px_rgba(255,255,255,0.6),inset_0_-1.5px_2px_rgba(0,0,0,0.4)] border border-white/20 flex items-center justify-center cursor-pointer ${isSelected
                                                     ? 'ring-2 ring-offset-2 ring-offset-slate-900 ring-sky-400 scale-105'
                                                     : 'opacity-85 hover:opacity-100 hover:scale-105'
-                                            }`}
+                                                }`}
                                             title={c.name}
                                             aria-label={`Selecionar cor ${c.name}`}
                                         >
@@ -299,17 +332,15 @@ const Navbar = () => {
                             <div className="flex flex-col gap-2">
                                 <div
                                     onClick={() => setColorMode('light')}
-                                    className={`p-3.5 rounded-xl cursor-pointer transition-all flex items-center gap-3.5 ${
-                                        colorMode === 'light'
+                                    className={`p-3.5 rounded-xl cursor-pointer transition-all flex items-center gap-3.5 ${colorMode === 'light'
                                             ? 'bg-gradient-to-b from-sky-50 to-white dark:from-sky-950/80 dark:to-slate-900/90 border-2 border-sky-400 shadow-[0_2px_8px_rgba(14,165,233,0.15),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_0_15px_rgba(14,165,233,0.25),inset_0_1px_0_rgba(255,255,255,0.15)]'
                                             : 'bg-white/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800/70'
-                                    }`}
+                                        }`}
                                 >
-                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border ${
-                                        colorMode === 'light'
+                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border ${colorMode === 'light'
                                             ? 'border-sky-400 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6),inset_0_1px_1px_rgba(255,255,255,0.6)]'
                                             : 'border-slate-300 dark:border-slate-500 bg-slate-100 dark:bg-slate-900/80'
-                                    }`}>
+                                        }`}>
                                         {colorMode === 'light' && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-xs" />}
                                     </div>
                                     <div className="flex-1">
@@ -320,17 +351,15 @@ const Navbar = () => {
 
                                 <div
                                     onClick={() => setColorMode('dark')}
-                                    className={`p-3.5 rounded-xl cursor-pointer transition-all flex items-center gap-3.5 ${
-                                        colorMode === 'dark'
+                                    className={`p-3.5 rounded-xl cursor-pointer transition-all flex items-center gap-3.5 ${colorMode === 'dark'
                                             ? 'bg-gradient-to-b from-sky-50 to-white dark:from-sky-950/80 dark:to-slate-900/90 border-2 border-sky-400 shadow-[0_2px_8px_rgba(14,165,233,0.15),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_0_15px_rgba(14,165,233,0.25),inset_0_1px_0_rgba(255,255,255,0.15)]'
                                             : 'bg-white/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800/70'
-                                    }`}
+                                        }`}
                                 >
-                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border ${
-                                        colorMode === 'dark'
+                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border ${colorMode === 'dark'
                                             ? 'border-sky-400 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6),inset_0_1px_1px_rgba(255,255,255,0.6)]'
                                             : 'border-slate-300 dark:border-slate-500 bg-slate-100 dark:bg-slate-900/80'
-                                    }`}>
+                                        }`}>
                                         {colorMode === 'dark' && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-xs" />}
                                     </div>
                                     <div className="flex-1">
@@ -354,17 +383,15 @@ const Navbar = () => {
                                         <div
                                             key={bgOpt.id}
                                             onClick={() => setBgColor(bgOpt.id)}
-                                            className={`p-2.5 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${
-                                                bgColor === bgOpt.id
+                                            className={`p-2.5 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${bgColor === bgOpt.id
                                                     ? 'bg-gradient-to-b from-sky-50 to-white dark:from-sky-950/80 dark:to-slate-900/90 border-2 border-sky-400 shadow-[0_2px_8px_rgba(14,165,233,0.15),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_0_15px_rgba(14,165,233,0.25),inset_0_1px_0_rgba(255,255,255,0.15)]'
                                                     : 'bg-white/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800/70'
-                                            }`}
+                                                }`}
                                         >
-                                            <div className={`w-4 h-4 rounded-full flex items-center justify-center border shrink-0 ${
-                                                bgColor === bgOpt.id
+                                            <div className={`w-4 h-4 rounded-full flex items-center justify-center border shrink-0 ${bgColor === bgOpt.id
                                                     ? 'border-sky-400 bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6),inset_0_1px_1px_rgba(255,255,255,0.6)]'
                                                     : 'border-slate-300 dark:border-slate-500 bg-slate-100 dark:bg-slate-900/80'
-                                            }`}>
+                                                }`}>
                                                 {bgColor === bgOpt.id && <div className="w-1.5 h-1.5 rounded-full bg-white shadow-xs" />}
                                             </div>
                                             <div>

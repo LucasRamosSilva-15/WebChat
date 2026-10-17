@@ -181,6 +181,18 @@ describe('Security Utility (CIS IG1 Baseline)', () => {
       const prodUrl = 'https://skyripple.vercel.app';
       expect(isAllowedOrigin(prodUrl, prodUrl)).toBe(true);
     });
+
+    it('permite a URL oficial de produção na Vercel e previews dinâmicos', () => {
+      expect(isAllowedOrigin('https://web-chat-project-web2.vercel.app')).toBe(true);
+      expect(isAllowedOrigin('https://web-chat-project-web2-git-main-user.vercel.app')).toBe(true);
+      expect(isAllowedOrigin('https://web-chat-project-web2-abc123.vercel.app')).toBe(true);
+    });
+
+    it('permite CLIENT_URL configurado nas variáveis de ambiente', () => {
+      process.env.CLIENT_URL = 'https://meu-client-customizado.com';
+      expect(isAllowedOrigin('https://meu-client-customizado.com')).toBe(true);
+      delete process.env.CLIENT_URL;
+    });
   });
 
   describe('Security Audit Logging & Data Masking (CIS 8.2 & 8.5)', () => {

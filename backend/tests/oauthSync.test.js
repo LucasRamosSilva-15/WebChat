@@ -61,4 +61,27 @@ describe('OAuth Synchronization Tests (/auth/oauth-sync)', () => {
     expect(res.body).toHaveProperty('token');
     expect(res.body.user.email).toBe(payload.email);
   });
+
+  it('4. Deve responder ao preflight (OPTIONS) com os headers CORS apropriados para a Vercel', async () => {
+    const res = await request(app)
+      .options('/api/auth/oauth-sync')
+      .set('Origin', 'https://web-chat-project-web2.vercel.app')
+      .set('Access-Control-Request-Method', 'POST')
+      .set('Access-Control-Request-Headers', 'Content-Type, Authorization');
+
+    expect([200, 204]).toContain(res.status);
+    expect(res.headers['access-control-allow-origin']).toBe('https://web-chat-project-web2.vercel.app');
+    expect(res.headers['access-control-allow-credentials']).toBe('true');
+  });
+
+  it('5. Deve incluir headers CORS no POST originado pela Vercel', async () => {
+    const res = await request(app)
+      .post('/api/auth/oauth-sync')
+      .set('Origin', 'https://web-chat-project-web2.vercel.app')
+      .send({ email: 'oauth.google@example.com' });
+
+    expect(res.status).toBe(200);
+    expect(res.headers['access-control-allow-origin']).toBe('https://web-chat-project-web2.vercel.app');
+    expect(res.headers['access-control-allow-credentials']).toBe('true');
+  });
 });
