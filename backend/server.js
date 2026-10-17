@@ -30,7 +30,6 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Permite chamadas sem origin (curl, Postman, server-to-server)
     if (!origin) return callback(null, true);
 
     const isExplicitlyAllowed = allowedOrigins.includes(origin);
@@ -40,19 +39,15 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    // Retorna callback(null, false) para não disparar Erro 500 no Express
     return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  optionsSuccessStatus: 200 // Suporte para browsers legados / preflight
+  optionsSuccessStatus: 200
 };
 
-// 1. Aplica o CORS globalmente no topo
 app.use(cors(corsOptions));
-
-// 2. Garante resposta imediata para preflight requests
 app.options('*', cors(corsOptions));
 
 app.use(helmet({

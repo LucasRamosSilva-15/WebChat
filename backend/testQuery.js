@@ -4,7 +4,7 @@ const RoomService = require('./src/services/RoomService');
 
 async function testQuery() {
   try {
-    const room = await RoomService.getRoomById('8c54784a-93cb-4fbc-b40b-da0d252bb88a'); // Try finding any room
+    const room = await RoomService.getRoomById('8c54784a-93cb-4fbc-b40b-da0d252bb88a');
     console.log(room);
     process.exit(0);
   } catch (error) {

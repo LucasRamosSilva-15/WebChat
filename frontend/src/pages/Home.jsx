@@ -1,8 +1,43 @@
-import { Link } from 'react-router-dom';
-import { FiArrowRight } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 const Home = () => {
-    const isLoggedIn = localStorage.getItem('chat_isLoggedIn') === 'true';
+    const navigate = useNavigate();
+
+    const [user, setUser] = useState(() => {
+        const token = localStorage.getItem('chat_token') || localStorage.getItem('token');
+        const isLoggedIn = localStorage.getItem('chat_isLoggedIn') === 'true';
+        if (token || isLoggedIn) {
+            return {
+                name: localStorage.getItem('chat_displayName') || localStorage.getItem('user_name') || 'explorador',
+                email: localStorage.getItem('user_email') || ''
+            };
+        }
+        return null;
+    });
+
+    useEffect(() => {
+        const checkAuth = () => {
+            const token = localStorage.getItem('chat_token') || localStorage.getItem('token');
+            const isLoggedIn = localStorage.getItem('chat_isLoggedIn') === 'true';
+            if (token || isLoggedIn) {
+                setUser({
+                    name: localStorage.getItem('chat_displayName') || localStorage.getItem('user_name') || 'explorador',
+                    email: localStorage.getItem('user_email') || ''
+                });
+            } else {
+                setUser(null);
+            }
+        };
+
+        window.addEventListener('profileUpdated', checkAuth);
+        window.addEventListener('storage', checkAuth);
+        return () => {
+            window.removeEventListener('profileUpdated', checkAuth);
+            window.removeEventListener('storage', checkAuth);
+        };
+    }, []);
 
     return (
         <main className="reveal flex-1 flex flex-col items-center justify-center px-4 py-8">
@@ -19,43 +54,55 @@ const Home = () => {
                     SkyRipple
                 </h1>
 
-                {isLoggedIn ? (
-                    <>
-                        <p className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-sm mt-2 mb-7 leading-relaxed">
-                            Bem-vindo de volta! Entre em uma sala para continuar suas conversas em tempo real.
-                        </p>
-                        <div className="flex justify-center items-center w-full">
-                            <Link
-                                to="/rooms"
-                                className="skeuo-btn w-full sm:w-auto px-8 py-2.5 text-sm sm:text-[15px] font-semibold flex items-center justify-center gap-2 rounded-xl shadow-md transition-all active:scale-[0.99] cursor-pointer"
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                    {user ? (
+                        <>Bem-vindo de volta, <strong className="text-sky-600 dark:text-sky-400">{user.name || 'explorador'}</strong>! Pronto para conversar?</>
+                    ) : (
+                        "O seu espaço para conversas em tempo real. Deixe as suas ideias fluírem livremente."
+                    )}
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6 w-full">
+                    {user ? (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/rooms')}
+                                className="skeuo-btn-primary w-full sm:w-auto px-6 py-2.5 text-xs sm:text-sm font-bold text-white inline-flex items-center justify-center gap-2 rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.99]"
                             >
-                                <span>Entrar em uma sala</span>
-                                <FiArrowRight className="w-4 h-4" />
-                            </Link>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <p className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-sm mt-2 mb-7 leading-relaxed">
-                            O seu espaço para conversas em tempo real. Deixe as suas ideias fluírem livremente.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">
-                            <Link
-                                to="/register"
-                                className="skeuo-btn w-full sm:w-auto px-6 py-2.5 text-sm sm:text-[15px] font-semibold flex items-center justify-center gap-2 rounded-xl shadow-md transition-all active:scale-[0.99] cursor-pointer"
+                                <span>Explorar Salas</span>
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => navigate('/directs')}
+                                className="btn-secondary-glossy w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 rounded-xl cursor-pointer transition-all active:scale-[0.99]"
+                            >
+                                Mensagens Diretas
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/register')}
+                                className="skeuo-btn-primary w-full sm:w-auto px-6 py-2.5 text-xs sm:text-sm font-bold text-white inline-flex items-center justify-center gap-2 rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.99]"
                             >
                                 <span>Criar conta gratuita</span>
-                                <FiArrowRight className="w-4 h-4" />
-                            </Link>
-                            <Link
-                                to="/login"
-                                className="btn-secondary-glossy w-full sm:w-auto px-6 py-2.5 text-sm sm:text-[15px] flex items-center justify-center gap-2 font-medium rounded-xl shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => navigate('/login')}
+                                className="btn-secondary-glossy w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 rounded-xl cursor-pointer transition-all active:scale-[0.99]"
                             >
-                                <span>Já tenho conta</span>
-                            </Link>
-                        </div>
-                    </>
-                )}
+                                Já tenho conta
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="mt-4 flex items-center justify-center">
