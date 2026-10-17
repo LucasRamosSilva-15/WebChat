@@ -4,7 +4,7 @@ sidebarTitle: "Catálogo de Páginas"
 description: "Mapeamento completo das páginas e telas do SkyRipple, rotas ativas, guardas de autenticação e funcionalidades táteis."
 ---
 
-O frontend do **SkyRipple** é composto por 16 telas e visões concebidas sob a estética **Skeuomorphic Design System (SDS) / Frutiger Aero**, integrando navegação reativa com **React Router DOM v7**, persistência de sessão e WebSockets em tempo real.
+O frontend do **SkyRipple** é composto por 18 telas e visões concebidas sob a estética **Skeuomorphic Design System (SDS) / Frutiger Aero**, integrando navegação reativa com **React Router DOM v7**, persistência de sessão e WebSockets em tempo real.
 
 ---
 
@@ -15,6 +15,7 @@ O frontend do **SkyRipple** é composto por 16 telas e visões concebidas sob a 
 | **Página Inicial** | `/` | `Home.jsx` | Pública | Landing page de apresentação, proposta de valor, CTA dinâmico e acesso rápido. |
 | **Login** | `/login` | `Login.jsx` | Pública | Formulário de autenticação com e-mail/senha, emissão de JWT e feedback tátil de erro. |
 | **Cadastro** | `/register` | `Register.jsx` | Pública | Registro de novos usuários com medidor dinâmico de força de senha e termos legais. |
+| **Recuperação de Senha** | `/forgot-password` | `ForgotPassword.jsx` | Pública | Recuperação de credenciais com envio de link de redefinição via Supabase Auth. |
 | **Lobby de Salas** | `/rooms` | `Rooms.jsx` | `PrivateRoute` | Catálogo de salas temáticas, métricas em tempo real (`StatCard`), filtros e criação de sala. |
 | **Sala de Chat** | `/chat` | `Chat.jsx` | `PrivateRoute` | Mensageria instantânea com Socket.io, criptografia AES-256 e moderação hierárquica. |
 | **Mensagens Diretas** | `/directs` | `Directs.jsx` | `PrivateRoute` | Bate-papo 1x1 confidencial em tempo real, lista de conversas e busca de contatos. |

@@ -69,6 +69,16 @@ class UsuarioController {
       return handleError(res, error);
     }
   }
+
+  async oauthSync(req, res) {
+    try {
+      const { email, name, avatar_url } = req.body;
+      const { user, token } = await UserService.syncOAuthUser({ email, name, avatar_url });
+      return res.status(200).json({ user: toPublicUser(user), token });
+    } catch (error) {
+      return handleError(res, error);
+    }
+  }
 }
 
 module.exports = new UsuarioController();

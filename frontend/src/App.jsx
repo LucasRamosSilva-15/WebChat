@@ -5,6 +5,7 @@ import CookieBanner from './components/CookieBanner';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import Rooms from './pages/Rooms';
 import Chat from './pages/Chat';
 import About from './pages/About';
@@ -28,7 +29,28 @@ import { NotificationProvider } from './context/NotificationContext';
 import NotificationToastContainer from './components/NotificationToastContainer';
 
 
+import { useEffect } from 'react';
+import { supabase, syncOAuthUserSession } from './services/supabase';
+
 function App() {
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        const hasToken = localStorage.getItem('chat_token');
+        if (!hasToken) {
+          try {
+            await syncOAuthUserSession(session);
+          } catch (err) {
+            console.error('Falha ao sincronizar OAuth com o backend:', err);
+          }
+        }
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
   return (
     <NotificationProvider>
       <Router>
@@ -40,6 +62,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/about" element={<About />} />
           <Route path="/rooms" element={<PrivateRoute><Rooms /></PrivateRoute>} />
           <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />

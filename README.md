@@ -104,6 +104,8 @@ Você também precisará criar um arquivo `.env` na raiz da pasta `frontend`:
 ```env
 VITE_BACKEND_URL=http://localhost:3001
 VITE_API_URL=http://localhost:3001/api
+VITE_SUPABASE_URL=sua_url_do_supabase
+VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
 ```
 
 ### Backend
@@ -273,13 +275,14 @@ npm run test:backend && npm run test:frontend
 
 ## Catálogo de Páginas Principais (Frontend)
 
-A aplicação web é composta por 16 telas com design skeuomórfico reativo:
+A aplicação web é composta por 18 telas com design skeuomórfico reativo:
 
 | Página | Rota | Componente | Guarda | Propósito & Funcionalidades |
 | :--- | :--- | :--- | :--- | :--- |
 | **Página Inicial** | `/` | `Home.jsx` | Pública | Landing page de apresentação e ponto de entrada da aplicação. |
 | **Login** | `/login` | `Login.jsx` | Pública | Autenticação com e-mail/senha, emissão de JWT e alertas contextuais. |
 | **Cadastro** | `/register` | `Register.jsx` | Pública | Criação de conta com medidor de força de senha em tempo real. |
+| **Recuperação de Senha** | `/forgot-password` | `ForgotPassword.jsx` | Pública | Solicitação de link de redefinição de senha com Supabase Auth. |
 | **Lobby de Salas** | `/rooms` | `Rooms.jsx` | `PrivateRoute` | Catálogo de salas temáticas, métricas em tempo real (`StatCard`) e filtros. |
 | **Sala de Chat** | `/chat` | `Chat.jsx` | `PrivateRoute` | Mensageria instantânea com Socket.io, criptografia e moderação hierárquica. |
 | **Mensagens Diretas** | `/directs` | `Directs.jsx` | `PrivateRoute` | Bate-papo 1x1 confidencial em tempo real, lista de conversas e busca de contatos. |

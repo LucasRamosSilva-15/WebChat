@@ -97,6 +97,34 @@ router.post('/login', authLimiter, UsuarioController.login);
 
 /**
  * @swagger
+ * /auth/oauth-sync:
+ *   post:
+ *     summary: Sincronizar usuário autenticado via OAuth (Google)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               avatar_url:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sincronização bem-sucedida e retorno de token
+ *       400:
+ *         description: E-mail obrigatório
+ */
+router.post('/oauth-sync', authLimiter, UsuarioController.oauthSync);
+
+/**
+ * @swagger
  * /auth/me:
  *   get:
  *     summary: Obter dados do usuário autenticado

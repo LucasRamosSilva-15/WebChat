@@ -167,6 +167,70 @@ class UserService {
     await UserRepository.delete(id);
     return true;
   }
+  async syncOAuthUser({ email, name, avatar_url }) {
+    if (!email) {
+      throw new Error('E-mail é obrigatório para autenticação OAuth.');
+    }
+
+    const normalizedEmail = sanitizeEmail(email);
+    let user = await UserRepository.findByEmail(normalizedEmail);
+
+    const displayName = (name && name.trim()) || normalizedEmail.split('@')[0];
+
+    if (!user) {
+      user = await UserRepository.create({
+        email: normalizedEmail,
+        displayName,
+        profilePhoto: avatar_url || null,
+        password: null,
+        role: 'user',
+        status: 'active'
+      });
+
+      logSecurityEvent({
+        eventType: 'AUTH_OAUTH_REGISTER_SUCCESS',
+        level: 'INFO',
+        actor: { id: user.id, email: user.email },
+        action: 'oauth_register',
+        status: 'SUCCESS'
+      });
+    } else {
+      const updates = {};
+      if (!user.displayName && displayName) {
+        updates.displayName = displayName;
+      }
+      if (!user.profilePhoto && avatar_url) {
+        updates.profilePhoto = avatar_url;
+      }
+      if (Object.keys(updates).length > 0) {
+        await user.update(updates);
+      }
+
+      logSecurityEvent({
+        eventType: 'AUTH_OAUTH_LOGIN_SUCCESS',
+        level: 'INFO',
+        actor: { id: user.id, email: user.email },
+        action: 'oauth_login',
+        status: 'SUCCESS'
+      });
+    }
+
+    const token = generateToken({
+      id: user.id,
+      email: user.email
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        profilePhoto: user.profilePhoto,
+        role: user.role
+      },
+      token
+    };
+  }
 }
 
 module.exports = new UserService();

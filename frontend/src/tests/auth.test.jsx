@@ -6,6 +6,8 @@ import Register from '../pages/Register';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../socket';
 
+import { supabase } from '../services/supabase';
+
 vi.mock('../services/api', () => ({
   apiRequest: vi.fn(),
   setAuthToken: vi.fn()
@@ -17,6 +19,18 @@ vi.mock('../socket', () => ({
     connect: vi.fn(),
     disconnect: vi.fn()
   }
+}));
+
+vi.mock('../services/supabase', () => ({
+  supabase: {
+    auth: {
+      signInWithOAuth: vi.fn().mockResolvedValue({ error: null }),
+      onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } })
+    }
+  },
+  handleGoogleSignIn: vi.fn(),
+  syncOAuthUserSession: vi.fn()
 }));
 
 const mockedNavigate = vi.fn();
@@ -43,7 +57,8 @@ describe('Authentication Flow Tests', () => {
       );
       expect(screen.getByPlaceholderText(/e-mail/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/senha|password/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^continuar$/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /continuar com a google/i })).toBeInTheDocument();
     });
 
     it('2. Mostra mensagem de erro ao falhar na API', async () => {
@@ -57,7 +72,7 @@ describe('Authentication Flow Tests', () => {
 
       fireEvent.change(screen.getByPlaceholderText(/e-mail/i), { target: { value: 'teste@email.com' } });
       fireEvent.change(screen.getByPlaceholderText(/senha|password/i), { target: { value: 'senha123' } });
-      fireEvent.click(screen.getByRole('button', { name: /continuar/i }));
+      fireEvent.click(screen.getByRole('button', { name: /^continuar$/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Credenciais inválidas.')).toBeInTheDocument();
@@ -78,7 +93,7 @@ describe('Authentication Flow Tests', () => {
 
       fireEvent.change(screen.getByPlaceholderText(/e-mail/i), { target: { value: 'teste@email.com' } });
       fireEvent.change(screen.getByPlaceholderText(/senha|password/i), { target: { value: 'senha123' } });
-      fireEvent.click(screen.getByRole('button', { name: /continuar/i }));
+      fireEvent.click(screen.getByRole('button', { name: /^continuar$/i }));
 
       await waitFor(() => {
         expect(apiRequest).toHaveBeenCalledWith('/auth/login', expect.objectContaining({
@@ -97,6 +112,26 @@ describe('Authentication Flow Tests', () => {
       expect(socket.connect).toHaveBeenCalled();
 
       expect(mockedNavigate).toHaveBeenCalledWith('/rooms');
+    });
+
+    it('4. Renderiza o botão "Continuar com a Google" e dispara o signInWithOAuth', async () => {
+      render(
+        <MemoryRouter>
+          <Login />
+        </MemoryRouter>
+      );
+
+      const googleBtn = screen.getByRole('button', { name: /continuar com a google/i });
+      expect(googleBtn).toBeInTheDocument();
+
+      fireEvent.click(googleBtn);
+
+      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+        provider: 'google',
+        options: {
+          redirectTo: expect.stringMatching(/\/$/),
+        },
+      });
     });
   });
 
@@ -165,6 +200,26 @@ describe('Authentication Flow Tests', () => {
       expect(localStorage.getItem('chat_isLoggedIn')).toBe('true');
       expect(socket.connect).toHaveBeenCalled();
       expect(mockedNavigate).toHaveBeenCalledWith('/rooms');
+    });
+
+    it('4. Renderiza o botão "Continuar com a Google" e dispara o signInWithOAuth', async () => {
+      render(
+        <MemoryRouter>
+          <Register />
+        </MemoryRouter>
+      );
+
+      const googleBtn = screen.getByRole('button', { name: /continuar com a google/i });
+      expect(googleBtn).toBeInTheDocument();
+
+      fireEvent.click(googleBtn);
+
+      expect(supabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+        provider: 'google',
+        options: {
+          redirectTo: expect.stringMatching(/\/$/),
+        },
+      });
     });
   });
 });

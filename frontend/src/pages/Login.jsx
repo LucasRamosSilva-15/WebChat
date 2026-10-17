@@ -1,9 +1,9 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
-import { FiUser, FiLock, FiEye, FiEyeOff, FiKey, FiArrowRight } from 'react-icons/fi';
+import { FiUser, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../socket';
+import { supabase } from '../services/supabase';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -16,6 +16,20 @@ const Login = () => {
         return !!(location.state?.sessionExpired || new URLSearchParams(window.location.search).get('expired') === 'true');
     });
     const [loading, setLoading] = useState(false);
+
+    const handleGoogleSignIn = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/`,
+                },
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erro na autenticação com a Google:', error.message);
+        }
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -92,7 +106,7 @@ const Login = () => {
                             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300" htmlFor="password">
                                 Senha
                             </label>
-                            <Link to="#" className="text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium">
+                            <Link to="/forgot-password" className="text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium">
                                 Esqueceu a senha?
                             </Link>
                         </div>
@@ -148,30 +162,30 @@ const Login = () => {
                         )}
                     </button>
 
-                    <div className="flex items-center my-3.5">
-                        <div className="flex-1 border-t border-slate-200 dark:border-white/10"></div>
-                        <span className="px-3 text-[11px] font-medium tracking-wide text-slate-400 dark:text-slate-500">ou acesse via</span>
-                        <div className="flex-1 border-t border-slate-200 dark:border-white/10"></div>
+                    <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-slate-200/80 dark:border-slate-700/60" />
+                        </div>
+                        <div className="relative flex justify-center text-[11px] uppercase">
+                            <span className="bg-white dark:bg-slate-900 px-3 text-slate-400 font-semibold">
+                                ou
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                            type="button"
-                            className="btn-secondary-glossy py-2 px-3 text-xs flex items-center justify-center gap-2 font-medium opacity-60 cursor-not-allowed rounded-xl"
-                            disabled
-                        >
-                            <FcGoogle className="w-4 h-4 shrink-0" />
-                            <span>Google</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="btn-secondary-glossy py-2 px-3 text-xs flex items-center justify-center gap-2 font-medium opacity-60 cursor-not-allowed rounded-xl"
-                            disabled
-                        >
-                            <FiKey className="w-4 h-4 shrink-0 text-slate-500" />
-                            <span>Chave Passkey</span>
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        onClick={handleGoogleSignIn}
+                        className="btn-secondary-glossy w-full py-2.5 px-4 text-xs sm:text-sm flex items-center justify-center gap-2.5 font-medium rounded-xl hover:opacity-90 transition-opacity cursor-pointer text-slate-700 dark:text-slate-200"
+                    >
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 48 48" aria-hidden="true">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                        </svg>
+                        <span>Continuar com a Google</span>
+                    </button>
                 </form>
 
                 <div className="mt-4 pt-1">

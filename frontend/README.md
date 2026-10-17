@@ -25,6 +25,7 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 | `/` | `Home.jsx` | Público | Landing page inicial e ponto de entrada |
 | `/login` | `Login.jsx` | Público | Autenticação de usuários existentes |
 | `/register` | `Register.jsx` | Público | Criação de conta com medidor de senha |
+| `/forgot-password` | `ForgotPassword.jsx` | Público | Recuperação de senha com envio de link via Supabase Auth |
 | `/about` | `About.jsx` | Público | Apresentação institucional e acadêmica |
 | `/rooms` | `Rooms.jsx` | Protegido (`PrivateRoute`) | Lobby de salas de conversação com filtros e métricas |
 | `/chat` | `Chat.jsx` | Protegido (`PrivateRoute`) | Sala de chat ativa com moderação e tempo real |
