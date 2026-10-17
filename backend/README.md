@@ -126,11 +126,14 @@ erDiagram
     users ||--o{ notifications : "recebe notificação"
     users ||--o{ direct_conversations : "inicia (user1)"
     users ||--o{ direct_conversations : "recebe (user2)"
+    direct_conversations ||--o{ direct_messages : "contém"
+    users ||--o{ direct_messages : "envia"
+    users ||--o{ favorites : "marca como favorito"
 
     users {
         uuid id PK
         string email UK
-        string password
+        string password "nullable (OAuth)"
         string displayName
         string profilePhoto
         text profileDesc
@@ -172,6 +175,24 @@ erDiagram
         uuid user2_id FK
         text last_message
         datetime last_message_at
+        datetime created_at
+    }
+
+    direct_messages {
+        uuid id PK
+        uuid conversation_id FK
+        uuid sender_id FK
+        text content
+        text image_url
+        boolean read
+        datetime created_at
+    }
+
+    favorites {
+        uuid id PK
+        uuid user_id FK
+        string item_type "room | conversation"
+        uuid item_id
         datetime created_at
     }
 
@@ -253,6 +274,11 @@ O backend implementa um conjunto rigoroso de controles de cibersegurança:
    - CORS com regex estrita ancorada (`isAllowedOrigin`) para impedir bypasses com subdomínios `localhost`.
    - HSTS de 1 ano (`maxAge: 31536000`, `includeSubDomains: true`, `preload: true`).
    - Rate limit global para a API REST (`600 reqs/5min`) e limite de payload JSON reduzido de 50MB para **10MB** para mitigar exaustão de memória (OOM DoS).
+9. **Autenticação Híbrida & Sincronização Google OAuth (Supabase)**:
+   - Suporte completo a login e registo social com **Google OAuth** gerenciado pelo Supabase.
+   - Endpoint dedicado `POST /api/auth/oauth-sync` com extração e normalização resiliente de `displayName` (`full_name || name`), `profilePhoto` (`avatar_url || picture`) e `email`.
+   - Contas criadas via OAuth mantêm `password = null`, impedindo ataques de enumeração de senha no formulário tradicional e recebendo token JWT legítimo do SkyRipple.
+   - **Gatilho SQL para PostgreSQL**: O arquivo `src/database/supabase_oauth_trigger.sql` provê uma trigger function com `SECURITY DEFINER` que herda automaticamente novos usuários de `auth.users` diretamente para as tabelas `public.users` e `public.profiles`.
 
 ##### Supabase RLS Desativado por Design
 Por decisão arquitetural explicada no plano de cibersegurança:
@@ -332,6 +358,7 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 | ------ | ------ | ------ | ------ |
 | POST | `/auth/register` | Rate Limit (10/15min) | Cadastra usuário com senha bcrypt e já retorna dados públicos + token JWT. |
 | POST | `/auth/login` | Rate Limit (10/15min) | Valida credenciais e emite token de acesso válido por 7 dias. |
+| POST | `/auth/oauth-sync` | Rate Limit (10/15min) | Sincroniza usuário autenticado via Google OAuth (Supabase) herdando `name`, `avatar_url`, `email` e emitindo token JWT. |
 | GET | `/auth/me` | Bearer Token | Retorna os dados cadastrais completos do usuário logado. |
 | DELETE | `/auth/me` | Bearer Token | Exclui permanentemente o perfil do usuário e remove suas credenciais. |
 
@@ -464,11 +491,17 @@ backend/
 │   ├── config/
 │   │   ├── database.js       # Conexão do Sequelize com fallback (Postgres SSL vs SQLite memory)
 │   │   └── database_erro.js  # Utilitário legado de contingência
+│   ├── database/
+│   │   └── supabase_oauth_trigger.sql # Gatilho PostgreSQL para sincronização automática de perfis OAuth
 │   ├── models/               # Modelagem relacional do Sequelize (Entidades)
 │   │   ├── User.js           # Usuários, roles e status
 │   │   ├── Room.js           # Salas de chat e metadados
 │   │   ├── RoomMember.js     # Tabela associativa de participantes e cargos
 │   │   ├── Message.js        # Mensagens de texto e referências a mídias
+│   │   ├── DirectConversation.js # Conversas privadas 1x1
+│   │   ├── DirectMessage.js  # Mensagens diretas privadas
+│   │   ├── Favorite.js       # Salas e conversas favoritas
+│   │   ├── Notification.js   # Notificações e avisos contextuais
 │   │   ├── Report.js         # Denúncias de moderação
 │   │   ├── Feedback.js       # Feedbacks de usuários com anexos
 │   │   └── index.js          # Definição e inicialização de relacionamentos ORM
@@ -477,18 +510,27 @@ backend/
 │   │   ├── RoomRepository.js
 │   │   ├── RoomMemberRepository.js
 │   │   ├── MessageRepository.js
+│   │   ├── DirectRepository.js
+│   │   ├── FavoriteRepository.js
+│   │   ├── NotificationRepository.js
 │   │   ├── ReportRepository.js
 │   │   └── FeedbackRepository.js
 │   ├── services/             # Regras de negócio, criptografia e verificações lógicas
-│   │   ├── UserService.js    # Hashing bcrypt, validação de unicidade e login
-│   │   ├── RoomService.js    # Criação de salas, contagem e regras de deleção
-│   │   ├── MessageService.js # Validação de conteúdo e busca textual
+│   │   ├── UserService.js    # Hashing Argon2id/bcrypt, sincronização OAuth e login
+│   │   ├── RoomService.js    # Criação de salas, contagem, kicks e moderação hierárquica
+│   │   ├── MessageService.js # Validação de conteúdo, sanitização XSS e busca textual
+│   │   ├── DirectService.js  # Gestão de conversas e mensagens privadas 1x1
+│   │   ├── FavoriteService.js# Adição e curadoria de favoritos
+│   │   ├── NotificationService.js # Gestão e disparo de notificações
 │   │   ├── ReportService.js  # Gestão do fluxo de denúncias
 │   │   └── FeedbackService.js# Registro e resolução de feedbacks
 │   ├── controllers/          # Mapeamento HTTP req/res e dispatchers
-│   │   ├── UsuarioController.js
+│   │   ├── UsuarioController.js # Registro, login, OAuth sync e perfil
 │   │   ├── RoomController.js
 │   │   ├── MessageController.js
+│   │   ├── DirectController.js
+│   │   ├── FavoriteController.js
+│   │   ├── NotificationController.js
 │   │   ├── ReportController.js
 │   │   ├── FeedbackController.js
 │   │   ├── AdminController.js
@@ -497,25 +539,36 @@ backend/
 │   ├── middleware/
 │   │   ├── auth.js           # Validação do token JWT de usuário regular
 │   │   └── adminAuth.js      # Validação do token JWT restrito a administradores
-│   └── routes/               # Declaração dos endpoints e documentação Swagger JSDoc
-│       ├── api.js            # Roteador central /api
-│       ├── admin.js          # Rotas sob /api/admin/*
-│       ├── usuarioRoutes.js  # Rotas sob /api/auth/*
-│       ├── roomRoutes.js     # Rotas sob /api/rooms/*
-│       ├── messageRoutes.js  # Rotas de mensagens e buscas
-│       ├── reportRoutes.js   # Rotas de denúncias
-│       └── feedbackRoutes.js # Rotas de feedback
+│   ├── routes/               # Declaração dos endpoints e documentação Swagger JSDoc
+│   │   ├── api.js            # Roteador central /api
+│   │   ├── usuarioRoutes.js  # Rotas sob /api/auth/* (inclui /auth/oauth-sync)
+│   │   ├── roomRoutes.js     # Rotas sob /api/rooms/*
+│   │   ├── messageRoutes.js  # Rotas de mensagens e buscas
+│   │   ├── directRoutes.js   # Rotas sob /api/directs/*
+│   │   ├── favoriteRoutes.js # Rotas sob /api/favorites/*
+│   │   ├── notificationRoutes.js # Rotas sob /api/notifications/*
+│   │   ├── reportRoutes.js   # Rotas de denúncias
+│   │   ├── feedbackRoutes.js # Rotas de feedback
+│   │   └── admin.js          # Rotas sob /api/admin/*
+│   └── utils/                # Utilitários corporativos de segurança e auditoria
+│       ├── auditLogger.js    # Trilha forense estruturada com ofuscação de PII
+│       └── security.js       # Criptografia Argon2id, Dummy Hash, timingSafeEqual e mitigação XSS
 └── tests/                    # Suite completa de testes automatizados com Jest
     ├── helpers.js            # Utilitários de reset do SQLite em memória e geradores de tokens
     ├── usuario.test.js       # Testes de registro, login e perfil
+    ├── oauthSync.test.js     # Testes de sincronização OAuth (Google / Supabase)
     ├── room.test.js          # Testes de salas e controle de participantes
+    ├── roomModeration.test.js# Testes de moderação, expulsão e transferência de posse
     ├── message.test.js       # Testes de mensagens e busca textual
     ├── chat.test.js          # Testes de integração de fluxo de chat
+    ├── directs.test.js       # Testes de conversas e mensagens diretas 1x1
+    ├── favorites.test.js     # Testes de gestão de favoritos
     ├── report.test.js        # Testes de denúncias
     ├── feedback.test.js      # Testes de feedbacks
     ├── models.test.js        # Testes unitários dos modelos do Sequelize
     ├── authMiddleware.test.js# Testes de proteção e rejeição de tokens
     ├── controllers.test.js   # Testes unitários dos métodos de controladores
+    ├── security.test.js      # Testes de endurecimento CIS Controls e OWASP ASVS
     └── e2e-flow.test.js      # Teste de ponta a ponta (E2E) simulando jornada completa
 ```
 
@@ -576,12 +629,22 @@ npm test
 * Os rate limiters (`express-rate-limit`) são desativados automaticamente em testes (`skip: () => process.env.NODE_ENV === 'test'`) para permitir execução maciça sem falsos positivos.
 * O helper `tests/helpers.js` recria as tabelas do zero de forma atômica (`sequelize.sync({ force: true })`) antes de cada bateria, garantindo isolamento total entre os testes.
 
-##### Escopo Coberto (13 Suítes & 109 Testes Automatizados):
-1. **Segurança & Criptografia (CIS Controls IG1 & OWASP ASVS)**: Hashing Argon2id, motor híbrido com upgrade transparente de Bcrypt, equalização temporal contra enumeração (*Dummy Hash*), comparações em tempo constante (`safeTimingCompare`), algoritmo fixo JWT `HS256`, revogação instantânea de tokens, bloqueio progressivo contra força bruta, sanitização contra XSS e ofuscação de logs forenses (`security.test.js`).
-2. **Modelos**: Validação de constraints, integridade de campos, tipos UUID e chaves estrangeiras (`models.test.js`).
-3. **Middlewares**: Comportamento na ausência de headers, tokens com assinatura corrompida e rejeição de usuários comuns em rotas administrativas (`authMiddleware.test.js`).
-4. **Controladores & Serviços**: Validação de hashing de senha com salt, rejeição de e-mails duplicados e proteção de mensagens/salas contra exclusão por terceiros (`usuario.test.js`, `room.test.js`, `message.test.js`, `directs.test.js`, `favorites.test.js`, `feedback.test.js`, `report.test.js`).
-5. **Fluxos de Ponta a Ponta (E2E)**: Simulação completa: Registro ➔ Login ➔ Criação de Sala ➔ Adesão ➔ Envio de Mensagem ➔ Busca Textual ➔ Denúncia ➔ Resolução pelo Admin (`e2e-flow.test.js`).
+##### Escopo Coberto (15 Suítes & 128 Testes Automatizados):
+1. **Segurança & Criptografia (CIS Controls IG1 & OWASP ASVS)**: Hashing Argon2id, motor híbrido com upgrade transparente de Bcrypt, equalização temporal contra enumeração (*Dummy Hash*), comparações em tempo constante (`timingSafeEqual`), algoritmo fixo JWT `HS256`, revogação instantânea de tokens, bloqueio progressivo contra força bruta, sanitização contra XSS e ofuscação de logs forenses (`security.test.js`).
+2. **Sincronização OAuth (Google / Supabase)**: Validação de herança de metadados (`name`, `avatar_url`, `email`), garantia de `password = null`, geração de JWT resiliente e sincronização contínua (`oauthSync.test.js`).
+3. **Autenticação, Registro & Perfil**: Validação de e-mails duplicados, políticas de senha, login com bloqueio de tentativas e expiração de sessões (`usuario.test.js`).
+4. **Salas de Chat**: Criação, busca, atualização de metadados, contagem de membros e exclusão de salas (`room.test.js`).
+5. **Moderação & Gestão Hierárquica de Salas**: Kick hierárquico (dono/moderador), promoção e rebaixamento de membros, transferência atômica de titularidade de sala (`roomModeration.test.js`).
+6. **Mensagens & Histórico**: Envio de mensagens, validação de limites de texto, uploads de anexos e busca textual case-insensitive (`message.test.js`).
+7. **Motor de Mensageria em Tempo Real**: Handshake autenticado, controle de presença em memória (`roomPresence`), rate limit de mensagens por socket (500ms) e emissão de eventos (`chat.test.js`).
+8. **Mensagens Diretas Privadas (1x1)**: Abertura de conversas diretas, listagem de contatos e trânsito confidencial de mensagens privadas (`directs.test.js`).
+9. **Favoritos**: Adição e remoção atômica de salas e conversas favoritas por usuário (`favorites.test.js`).
+10. **Denúncias de Moderação (Reports)**: Registro de denúncias contra mensagens abusivas e resolução administrativa (`report.test.js`).
+11. **Feedbacks de Usuários**: Envio de relatos de bugs e sugestões com imagens anexas (`feedback.test.js`).
+12. **Modelos ORM (Sequelize)**: Integridade de schemas, campos UUID, constraints de unicidade e associações relacionais (`models.test.js`).
+13. **Middlewares de Segurança**: Rejeição de tokens ausentes, expirados ou forjados e proteção estrita de endpoints administrativos (`authMiddleware.test.js`).
+14. **Controladores HTTP**: Mapeamento determinístico de requisições, validação de status HTTP e tratamento unificado de erros (`controllers.test.js`).
+15. **Fluxos de Ponta a Ponta (E2E)**: Simulação completa: Registro ➔ Login ➔ Criação de Sala ➔ Adesão ➔ Envio de Mensagem ➔ Busca Textual ➔ Denúncia ➔ Resolução pelo Admin (`e2e-flow.test.js`).
 
 ---
 
@@ -612,8 +675,10 @@ npm start
 
 O console exibirá as mensagens de inicialização:
 ```text
-[SERVER] Procurando arquivos em: .../src/routes/*.js
-[SERVER] Rotas Swagger carregadas com sucesso
+[SWAGGER] Procurando arquivos em: .../src/routes/*.js
+[SWAGGER] 38 rota(s) encontrada(s)
+[SERVER] SUPABASE_URL carregada: true
+[SERVER] SUPABASE_KEY carregada: true
 [SERVER] Rodando na porta 3001
 [Sequelize] Conexão com o banco de dados estabelecida com sucesso.
 ```

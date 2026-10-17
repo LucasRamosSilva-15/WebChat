@@ -32,7 +32,7 @@ A **SkyRipple API** fornece uma suíte completa de recursos para construir e est
 
 ## Principais Recursos
 
-- **Autenticação Segura**: Gerenciamento de credenciais com hashing bcrypt e emissão de tokens JWT (7 dias para usuários normais, 8 horas para administradores).
+- **Autenticação Híbrida Segura**: Gerenciamento de credenciais locais com hashing de ponta **Argon2id** (suporte a migração automática de bcrypt) e autenticação social federada via **Google Identity (OAuth)**, emitindo tokens JWT válidos por 7 dias (ou 8 horas para administradores).
 - **Salas Temáticas (Rooms)**: Salas públicas ou restritas com contagem de membros em tempo real, suporte a categorias e imagens de capa.
 - **Histórico e Busca**: Mensagens persistidas no banco com suporte a links de mídia e pesquisa por termo textual (`q`).
 - **Moderação Ativa**: Sistema integrado de abertura de chamados de denúncias (`reports`) e feedback direto de usuários (`feedbacks`).

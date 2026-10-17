@@ -8,7 +8,7 @@ Este guia orienta você na realização do fluxo completo de ponta a ponta na AP
 
 <Steps>
   <Step title="1. Registrar um Novo Usuário">
-    Envie uma requisição `POST` para o endpoint `/auth/register`. A senha fornecida será automaticamente criptografada via `bcrypt` no backend antes de ser salva no banco PostgreSQL.
+    Envie uma requisição `POST` para o endpoint `/auth/register`. A senha fornecida será automaticamente criptografada via `Argon2id` (com migração automática de hashes legados `bcrypt`) no backend antes de ser salva no banco PostgreSQL. Alternativamente, utilize a autenticação federada Google OAuth através de `/auth/oauth-sync`.
 
     <CodeGroup>
     ```bash cURL

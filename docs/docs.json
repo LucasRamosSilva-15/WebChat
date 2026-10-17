@@ -84,6 +84,7 @@
             "pages": [
               "api-reference/auth/register",
               "api-reference/auth/login",
+              "api-reference/auth/oauth-sync",
               "api-reference/auth/me",
               "api-reference/auth/delete-me"
             ]

@@ -1,0 +1,12 @@
+---
+title: "Sincronização OAuth (Google)"
+openapi: "POST /auth/oauth-sync"
+---
+
+Sincroniza um usuário autenticado externamente via **Google OAuth (Supabase)** com a base de dados do SkyRipple.
+
+O endpoint verifica a existência do usuário por e-mail:
+- **Novo Usuário**: Cria a conta sem senha tradicional (`password = null`), herdando o nome de exibição (`name`/`displayName`) e o avatar oficial fornecido pela Google Identity (`avatar_url`).
+- **Usuário Existente**: Atualiza o nome e o avatar para manter a foto e identidade sempre atualizadas.
+
+Em ambos os casos, gera e retorna o token de autenticação **JWT nativo** da SkyRipple API (válido por 7 dias), permitindo acesso imediato a salas, chat e websockets.

@@ -172,6 +172,81 @@
         }
       }
     },
+    "/auth/oauth-sync": {
+      "post": {
+        "summary": "Sincronizar usuário via OAuth (Google)",
+        "description": "Recebe as informações do perfil autenticado pelo Supabase OAuth (Google), sincroniza ou cadastra o usuário no banco de dados SkyRipple e gera um token JWT de 7 dias para a sessão da aplicação.",
+        "tags": [
+          "Autenticação"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthSyncRequest"
+              },
+              "example": {
+                "email": "lucas@gmail.com",
+                "name": "Lucas Ramos",
+                "avatar_url": "https://lh3.googleusercontent.com/a/ACg8oc..."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sincronização bem-sucedida e retorno do token JWT.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSuccessResponse"
+                },
+                "example": {
+                  "user": {
+                    "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+                    "email": "lucas@gmail.com",
+                    "displayName": "Lucas Ramos",
+                    "name": "Lucas Ramos",
+                    "profilePhoto": "https://lh3.googleusercontent.com/a/ACg8oc...",
+                    "role": "user",
+                    "status": "active"
+                  },
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "E-mail não informado ou inválido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "E-mail é obrigatório para autenticação via OAuth."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Muitas requisições. Rate limit de autenticação atingido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Muitas tentativas de login. Tente novamente mais tarde."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/me": {
       "get": {
         "summary": "Obter perfil do usuário autenticado",
@@ -2546,6 +2621,28 @@
             "type": "string",
             "format": "password",
             "example": "SenhaSegura@2026"
+          }
+        }
+      },
+      "OAuthSyncRequest": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "lucas@gmail.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "Lucas Ramos"
+          },
+          "avatar_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://lh3.googleusercontent.com/a/ACg8oc..."
           }
         }
       },

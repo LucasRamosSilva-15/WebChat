@@ -20,7 +20,7 @@ A infraestrutura foi concebida para oferecer baixa latência na entrega de mensa
 
 <CardGroup cols={3}>
   <Card title="Camada RESTful" icon="server" color="#2563EB">
-    Rotas HTTP padronizadas com tratamento semântico de erros, hashing criptográfico bcrypt e emissão de JWT.
+    Rotas HTTP padronizadas, hashing Argon2id/bcrypt, autenticação híbrida (Google OAuth via Supabase) e emissão de JWT.
   </Card>
   <Card title="Realtime Engine" icon="bolt" color="#F59E0B">
     Pipeline WebSocket com Socket.io, broadcasting por canais de salas e controle de taxa de 500ms por usuário.

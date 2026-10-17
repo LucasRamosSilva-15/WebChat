@@ -17,12 +17,12 @@ docs/
 ├── guides/                    # Guias conceituais e tutoriais aprofundados
 │   ├── overview.mdx           # Arquitetura, topologia e ecossistema
 │   ├── quickstart.mdx         # Passo a passo inicial (cURL, Node.js e Python)
-│   ├── auth-security.mdx      # JWT, bcrypt, User vs Admin e WebSocket
+│   ├── auth-security.mdx      # JWT, Argon2id, Google OAuth (Supabase), User vs Admin e WebSocket
 │   ├── communication-standards.mdx # Erros, Rate Limit e Paginação
 │   └── webhooks.mdx           # Eventos, assinatura HMAC SHA-256 e retries
 ├── api-reference/             # Referência interativa de endpoints
 │   ├── index.mdx              # Visão geral e status codes
-│   ├── auth/                  # Registro, login, perfil e deleção de conta
+│   ├── auth/                  # Registro, login, oauth-sync, perfil e deleção de conta
 │   ├── rooms/                 # Criação, listagem, membros, moderação e remoção de salas
 │   ├── directs/               # Conversas diretas privadas 1x1 e busca de contatos
 │   ├── notifications/         # Central de notificações e leitura em lote

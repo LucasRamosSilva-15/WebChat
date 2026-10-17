@@ -1,7 +1,7 @@
 ---
 title: "Segurança & Autenticação"
 sidebarTitle: "Segurança & JWT"
-description: "Padrões de segurança, criptografia com bcrypt, tokens de usuário versus admin e proteção de rotas."
+description: "Padrões de segurança, criptografia com Argon2id, autenticação híbrida com Google OAuth (Supabase), tokens JWT e proteção de rotas."
 ---
 
 A segurança da SkyRipple API é baseada no baseline **CIS Controls IG1 & OWASP ASVS (Application Security Verification Standard)**:
@@ -19,9 +19,9 @@ O sistema opera com duas personas distintas de autenticação, refletidas no có
 
 | Critério | Token de Usuário Regular | Token de Administrador |
 | :--- | :--- | :--- |
-| **Endpoint Emissor** | `POST /api/auth/login` ou `/auth/register` | `POST /api/admin/auth` |
-| **Credenciais Exigidas** | E-mail registrado + Senha pessoal | Chave mestra (`ADMIN_SECRET_KEY`) |
-| **Algoritmo de Hash** | **Argon2id** (fallback compatível bcrypt) | `timingSafeEqual(SHA256)` |
+| **Endpoint Emissor** | `POST /api/auth/login`, `/auth/register` ou `/auth/oauth-sync` | `POST /api/admin/auth` |
+| **Credenciais Exigidas** | E-mail registrado + Senha (ou sessão Google OAuth) | Chave mestra (`ADMIN_SECRET_KEY`) |
+| **Algoritmo de Hash** | **Argon2id** (fallback compatível bcrypt) ou `null` (OAuth) | `timingSafeEqual(SHA256)` |
 | **Tempo de Expiração** | **7 dias** (`expiresIn: '7d'`) | **8 horas** (`expiresIn: '8h'`) |
 | **Payload do JWT** | `{ "id": UUID, "email": string }` | `{ "id": "admin-system", "role": "admin" }` |
 | **Rate Limit Aplicado** | 10 tentativas / 15 minutos | 5 tentativas / 15 minutos |
@@ -132,6 +132,74 @@ admin_token = admin_res.json()["token"]
 <ResponseField name="role" type="string" required>
   Identificador do perfil emitido (`admin`).
 </ResponseField>
+
+---
+
+## Autenticação Federada: Google OAuth (Supabase)
+
+O SkyRipple adota uma arquitetura de identidade híbrida que possibilita aos utilizadores autenticarem-se com suas credenciais tradicionais (e-mail e senha com **Argon2id**) ou com suas contas **Google Identity** através da infraestrutura de autenticação do Supabase.
+
+### 1. Topologia do Fluxo OAuth
+1. **Início do Handshake**: O utilizador clica no botão *"Continuar com a Google"* nas páginas `/login` ou `/register`. O cliente chama `supabase.auth.signInWithOAuth({ provider: 'google' })`.
+2. **Consentimento Google**: O utilizador autoriza o acesso no consent screen seguro da Google Identity.
+3. **Captura da Sessão**: Ao retornar à aplicação, o listener `supabase.auth.onAuthStateChange` captura o token de sessão e os metadados do utilizador (`full_name`, `avatar_url`, `email`).
+4. **Sincronização com o Backend**: O frontend despacha uma requisição `POST /api/auth/oauth-sync` enviando `{ email, name, avatar_url }`.
+5. **Emissão de Token Nativo**: O backend SkyRipple cria o utilizador (se inexistente) ou atualiza nome e foto de perfil, emitindo um **JWT nativo de 7 dias** assinado com `JWT_SECRET`.
+
+### 2. Modelo de Segurança sem Senha
+- Para utilizadores criados via Google OAuth, a coluna `password` permanece `NULL`.
+- Tentativas de autenticação tradicional (`POST /api/auth/login`) são interceptadas e impedidas caso a conta não possua senha cadastrada, protegendo o utilizador contra invasões por dicionário.
+- O endpoint `/auth/oauth-sync` é estritamente protegido pelo limitador de taxa `authLimiter` (máximo de 10 chamadas por IP a cada 15 minutos).
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://skyripple-9vqr.onrender.com/api/auth/oauth-sync" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "lucas@gmail.com",
+    "name": "Lucas Ramos",
+    "avatar_url": "https://lh3.googleusercontent.com/a/ACg8oc..."
+  }'
+```
+
+```javascript Frontend (React / Supabase)
+import { supabase } from './services/supabase';
+
+// 1. Disparar login social
+export const loginWithGoogle = async () => {
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin }
+  });
+};
+
+// 2. Sincronizar sessão capturada
+export const syncWithBackend = async (sessionUser) => {
+  const res = await fetch('https://skyripple-9vqr.onrender.com/api/auth/oauth-sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: sessionUser.email,
+      name: sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name,
+      avatar_url: sessionUser.user_metadata?.avatar_url
+    })
+  });
+  const { user, token } = await res.json();
+  localStorage.setItem('chat_token', token);
+  return user;
+};
+```
+</CodeGroup>
+
+### 3. Sincronização Automática via Database Trigger (PostgreSQL)
+Para implementações onde a base de dados PostgreSQL é compartilhada diretamente com o Supabase, o repositório disponibiliza o script `backend/src/database/supabase_oauth_trigger.sql`.
+
+A função plpgsql `public.handle_new_oauth_user()` é acionada automaticamente após cada inserção em `auth.users`, replicando o registro para `public.users` e `public.profiles` com resolução inteligente de nomes e avatares:
+```sql
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_oauth_user();
+```
 
 ---
 
