@@ -84,4 +84,25 @@ describe('OAuth Synchronization Tests (/auth/oauth-sync)', () => {
     expect(res.headers['access-control-allow-origin']).toBe('https://web-chat-project-web2.vercel.app');
     expect(res.headers['access-control-allow-credentials']).toBe('true');
   });
+
+  it('6. Deve responder ao preflight (OPTIONS) para qualquer domínio .vercel.app', async () => {
+    const res = await request(app)
+      .options('/api/auth/oauth-sync')
+      .set('Origin', 'https://outro-branch-deploy.vercel.app')
+      .set('Access-Control-Request-Method', 'POST');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['access-control-allow-origin']).toBe('https://outro-branch-deploy.vercel.app');
+    expect(res.headers['access-control-allow-credentials']).toBe('true');
+  });
+
+  it('7. Não deve disparar erro 500 no preflight se a origem não for permitida', async () => {
+    const res = await request(app)
+      .options('/api/auth/oauth-sync')
+      .set('Origin', 'https://origem-estranha-desconhecida.com')
+      .set('Access-Control-Request-Method', 'POST');
+
+    expect(res.status).not.toBe(500);
+    expect(res.headers['access-control-allow-origin']).toBeUndefined();
+  });
 });

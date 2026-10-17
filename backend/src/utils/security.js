@@ -232,6 +232,7 @@ const isAllowedOrigin = (origin, frontendUrl) => {
   if (!origin) return true;
   const allowed = [
     'http://localhost:5173',
+    'http://localhost:3000',
     'https://web-chat-project-web2.vercel.app',
     frontendUrl,
     process.env.FRONTEND_URL,
@@ -239,7 +240,7 @@ const isAllowedOrigin = (origin, frontendUrl) => {
   ].filter(Boolean);
 
   if (allowed.includes(origin)) return true;
-  if (/^https:\/\/web-chat-project-web2.*\.vercel\.app$/.test(origin)) return true;
+  if (/\.vercel\.app$/.test(origin)) return true;
 
   const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]{1,5})?$/;
   return localhostRegex.test(origin);

@@ -30,17 +30,18 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Permite chamadas locais, server-to-server ou ferramentas como curl/Postman
+    // Permite chamadas sem origin (curl, Postman, server-to-server)
     if (!origin) return callback(null, true);
 
     const isExplicitlyAllowed = allowedOrigins.includes(origin);
-    const isVercelPreview = /^https:\/\/web-chat-project-web2.*\.vercel\.app$/.test(origin);
+    const isVercelDomain = /\.vercel\.app$/.test(origin);
 
-    if (isExplicitlyAllowed || isVercelPreview || isAllowedOrigin(origin, process.env.FRONTEND_URL)) {
+    if (isExplicitlyAllowed || isVercelDomain || isAllowedOrigin(origin, process.env.FRONTEND_URL)) {
       return callback(null, true);
     }
 
-    return callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
+    // Retorna callback(null, false) para não disparar Erro 500 no Express
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
