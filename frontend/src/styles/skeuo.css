@@ -591,6 +591,11 @@
         border-top-color: #000 !important;
     }
 
+    .btn-secondary-glossy .notification-badge,
+    .notification-badge {
+        text-shadow: none !important;
+    }
+
     .skeuo-input {
         background: #fafafa;
         border: 1px solid #b3b3b3;

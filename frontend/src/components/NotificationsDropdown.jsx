@@ -115,7 +115,8 @@ const NotificationsDropdown = () => {
 
                 {unreadCount > 0 && (
                     <span
-                        className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-gradient-to-b from-rose-500 to-rose-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs border border-white dark:border-slate-800 leading-none"
+                        className="notification-badge absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-gradient-to-b from-rose-500 to-rose-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border border-white dark:border-slate-800 leading-none select-none [text-shadow:none]"
+                        style={{ textShadow: 'none' }}
                     >
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
