@@ -160,7 +160,7 @@ npm run test:backend && npm run test:frontend
 * [x] Layout responsivo e menus modais
 * [x] Envio de imagens e anexos com compressão no cliente
 * [x] Refinamentos na persistência e histórico de mensagens
-* [x] Testes automatizados (125 testes no backend com Jest/Supertest e 59 testes no frontend com Vitest)
+* [x] Testes automatizados (134 testes no backend com Jest/Supertest e 68 testes no frontend com Vitest — 202 testes no total)
 * [x] Documentação interativa da API (Swagger UI local/produção e Mintlify)
 * [x] Endurecimento de Segurança CIS Controls IG1 & OWASP ASVS (Rate Limiting rigoroso, Helmet com HSTS, Sanitização XSS, Auditoria de Segurança)
 * [x] Mensagens Diretas (Directs / Chat Privado) com histórico persistido e conversas individuais
@@ -178,57 +178,93 @@ npm run test:backend && npm run test:frontend
 .
 ├── backend/
 │   ├── src/
+│   │   ├── app.js                      # Configuração Express, middlewares e rotas
 │   │   ├── config/
-│   │   │   └── database.js             # Conexão e pooling Sequelize / Supabase
+│   │   │   ├── cors.js                 # Whitelist CORS e validação de origens
+│   │   │   ├── database.js             # Conexão e pooling Sequelize / Supabase
+│   │   │   └── swagger.js              # Especificação OpenAPI e Swagger UI
 │   │   ├── controllers/
-│   │   │   ├── AuthController.js
+│   │   │   ├── AdminController.js
 │   │   │   ├── DirectController.js
+│   │   │   ├── FeedbackController.js
 │   │   │   ├── MessageController.js
 │   │   │   ├── NotificationController.js
+│   │   │   ├── ReportController.js
 │   │   │   ├── RoomController.js
-│   │   │   └── ...
+│   │   │   ├── StatsController.js
+│   │   │   ├── UsuarioController.js
+│   │   │   └── errorHandler.js         # Mapeamento centralizado de erros e HTTP status
 │   │   ├── middleware/
 │   │   │   ├── auth.js                 # Validação JWT e identificação de usuário
 │   │   │   └── adminAuth.js            # Proteção de rotas administrativas
 │   │   ├── models/
-│   │   │   ├── User.js
-│   │   │   ├── Room.js
-│   │   │   ├── RoomMember.js
-│   │   │   ├── Message.js
 │   │   │   ├── DirectConversation.js
 │   │   │   ├── DirectMessage.js
+│   │   │   ├── Favorite.js
+│   │   │   ├── Feedback.js
+│   │   │   ├── Message.js
 │   │   │   ├── Notification.js
-│   │   │   └── ...
+│   │   │   ├── Report.js
+│   │   │   ├── Room.js
+│   │   │   ├── RoomMember.js
+│   │   │   ├── User.js
+│   │   │   └── index.js
 │   │   ├── repositories/
-│   │   │   ├── UserRepository.js
-│   │   │   ├── RoomRepository.js
-│   │   │   ├── RoomMemberRepository.js
-│   │   │   ├── MessageRepository.js
 │   │   │   ├── DirectRepository.js
-│   │   │   └── NotificationRepository.js
+│   │   │   ├── FavoriteRepository.js
+│   │   │   ├── FeedbackRepository.js
+│   │   │   ├── MessageRepository.js
+│   │   │   ├── NotificationRepository.js
+│   │   │   ├── ReportRepository.js
+│   │   │   ├── RoomMemberRepository.js
+│   │   │   ├── RoomRepository.js
+│   │   │   └── UserRepository.js
 │   │   ├── routes/
-│   │   │   ├── api.js                  # Roteador central de APIs
 │   │   │   ├── admin.js                # Rotas do painel administrativo
-│   │   │   ├── roomRoutes.js           # Rotas de salas e moderação
+│   │   │   ├── api.js                  # Roteador central de APIs
 │   │   │   ├── directRoutes.js         # Mensagens diretas privadas
-│   │   │   └── notificationRoutes.js   # Notificações em tempo real
+│   │   │   ├── favoriteRoutes.js       # Gestão de favoritos
+│   │   │   ├── feedbackRoutes.js       # Relatos de feedback
+│   │   │   ├── messageRoutes.js        # Mensagens de salas e busca textual
+│   │   │   ├── notificationRoutes.js   # Notificações em tempo real
+│   │   │   ├── reportRoutes.js         # Denúncias de moderação
+│   │   │   ├── roomRoutes.js           # Rotas de salas e moderação
+│   │   │   └── usuarioRoutes.js        # Autenticação, perfil e sincronização OAuth
 │   │   ├── services/
-│   │   │   ├── UserService.js
-│   │   │   ├── RoomService.js          # Lógica de negócio, cargos e moderação
-│   │   │   ├── MessageService.js
 │   │   │   ├── DirectService.js
-│   │   │   └── NotificationService.js
+│   │   │   ├── FavoriteService.js
+│   │   │   ├── FeedbackService.js
+│   │   │   ├── MessageService.js
+│   │   │   ├── NotificationService.js
+│   │   │   ├── ReportService.js
+│   │   │   ├── RoomService.js          # Lógica de negócio, cargos e moderação
+│   │   │   └── UserService.js
+│   │   ├── sockets/                    # Arquitetura modular de WebSockets (Socket.io)
+│   │   │   ├── chatHandler.js          # Handlers de chat em salas e mensagens diretas
+│   │   │   ├── index.js                # Instanciação e bootstrap de sockets
+│   │   │   ├── presence.js             # Mapeamento de presença ativa por sala e global
+│   │   │   └── socketAuth.js           # Middleware de handshake com validação JWT
 │   │   └── utils/
-│   │       ├── security.js             # Criptografia, JWT e sanitização XSS
-│   │       └── auditLogger.js          # Auditoria de segurança estruturada
-│   ├── tests/                          # 14 suítes e 125 testes Jest/Supertest
-│   │   ├── roomModeration.test.js
-│   │   ├── room.test.js
-│   │   ├── message.test.js
-│   │   ├── directs.test.js
+│   │       ├── auditLogger.js          # Auditoria de segurança estruturada
+│   │       └── security.js             # Criptografia, JWT e sanitização XSS
+│   ├── tests/                          # 15 suítes e 134 testes Jest/Supertest
 │   │   ├── authMiddleware.test.js
-│   │   └── ...
-│   ├── server.js                       # Servidor Express, WebSockets e Swagger
+│   │   ├── chat.test.js
+│   │   ├── controllers.test.js
+│   │   ├── directs.test.js
+│   │   ├── e2e-flow.test.js
+│   │   ├── favorites.test.js
+│   │   ├── feedback.test.js
+│   │   ├── helpers.js
+│   │   ├── message.test.js
+│   │   ├── models.test.js
+│   │   ├── oauthSync.test.js
+│   │   ├── report.test.js
+│   │   ├── room.test.js
+│   │   ├── roomModeration.test.js
+│   │   ├── security.test.js
+│   │   └── usuario.test.js
+│   ├── server.js                       # Bootstrap HTTP, binding de porta e Sequelize
 │   ├── package.json
 │   └── README.md                       # Documentação técnica profunda do backend
 ├── docs/                               # Documentação técnica e Mintlify
@@ -258,7 +294,7 @@ npm run test:backend && npm run test:frontend
 │   │   ├── styles/
 │   │   │   ├── skeuo.css               # Tokens de design Web 2.0 Gloss
 │   │   │   └── chat.css
-│   │   ├── tests/                      # 11 suítes e 59 testes Vitest
+│   │   ├── tests/                      # 13 suítes e 68 testes Vitest
 │   │   │   ├── chat.test.jsx
 │   │   │   ├── Directs.test.jsx
 │   │   │   ├── MembersSidebar.test.jsx
@@ -302,7 +338,7 @@ A aplicação web é composta por 18 telas com design skeuomórfico reativo:
 
 O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, estabilidade e conformidade arquitetural:
 * **Frontend**: Totalmente integrado via REST e WebSockets, contando com interface skeuomórfica refinada (Modo Claro/Escuro), chat em salas públicas e privadas, mensagens diretas (Directs), central de notificações em tempo real, painel administrativo e interface tátil de moderação de sala (promover/rebaixar, expulsar participantes e transferir dono).
-* **Backend**: Arquitetura profissional em camadas (Controllers, Services, Repositories e Models ORM com Sequelize e Supabase PostgreSQL), endurecimento de segurança baseado nos padrões **CIS Controls IG1 & OWASP ASVS**, logs estruturados de auditoria, suíte robusta com 125 testes automatizados aprovados e documentação Swagger 3.0 interativa.
+* **Backend**: Arquitetura profissional em camadas (Controllers, Services, Repositories e Models ORM com Sequelize e Supabase PostgreSQL), endurecimento de segurança baseado nos padrões **CIS Controls IG1 & OWASP ASVS**, logs estruturados de auditoria, suíte robusta com 134 testes automatizados no backend e 68 testes no frontend (202 testes no total) 100% aprovados e documentação Swagger 3.0 interativa.
 
 ## Link da documentação Swagger
 
@@ -320,7 +356,122 @@ O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, 
 * **Mídias e Arquivos**: Suporte nativo a envio e pré-visualização de áudio gravado e documentos em anexo.
 * **Testes End-to-End (E2E)**: Criação de suíte de testes de ponta a ponta com Playwright automatizando a jornada completa do usuário.
 
-## Diagrama ER
+## Diagramas Arquiteturais & de Modelagem
+
+### 1. Diagrama de Arquitetura da Solução
+
+```mermaid
+graph TD
+    subgraph ClientLayer["Camada de Cliente (Frontend SPA)"]
+        UI["React 19 + Vite Application"]
+        Skeuo["Skeuomorphic & Frutiger Aero Gloss Design System"]
+        State["React Context & Hooks"]
+        SocketClient["Socket.io Client (socket.js)"]
+        HTTPClient["Fetch API (services/api.js)"]
+    end
+
+    subgraph GatewayLayer["Servidor Backend (Node.js & Express)"]
+        HTTP_Server["HTTP Server (server.js & src/app.js)"]
+        Socket_Server["Socket.io Engine (src/sockets)"]
+        
+        subgraph Middlewares["Middlewares & Segurança"]
+            Helmet["Helmet (HSTS, Headers Seguros)"]
+            Cors["CORS Estrito (src/config/cors.js)"]
+            RateLimit["Rate Limiting (Global & Auth)"]
+            AuthGuard["JWT Auth & Admin Guard"]
+            SocketAuth["Handshake JWT Auth (socketAuth.js)"]
+        end
+    end
+
+    subgraph BusinessLayer["Camada de Aplicação & Regras de Negócio"]
+        Controllers["Controladores REST (src/controllers)"]
+        Services["Serviços de Domínio (src/services)"]
+        SocketHandlers["Manipuladores Socket (chatHandler.js & presence.js)"]
+        PresenceMap["Mapa de Presença em Memória (roomPresence)"]
+    end
+
+    subgraph PersistenceLayer["Camada de Persistência & Dados"]
+        Repos["Repositórios de Dados (src/repositories)"]
+        ORM["Sequelize ORM (src/models)"]
+        DB["PostgreSQL / Supabase (RLS Centralizado)"]
+        MemDB["SQLite em Memória (Ambiente de Testes)"]
+    end
+
+    UI --> HTTPClient
+    UI --> SocketClient
+    HTTPClient --> Helmet --> Cors --> RateLimit --> AuthGuard --> Controllers
+    SocketClient --> SocketAuth --> Socket_Server --> SocketHandlers
+    SocketHandlers --> PresenceMap
+    Controllers --> Services
+    SocketHandlers --> Services
+    Services --> Repos
+    Repos --> ORM
+    ORM --> DB
+    ORM -.-> MemDB
+```
+
+### 2. Diagrama de Fluxo de Mensageria em Tempo Real (WebSockets & Presença)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Alice as Usuário (Alice)
+    participant SocketGW as Gateway Socket.io (src/sockets)
+    participant Presence as Gestor de Presença (presence.js)
+    participant ChatHdl as Chat Handler (chatHandler.js)
+    participant Service as MessageService
+    participant DB as PostgreSQL (Supabase)
+    actor Bob as Usuário (Bob)
+
+    Alice->>SocketGW: Handshake com JWT (auth.token)
+    SocketGW->>SocketGW: Validação de Token (socketAuth.js)
+    SocketGW-->>Alice: Conexão Estabelecida
+    Alice->>SocketGW: joinRoom { roomId, user }
+    SocketGW->>Presence: Registra socket e usuário na sala
+    Presence-->>Alice: roomPresenceUpdated { onlineUsers, count }
+    Presence-->>Bob: roomPresenceUpdated { onlineUsers, count }
+
+    Alice->>ChatHdl: send_message { room, content, imageUrl }
+    ChatHdl->>ChatHdl: Verifica Rate Limit (janela de 500ms)
+    ChatHdl->>Service: Valida e higieniza conteúdo (Anti-XSS)
+    Service->>DB: Persiste Mensagem no Banco
+    DB-->>Service: Mensagem Salva (UUID, Timestamp)
+    Service-->>ChatHdl: Objeto completo da Mensagem
+    ChatHdl-->>Alice: receive_message (Broadcast da sala)
+    ChatHdl-->>Bob: receive_message (Broadcast da sala)
+```
+
+### 3. Diagrama de Autenticação Híbrida & Políticas de Acesso (RBAC)
+
+```mermaid
+flowchart TD
+    Start(["Requisição de Autenticação"]) --> Mode{"Origem do Acesso"}
+    
+    Mode -->|"Credenciais Tradicionais"| FormLogin["POST /api/auth/login"]
+    Mode -->|"Google OAuth"| OAuthSync["POST /api/auth/oauth-sync"]
+    Mode -->|"Administrador"| AdminAuth["POST /api/admin/auth"]
+
+    FormLogin --> RateCheck{"Tentativas consecutivas?"}
+    RateCheck -->|"5 tentativas incorretas"| Lockout["Bloqueio Temporário 15 min (429 Too Many Requests)"]
+    RateCheck -->|"Dentro do limite"| VerifyHash["Verificação Argon2id / Bcrypt"]
+    VerifyHash -->|"Senha Incorreta"| DummyTiming["Dummy Hash (Anti-Enumeração) -> 401 Unauthorized"]
+    VerifyHash -->|"Sucesso"| AutoRehash["Auto-rehash transparente para Argon2id"]
+    
+    OAuthSync --> Normalize["Normaliza Nome, Foto e E-mail"]
+    Normalize --> UpsertUser["Sincroniza Perfil (password = null)"]
+    
+    AdminAuth --> TimingSafe["crypto.timingSafeEqual com ADMIN_SECRET_KEY"]
+    TimingSafe -->|"Válido"| IssueAdminJWT["Emite JWT Admin (TTL: 8h, role: admin)"]
+    TimingSafe -->|"Inválido"| RejectAdmin["401 Unauthorized"]
+
+    AutoRehash --> IssueUserJWT["Emite JWT Usuário (TTL: 7d, role: user)"]
+    UpsertUser --> IssueUserJWT
+
+    IssueUserJWT --> AccessApp["Acesso a Salas, Chat, Directs & Favoritos"]
+    IssueAdminJWT --> AccessAdmin["Acesso ao Console /admin e Métricas /stats"]
+```
+
+### 4. Diagrama Entidade-Relacionamento (DER)
 
 ```mermaid
 erDiagram
@@ -438,15 +589,12 @@ erDiagram
     }
 ```
 
-## Diagrama de Classes
+### 5. Diagrama de Classes & Arquitetura em Camadas (Controller-Service-Repository)
 
 ```mermaid
 classDiagram
     direction TB
 
-    %% ==========================================
-    %% CAMADA DE CONTROLADORES (HTTP / REST API)
-    %% ==========================================
     class UsuarioController {
         +register(req, res)
         +login(req, res)
@@ -516,9 +664,6 @@ classDiagram
         +banUser(req, res)
     }
 
-    %% ==========================================
-    %% CAMADA DE SERVIÇOS (REGRAS DE NEGÓCIO)
-    %% ==========================================
     class UserService {
         +register(userData) User
         +login(email, password) Object
@@ -578,9 +723,6 @@ classDiagram
         +deleteFeedback(id) boolean
     }
 
-    %% ==========================================
-    %% CAMADA DE REPOSITÓRIOS (ACESSO A DADOS)
-    %% ==========================================
     class UserRepository {
         +findByEmail(email) User
         +findById(id) User
@@ -649,9 +791,6 @@ classDiagram
         +delete(id) boolean
     }
 
-    %% ==========================================
-    %% CAMADA DE MODELOS (SEQUELIZE ORM)
-    %% ==========================================
     class User {
         +UUID id
         +String email
@@ -750,9 +889,6 @@ classDiagram
         +Date created_at
     }
 
-    %% ==========================================
-    %% RELACIONAMENTOS E DEPENDÊNCIAS
-    %% ==========================================
     UsuarioController --> UserService
     RoomController --> RoomService
     MessageController --> MessageService

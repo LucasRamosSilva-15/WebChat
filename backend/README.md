@@ -68,14 +68,16 @@ O código adota o padrão **Controller-Service-Repository** sobre um ecossistema
 ##### Papel das Camadas:
 | Camada | Diretório | Responsabilidade Primária |
 | ------ | ------ | ------ |
-| **Ponto de Entrada** | `server.js` | Inicialização do servidor HTTP e da instância do Socket.io, bootstrap do Swagger JSDoc, middlewares de cabeçalho global e registro de listeners de socket. |
+| **Ponto de Entrada** | `server.js` | Inicialização do servidor HTTP, binding da porta, instanciação do Socket.io e sincronização do Sequelize. |
+| **Aplicação Express** | `src/app.js` | Configuração da instância Express, injeção de middlewares globais (CORS, Helmet, Rate Limit), Swagger UI e roteamento REST. |
+| **Gateway em Tempo Real** | `src/sockets/` | Modularização de WebSockets: autenticação de handshake JWT, gerenciamento de presença em memória e handlers de eventos de chat. |
 | **Roteamento** | `src/routes/` | Declaração de rotas da API, associação de rate limiters específicos por contexto e injeção dos middlewares de autorização. |
 | **Middlewares** | `src/middleware/` | Interceptação de requisições: decodificação e validação de Bearer Tokens JWT (`auth.js`) e validação estrita de claims administrativas (`adminAuth.js`). |
 | **Controladores** | `src/controllers/` | Parsing e validação de payloads (`req.body`, `req.params`, `req.query`), invocação de Services e despacho semântico de status HTTP com captura centralizada de exceções (`errorHandler.js`). |
 | **Serviços** | `src/services/` | Coração da regra de negócio: verificação de duplicidade de credenciais, hashing de senhas, checagem de permissão de posse de recursos e orquestração de transações. |
 | **Repositórios** | `src/repositories/` | Interface direta com os Models do Sequelize. Isola a lógica SQL/ORM da camada de negócios, facilitando testes e manutenção. |
 | **Modelos** | `src/models/` | Definição das tabelas relacionais, constraints, campos padrão, tipos UUID e declaração de relacionamentos associativos (`hasMany`, `belongsTo`, `belongsToMany`). |
-| **Configuração** | `src/config/` | Factory de conexão do Sequelize: multiplexa dinamicamente entre conexão PostgreSQL com SSL em produção/desenvolvimento e `sqlite::memory:` quando em ambiente de testes (`NODE_ENV === 'test'`). |
+| **Configuração** | `src/config/` | Factory de conexão do Sequelize (`database.js`), políticas de CORS (`cors.js`) e documentação Swagger JSDoc (`swagger.js`). |
 
 ---
 
@@ -287,12 +289,15 @@ O Supabase atua exclusivamente como **Database-as-a-Service (DaaS)** conectado v
 ---
 
 #### 6. Motor em Tempo Real & WebSockets (Socket.io)
-O servidor WebSocket opera em conjunto com o servidor HTTP na mesma porta (`server.js`).
+O servidor WebSocket opera sob uma arquitetura modularizada dentro de `src/sockets/`:
+* `src/sockets/index.js`: Instanciação do servidor Socket.io e acoplamento dos manipuladores.
+* `src/sockets/socketAuth.js`: Middleware de handshake com validação estrita de Bearer JWT.
+* `src/sockets/presence.js`: Gestão de presença por sala (`roomPresence`) e contagem global (`globalOnlineUsers`).
+* `src/sockets/chatHandler.js`: Processamento de mensagens em tempo real, broadcast, edição e exclusão integrada.
 
 ##### 1. Interceptador de Handshake
 Nenhum socket anônimo é autorizado a abrir conexão. Durante o handshake de conexão, o token JWT deve ser fornecido via payload auth:
 ```javascript
-// Exemplo de conexão do cliente
 import { io } from "socket.io-client";
 
 const socket = io("https://skyripple-9vqr.onrender.com", {
@@ -307,13 +312,13 @@ O backend mantém um grafo dinâmico em memória para mapear conexões ativas:
 * Estrutura: `Map<roomId, Map<userId, { id, name, email, socketIds: Set<socketId> }>>`.
 * Suporta múltiplas abas ou dispositivos simultâneos do mesmo usuário sem duplicar a contagem de membros ativos.
 * Quando o último socket de um usuário é encerrado, o backend notifica todos os membros da sala via evento `roomPresenceUpdated`.
+* Controle global: Mapa `globalOnlineUsers` para indicação em tempo real de contatos ativos nas conversas diretas.
 
 ##### 3. Rate Limit no Envio de Mensagens
 Para prevenir travamentos por flood via socket, o backend intercepta o evento `send_message`:
 * **Janela mínima**: **500 ms** entre mensagens por `userId`.
 * Caso a regra seja violada, o servidor aborta a persistência e responde imediatamente com o evento de erro:
 ```json
-// Evento: rate_limit_error
 { "error": "Você está enviando mensagens muito rápido. Aguarde um momento." }
 ```
 
@@ -457,7 +462,7 @@ O handler central traduz as regras de negócio disparadas pelos Services (`throw
 | 201 Created | Criado | Criação de conta, nova sala, mensagem, report ou feedback. |
 | 400 Bad Request | Parâmetros inválidos | Nome da sala em branco, credenciais ausentes ou campos mal formatados. |
 | 401 Unauthorized | Não autorizado | Header Authorization ausente, token mal formatado ou expirado. |
-| 403 Forbidden | Proibido | Usuário comum tentando apagar sala de terceiros ou acessar rotas `/api/admin/*`. |
+| 403 Forbidden | Proibido | Usuário comum tentando apagar sala de terceiros ou acessar rotas de administração restritas. |
 | 404 Not Found | Recurso inexistente | UUID de usuário, sala, mensagem ou denúncia não encontrado no banco. |
 | 409 Conflict | Conflito de integridade | Tentativa de cadastro com e-mail já existente (`SequelizeUniqueConstraintError`). |
 | 429 Too Many Requests | Limite excedido | Bloqueio temporário por rate limit de login (usuário ou admin). |
@@ -484,13 +489,15 @@ Abaixo está o mapeamento detalhado da estrutura de diretórios do backend:
 backend/
 ├── package.json              # Metadados, scripts (start, dev, test) e dependências de produção/dev
 ├── package-lock.json         # Árvore de dependências trancada
-├── server.js                 # Inicialização Express + Socket.io, Swagger UI e listeners realtime
+├── server.js                 # Inicialização do servidor HTTP, binding de porta e Sequelize
 ├── prisma/
 │   └── schema.prisma         # Esquema declarativo do PostgreSQL / Supabase
 ├── src/
+│   ├── app.js                # Configuração do Express, middlewares de segurança e Swagger
 │   ├── config/
+│   │   ├── cors.js           # Whitelist de origens CORS e validação de requisições
 │   │   ├── database.js       # Conexão do Sequelize com fallback (Postgres SSL vs SQLite memory)
-│   │   └── database_erro.js  # Utilitário legado de contingência
+│   │   └── swagger.js        # Configuração do Swagger JSDoc e UI OpenAPI 3.0
 │   ├── database/
 │   │   └── supabase_oauth_trigger.sql # Gatilho PostgreSQL para sincronização automática de perfis OAuth
 │   ├── models/               # Modelagem relacional do Sequelize (Entidades)
@@ -541,15 +548,20 @@ backend/
 │   │   └── adminAuth.js      # Validação do token JWT restrito a administradores
 │   ├── routes/               # Declaração dos endpoints e documentação Swagger JSDoc
 │   │   ├── api.js            # Roteador central /api
-│   │   ├── usuarioRoutes.js  # Rotas sob /api/auth/* (inclui /auth/oauth-sync)
-│   │   ├── roomRoutes.js     # Rotas sob /api/rooms/*
+│   │   ├── usuarioRoutes.js  # Rotas sob /api/auth (inclui /auth/oauth-sync)
+│   │   ├── roomRoutes.js     # Rotas sob /api/rooms
 │   │   ├── messageRoutes.js  # Rotas de mensagens e buscas
-│   │   ├── directRoutes.js   # Rotas sob /api/directs/*
-│   │   ├── favoriteRoutes.js # Rotas sob /api/favorites/*
-│   │   ├── notificationRoutes.js # Rotas sob /api/notifications/*
+│   │   ├── directRoutes.js   # Rotas sob /api/directs
+│   │   ├── favoriteRoutes.js # Rotas sob /api/favorites
+│   │   ├── notificationRoutes.js # Rotas sob /api/notifications
 │   │   ├── reportRoutes.js   # Rotas de denúncias
 │   │   ├── feedbackRoutes.js # Rotas de feedback
-│   │   └── admin.js          # Rotas sob /api/admin/*
+│   │   └── admin.js          # Rotas sob /api/admin
+│   ├── sockets/              # Arquitetura modular de WebSockets (Socket.io)
+│   │   ├── index.js          # Inicialização e acoplamento dos gateways de socket
+│   │   ├── socketAuth.js     # Interceptador e middleware de autenticação JWT
+│   │   ├── presence.js       # Mapeamento de presença ativa por sala e online global
+│   │   └── chatHandler.js    # Handlers de envio, edição, like e deleção de mensagens
 │   └── utils/                # Utilitários corporativos de segurança e auditoria
 │       ├── auditLogger.js    # Trilha forense estruturada com ofuscação de PII
 │       └── security.js       # Criptografia Argon2id, Dummy Hash, timingSafeEqual e mitigação XSS
@@ -629,7 +641,7 @@ npm test
 * Os rate limiters (`express-rate-limit`) são desativados automaticamente em testes (`skip: () => process.env.NODE_ENV === 'test'`) para permitir execução maciça sem falsos positivos.
 * O helper `tests/helpers.js` recria as tabelas do zero de forma atômica (`sequelize.sync({ force: true })`) antes de cada bateria, garantindo isolamento total entre os testes.
 
-##### Escopo Coberto (15 Suítes & 128 Testes Automatizados):
+##### Escopo Coberto (15 Suítes & 134 Testes Automatizados):
 1. **Segurança & Criptografia (CIS Controls IG1 & OWASP ASVS)**: Hashing Argon2id, motor híbrido com upgrade transparente de Bcrypt, equalização temporal contra enumeração (*Dummy Hash*), comparações em tempo constante (`timingSafeEqual`), algoritmo fixo JWT `HS256`, revogação instantânea de tokens, bloqueio progressivo contra força bruta, sanitização contra XSS e ofuscação de logs forenses (`security.test.js`).
 2. **Sincronização OAuth (Google / Supabase)**: Validação de herança de metadados (`name`, `avatar_url`, `email`), garantia de `password = null`, geração de JWT resiliente e sincronização contínua (`oauthSync.test.js`).
 3. **Autenticação, Registro & Perfil**: Validação de e-mails duplicados, políticas de senha, login com bloqueio de tentativas e expiração de sessões (`usuario.test.js`).
