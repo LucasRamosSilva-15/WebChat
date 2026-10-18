@@ -138,8 +138,9 @@ npm run test:backend && npm run test:frontend
 
 ## Link do deploy
 
-* **Frontend:** [https://web-chat-project-web2.vercel.app](https://skyripple-project-web2.vercel.app/)
-* **Backend/API:** [https://webchat-9vqr.onrender.com](https://webchat-9vqr.onrender.com)
+* **Frontend:** [https://skyripple-project-web2.vercel.app](https://skyripple-project-web2.vercel.app/)
+* **Backend/API (SkyRipple):** [https://skyripple-9vqr.onrender.com](https://skyripple-9vqr.onrender.com)
+* **Backend/API (Legado):** [https://webchat-9vqr.onrender.com](https://webchat-9vqr.onrender.com)
 
 ## Imagens / Screenshots
 
@@ -342,8 +343,15 @@ O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, 
 
 ## Link da documentação Swagger
 
-* **Produção:** <https://webchat-9vqr.onrender.com/api-docs/>
+* **Produção (SkyRipple):** <https://skyripple-9vqr.onrender.com/api-docs/>
+* **Produção (Legado):** <https://webchat-9vqr.onrender.com/api-docs/>
 * **Local:** <http://localhost:3001/api-docs/>
+
+### Cobertura da Documentação OpenAPI 3.0
+A documentação interativa via Swagger UI reflete 100% dos contratos da API:
+* **38 Rotas Documentadas** categorizadas em 9 tags (`Auth`, `Rooms`, `Messages`, `Directs`, `Notifications`, `Favorites`, `Reports`, `Feedbacks`, `Admin`).
+* **11 Schemas Canônicos**: `User`, `Room`, `RoomMember`, `Message`, `DirectConversation`, `DirectMessage`, `Notification`, `Favorite`, `Report`, `Feedback` e `ErrorResponse`.
+* **Autenticação Interativa**: Suporte a autorização no Swagger UI com token JWT (`BearerAuth`) e chave administrativa (`AdminAuth`).
 
 ## Link da documentação Mintlify
 
@@ -475,8 +483,8 @@ flowchart TD
 
 ```mermaid
 erDiagram
-    USERS ||--o{ ROOMS : "cria (owner)"
-    USERS ||--o{ ROOM_MEMBERS : "ingressa"
+    USERS ||--o{ ROOMS : "cria (owner_id)"
+    USERS ||--o{ ROOM_MEMBERS : "participa"
     ROOMS ||--o{ ROOM_MEMBERS : "possui"
     USERS ||--o{ MESSAGES : "envia"
     ROOMS ||--o{ MESSAGES : "contem"
@@ -486,38 +494,38 @@ erDiagram
     USERS ||--o{ DIRECT_MESSAGES : "envia (sender)"
     USERS ||--o{ NOTIFICATIONS : "recebe"
     USERS ||--o{ FAVORITES : "salva"
-    USERS ||--o{ REPORTS : "denuncia"
+    USERS ||--o{ REPORTS : "denuncia (reporter)"
     MESSAGES ||--o{ REPORTS : "alvo"
     USERS ||--o{ FEEDBACKS : "submete"
 
     USERS {
         uuid id PK
         string email UK
-        string password
+        string password "nullable (OAuth)"
         string displayName
         string profilePhoto
         text profileDesc
-        string role
-        string status
-        timestamp created_at
+        string role "user | admin"
+        string status "active | banned"
+        datetime created_at
     }
 
     ROOMS {
         uuid id PK
         string name
-        string type
+        string type "public | private"
         text description
         string category
         text image_url
-        uuid created_by FK
-        timestamp created_at
+        uuid owner_id FK "created_by"
+        datetime created_at
     }
 
     ROOM_MEMBERS {
         uuid room_id PK,FK
         uuid user_id PK,FK
-        string role
-        timestamp joined_at
+        string role "owner | moderator | user"
+        datetime joined_at
     }
 
     MESSAGES {
@@ -526,7 +534,7 @@ erDiagram
         uuid user_id FK
         text content
         text image_url
-        timestamp created_at
+        datetime created_at
     }
 
     DIRECT_CONVERSATIONS {
@@ -534,8 +542,8 @@ erDiagram
         uuid user1_id FK
         uuid user2_id FK
         text last_message
-        timestamp last_message_at
-        timestamp created_at
+        datetime last_message_at
+        datetime created_at
     }
 
     DIRECT_MESSAGES {
@@ -544,48 +552,48 @@ erDiagram
         uuid sender_id FK
         text content
         text image_url
-        timestamp created_at
+        datetime created_at
     }
 
     NOTIFICATIONS {
         uuid id PK
         uuid user_id FK
-        string type
+        string type "system | mention | direct | alert"
         string title
         text content
         string link
         boolean read
-        text data
-        timestamp created_at
+        json data
+        datetime created_at
     }
 
     FAVORITES {
         uuid id PK
         uuid user_id FK
-        string item_type
+        string item_type "room | conversation"
         string item_id
         string title
         text content
-        text meta
-        timestamp created_at
+        json meta
+        datetime created_at
     }
 
     REPORTS {
         uuid id PK
         uuid message_id FK
-        uuid user_id FK
+        uuid reporter_id FK "user_id"
         string reason
-        string status
-        timestamp created_at
+        string status "pending | reviewed | dismissed"
+        datetime created_at
     }
 
     FEEDBACKS {
         uuid id PK
         uuid user_id FK
-        text comment
+        text message "comment"
         json images
-        string status
-        timestamp created_at
+        string status "pending | reviewed | resolved"
+        datetime created_at
     }
 ```
 
@@ -598,126 +606,142 @@ classDiagram
     class UsuarioController {
         +register(req, res)
         +login(req, res)
-        +getMe(req, res)
-        +updateProfile(req, res)
-        +getAllUsers(req, res)
+        +me(req, res)
+        +deleteProfile(req, res)
+        +list(req, res)
+        +updateStatus(req, res)
+        +oauthSync(req, res)
     }
 
     class RoomController {
-        +getAllRooms(req, res)
-        +getRoomById(req, res)
-        +createRoom(req, res)
-        +updateRoom(req, res)
-        +deleteRoom(req, res)
-        +joinRoom(req, res)
-        +leaveRoom(req, res)
-        +promoteModerator(req, res)
-        +demoteModerator(req, res)
+        +create(req, res)
+        +list(req, res)
+        +getById(req, res)
+        +update(req, res)
+        +remove(req, res)
+        +join(req, res)
+        +getMembers(req, res)
+        +updateMemberRole(req, res)
         +kickMember(req, res)
         +transferOwnership(req, res)
     }
 
     class MessageController {
-        +getMessagesByRoom(req, res)
-        +sendMessage(req, res)
-        +deleteMessage(req, res)
+        +send(req, res)
+        +listByRoom(req, res)
+        +remove(req, res)
+        +search(req, res)
     }
 
     class DirectController {
         +listConversations(req, res)
-        +getMessages(req, res)
+        +getOrCreate(req, res)
+        +listMessages(req, res)
         +sendMessage(req, res)
+        +removeConversation(req, res)
+        +listUsers(req, res)
     }
 
     class NotificationController {
-        +getNotifications(req, res)
+        +list(req, res)
+        +create(req, res)
         +markAsRead(req, res)
         +markAllAsRead(req, res)
-        +deleteNotification(req, res)
+        +remove(req, res)
+        +clearAll(req, res)
     }
 
     class FavoriteController {
-        +listFavorites(req, res)
-        +addFavorite(req, res)
-        +removeFavorite(req, res)
+        +list(req, res)
+        +create(req, res)
+        +remove(req, res)
     }
 
     class ReportController {
-        +createReport(req, res)
-        +getAllReports(req, res)
-        +resolveReport(req, res)
-        +deleteReport(req, res)
+        +create(req, res)
+        +list(req, res)
+        +updateStatus(req, res)
+        +remove(req, res)
     }
 
     class FeedbackController {
-        +submitFeedback(req, res)
-        +getAllFeedbacks(req, res)
-        +resolveFeedback(req, res)
-        +deleteFeedback(req, res)
+        +create(req, res)
+        +list(req, res)
+        +updateStatus(req, res)
+        +remove(req, res)
     }
 
     class AdminController {
-        +login(req, res)
-        +getStats(req, res)
-        +getAllUsers(req, res)
-        +updateUserRole(req, res)
-        +banUser(req, res)
+        +auth(req, res)
+    }
+
+    class StatsController {
+        +getGlobalStats(req, res)
     }
 
     class UserService {
-        +register(userData) User
+        +register(data) Object
         +login(email, password) Object
+        +syncOAuthUser(data) Object
         +getAllUsers() List~User~
         +getUserById(id) User
-        +updateProfile(id, data) User
+        +updateStatus(id, status) User
+        +deleteUser(id) boolean
     }
 
     class RoomService {
         +createRoom(data, userId) Room
         +getAllRooms() List~Room~
-        +getRoomById(id) Room
+        +getRoomById(id, userId) Object
         +updateRoom(id, data, userId) Room
         +deleteRoom(id, userId, isAdmin) boolean
-        +promoteMember(roomId, targetId, requesterId) Object
-        +demoteMember(roomId, targetId, requesterId) Object
+        +joinRoom(roomId, userId) Object
+        +getRoomMembers(roomId) List~RoomMember~
+        +updateMemberRole(roomId, targetId, role, requesterId) Object
         +kickMember(roomId, targetId, requesterId) Object
         +transferOwnership(roomId, targetId, requesterId) Object
     }
 
     class MessageService {
-        +sendMessage(roomId, userId, content, image) Message
-        +getMessagesByRoom(roomId) List~Message~
+        +sendMessage(data) Message
+        +getMessagesByRoom(roomId, options) List~Message~
+        +searchMessages(roomId, query) List~Message~
         +deleteMessage(id, userId, isAdmin) boolean
     }
 
     class DirectService {
         +listConversations(userId) List~DirectConversation~
-        +getMessages(conversationId, userId) List~DirectMessage~
-        +sendMessage(senderId, recipientId, content, image) DirectMessage
+        +getOrCreateConversation(user1, user2) DirectConversation
+        +getConversationMessages(convId, userId, options) List~DirectMessage~
+        +sendMessage(data) DirectMessage
+        +deleteConversation(convId, userId) boolean
+        +searchAvailableUsers(query, excludeId) List~User~
     }
 
     class NotificationService {
         +getUserNotifications(userId) List~Notification~
-        +createNotification(data) Notification
+        +addNotification(data) Notification
         +markAsRead(id, userId) boolean
         +markAllAsRead(userId) boolean
+        +deleteNotification(id, userId) boolean
+        +clearAll(userId) boolean
     }
 
     class FavoriteService {
-        +listFavorites(userId) List~Favorite~
+        +getUserFavorites(userId) List~Favorite~
         +addFavorite(userId, data) Favorite
-        +removeFavorite(id, userId) boolean
+        +removeFavorite(userId, itemType, itemId) boolean
     }
 
     class ReportService {
-        +createReport(userId, messageId, reason) Report
+        +createReport(data) Report
         +getAllReports() List~Report~
         +resolveReport(id, status) Report
         +deleteReport(id) boolean
     }
 
     class FeedbackService {
-        +submitFeedback(userId, comment, images) Feedback
+        +submitFeedback(data) Feedback
         +getAllFeedbacks() List~Feedback~
         +resolveFeedback(id, status) Feedback
         +deleteFeedback(id) boolean
@@ -728,6 +752,8 @@ classDiagram
         +findById(id) User
         +create(data) User
         +findAll() List~User~
+        +countAll() int
+        +countBanned() int
         +update(id, data) User
         +delete(id) boolean
     }
@@ -737,47 +763,61 @@ classDiagram
         +findAll() List~Room~
         +findById(id) Room
         +update(id, data) Room
+        +count() int
         +delete(id) boolean
     }
 
     class RoomMemberRepository {
         +addMember(roomId, userId, role) RoomMember
-        +getMember(roomId, userId) RoomMember
-        +getMembersByRoom(roomId) List~RoomMember~
+        +findByRoomAndUser(roomId, userId) RoomMember
         +updateRole(roomId, userId, role) RoomMember
         +removeMember(roomId, userId) boolean
+        +countMembers(roomId) int
+        +getMembersByRoom(roomId) List~RoomMember~
+        +countTotalMemberships() int
+        +countUniqueUsers() int
     }
 
     class MessageRepository {
         +create(data) Message
-        +findByRoomId(roomId) List~Message~
+        +findByRoomId(roomId, options) List~Message~
+        +searchByRoom(roomId, query) List~Message~
         +findById(id) Message
         +delete(id) boolean
     }
 
     class DirectRepository {
-        +findOrCreateConversation(user1, user2) DirectConversation
-        +listConversations(userId) List~DirectConversation~
+        +findConversationBetween(u1, u2) DirectConversation
+        +findConversationsForUser(userId) List~DirectConversation~
+        +findConversationById(id) DirectConversation
+        +createConversation(data) DirectConversation
+        +deleteConversation(id) boolean
+        +findMessagesByConversation(convId, options) List~DirectMessage~
         +createMessage(data) DirectMessage
-        +getMessages(convId) List~DirectMessage~
     }
 
     class NotificationRepository {
         +findByUserId(userId) List~Notification~
+        +findById(id) Notification
         +create(data) Notification
         +markAsRead(id, userId) boolean
         +markAllAsRead(userId) boolean
+        +delete(id, userId) boolean
+        +clearAll(userId) boolean
     }
 
     class FavoriteRepository {
-        +findByUserId(userId) List~Favorite~
+        +findByUser(userId) List~Favorite~
+        +findOne(userId, itemType, itemId) Favorite
         +create(data) Favorite
-        +delete(id, userId) boolean
+        +delete(userId, itemType, itemId) boolean
+        +deleteById(id) boolean
     }
 
     class ReportRepository {
         +create(data) Report
         +findAll() List~Report~
+        +countPending() int
         +findById(id) Report
         +updateStatus(id, status) Report
         +delete(id) boolean
@@ -810,7 +850,7 @@ classDiagram
         +String description
         +String category
         +String image_url
-        +UUID created_by
+        +UUID owner_id
         +Date created_at
     }
 
@@ -856,7 +896,7 @@ classDiagram
         +String content
         +String link
         +Boolean read
-        +String data
+        +Object data
         +Date created_at
     }
 
@@ -867,14 +907,14 @@ classDiagram
         +String item_id
         +String title
         +String content
-        +String meta
+        +Object meta
         +Date created_at
     }
 
     class Report {
         +UUID id
         +UUID message_id
-        +UUID user_id
+        +UUID reporter_id
         +String reason
         +String status
         +Date created_at
@@ -897,8 +937,11 @@ classDiagram
     FavoriteController --> FavoriteService
     ReportController --> ReportService
     FeedbackController --> FeedbackService
-    AdminController --> UserService
-    AdminController --> RoomService
+    AdminController ..> UserService
+    StatsController --> RoomRepository
+    StatsController --> UserRepository
+    StatsController --> ReportRepository
+    StatsController --> RoomMemberRepository
 
     UserService --> UserRepository
     RoomService --> RoomRepository

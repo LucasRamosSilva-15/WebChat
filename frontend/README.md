@@ -114,18 +114,23 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 6. `Directs.jsx` (Mensagens Diretas 1x1 Privadas)
+### 6. [`Directs.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/pages/Directs.jsx) (Mensagens Diretas 1x1 Privadas)
 - **Para que serve:**
   Hub dedicado a conversas privadas e confidenciais entre dois usuários, desacoplado das salas públicas.
 - **Como é feito:**
   - **Estado & Gerenciamento:**
     - Controla a lista de conversas ativas (`conversations`), a conversa selecionada (`activeConversation`), mensagens carregadas (`messages`) e termo de busca (`searchQuery`).
-    - Modal de Novo Chat (`NewDirectMessageModal`): Permite buscar qualquer usuário cadastrado no sistema via `GET /api/directs/users?q=...` e iniciar o chat com um clique.
-  - **Comunicação em Tempo Real:**
+    - Modal de Novo Chat ([`NewDirectMessageModal.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NewDirectMessageModal.jsx)): Permite buscar qualquer usuário cadastrado no sistema via `GET /api/directs/users?q=...` e iniciar o chat com um clique.
+  - **Comunicação em Tempo Real & Deduplicação:**
     - Integra-se ao Socket.IO escutando `receive_direct_message`, atualizando instantaneamente o chat ativo e o resumo da conversa na lista lateral.
+    - Mecanismo anti-duplicação: rastreia IDs únicos temporários e definitivos, impedindo mensagens duplicadas em conexões instáveis.
     - Notifica o usuário globalmente via `NotificationContext` com som e banner flutuante (*toast*).
+  - **Sistema de Horário, Data & Estilos Táteis:**
+    - Cada balão de mensagem exibe carimbo de data e hora com relógio tátil formatado ("14:35" ou data completa), além de divisores cronológicos entre dias diferentes ("Hoje", "Ontem", etc.).
+    - Total paridade estética com o [`Chat.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/pages/Chat.jsx): suporte a cores de destaque dinâmicas (azul, verde, roxo, vermelho, slate) e modos de densidade/estilo selecionados no tema.
   - **Ações da Conversa:**
-    - Envio de texto e anexos de imagem com preview.
+    - Envio de texto e anexos de imagem com preview em modal de zoom.
+    - Exclusão permitida de mensagens próprias via menu contextual.
     - Remoção ou ocultação de conversas pelo endpoint `DELETE /api/directs/conversations/:id`.
     - Atalho para favoritar a conversa diretamente pelo cabeçalho do chat.
   - **Design Tátil:** Layout bifásico responsivo em `.skeuo-card` com avatares com anel de status online verde, balões com acabamento glossy e feedback tátil em botões.
@@ -245,21 +250,25 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-## 🔔 Central de Notificações em Tempo Real
+## 🔔 Central de Notificações & Menu de Perfil do Usuário
 
-A aplicação conta com um pipeline global e reativo de notificações em tempo real, orquestrado através do `NotificationContext` e componentes desacoplados:
+A aplicação conta com um pipeline global e reativo de notificações em tempo real e gerenciamento visual de identidade, orquestrado através do `NotificationContext` e componentes desacoplados:
 
-### 1. `NotificationContext.jsx` (Gerenciador de Estado Global)
+### 1. [`NotificationContext.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/context/NotificationContext.jsx) (Gerenciador de Estado Global)
 - **Escuta Contínua via Socket.io**: Conecta ouvinte no evento `new_notification`, adicionando novos avisos ao topo da lista sem recarregar a interface.
 - **Persistência & Cache Local**: Sincroniza a lista e o contador com a API REST (`GET /api/notifications`) e mantém cache no `localStorage` para carregamento instantâneo.
 - **Feedback Sonoro Tátil**: Dispara bips sonoros suaves em formato Web Audio para alertar sobre novas mensagens diretas ou menções.
 - **Operações em Lote**: Expõe métodos assíncronos `markAsRead(id)`, `markAllAsRead()` e `clearAll()` para consumo por qualquer componente filho.
 
-### 2. `NotificationsDropdown.jsx` (Menu Interativo na Navbar)
-- Emblema em formato de sino com anel de foco tátil e badge vermelho pulsante exibindo a contagem de não lidas (`unreadCount`).
-- Popover suspenso com lista rolável em cavidade `.skeuo-well`, botões de ação rápida para marcar como lida e atalhos para redirecionamento contextuais (ex: abrir conversa no Direct).
+### 2. [`NotificationsDropdown.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NotificationsDropdown.jsx) (Menu Interativo na Navbar)
+- Emblema em formato de sino com anel de foco tátil e badge vermelho com legibilidade tipográfica calibrada (sem sombras obstrutivas) exibindo a contagem de não lidas (`unreadCount`).
+- Popover suspenso com abas de filtro ("Todas", "Não Lidas", "Sistema"), lista rolável em cavidade `.skeuo-well`, botões de ação rápida para marcar como lida e atalhos para redirecionamento contextuais (ex: abrir conversa no Direct).
 
-### 3. `NotificationToastContainer.jsx` (Banners Flutuantes)
+### 3. Menu Suspenso de Perfil (`UserMenuDropdown` em [`Navbar.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/Navbar.jsx))
+- **Avatar com Orbe Tátil**: Borda gradiente celeste com iluminação interna (`inset`), brilho difuso e **diodo indicador de presença em LED verde** (`bg-emerald-500`) indicando status ativo em tempo real.
+- **Hierarquia Visual**: Exibição centralizada do nome completo, e-mail e badge de status/cargo, com transição suave e atalhos para `/custom`, `/settings`, `/favorites` e logout seguro.
+
+### 4. [`NotificationToastContainer.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NotificationToastContainer.jsx) (Banners Flutuantes)
 - Renderiza toasts translúcidos com visual Frutiger Aero no canto superior direito da tela com temporizador automático de saída e botão de fechamento manual.
 
 ---
@@ -268,12 +277,20 @@ A aplicação conta com um pipeline global e reativo de notificações em tempo 
 
 | Componente | Arquivo | Responsabilidade |
 | :--- | :--- | :--- |
-| **Navbar** | `src/components/Navbar.jsx` | Barra de navegação principal com logo líquido, pesquisa global, links para Salas, Directs e Favoritos, status de conexão Socket e perfil do usuário. |
-| **MembersSidebar** | `src/components/MembersSidebar.jsx` | Painel de moderação e presença de membros na sala, com badges de Dono, Mod e Membro, modais de promoção, expulsão e transferência de posse. |
-| **NewDirectMessageModal** | `src/components/NewDirectMessageModal.jsx` | Modal com campo de busca com debounce para localizar contatos e iniciar chats privados 1x1. |
-| **ChatQuickSettings** | `src/components/ChatQuickSettings.jsx` | Painel popover para controle de densidade visual de balões (Compacto/Confortável/Grande) e som. |
-| **SkyBackground** | `src/components/SkyBackground.jsx` | Fundo dinâmico com iluminação volumétrica, gradientes celestes e orbes de vidro animados. |
-| **CookieBanner** | `src/components/CookieBanner.jsx` | Banner de conformidade de privacidade LGPD/GDPR com botões táteis de aceite. |
+| **Navbar** | [`src/components/Navbar.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/Navbar.jsx) | Barra de navegação principal com logo líquido, pesquisa global, links para Salas, Directs e Favoritos, status de conexão Socket e menu suspenso de perfil. |
+| **MembersSidebar** | [`src/components/MembersSidebar.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/MembersSidebar.jsx) | Painel de moderação e presença de membros na sala, com badges de Dono, Mod e Membro, modais de promoção, expulsão e transferência de posse. |
+| **ChatSidebar** | [`src/components/ChatSidebar.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/ChatSidebar.jsx) | Painel lateral colapsável para alternância rápida entre salas de conversa ativas. |
+| **NewDirectMessageModal** | [`src/components/NewDirectMessageModal.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NewDirectMessageModal.jsx) | Modal com campo de busca com debounce para localizar contatos e iniciar chats privados 1x1. |
+| **NotificationsDropdown** | [`src/components/NotificationsDropdown.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NotificationsDropdown.jsx) | Dropdown de notificações com abas, contagem em tempo real e ações de leitura. |
+| **NotificationToastContainer** | [`src/components/NotificationToastContainer.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NotificationToastContainer.jsx) | Gerenciador de toasts flutuantes translúcidos com visual Frutiger Aero. |
+| **ChatQuickSettings** | [`src/components/ChatQuickSettings.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/ChatQuickSettings.jsx) | Painel popover para controle de densidade visual de balões (Compacto/Confortável/Grande) e som. |
+| **SkyBackground** | [`src/components/SkyBackground.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/SkyBackground.jsx) | Fundo dinâmico com iluminação volumétrica, gradientes celestes e orbes de vidro animados. |
+| **SkeuoLoading** | [`src/components/SkeuoLoading.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/SkeuoLoading.jsx) | Indicador de carregamento tátil skeuomórfico com pulso acetinado. |
+| **UserAvatar** | [`src/components/UserAvatar.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/UserAvatar.jsx) | Componente atômico de avatar com fallback para inicial e anel de status. |
+| **Footer** | [`src/components/Footer.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/Footer.jsx) | Rodapé institucional com links, status dos serviços e créditos acadêmicos. |
+| **CookieBanner** | [`src/components/CookieBanner.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/CookieBanner.jsx) | Banner de conformidade de privacidade LGPD/GDPR com botões táteis de aceite. |
+| **PrivateRoute** | [`src/components/PrivateRoute.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/PrivateRoute.jsx) | Guarda de rotas autenticadas que redireciona visitantes deslogados para `/login`. |
+| **AdminRoute** | [`src/components/AdminRoute.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/AdminRoute.jsx) | Guarda de rotas administrativas que exige token de autorização específico de admin. |
 
 ---
 
@@ -282,25 +299,27 @@ A aplicação conta com um pipeline global e reativo de notificações em tempo 
 O frontend implementa uma suíte de testes robusta utilizando [Vitest](https://vitest.dev/) e [React Testing Library](https://testing-library.com/):
 
 ```bash
-# Executar todos os testes automatizados do frontend
-npm test
+# Executar todos os testes automatizados do frontend (execução única)
+npm test -- --run
 
 # Executar testes em modo watch (re-execução em edições)
 npm run test:watch
 ```
 
-### Cobertura da Suíte (11 Arquivos, 59 Testes Aprovados):
-1. **`auth.test.jsx`**: Validação de formulários de login e cadastro, medidor de força de senha e persistência de token JWT.
-2. **`chat.test.jsx`**: Envio de mensagens, edição, exclusão hierárquica, criptografia e abertura de Direct a partir de membro.
-3. **`Directs.test.jsx`**: Listagem de conversas, envio de mensagens diretas, busca de contatos e remoção de conversas.
-4. **`Favorites.test.jsx`**: Listagem de favoritos, filtros por abas ("Salas" e "Conversas") e ação de desfavoritar.
-5. **`Notifications.test.jsx`**: Notificações recebidas, marcação de leitura e renderização de toasts.
-6. **`Rooms.test.jsx`**: Lobby de salas, filtros de categoria, modais de criação e tratamento de falhas de rede.
-7. **`MembersSidebar.test.jsx`**: Renderização de insígnias de moderação, botões de kick e promoção de cargos.
-8. **`ChatSidebar.test.jsx`**: Alternância rápida e renderização de salas ativas.
-9. **`PrivateRoute.test.jsx`**: Proteção de rotas autenticadas e redirecionamento de usuários deslogados.
-10. **`Footer.test.jsx`**: Renderização institucional e links institucionais.
-11. **`api.test.js`**: Interceptação de tokens Bearer, injeção de cabeçalhos e expiração automática de sessão.
+### Cobertura da Suíte (13 Arquivos, 68 Testes 100% Aprovados):
+1. **[`auth.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/auth.test.jsx)** (8 testes): Validação de formulários de login e cadastro, medidor de força de senha e persistência de token JWT.
+2. **[`chat.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/chat.test.jsx)** (7 testes): Envio de mensagens, edição, exclusão hierárquica, criptografia e abertura de Direct a partir de membro.
+3. **[`Directs.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Directs.test.jsx)** (8 testes): Listagem de conversas, envio de mensagens diretas, deduplicação, busca de contatos e remoção de conversas.
+4. **[`Favorites.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Favorites.test.jsx)** (5 testes): Listagem de favoritos, filtros por abas ("Salas" e "Conversas") e ação de desfavoritar.
+5. **[`Notifications.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Notifications.test.jsx)** (4 testes): Notificações recebidas, alternância de abas de filtro e marcação de leitura.
+6. **[`Rooms.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Rooms.test.jsx)** (5 testes): Lobby de salas, estatísticas da API, filtros de categoria, modais de criação e tratamento de falhas.
+7. **[`MembersSidebar.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/MembersSidebar.test.jsx)**: Renderização de insígnias de moderação, botões de kick e promoção de cargos.
+8. **[`ChatSidebar.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/ChatSidebar.test.jsx)**: Alternância rápida e renderização de salas ativas.
+9. **[`PrivateRoute.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/PrivateRoute.test.jsx)** (3 testes): Proteção de rotas autenticadas e redirecionamento de usuários deslogados.
+10. **[`ForgotPassword.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/ForgotPassword.test.jsx)** (5 testes): Validação de formulário de recuperação de senha e envio de link via Supabase Auth.
+11. **[`Home.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Home.test.jsx)**: Renderização da landing page, títulos de alto impacto e alternância de botões CTA conforme estado de login.
+12. **[`Footer.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Footer.test.jsx)** (6 testes): Renderização institucional, ano corrente e links de navegação.
+13. **[`api.test.js`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/api.test.js)** (8 testes): Interceptação de tokens Bearer, injeção de cabeçalhos e expiração automática de sessão.
 
 ---
 

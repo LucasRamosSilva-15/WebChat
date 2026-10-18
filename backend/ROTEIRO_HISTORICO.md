@@ -1,7 +1,8 @@
 # 📜 Roteiro Técnico Detalhado: Sistema de Histórico e Paginação por Cursor
 
 > **Para o desenvolvedor responsável:**  
-> Este documento é o seu guia passo a passo para construir o **Sistema de Histórico de Mensagens** do SkyRipple. Cada etapa contém explicações detalhadas em texto do **que fazer**, **por que fazer**, **como funciona a lógica** e **como testar** para ter certeza de que tudo está funcionando perfeitamente antes de avançar.
+> Este documento é o seu guia passo a passo oficial para construir e integrar o **Sistema de Histórico de Mensagens com Paginação por Cursor** no ecossistema do **SkyRipple** (v9.0.0).  
+> A base do backend agora adota a arquitetura modular **Controller-Service-Repository-Model (Sequelize)**, garantindo total isolamento da lógica de negócios, contratos OpenAPI 3.0 via Swagger UI (`/api-docs`) e portal Mintlify, além de compatibilidade com a suíte de testes de 202 testes automatizados.
 
 ---
 
@@ -334,8 +335,8 @@ No método `getMessages`, faça o mesmo repasse:
   }
 ```
 
-#### 3. Atualize o Swagger em [`backend/src/routes/messageRoutes.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/routes/messageRoutes.js)
-Acima da rota `router.get('/rooms/:roomId/messages'...)`, adicione os parâmetros `limit` e `before`:
+#### 3. Atualize o Swagger em [`backend/src/routes/messageRoutes.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/routes/messageRoutes.js) e [`backend/src/routes/directRoutes.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/routes/directRoutes.js)
+Acima da rota `router.get('/rooms/:roomId/messages'...)`, adicione os parâmetros `limit` e `before` com schemas e respostas padronizadas:
 
 ```javascript
 /**
@@ -352,23 +353,47 @@ Acima da rota `router.get('/rooms/:roomId/messages'...)`, adicione os parâmetro
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 50
- *         description: Número máximo de mensagens a retornar (1-100)
+ *         description: Número máximo de mensagens a retornar (1 a 100)
  *       - in: query
  *         name: before
  *         schema:
  *           type: string
  *           format: date-time
- *         description: Cursor ISO para buscar mensagens anteriores a esta data
+ *         description: Cursor ISO para buscar mensagens criadas antes desta data
  *     responses:
  *       200:
- *         description: Objeto contendo array de mensagens e metadados de paginação
+ *         description: Histórico de mensagens com metadados de cursor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 messages:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Message'
+ *                 hasMore:
+ *                   type: boolean
+ *                 nextCursor:
+ *                   type: string
+ *                   format: date-time
+ *                   nullable: true
+ *       401:
+ *         description: Não autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 ```
+
+Faça a mesma anotação na rota correspondente em [`backend/src/routes/directRoutes.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/routes/directRoutes.js) para `GET /directs/conversations/{id}/messages`.
 
 ### 🧪 Como testar o Backend antes de mexer no Frontend
 Abra seu terminal ou cliente HTTP (como Postman/Insomnia) e faça uma requisição autenticada:
@@ -650,7 +675,7 @@ const handleExportChatHistory = () => {
 ## 🧪 ETAPA 9: Criação de Testes Automatizados com Jest & Supertest
 
 ### 📌 O que você vai fazer nesta etapa
-Garantir que a sua implementação seja à prova de falhas adicionando testes que validem a paginação e o cursor.
+Garantir que a sua implementação seja à prova de falhas adicionando testes que validem a paginação e o cursor nas suítes [`backend/tests/message.test.js`](file:///home/lucasramos/Documentos/WebChat/backend/tests/message.test.js) e [`backend/tests/directs.test.js`](file:///home/lucasramos/Documentos/WebChat/backend/tests/directs.test.js). O backend utiliza banco SQLite 100% em memória para testes atômicos ultra-rápidos e isolados.
 
 ### 📝 Instruções Passo a Passo no [`backend/tests/message.test.js`](file:///home/lucasramos/Documentos/WebChat/backend/tests/message.test.js)
 
@@ -679,7 +704,6 @@ describe('Testes de Paginação do Histórico de Mensagens', () => {
   });
 
   it('deve carregar registros anteriores ao fornecer o cursor before', async () => {
-    // 1. Faz a primeira busca
     const page1 = await request(app)
       .get(`/api/rooms/${roomId}/messages?limit=2`)
       .set('Authorization', `Bearer ${userToken}`);
@@ -687,7 +711,6 @@ describe('Testes de Paginação do Histórico de Mensagens', () => {
     const cursor = page1.body.nextCursor;
 
     if (cursor) {
-      // 2. Faz a segunda busca usando o cursor da página anterior
       const page2 = await request(app)
         .get(`/api/rooms/${roomId}/messages?limit=2&before=${encodeURIComponent(cursor)}`)
         .set('Authorization', `Bearer ${userToken}`);
@@ -695,7 +718,6 @@ describe('Testes de Paginação do Histórico de Mensagens', () => {
       expect(page2.status).toBe(200);
       expect(page2.body.messages.length).toBeGreaterThan(0);
       
-      // As mensagens da página 2 devem ser obrigatoriamente anteriores ao cursor
       const oldestMessageDate = new Date(page2.body.messages[0].created_at).getTime();
       expect(oldestMessageDate).toBeLessThan(new Date(cursor).getTime());
     }
@@ -712,22 +734,37 @@ describe('Testes de Paginação do Histórico de Mensagens', () => {
 });
 ```
 
+Execute a suíte do backend:
+```bash
+npm test --prefix backend
+```
+
 ---
 
 ## ✅ Checklist Final de Entrega
 
 Antes de submeter suas alterações para revisão, confira cada um destes pontos:
 
-- [ ] **Índices no Banco:** Verifique se os índices em `Message.js` e `DirectMessage.js` foram adicionados.
+- [ ] **Índices no Banco:** Verifique se os índices compostos em [`backend/src/models/Message.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/models/Message.js) e [`backend/src/models/DirectMessage.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/models/DirectMessage.js) foram adicionados.
+- [ ] **Repositórios & Cursor:** Métodos `findByRoomId` e `findMessagesByConversation` implementam `limit + 1`, invertem o array (`.reverse()`) e retornam `nextCursor`.
+- [ ] **Segurança no Service:** Parâmetros `limit` são higienizados (mínimo 1, máximo 100) e datas `before` validadas em [`backend/src/services/MessageService.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/services/MessageService.js) e [`backend/src/services/DirectService.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/services/DirectService.js).
 - [ ] **Ordem das Mensagens:** Ao entrar na sala, a mensagem mais antiga está no topo e a mais nova está no rodapé.
-- [ ] **Rolagem Infinita:** Ao rolar para o topo, a mensagem "Carregando mensagens anteriores..." aparece e o lote antigo entra suavemente sem a tela pular.
+- [ ] **Rolagem Infinita Suave:** Ao rolar para o topo, a mensagem "Carregando mensagens anteriores..." aparece e o lote antigo entra suavemente sem saltos visuais na tela via compensação de `scrollTop`.
 - [ ] **Fim do Histórico:** Quando não há mais mensagens antigas, o indicador "📌 Início do histórico da sala alcançado" é exibido.
-- [ ] **Mensagens Diretas (1x1):** O histórico do chat privado (`Directs.jsx`) também está paginado e funcionando perfeitamente.
-- [ ] **Separador de Dias:** As mensagens exibem o divisor visual com "Hoje", "Ontem" ou a data formatada.
-- [ ] **Segurança:** Parâmetros `limit` maiores que 100 são travados em 100 no backend.
-- [ ] **Testes:** Os testes rodam com sucesso executando:
+- [ ] **Mensagens Diretas (1x1):** O histórico do chat privado ([`frontend/src/pages/Directs.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/pages/Directs.jsx)) também está paginado e integrado com o sistema de horário e data.
+- [ ] **Separador Cronológico de Dias:** As mensagens exibem o divisor visual com "Hoje", "Ontem" ou a data formatada por extenso.
+- [ ] **Exportação de Conversa:** Funcionalidade de download do histórico em `.txt` acessível no cabeçalho do chat.
+- [ ] **Documentação OpenAPI & Mintlify:** Rotas atualizadas no Swagger ([`backend/src/config/swagger.js`](file:///home/lucasramos/Documentos/WebChat/backend/src/config/swagger.js)) e portal Mintlify ([`docs/`](file:///home/lucasramos/Documentos/WebChat/docs)).
+- [ ] **Bateria de Testes Completa (202 Testes 100% Aprovados):**
   ```bash
+  # Testes de Backend (15 suítes / 134 testes)
+  npm test --prefix backend
+
+  # Testes de Frontend (13 suítes / 68 testes)
+  npm test --prefix frontend -- --run
+
+  # Ou ambos via script raiz:
   npm run test:backend && npm run test:frontend
   ```
 
-Se precisar de qualquer esclarecimento sobre a arquitetura do projeto ou sobre as camadas do backend, consulte também a documentação técnica em [`backend/README.md`](file:///home/lucasramos/Documentos/WebChat/backend/README.md). Bom trabalho! 🚀
+Se precisar de qualquer esclarecimento sobre a arquitetura do projeto ou sobre as camadas do backend, consulte também a documentação técnica oficial em [`backend/README.md`](file:///home/lucasramos/Documentos/WebChat/backend/README.md) e no [`README.md`](file:///home/lucasramos/Documentos/WebChat/README.md) principal. Bom trabalho! 🚀

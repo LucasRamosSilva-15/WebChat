@@ -5,7 +5,6 @@ const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
-// Desligado em testes para não bloquear as requisições automatizadas.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,

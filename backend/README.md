@@ -703,9 +703,39 @@ O backend disponibiliza duas formas de consultar e testar os contratos de API:
 ##### 1. Swagger UI Local & Produção
 Renderizado pelo próprio servidor Express utilizando especificações JSDoc OpenAPI 3.0:
 * **Ambiente Local**: `http://localhost:3001/api-docs`
-* **Ambiente de Produção**: `https://webchat-9vqr.onrender.com/api-docs`
+* **Ambiente de Produção (SkyRipple)**: `https://skyripple-9vqr.onrender.com/api-docs`
+* **Ambiente de Produção (Legado)**: `https://webchat-9vqr.onrender.com/api-docs`
 
-No Swagger UI é possível autenticar interativamente através do botão **Authorize**, informando o token `Bearer <token>` obtido no endpoint de login para testar todas as rotas protegidas diretamente pelo navegador.
+###### Especificação OpenAPI & Cobertura
+* **Título & Versão**: `SkyRipple API — Backend Service` (v1.0.0).
+* **Rotas Documentadas**: 38 rotas cobrindo integralmente os endpoints REST do serviço.
+* **Tags & Agrupamentos (9 Categorias)**:
+  1. `Auth` — Autenticação local, registro, sincronização Google OAuth e dados do usuário logado.
+  2. `Rooms` — Criação, listagem, membros, moderação hierárquica e transferência de titularidade de salas.
+  3. `Messages` — Envio, busca textual paginada por termo e exclusão de mensagens de chat em sala.
+  4. `Directs` — Conversas diretas 1x1, listagem de contatos e trânsito confidencial de mensagens privadas.
+  5. `Notifications` — Listagem, leitura individual/em lote e deleção de notificações de sistema.
+  6. `Favorites` — Gestão atômica de favoritos de salas e conversas diretas.
+  7. `Reports` — Envio e consulta de denúncias contra mensagens abusivas.
+  8. `Feedbacks` — Canal de sugestões e relatos de bugs com suporte a múltiplos anexos.
+  9. `Admin` — Métricas `/stats`, moderação de usuários, banimentos, denúncias e governança da plataforma.
+* **Componentes & Schemas Reutilizáveis (`components.schemas`)**:
+  - `User`: Identificador UUID, nome exibido, e-mail, foto de perfil, recado, status e papel no sistema.
+  - `Room`: Identificador, nome, descrição, categoria, tipo (pública/privada), criador e contagem de membros.
+  - `RoomMember`: Associação usuário-sala com papel (`owner`, `moderator`, `user`) e data de adesão.
+  - `Message`: Mensagem em sala com texto, imagem opcional, autor e carimbo de data/hora.
+  - `DirectConversation`: Conversa privada 1x1 com interlocutor e prévia da última mensagem.
+  - `DirectMessage`: Mensagem privada entre dois usuários com status e metadados de envio.
+  - `Notification`: Alerta de sistema com tipo, título, mensagem e status de leitura.
+  - `Favorite`: Marcação de sala ou conversa com dados do item associado.
+  - `Report`: Chamado de moderação com motivo da denúncia, status e mensagem associada.
+  - `Feedback`: Relato de usuário com categoria, comentário, anexos e status de resolução.
+  - `ErrorResponse`: Formato padronizado de erro `{ "error": "mensagem de erro" }`.
+* **Esquemas de Segurança Suportados**:
+  - `BearerAuth` (HTTP Bearer JWT via header `Authorization: Bearer <token>`).
+  - `AdminAuth` (Chave de administração via header `x-admin-key: <ADMIN_SECRET_KEY>`).
+
+No Swagger UI é possível autenticar interativamente através do botão **Authorize**, informando o token `Bearer <token>` ou a chave administrativa para testar todas as rotas protegidas diretamente pelo navegador.
 
 ##### 2. Portal Mintlify
 Documentação completa de design system, arquitetura de sistemas, especificações de WebSockets e referência OpenAPI detalhada localizada na pasta `docs/` do repositório, pronta para deploy na plataforma Mintlify.

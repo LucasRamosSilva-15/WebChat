@@ -1,8 +1,6 @@
 const express = require('express');
 const MessageController = require('../controllers/MessageController');
 const authMiddleware = require('../middleware/auth');
-
-// Montado na raiz de /api porque mistura /rooms/:roomId/messages e /messages/:id.
 const router = express.Router();
 
 /**

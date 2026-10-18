@@ -56,12 +56,20 @@ Para integrar suas aplicações e realizar homologações, utilize as URLs base 
 
 | Ambiente | Base URL | WebSocket URL | Protocolo de Transporte |
 | :--- | :--- | :--- | :--- |
-| **Produção (Render)** | `https://skyripple-9vqr.onrender.com/api` | `wss://skyripple-9vqr.onrender.com` | HTTPS / WSS |
+| **Produção (SkyRipple)** | `https://skyripple-9vqr.onrender.com/api` | `wss://skyripple-9vqr.onrender.com` | HTTPS / WSS |
+| **Produção (Legado)** | `https://webchat-9vqr.onrender.com/api` | `wss://webchat-9vqr.onrender.com` | HTTPS / WSS |
 | **Desenvolvimento Local** | `http://localhost:3001/api` | `ws://localhost:3001` | HTTP / WS |
 
 <Note>
 **Healthcheck**: A rota raiz `GET /` do servidor responde `{ "status": "online", "service": "SkyRipple MVP API" }` sem exigir autenticação, ideal para monitoramento de liveness e readiness em orquestradores como Kubernetes ou Render.
 </Note>
+
+## Documentação Interativa & OpenAPI
+
+O ecossistema **SkyRipple** conta com duas interfaces complementares para consumo e teste dos contratos de API:
+* **Portal Mintlify**: Documentação aprofundada de arquitetura, guias de integração, design system de componentes frontend e referência interativa de endpoints.
+* **Swagger UI (OpenAPI 3.0/3.1)**: Interface interativa embarcada no próprio backend em `/api-docs` (`https://skyripple-9vqr.onrender.com/api-docs` ou `http://localhost:3001/api-docs`), permitindo autenticação interativa via `BearerAuth` (JWT) e `AdminAuth` (chave mestra) para execução de requisições de teste diretamente pelo navegador.
+
 
 ---
 

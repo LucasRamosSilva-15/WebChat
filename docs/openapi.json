@@ -13,7 +13,11 @@
   "servers": [
     {
       "url": "https://skyripple-9vqr.onrender.com/api",
-      "description": "Servidor de Produção (Render)"
+      "description": "Servidor de Produção (Render - SkyRipple)"
+    },
+    {
+      "url": "https://webchat-9vqr.onrender.com/api",
+      "description": "Servidor Legado (Render - WebChat)"
     },
     {
       "url": "http://localhost:3001/api",
@@ -2571,6 +2575,12 @@
         "scheme": "bearer",
         "bearerFormat": "JWT",
         "description": "Insira o token JWT no formato: `Bearer <token>`"
+      },
+      "AdminAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-admin-key",
+        "description": "Chave mestra de administração do cluster"
       }
     },
     "schemas": {
