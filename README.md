@@ -144,10 +144,13 @@ npm run test:backend && npm run test:frontend
 
 ## Imagens / Screenshots
 
-![Home](docs/screenshots/Home.png)
-![Salas](docs/screenshots/Room.png)
-![Chat](docs/screenshots/Chat.png)
-![Perfil](docs/screenshots/Profile.png)
+![Home](docs/screenshots/Captura1.png)
+![Salas](docs/screenshots/Captura2.png)
+![Chat](docs/screenshots/Captura3.png)
+![Perfil](docs/screenshots/Captura4.png)
+![Directs](docs/screenshots/Captura5.png)
+![Settings](docs/screenshots/Captura6.png)
+![Admin](docs/screenshots/Captura7.png)
 
 ## Funcionalidades
 
