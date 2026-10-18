@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FaEnvelope,
@@ -25,6 +25,101 @@ import UserAvatar from '../components/UserAvatar';
 import NewDirectMessageModal from '../components/NewDirectMessageModal';
 import { socket } from '../socket';
 import { apiRequest } from '../services/api';
+
+const formatMessageTime = (timeStr, createdAt) => {
+    const candidate = createdAt || timeStr;
+    if (!candidate) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (typeof candidate === 'string' && candidate.includes('T')) {
+        const d = new Date(candidate);
+        if (!isNaN(d.getTime())) {
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }
+    if (typeof timeStr === 'string' && timeStr.length <= 8 && timeStr.includes(':')) {
+        return timeStr;
+    }
+    const d = new Date(candidate);
+    if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return timeStr || '';
+};
+
+const formatFullDateTime = (timeStr, createdAt) => {
+    const candidate = createdAt || timeStr;
+    if (!candidate) return '';
+    const d = new Date(candidate);
+    if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' às ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return timeStr || '';
+};
+
+const getMessageDateKey = (msg) => {
+    const candidate = msg.created_at || msg.timestamp || msg.time;
+    if (!candidate) return 'Hoje';
+    const d = new Date(candidate);
+    if (isNaN(d.getTime())) {
+        return 'Hoje';
+    }
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const isToday = d.getDate() === today.getDate() &&
+        d.getMonth() === today.getMonth() &&
+        d.getFullYear() === today.getFullYear();
+
+    if (isToday) return 'Hoje';
+
+    const isYesterday = d.getDate() === yesterday.getDate() &&
+        d.getMonth() === yesterday.getMonth() &&
+        d.getFullYear() === yesterday.getFullYear();
+
+    if (isYesterday) return 'Ontem';
+
+    const isSameYear = d.getFullYear() === today.getFullYear();
+    if (isSameYear) {
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+    }
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+const formatConversationTime = (timeStr) => {
+    if (!timeStr) return '';
+    if (timeStr === 'Agora' || timeStr === 'Hoje' || timeStr === 'Ontem') return timeStr;
+    if (typeof timeStr === 'string' && timeStr.length <= 5 && timeStr.includes(':')) return timeStr;
+
+    const d = new Date(timeStr);
+    if (isNaN(d.getTime())) return timeStr;
+
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const isToday = d.getDate() === today.getDate() &&
+        d.getMonth() === today.getMonth() &&
+        d.getFullYear() === today.getFullYear();
+
+    if (isToday) {
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    const isYesterday = d.getDate() === yesterday.getDate() &&
+        d.getMonth() === yesterday.getMonth() &&
+        d.getFullYear() === yesterday.getFullYear();
+
+    if (isYesterday) {
+        return 'Ontem';
+    }
+
+    const isSameYear = d.getFullYear() === today.getFullYear();
+    if (isSameYear) {
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    }
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+};
 
 const INITIAL_CONVERSATIONS = [
     {
@@ -74,6 +169,24 @@ const Directs = () => {
     const [roomOnlineUserIds, setRoomOnlineUserIds] = useState(new Set());
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const isSubmittingRef = useRef(false);
+    const [bubbleFormat, setBubbleFormat] = useState(() => {
+        const saved = localStorage.getItem('chat_bubbleFormat');
+        return saved === 'classico' ? 'classico' : 'grande';
+    });
+
+    useEffect(() => {
+        const handleUpdate = () => {
+            const saved = localStorage.getItem('chat_bubbleFormat');
+            setBubbleFormat(saved === 'classico' ? 'classico' : 'grande');
+        };
+        window.addEventListener('themeUpdated', handleUpdate);
+        window.addEventListener('storage', handleUpdate);
+        return () => {
+            window.removeEventListener('themeUpdated', handleUpdate);
+            window.removeEventListener('storage', handleUpdate);
+        };
+    }, []);
 
     const [currentUserId] = useState(() => {
         let uid = localStorage.getItem('chat_uniqueUserId');
@@ -177,12 +290,14 @@ const Directs = () => {
                 setMessages([]);
             }
         } else {
+            const now = new Date();
             const initialMsgs = [
                 {
                     messageId: 'sys-start',
                     sender: convName,
                     text: selectedConv.lastMessage || 'Conversa direta iniciada com sucesso.',
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    created_at: now.toISOString(),
                     isMe: false,
                     likes: []
                 }
@@ -228,6 +343,8 @@ const Directs = () => {
                                 sender_name: senderName,
                                 avatar: msg.avatar || msg.user?.profilePhoto || null,
                                 user: msg.user,
+                                time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
+                                created_at: msg.created_at || msg.time,
                                 isMe: Boolean(isMe)
                             };
                         });
@@ -246,8 +363,9 @@ const Directs = () => {
         const handleReceiveMessage = (msg) => {
             if (msg.room === convId || !msg.room) {
                 setMessages(prev => {
-                    const alreadyExists = prev.some(m => m.messageId === (msg.messageId || msg.id));
-                    if (alreadyExists) return prev;
+                    const incomingId = msg.messageId || msg.id;
+                    const incomingText = msg.message || msg.content || msg.text || '';
+                    const incomingTime = new Date(msg.created_at || msg.time || Date.now()).getTime();
 
                     const isMe = (msg.user_id && msg.user_id === currentUserId) ||
                         (msg.userId && msg.userId === currentUserId) ||
@@ -256,6 +374,20 @@ const Directs = () => {
                         msg.sender === currentUserDisplayName ||
                         msg.userName === currentUserDisplayName ||
                         msg.sender_name === currentUserDisplayName;
+
+                    const alreadyExists = prev.some(m => {
+                        if (incomingId && (m.messageId === incomingId || m.id === incomingId)) {
+                            return true;
+                        }
+                        if (isMe && m.isMe && m.text === incomingText) {
+                            const msgTime = new Date(m.created_at || m.timestamp || 0).getTime();
+                            if (!isNaN(msgTime) && !isNaN(incomingTime) && Math.abs(msgTime - incomingTime) < 5000) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                    if (alreadyExists) return prev;
 
                     const senderName = isMe
                         ? currentUserDisplayName
@@ -276,6 +408,7 @@ const Directs = () => {
                             'Usuário'
                         );
 
+                    const now = new Date();
                     const newMsg = {
                         messageId: msg.messageId || msg.id || 'msg_' + Date.now(),
                         sender: senderName,
@@ -283,7 +416,8 @@ const Directs = () => {
                         user: msg.user,
                         avatar: msg.avatar || msg.user?.profilePhoto || null,
                         text: msg.message || msg.content || msg.text || '',
-                        time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
+                        time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
+                        created_at: msg.created_at || msg.time || now.toISOString(),
                         isMe: Boolean(isMe),
                         image: msg.image || msg.imageUrl || msg.image_url || null,
                         likes: []
@@ -292,12 +426,27 @@ const Directs = () => {
                     localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated.slice(-100)));
                     return updated;
                 });
+
+                setConversations(prevConvs => {
+                    const updatedList = prevConvs.map(c => {
+                        if (c.id === convId) {
+                            return {
+                                ...c,
+                                lastMessage: msg.message || msg.content || msg.text || (msg.image ? 'Foto recebida' : 'Mensagem recebida'),
+                                time: msg.created_at || now.toISOString()
+                            };
+                        }
+                        return c;
+                    });
+                    localStorage.setItem('chat_direct_conversations', JSON.stringify(updatedList));
+                    return updatedList;
+                });
             }
         };
 
         const handleMessageDeleted = ({ messageId }) => {
             setMessages(prev => {
-                const updated = prev.filter(m => m.messageId !== messageId);
+                const updated = prev.filter(m => (m.messageId || m.id) !== messageId && m.messageId !== messageId && m.id !== messageId);
                 localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated));
                 return updated;
             });
@@ -450,12 +599,25 @@ const Directs = () => {
 
     const handleSendMessage = (e) => {
         e?.preventDefault();
-        const fallbackText = e?.target?.message?.value || (e?.currentTarget?.form && e.currentTarget.form.message?.value);
+        if (isSubmittingRef.current) return;
+        const formElement = e?.target?.tagName === 'FORM' ? e.target : e?.currentTarget?.form;
+        const fallbackText = formElement?.message?.value || '';
         const textToSend = (inputMessage || fallbackText || '').trim();
         if ((!textToSend && !imagePreview) || !selectedConv) return;
 
+        isSubmittingRef.current = true;
+        setInputMessage('');
+        setImagePreview(null);
+        if (formElement?.message) {
+            formElement.message.value = '';
+        }
+        setTimeout(() => {
+            isSubmittingRef.current = false;
+        }, 300);
+
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const isoTime = now.toISOString();
         const newMsgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 
         const newMsg = {
@@ -463,6 +625,8 @@ const Directs = () => {
             sender: currentUserDisplayName,
             text: textToSend,
             time: timeStr,
+            created_at: isoTime,
+            timestamp: isoTime,
             isMe: true,
             image: imagePreview || null,
             likes: []
@@ -485,6 +649,7 @@ const Directs = () => {
             content: textToSend,
             message: textToSend,
             time: timeStr,
+            created_at: isoTime,
             messageId: newMsgId,
             image: imagePreview
         });
@@ -501,16 +666,13 @@ const Directs = () => {
                 return {
                     ...c,
                     lastMessage: textToSend || 'Foto enviada',
-                    time: timeStr
+                    time: isoTime
                 };
             }
             return c;
         });
         setConversations(updatedConversations);
         localStorage.setItem('chat_direct_conversations', JSON.stringify(updatedConversations));
-
-        setInputMessage('');
-        setImagePreview(null);
     };
 
     const handleImageSelect = (e) => {
@@ -659,10 +821,15 @@ const Directs = () => {
     };
 
     const handleDeleteMessage = (messageId) => {
-        const updated = messages.filter(m => m.messageId !== messageId);
-        setMessages(updated);
+        if (!messageId) return;
+        setMessages(prev => {
+            const updated = prev.filter(m => (m.messageId || m.id) !== messageId && m.messageId !== messageId && m.id !== messageId);
+            if (selectedConv) {
+                localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
+            }
+            return updated;
+        });
         if (selectedConv) {
-            localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
             socket.emit('delete_message', {
                 room: selectedConv.id,
                 messageId
@@ -770,7 +937,7 @@ const Directs = () => {
                                                 <h4 className={`text-xs font-bold truncate ${isSelected ? 'text-sky-600 dark:text-sky-400' : 'text-slate-800 dark:text-slate-100'}`}>
                                                     {conv.name}
                                                 </h4>
-                                                <span className="text-[10px] text-slate-400 shrink-0">{conv.time}</span>
+                                                <span className="text-[10px] text-slate-400 shrink-0">{formatConversationTime(conv.time)}</span>
                                             </div>
                                             <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
                                                 {conv.lastMessage}
@@ -940,7 +1107,13 @@ const Directs = () => {
                                     </div>
                                 )}
 
-                                {displayedMessages.map(msg => {
+                                {displayedMessages.map((msg, index) => {
+                                    const msgKey = msg.messageId || msg.id || ('msg_' + index);
+                                    const isGrande = bubbleFormat !== 'classico';
+                                    const currentDateKey = getMessageDateKey(msg);
+                                    const prevDateKey = index > 0 ? getMessageDateKey(displayedMessages[index - 1]) : null;
+                                    const showDateDivider = index === 0 || currentDateKey !== prevDateKey;
+
                                     const isMatch = chatSearchTerm && msg.text && msg.text.toLowerCase().includes(chatSearchTerm.toLowerCase());
                                     const matchClass = isMatch ? 'ring-2 ring-sky-400 shadow-md' : '';
 
@@ -961,41 +1134,471 @@ const Directs = () => {
                                         msg.sender ||
                                         'Usuário';
 
-                                    const senderInitial = senderName.charAt(0).toUpperCase();
                                     const senderAvatar = msg.avatar || msg.user?.profilePhoto || (msg.isMe ? null : selectedConv?.avatar);
+                                    const formattedTime = formatMessageTime(msg.time, msg.created_at);
+                                    const fullDateTime = formatFullDateTime(msg.time, msg.created_at);
+
+                                    const dateDivider = showDateDivider && (
+                                        <div className="flex items-center justify-center my-3 select-none">
+                                            <span className="px-3 py-1 rounded-full text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-xs backdrop-blur-xs">
+                                                {currentDateKey}
+                                            </span>
+                                        </div>
+                                    );
 
                                     if (msg.isMe) {
+                                        if (isGrande) {
+                                            return (
+                                                <Fragment key={msgKey}>
+                                                    {dateDivider}
+                                                    <div
+                                                        className="px-2 py-0.5 flex justify-end group animate-fade-in-up relative z-1 hover:z-50"
+                                                        style={{ zIndex: openMenuId === msgKey ? 9999 : undefined }}
+                                                    >
+                                                        <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto group/msg relative z-1 hover:z-50">
+                                                            <div className={`skeuo-bubble-sent !rounded-[18px] px-5 py-2.5 text-sm font-medium relative transition-all duration-300 ${matchClass}`}>
+                                                                <div className="message-bubble-actions absolute top-2 right-full mr-2 z-10">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setOpenMenuId(prev => prev === msgKey ? null : msgKey);
+                                                                        }}
+                                                                        className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${
+                                                                            openMenuId === msgKey ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
+                                                                        }`}
+                                                                        title="Mais opções"
+                                                                    >
+                                                                        <FaEllipsisV size={12} className="drop-shadow-xs" />
+                                                                    </button>
+
+                                                                    <div className={`absolute top-0 right-full mr-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
+                                                                        openMenuId === msgKey ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
+                                                                    }`}>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleToggleLike(msgKey);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl"
+                                                                        >
+                                                                            {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                                <>
+                                                                                    <FaHeart size={10} className="text-red-500 drop-shadow-xs" />
+                                                                                    <span>Descurtir</span>
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <FaRegHeart size={10} className="text-[#86868b] dark:text-slate-400" />
+                                                                                    <span>Curtir</span>
+                                                                                </>
+                                                                            )}
+                                                                        </button>
+                                                                        <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleToggleFavorite(msg);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                        >
+                                                                            <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} />
+                                                                            {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                                                        </button>
+                                                                        <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleCopyText(msg.text);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                        >
+                                                                            <FaCopy size={10} className="text-slate-500" /> Copiar texto
+                                                                        </button>
+                                                                        <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleDeleteMessage(msgKey);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 last:rounded-b-xl"
+                                                                        >
+                                                                            <FaTrash size={10} className="drop-shadow-xs" /> Apagar
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                                {msg.image && (
+                                                                    <div className="rounded-2xl overflow-hidden border border-white/20 dark:border-white/10 shadow-sm mb-1.5 mt-0.5">
+                                                                        <img
+                                                                            onClick={() => setSelectedImage(msg.image)}
+                                                                            src={msg.image}
+                                                                            alt="Anexo"
+                                                                            className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                                {msg.text && (
+                                                                    <p className="break-words whitespace-pre-wrap leading-relaxed">
+                                                                        {msg.text}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex items-center gap-1.5 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
+                                                                <button
+                                                                    type="button"
+                                                                    aria-label="Curtir mensagem"
+                                                                    title={msg.likes && msg.likes.includes(currentUserId) ? "Descurtir" : "Curtir"}
+                                                                    onClick={() => handleToggleLike(msgKey)}
+                                                                    className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
+                                                                        msg.likes && msg.likes.includes(currentUserId)
+                                                                            ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                                                            : msg.likes && msg.likes.length > 0
+                                                                                ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                                                                : 'opacity-70 sm:opacity-0 sm:group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                                                    }`}
+                                                                >
+                                                                    {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                        <FaHeart size={10} className="drop-shadow-xs" />
+                                                                    ) : (
+                                                                        <FaRegHeart size={10} />
+                                                                    )}
+                                                                    {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                                                                </button>
+                                                                <span title={fullDateTime}>{formattedTime}</span>
+                                                                <span className="text-sky-500 dark:text-sky-400 font-bold">✓✓</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Fragment>
+                                            );
+                                        }
+
+                                        const sentBubbleClass = `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tr-[2px] skeuo-bubble-sent ${matchClass}`;
                                         return (
+                                            <Fragment key={msgKey}>
+                                                {dateDivider}
+                                                <div
+                                                    className="px-2 py-0.5 flex justify-end group animate-fade-in-up relative z-1 hover:z-50"
+                                                    style={{ zIndex: openMenuId === msgKey ? 9999 : undefined }}
+                                                >
+                                                    <div className="flex flex-col max-w-[80%] items-end group/msg relative z-1 hover:z-50">
+                                                        <div className={sentBubbleClass}>
+                                                            <div className="message-bubble-actions absolute top-2 right-full mr-2 z-10">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setOpenMenuId(prev => prev === msgKey ? null : msgKey);
+                                                                    }}
+                                                                    className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${
+                                                                        openMenuId === msgKey ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
+                                                                    }`}
+                                                                    title="Mais opções"
+                                                                >
+                                                                    <FaEllipsisV size={12} className="drop-shadow-xs" />
+                                                                </button>
+
+                                                                <div className={`absolute top-0 right-full mr-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
+                                                                    openMenuId === msgKey ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
+                                                                }`}>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setOpenMenuId(null);
+                                                                            handleToggleLike(msgKey);
+                                                                        }}
+                                                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl"
+                                                                    >
+                                                                        {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                            <>
+                                                                                <FaHeart size={10} className="text-red-500 drop-shadow-xs" />
+                                                                                <span>Descurtir</span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <FaRegHeart size={10} className="text-[#86868b] dark:text-slate-400" />
+                                                                                <span>Curtir</span>
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                    <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setOpenMenuId(null);
+                                                                            handleToggleFavorite(msg);
+                                                                        }}
+                                                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                    >
+                                                                        <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} />
+                                                                        {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                                                    </button>
+                                                                    <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setOpenMenuId(null);
+                                                                            handleCopyText(msg.text);
+                                                                        }}
+                                                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                    >
+                                                                        <FaCopy size={10} className="text-slate-500" /> Copiar texto
+                                                                    </button>
+                                                                    <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setOpenMenuId(null);
+                                                                            handleDeleteMessage(msgKey);
+                                                                        }}
+                                                                        className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 last:rounded-b-xl"
+                                                                    >
+                                                                        <FaTrash size={10} className="drop-shadow-xs" /> Apagar
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            {msg.image && (
+                                                                <img
+                                                                    onClick={() => setSelectedImage(msg.image)}
+                                                                    src={msg.image}
+                                                                    alt="Anexo"
+                                                                    className="max-w-[240px] mb-1 mt-0.5 object-cover rounded-md border border-white/20 dark:border-white/5 cursor-pointer hover:opacity-90 transition-opacity"
+                                                                />
+                                                            )}
+                                                            {msg.text && (
+                                                                <p className="break-words whitespace-pre-wrap text-[13px] leading-[1.25]">
+                                                                    {msg.text}
+                                                                </p>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2 mt-0.5 px-1 w-full justify-end">
+                                                            <button
+                                                                type="button"
+                                                                aria-label="Curtir mensagem"
+                                                                title={msg.likes && msg.likes.includes(currentUserId) ? "Descurtir" : "Curtir"}
+                                                                onClick={() => handleToggleLike(msgKey)}
+                                                                className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
+                                                                    msg.likes && msg.likes.includes(currentUserId)
+                                                                        ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                                                        : msg.likes && msg.likes.length > 0
+                                                                            ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                                                            : 'opacity-70 sm:opacity-0 sm:group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                                                }`}
+                                                            >
+                                                                {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                    <FaHeart size={10} className="drop-shadow-xs" />
+                                                                ) : (
+                                                                    <FaRegHeart size={10} />
+                                                                )}
+                                                                {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                                                            </button>
+                                                            <span className="text-[10px] font-medium flex items-center gap-1.5 text-[#86868b] dark:text-slate-400">
+                                                                <span title={fullDateTime}>{formattedTime}</span>
+                                                                <span className="text-sky-500 dark:text-sky-400 font-bold">✓✓</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Fragment>
+                                        );
+                                    }
+
+                                    if (isGrande) {
+                                        return (
+                                            <Fragment key={msgKey}>
+                                                {dateDivider}
+                                                <div
+                                                    className="px-2 py-0.5 flex justify-start group animate-fade-in-up relative z-1 hover:z-50"
+                                                    style={{ zIndex: openMenuId === msgKey ? 9999 : undefined }}
+                                                >
+                                                    <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%] group/msg relative z-1 hover:z-50">
+                                                        <UserAvatar
+                                                            src={senderAvatar}
+                                                            name={senderName}
+                                                            size="sm"
+                                                            showStatus={false}
+                                                            className="shrink-0 mb-1"
+                                                        />
+
+                                                        <div className="flex flex-col items-start min-w-0">
+                                                            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5">
+                                                                {senderName}
+                                                            </span>
+
+                                                            <div className={`bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[18px] px-5 py-2.5 text-sm relative transition-all duration-300 ${matchClass}`}>
+                                                                <div className="message-bubble-actions absolute top-2 left-full ml-2 z-10">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setOpenMenuId(prev => prev === msgKey ? null : msgKey);
+                                                                        }}
+                                                                        className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${
+                                                                            openMenuId === msgKey ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
+                                                                        }`}
+                                                                        title="Mais opções"
+                                                                    >
+                                                                        <FaEllipsisV size={12} className="drop-shadow-xs" />
+                                                                    </button>
+
+                                                                    <div className={`absolute top-0 left-full ml-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
+                                                                        openMenuId === msgKey ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
+                                                                    }`}>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleToggleLike(msgKey);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl"
+                                                                        >
+                                                                            {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                                <>
+                                                                                    <FaHeart size={10} className="text-red-500 drop-shadow-xs" />
+                                                                                    <span>Descurtir</span>
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <FaRegHeart size={10} className="text-[#86868b] dark:text-slate-400" />
+                                                                                    <span>Curtir</span>
+                                                                                </>
+                                                                            )}
+                                                                        </button>
+                                                                        <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleToggleFavorite(msg);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                        >
+                                                                            <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} />
+                                                                            {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
+                                                                        </button>
+                                                                        <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleCopyText(msg.text);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
+                                                                        >
+                                                                            <FaCopy size={10} className="text-slate-500" /> Copiar texto
+                                                                        </button>
+                                                                        <div className="h-px w-full bg-black/10 dark:bg-white/10" />
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                setOpenMenuId(null);
+                                                                                handleDeleteMessage(msgKey);
+                                                                            }}
+                                                                            className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 last:rounded-b-xl"
+                                                                        >
+                                                                            <FaTrash size={10} className="drop-shadow-xs" /> Apagar
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                                {msg.image && (
+                                                                    <div className="rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-sm mb-1.5 mt-0.5">
+                                                                        <img
+                                                                            onClick={() => setSelectedImage(msg.image)}
+                                                                            src={msg.image}
+                                                                            alt="Anexo"
+                                                                            className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                                {msg.text && (
+                                                                    <p className="break-words whitespace-pre-wrap leading-relaxed">
+                                                                        {msg.text}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex items-center gap-2 mt-1 ml-3 text-[10px] text-slate-400 dark:text-slate-500">
+                                                                <span title={fullDateTime}>{formattedTime}</span>
+                                                                <button
+                                                                    type="button"
+                                                                    aria-label="Curtir mensagem"
+                                                                    title={msg.likes && msg.likes.includes(currentUserId) ? "Descurtir" : "Curtir"}
+                                                                    onClick={() => handleToggleLike(msgKey)}
+                                                                    className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
+                                                                        msg.likes && msg.likes.includes(currentUserId)
+                                                                            ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
+                                                                            : msg.likes && msg.likes.length > 0
+                                                                                ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
+                                                                                : 'opacity-70 sm:opacity-0 sm:group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
+                                                                    }`}
+                                                                >
+                                                                    {msg.likes && msg.likes.includes(currentUserId) ? (
+                                                                        <FaHeart size={10} className="drop-shadow-xs" />
+                                                                    ) : (
+                                                                        <FaRegHeart size={10} />
+                                                                    )}
+                                                                    {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Fragment>
+                                        );
+                                    }
+
+                                    const receivedBubbleClass = `px-3 py-1.5 flex flex-col relative transition-all duration-300 rounded-[14px] rounded-tl-[2px] skeuo-bubble-received ${matchClass}`;
+                                    return (
+                                        <Fragment key={msgKey}>
+                                            {dateDivider}
                                             <div
-                                                key={msg.messageId}
-                                                className="px-2 py-0.5 flex justify-end group animate-fade-in-up relative z-1 hover:z-50"
-                                                style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined }}
+                                                className="px-2 py-0.5 flex justify-start gap-2 group animate-fade-in-up relative z-1 hover:z-50"
+                                                style={{ zIndex: openMenuId === msgKey ? 9999 : undefined }}
                                             >
-                                                <div className="flex flex-col items-end max-w-[80%] sm:max-w-[70%] ml-auto group/msg relative z-1 hover:z-50">
-                                                    <div className={`bg-gradient-to-b from-sky-400 to-sky-600 dark:from-sky-500 dark:to-blue-700 text-white shadow-[0_2px_5px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.4)] border border-sky-600/70 dark:border-sky-400/60 rounded-[18px] px-5 py-2.5 text-sm font-medium [text-shadow:0_-1px_0_rgba(0,0,0,0.2)] relative transition-all duration-300 ${matchClass}`}>
-                                                        <div className="message-bubble-actions absolute top-2 right-full mr-2 z-10">
+                                                <UserAvatar
+                                                    src={senderAvatar}
+                                                    name={senderName}
+                                                    size="sm"
+                                                    showStatus={false}
+                                                    className="mt-1 shrink-0"
+                                                />
+                                                <div className="flex flex-col max-w-[80%] items-start group/msg relative z-1 hover:z-50">
+                                                    <span className="font-bold flex items-center gap-1.5 mb-1 leading-none text-[#1d1d1f] dark:text-[#f8fafc] text-[11.5px] ml-1">
+                                                        {senderName}
+                                                    </span>
+                                                    <div className={receivedBubbleClass}>
+                                                        <div className="message-bubble-actions absolute top-2 left-full ml-2 z-10">
                                                             <button
                                                                 type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    setOpenMenuId(prev => prev === msg.messageId ? null : msg.messageId);
+                                                                    setOpenMenuId(prev => prev === msgKey ? null : msgKey);
                                                                 }}
                                                                 className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${
-                                                                    openMenuId === msg.messageId ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
+                                                                    openMenuId === msgKey ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
                                                                 }`}
                                                                 title="Mais opções"
                                                             >
                                                                 <FaEllipsisV size={12} className="drop-shadow-xs" />
                                                             </button>
 
-                                                            <div className={`absolute top-0 right-full mr-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
-                                                                openMenuId === msg.messageId ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
+                                                            <div className={`absolute top-0 left-full ml-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
+                                                                openMenuId === msgKey ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
                                                             }`}>
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => {
                                                                         setOpenMenuId(null);
-                                                                        handleToggleLike(msg.messageId || msg.id);
+                                                                        handleToggleLike(msgKey);
                                                                     }}
                                                                     className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl"
                                                                 >
@@ -1039,7 +1642,7 @@ const Directs = () => {
                                                                     type="button"
                                                                     onClick={() => {
                                                                         setOpenMenuId(null);
-                                                                        handleDeleteMessage(msg.messageId);
+                                                                        handleDeleteMessage(msgKey);
                                                                     }}
                                                                     className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/20 last:rounded-b-xl"
                                                                 >
@@ -1049,7 +1652,7 @@ const Directs = () => {
                                                         </div>
 
                                                         {msg.image && (
-                                                            <div className="rounded-2xl overflow-hidden border border-white/20 dark:border-white/10 shadow-sm mb-1.5 mt-0.5">
+                                                            <div className="rounded-md overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-xs mb-1 mt-0.5">
                                                                 <img
                                                                     onClick={() => setSelectedImage(msg.image)}
                                                                     src={msg.image}
@@ -1059,150 +1662,19 @@ const Directs = () => {
                                                             </div>
                                                         )}
                                                         {msg.text && (
-                                                            <p className="break-words whitespace-pre-wrap leading-relaxed">
+                                                            <p className="break-words whitespace-pre-wrap text-[13px] leading-[1.25]">
                                                                 {msg.text}
                                                             </p>
                                                         )}
                                                     </div>
 
-                                                    <div className="flex items-center gap-1.5 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
+                                                    <div className="flex items-center gap-2 mt-0.5 px-1 w-full justify-start text-[10px] text-slate-400 dark:text-slate-500">
+                                                        <span title={fullDateTime}>{formattedTime}</span>
                                                         <button
                                                             type="button"
                                                             aria-label="Curtir mensagem"
                                                             title={msg.likes && msg.likes.includes(currentUserId) ? "Descurtir" : "Curtir"}
-                                                            onClick={() => handleToggleLike(msg.messageId || msg.id)}
-                                                            className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
-                                                                msg.likes && msg.likes.includes(currentUserId)
-                                                                    ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
-                                                                    : msg.likes && msg.likes.length > 0
-                                                                        ? 'opacity-100 bg-white dark:bg-slate-700 text-[#86868b] dark:text-slate-400 border-gray-200 dark:border-slate-600 shadow-xs hover:bg-black/5 dark:hover:bg-slate-600'
-                                                                        : 'opacity-70 sm:opacity-0 sm:group-hover/msg:opacity-100 border-transparent text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#1d1d1f] dark:hover:text-[#f8fafc]'
-                                                            }`}
-                                                        >
-                                                            {msg.likes && msg.likes.includes(currentUserId) ? (
-                                                                <FaHeart size={10} className="drop-shadow-xs" />
-                                                            ) : (
-                                                                <FaRegHeart size={10} />
-                                                            )}
-                                                            {msg.likes && msg.likes.length > 0 && <span>{msg.likes.length}</span>}
-                                                        </button>
-                                                        <span>{msg.time}</span>
-                                                        <span className="text-sky-500 dark:text-sky-400 font-bold">✓✓</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    return (
-                                        <div
-                                            key={msg.messageId}
-                                            className="px-2 py-0.5 flex justify-start group animate-fade-in-up relative z-1 hover:z-50"
-                                            style={{ zIndex: openMenuId === msg.messageId ? 9999 : undefined }}
-                                        >
-                                            <div className="flex items-end gap-2.5 max-w-[80%] sm:max-w-[70%] group/msg relative z-1 hover:z-50">
-                                                <UserAvatar
-                                                    src={senderAvatar}
-                                                    name={senderName}
-                                                    size="sm"
-                                                    showStatus={false}
-                                                    className="shrink-0 mb-1"
-                                                />
-
-                                                <div className="flex flex-col items-start min-w-0">
-                                                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-2 flex items-center gap-1.5">
-                                                        {senderName}
-                                                    </span>
-
-                                                    <div className={`bg-gradient-to-b from-[#f9f9f9] to-[#ebebeb] dark:from-[#334155] dark:to-[#1e293b] text-[#1d1d1f] dark:text-[#f8fafc] border border-slate-300/80 dark:border-slate-800 shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,1)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[18px] px-5 py-2.5 text-sm relative transition-all duration-300 ${matchClass}`}>
-                                                        <div className="message-bubble-actions absolute top-2 left-full ml-2 z-10">
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setOpenMenuId(prev => prev === msg.messageId ? null : msg.messageId);
-                                                                }}
-                                                                className={`message-bubble-more-btn p-1 flex items-center justify-center rounded-full text-[#86868b] dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer ${
-                                                                    openMenuId === msg.messageId ? '!opacity-100 bg-black/5 dark:bg-white/10' : 'opacity-0 group-hover/msg:opacity-100'
-                                                                }`}
-                                                                title="Mais opções"
-                                                            >
-                                                                <FaEllipsisV size={12} className="drop-shadow-xs" />
-                                                            </button>
-
-                                                            <div className={`absolute top-0 left-full ml-2 min-w-[140px] flex flex-col rounded-xl bg-[#f4f5f7] dark:bg-slate-800 border border-black/5 dark:border-white/10 shadow-lg dark:shadow-2xl transition-all duration-200 z-[10000] ${
-                                                                openMenuId === msg.messageId ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
-                                                            }`}>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setOpenMenuId(null);
-                                                                        handleToggleLike(msg.messageId || msg.id);
-                                                                    }}
-                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 first:rounded-t-xl"
-                                                                >
-                                                                    {msg.likes && msg.likes.includes(currentUserId) ? (
-                                                                        <>
-                                                                            <FaHeart size={10} className="text-red-500 drop-shadow-xs" />
-                                                                            <span>Descurtir</span>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <FaRegHeart size={10} className="text-[#86868b] dark:text-slate-400" />
-                                                                            <span>Curtir</span>
-                                                                        </>
-                                                                    )}
-                                                                </button>
-                                                                <div className="h-px w-full bg-black/10 dark:bg-white/10" />
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setOpenMenuId(null);
-                                                                        handleToggleFavorite(msg);
-                                                                    }}
-                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10"
-                                                                >
-                                                                    <FaStar size={10} className={`drop-shadow-xs transition-colors ${msg.isFavorite ? 'text-amber-500' : 'text-[#86868b] dark:text-slate-400'}`} />
-                                                                    {msg.isFavorite ? "Desfavoritar" : "Favoritar"}
-                                                                </button>
-                                                                <div className="h-px w-full bg-black/10 dark:bg-white/10" />
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        setOpenMenuId(null);
-                                                                        handleCopyText(msg.text);
-                                                                    }}
-                                                                    className="px-3 py-2 text-left text-xs whitespace-nowrap font-medium flex items-center gap-2 cursor-pointer transition-colors text-[#1d1d1f] dark:text-[#f8fafc] hover:bg-black/5 dark:hover:bg-white/10 last:rounded-b-xl"
-                                                                >
-                                                                    <FaCopy size={10} className="text-slate-500" /> Copiar texto
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        {msg.image && (
-                                                            <div className="rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-sm mb-1.5 mt-0.5">
-                                                                <img
-                                                                    onClick={() => setSelectedImage(msg.image)}
-                                                                    src={msg.image}
-                                                                    alt="Anexo"
-                                                                    className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                                                />
-                                                            </div>
-                                                        )}
-                                                        {msg.text && (
-                                                            <p className="break-words whitespace-pre-wrap leading-relaxed">
-                                                                {msg.text}
-                                                            </p>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="flex items-center gap-2 mt-1 ml-3 text-[10px] text-slate-400 dark:text-slate-500">
-                                                        <span>{msg.time}</span>
-                                                        <button
-                                                            type="button"
-                                                            aria-label="Curtir mensagem"
-                                                            title={msg.likes && msg.likes.includes(currentUserId) ? "Descurtir" : "Curtir"}
-                                                            onClick={() => handleToggleLike(msg.messageId || msg.id)}
+                                                            onClick={() => handleToggleLike(msgKey)}
                                                             className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full cursor-pointer transition-all border ${
                                                                 msg.likes && msg.likes.includes(currentUserId)
                                                                     ? '!opacity-100 !text-red-500 dark:!text-red-400 !bg-red-50 dark:!bg-red-950/40 !border-red-100 dark:!border-red-900/40 shadow-xs'
@@ -1221,7 +1693,7 @@ const Directs = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Fragment>
                                     );
                                 })}
                                 <div ref={messagesEndRef} />
@@ -1288,7 +1760,6 @@ const Directs = () => {
 
                                     <button
                                         type="submit"
-                                        onClick={handleSendMessage}
                                         disabled={!inputMessage.trim() && !imagePreview}
                                         className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] transition-all enabled:hover:scale-105 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                         title="Enviar mensagem"

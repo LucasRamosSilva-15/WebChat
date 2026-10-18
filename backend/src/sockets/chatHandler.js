@@ -72,6 +72,7 @@ const registerChatHandlers = (io, socket) => {
         const resolvedName = savedMessage.user_name || savedMessage.userName || authorName || 'Usuário';
         const payload = {
           ...savedMessage,
+          messageId: data.messageId || savedMessage.id,
           user_name: resolvedName,
           userName: resolvedName,
           sender_name: resolvedName,
@@ -88,21 +89,25 @@ const registerChatHandlers = (io, socket) => {
   socket.on('delete_message', async ({ room, messageId }) => {
     if (!room || !messageId) return;
     try {
-      const { error } = await supabase
-        .from('messages')
-        .delete()
-        .eq('id', messageId);
-
-      if (error) {
-        console.error('Erro ao apagar mensagem:', error);
-        return;
-      }
+      try {
+        await supabase
+          .from('messages')
+          .delete()
+          .eq('id', messageId);
+      } catch (sbErr) {}
 
       try {
         if (Message && Message.destroy) {
           await Message.destroy({ where: { id: messageId } });
         }
       } catch (seqError) {}
+
+      try {
+        const { DirectMessage } = require('../models');
+        if (DirectMessage && DirectMessage.destroy) {
+          await DirectMessage.destroy({ where: { id: messageId } });
+        }
+      } catch (directErr) {}
 
       io.to(room).emit('message_deleted', { messageId });
     } catch (err) {

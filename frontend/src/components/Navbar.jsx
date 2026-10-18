@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaHome, FaComments, FaEnvelope, FaStar, FaUser, FaCog, FaInfoCircle, FaSignOutAlt, FaTimes, FaLightbulb, FaLifeRing, FaSlidersH, FaShieldAlt } from 'react-icons/fa';
-import { X } from 'lucide-react';
+import { X, UserCog, LogOut } from 'lucide-react';
 import { removeAuthToken } from '../services/api';
 import UserAvatar from './UserAvatar';
 import NotificationsDropdown from './NotificationsDropdown';
@@ -9,6 +9,7 @@ import { supabase } from '../services/supabase';
 import { socket } from '../socket';
 
 const Navbar = () => {
+    const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
 
@@ -94,6 +95,29 @@ const Navbar = () => {
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
+    };
+
+    const handleOpenProfile = () => {
+        setIsProfileOpen(false);
+        navigate('/custom');
+    };
+
+    let storedUser = null;
+    try {
+        const rawUser = localStorage.getItem('user');
+        if (rawUser) {
+            storedUser = JSON.parse(rawUser);
+        }
+    } catch (e) {
+        storedUser = null;
+    }
+
+    const user = {
+        name: profileName !== 'Minha Conta' ? profileName : (storedUser?.name || profileName || 'Utilizador'),
+        avatar_url: profilePhoto || storedUser?.avatar_url || null,
+        role: isAdmin ? 'admin' : (storedUser?.role || localStorage.getItem('chat_role') || 'user'),
+        status_message: (profileDesc && profileDesc !== 'Sem recado') ? profileDesc : (storedUser?.status_message || localStorage.getItem('chat_statusMessage') || ''),
+        email: storedUser?.email || localStorage.getItem('chat_email') || ''
     };
 
     const handleLogout = async () => {
@@ -244,25 +268,70 @@ const Navbar = () => {
                                 <div
                                     className={`absolute right-0 top-[48px] w-[260px] overflow-hidden transition-all duration-300 origin-top-right rounded-2xl !p-0 skeuo-panel ${isProfileOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'}`}
                                 >
-                                    <div className="flex flex-col text-center p-5 items-center">
-                                        <UserAvatar src={profilePhoto} name={profileName} size="xl" className="mb-3" showStatus={false} />
-                                        <h3 className="text-lg font-semibold text-[#1d1d1f] dark:text-slate-50 mb-1 leading-snug">{profileName}</h3>
-                                        <p className="text-[13px] text-[#86868b] dark:text-[#94a3b8] leading-snug">{profileDesc}</p>
+                                    <div className="pt-5 pb-1">
+                                        <div className="relative mx-auto w-16 h-16 rounded-full border-2 border-sky-400/80 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-2xl shadow-[inset_0_2px_3px_rgba(255,255,255,0.7),0_4px_10px_rgba(14,165,233,0.3)] mb-3">
+                                            {user?.avatar_url ? (
+                                                <img
+                                                    src={user.avatar_url}
+                                                    alt={user.name}
+                                                    className="w-full h-full rounded-full object-cover"
+                                                />
+                                            ) : (
+                                                <span>{(user?.name || 'U').charAt(0).toUpperCase()}</span>
+                                            )}
+                                            <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 shadow-xs" />
+                                        </div>
+
+                                        <div className="text-center px-4 mb-4">
+                                            <div className="flex items-center justify-center gap-1.5">
+                                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                                                    {user?.name || 'Utilizador'}
+                                                </h3>
+                                                {user?.role === 'admin' && (
+                                                    <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-rose-700 bg-rose-100 dark:bg-rose-950/60 border border-rose-300">
+                                                        ADMIN
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                                {user?.status_message || user?.email || 'Sem recado'}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="p-3 bg-gradient-to-b from-[#f0f0f0] to-[#e5e5e5] border-t border-[#d2d2d7] dark:from-[#0f172a] dark:to-[#020617] dark:border-white/5 flex flex-col gap-2">
-                                        <Link to="/custom" onClick={() => setIsProfileOpen(false)} className="btn-secondary-glossy w-full py-2 block text-center text-[13px]">Editar Perfil</Link>
-                                        <button onClick={handleLogout} className="btn-secondary-glossy w-full py-2 block text-center text-[13px] !text-red-500 hover:!text-red-600 flex items-center justify-center gap-2 cursor-pointer">
-                                            <FaSignOutAlt size={12} /> Sair da Conta
+
+                                    <div className="p-3 bg-slate-50/70 dark:bg-slate-900/50 border-t border-slate-200/70 dark:border-slate-800/60 rounded-b-2xl flex flex-col gap-2 skeuo-well">
+                                        <button
+                                            type="button"
+                                            onClick={handleOpenProfile}
+                                            className="btn-secondary-glossy w-full py-2 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 inline-flex items-center justify-center gap-2 rounded-xl"
+                                        >
+                                            <UserCog className="w-3.5 h-3.5 text-slate-500"/>
+                                            <span>Editar Perfil</span>
                                         </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            className="btn-secondary-glossy w-full py-2 px-3 text-xs font-semibold text-slate-700 hover:text-rose-600 dark:text-slate-200 dark:hover:text-rose-400 inline-flex items-center justify-center gap-2 rounded-xl transition-colors"
+                                        >
+                                            <LogOut className="w-3.5 h-3.5 text-slate-500 hover:text-rose-500"/>
+                                            <span>Sair da Conta</span>
+                                        </button>
+
                                         {isAdmin && (
-                                            <button onClick={() => {
-                                                localStorage.removeItem('admin_token');
-                                                setIsAdmin(false);
-                                                setIsProfileOpen(false);
-                                                alert('Você saiu do modo Administrador.');
-                                                if (window.location.pathname.includes('/admin') && window.location.pathname !== '/admin-login') window.location.href = '/';
-                                            }} className="btn-secondary-glossy w-full py-2 block text-center text-[13px] mt-2 !text-red-600 flex items-center justify-center gap-2">
-                                                <FaShieldAlt size={12} /> Sair do Admin
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    localStorage.removeItem('admin_token');
+                                                    setIsAdmin(false);
+                                                    setIsProfileOpen(false);
+                                                    alert('Você saiu do modo Administrador.');
+                                                    if (window.location.pathname.includes('/admin') && window.location.pathname !== '/admin-login') window.location.href = '/';
+                                                }}
+                                                className="btn-secondary-glossy w-full py-2 px-3 text-xs font-semibold !text-red-600 hover:!text-red-700 dark:!text-rose-400 dark:hover:!text-rose-300 inline-flex items-center justify-center gap-2 rounded-xl transition-colors"
+                                            >
+                                                <FaShieldAlt className="w-3.5 h-3.5 text-red-500" />
+                                                <span>Sair do Admin</span>
                                             </button>
                                         )}
                                     </div>
