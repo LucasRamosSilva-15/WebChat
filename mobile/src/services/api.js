@@ -1,5 +1,5 @@
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://skyripple-9vqr.onrender.com';
-export const API_URL = import.meta.env.VITE_API_URL || `${BACKEND_URL}/api`;
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://webchat-9vqr.onrender.com';
+export const API_URL = import.meta.env.VITE_API_URL || 'https://webchat-9vqr.onrender.com/api';
 
 export const getAuthToken = () => {
   return localStorage.getItem('chat_token');
