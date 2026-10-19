@@ -37,16 +37,19 @@ function App() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
-        localStorage.removeItem('chat_token');
-        localStorage.removeItem('chat_isLoggedIn');
-        localStorage.removeItem('chat_displayName');
-        localStorage.removeItem('chat_uniqueUserId');
-        localStorage.removeItem('chat_profilePhoto');
-        localStorage.removeItem('chat_profileDesc');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('skyripple_session');
-        if (socket?.disconnect) {
+        Object.keys(localStorage).forEach((key) => {
+          if (
+            key.startsWith('sb-') ||
+            key.includes('token') ||
+            key.includes('user') ||
+            key.includes('auth') ||
+            key.includes('skyripple')
+          ) {
+            localStorage.removeItem(key);
+          }
+        });
+        sessionStorage.clear();
+        if (typeof socket !== 'undefined' && socket?.disconnect) {
           socket.disconnect();
         }
         window.dispatchEvent(new Event('profileUpdated'));

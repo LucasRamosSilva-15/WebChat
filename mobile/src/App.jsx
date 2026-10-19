@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import MobileBottomNav from './components/mobile/MobileBottomNav';
 import MobileSheet from './components/mobile/MobileSheet';
 import MobileRooms from './pages/Rooms';
@@ -12,14 +12,64 @@ import MobileRegister from './pages/Register';
 import MobileForgotPassword from './pages/ForgotPassword';
 import PrivateRoute from './components/PrivateRoute';
 import { NotificationProvider, useNotifications } from './context/NotificationContext';
+import { supabase, syncOAuthUserSession } from './services/supabase';
+import { clearAuthSession } from './services/api';
 
 function AppLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { notifications, unreadCount, markAllAsRead } = useNotifications();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const isChatScreen = location.pathname.startsWith('/chat');
   const isAuthScreen = ['/login', '/register', '/forgot-password'].includes(location.pathname);
   const showBottomNav = !isChatScreen && !isAuthScreen;
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
+        Object.keys(localStorage).forEach((key) => {
+          if (
+            key.startsWith('sb-') ||
+            key.includes('token') ||
+            key.includes('user') ||
+            key.includes('auth') ||
+            key.includes('skyripple')
+          ) {
+            localStorage.removeItem(key);
+          }
+        });
+        sessionStorage.clear();
+        clearAuthSession();
+        return;
+      }
+
+      if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
+        const hasToken = localStorage.getItem('chat_token');
+        if (!hasToken) {
+          try {
+            const synced = await syncOAuthUserSession(session);
+            if (synced?.token) {
+              if (window.location.hash) {
+                window.history.replaceState(null, '', window.location.pathname);
+              }
+              navigate('/rooms', { replace: true });
+            }
+          } catch (err) {
+            console.error('Falha ao sincronizar OAuth com o backend:', err);
+          }
+        } else if (['/login', '/register', '/forgot-password', '/'].includes(location.pathname)) {
+          if (window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+          navigate('/rooms', { replace: true });
+        }
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [navigate, location.pathname]);
 
   return (
     <div className="min-h-screen bg-slate-200/60 dark:bg-slate-950 flex justify-center font-sans select-none">

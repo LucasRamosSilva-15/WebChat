@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../services/socket';
-import { handleGoogleSignIn } from '../services/supabase';
+import { supabase } from '../services/supabase';
 
 export default function MobileLogin() {
   const navigate = useNavigate();
@@ -12,6 +12,21 @@ export default function MobileLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    try {
+      setError(null);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message || 'Erro ao conectar com a Google.');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -150,7 +165,7 @@ export default function MobileLogin() {
 
         <button
           type="button"
-          onClick={handleGoogleSignIn}
+          onClick={handleGoogleLogin}
           className="btn-secondary-glossy min-h-[48px] w-full rounded-2xl font-semibold text-xs text-slate-700 dark:text-slate-200 flex items-center justify-center gap-3 active:scale-[0.97] transition-all shadow-xs cursor-pointer"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">

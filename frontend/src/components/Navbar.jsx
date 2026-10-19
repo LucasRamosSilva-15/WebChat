@@ -123,23 +123,30 @@ const Navbar = () => {
     const handleLogout = async () => {
         try {
             if (supabase?.auth?.signOut) {
-                await supabase.auth.signOut();
+                await Promise.race([
+                    supabase.auth.signOut(),
+                    new Promise((resolve) => setTimeout(resolve, 2000)),
+                ]);
             }
-
-            if (socket?.disconnect) {
+        } catch (err) {
+            console.warn('Falha no signOut do Supabase:', err);
+        } finally {
+            if (typeof socket !== 'undefined' && socket?.disconnect) {
                 socket.disconnect();
             }
 
             removeAuthToken();
-            localStorage.removeItem('chat_isLoggedIn');
-            localStorage.removeItem('chat_displayName');
-            localStorage.removeItem('chat_uniqueUserId');
-            localStorage.removeItem('chat_profilePhoto');
-            localStorage.removeItem('chat_profileDesc');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('skyripple_session');
-            localStorage.removeItem('admin_token');
+            Object.keys(localStorage).forEach((key) => {
+                if (
+                    key.startsWith('sb-') ||
+                    key.includes('token') ||
+                    key.includes('user') ||
+                    key.includes('auth') ||
+                    key.includes('skyripple')
+                ) {
+                    localStorage.removeItem(key);
+                }
+            });
             sessionStorage.clear();
 
             setIsLoggedIn(false);
@@ -148,12 +155,7 @@ const Navbar = () => {
 
             window.dispatchEvent(new Event('profileUpdated'));
 
-            window.location.href = '/login';
-        } catch (err) {
-            console.error('Erro ao sair:', err);
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = '/login';
+            window.location.replace('/login');
         }
     };
 

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { User, Camera, Moon, Sun, Shield, LogOut, Check } from 'lucide-react';
 import MobileHeader from '../components/mobile/MobileHeader';
 import { clearAuthSession } from '../services/api';
+import { supabase } from '../services/supabase';
+import { socket } from '../services/socket';
 
 export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) {
   const [displayName, setDisplayName] = useState(() => localStorage.getItem('chat_displayName') || 'Lucas Ramos');
@@ -30,10 +32,35 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
     }
   };
 
-  const handleLogout = () => {
-    if (confirm('Tem certeza que deseja sair da sua conta?')) {
-      clearAuthSession();
-      window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      if (supabase?.auth?.signOut) {
+        await Promise.race([
+          supabase.auth.signOut(),
+          new Promise((resolve) => setTimeout(resolve, 2000)),
+        ]);
+      }
+    } catch (err) {
+      console.warn('Falha no signOut do Supabase:', err);
+    } finally {
+      if (typeof socket !== 'undefined' && socket?.disconnect) {
+        socket.disconnect();
+      }
+
+      Object.keys(localStorage).forEach((key) => {
+        if (
+          key.startsWith('sb-') ||
+          key.includes('token') ||
+          key.includes('user') ||
+          key.includes('auth') ||
+          key.includes('skyripple')
+        ) {
+          localStorage.removeItem(key);
+        }
+      });
+      sessionStorage.clear();
+
+      window.location.replace('/login');
     }
   };
 
@@ -142,7 +169,7 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
             className="w-full min-h-[44px] btn-secondary-glossy !text-rose-600 dark:!text-rose-400 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 mt-2"
           >
             <LogOut className="w-4 h-4" />
-            Desconectar da Conta
+            Sair da Conta
           </button>
         </div>
       </div>

@@ -16,6 +16,10 @@ export const removeAuthToken = () => {
 export const clearAuthSession = () => {
   removeAuthToken();
   localStorage.removeItem('chat_isLoggedIn');
+  localStorage.removeItem('chat_displayName');
+  localStorage.removeItem('chat_uniqueUserId');
+  localStorage.removeItem('chat_profilePhoto');
+  localStorage.removeItem('chat_profileDesc');
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('profileUpdated'));
     window.dispatchEvent(new CustomEvent('sessionExpired'));
