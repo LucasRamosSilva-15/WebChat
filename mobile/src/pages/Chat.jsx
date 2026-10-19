@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Image, ArrowLeft, Users, Check, CheckCheck } from 'lucide-react';
+import { Send, Image, ArrowLeft, Users, Check, CheckCheck, Copy, Trash2 } from 'lucide-react';
 import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom';
 import { socket } from '../services/socket';
 import { apiRequest } from '../services/api';
 import RoomMembersSheet from '../components/mobile/RoomMembersSheet';
+import MobileSheet from '../components/mobile/MobileSheet';
 
 export default function MobileChat() {
   const navigate = useNavigate();
@@ -22,11 +23,39 @@ export default function MobileChat() {
   const [imagePreview, setImagePreview] = useState(null);
   const [isMembersSheetOpen, setIsMembersSheetOpen] = useState(false);
   const [members, setMembers] = useState([]);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
+  const touchTimerRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleTouchStart = (e, msg) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    touchTimerRef.current = setTimeout(() => {
+      setSelectedMessage(msg);
+      setIsActionSheetOpen(true);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(40);
+      }
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = null;
+    }
+  };
+
+  const handleTouchMove = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = null;
+    }
   };
 
   useEffect(() => {
@@ -42,6 +71,8 @@ export default function MobileChat() {
             id: m.id || String(m._id || Date.now()),
             sender: m.user?.displayName || m.sender || m.userName || m.user_name || 'Membro',
             text: m.content || m.text || m.message || '',
+            content: m.content || m.text || m.message || '',
+            time: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || ''),
             timestamp: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || ''),
             isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
             image: m.image_url || m.image || null
@@ -65,18 +96,28 @@ export default function MobileChat() {
         id: msg.id || String(Date.now()),
         sender: msg.user?.displayName || msg.sender || msg.userName || 'Membro',
         text: msg.content || msg.text || msg.message || '',
+        content: msg.content || msg.text || msg.message || '',
+        time: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         timestamp: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isMine: msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName,
         image: msg.image_url || msg.image || null
       }]);
     };
 
+    const handleDeleteMessage = ({ messageId }) => {
+      setMessages((prev) => prev.filter(m => m.id !== messageId));
+    };
+
     socket.on('receive_message', handleNewMessage);
     socket.on('chat_message', handleNewMessage);
+    socket.on('message_deleted', handleDeleteMessage);
+    socket.on('delete_message', handleDeleteMessage);
 
     return () => {
       socket.off('receive_message', handleNewMessage);
       socket.off('chat_message', handleNewMessage);
+      socket.off('message_deleted', handleDeleteMessage);
+      socket.off('delete_message', handleDeleteMessage);
     };
   }, [currentRoomId, currentUserId, displayName]);
 
@@ -92,7 +133,9 @@ export default function MobileChat() {
       userId: currentUserId,
       sender: displayName,
       text: contentText,
+      content: contentText,
       image: imagePreview,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMine: true
     };
@@ -175,49 +218,67 @@ export default function MobileChat() {
             </p>
           </div>
         )}
-        {messages.map((msg) => {
+        {messages.map((msg, index) => {
           if (msg.isSystem) {
             return (
-              <div key={msg.id} className="flex justify-center my-2">
+              <div key={msg.id || index} className="flex justify-center my-2">
                 <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full shadow-xs">
-                  {msg.text}
+                  {msg.content || msg.text}
                 </span>
+              </div>
+            );
+          }
+
+          if (msg.isMine) {
+            return (
+              <div
+                key={msg.id || index}
+                onTouchStart={(e) => handleTouchStart(e, msg)}
+                onTouchEnd={handleTouchEnd}
+                onTouchMove={handleTouchMove}
+                className="flex flex-col items-end max-w-[80%] ml-auto my-1.5 select-none"
+              >
+                <div className="bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
+                  {msg.image && (
+                    <img
+                      src={msg.image}
+                      alt="Upload"
+                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                    />
+                  )}
+                  <span>{msg.content || msg.text}</span>
+
+                  <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-sky-100 font-medium select-none">
+                    <span>{msg.time || msg.timestamp || '13:35'}</span>
+                    <CheckCheck className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                  </div>
+                </div>
               </div>
             );
           }
 
           return (
             <div
-              key={msg.id}
-              className={`flex flex-col ${msg.isMine ? 'items-end' : 'items-start'}`}
+              key={msg.id || index}
+              onTouchStart={(e) => handleTouchStart(e, msg)}
+              onTouchEnd={handleTouchEnd}
+              onTouchMove={handleTouchMove}
+              className="flex flex-col items-start max-w-[80%] mr-auto my-1.5 select-none"
             >
-              {!msg.isMine && (
-                <span className="text-[10px] font-semibold text-slate-500 ml-2 mb-0.5">
-                  {msg.sender}
-                </span>
-              )}
-              <div
-                className={`max-w-[82%] p-3 rounded-2xl text-sm leading-relaxed shadow-md ${
-                  msg.isMine
-                    ? 'skeuo-btn-primary rounded-br-xs text-white'
-                    : 'skeuo-card rounded-bl-xs text-slate-800 dark:text-slate-100'
-                }`}
-              >
+              <span className="text-[10px] font-semibold text-slate-500 ml-3 mb-0.5">
+                {msg.sender}
+              </span>
+              <div className="skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
                 {msg.image && (
                   <img
                     src={msg.image}
                     alt="Upload"
-                    className="rounded-xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                    className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
                   />
                 )}
-                <p className="break-words">{msg.text}</p>
-                <div
-                  className={`flex items-center justify-end gap-1 text-[9px] mt-1 ${
-                    msg.isMine ? 'text-sky-100' : 'text-slate-400'
-                  }`}
-                >
-                  <span>{msg.timestamp}</span>
-                  {msg.isMine && <CheckCheck className="w-3 h-3 text-sky-200" />}
+                <span>{msg.content || msg.text}</span>
+                <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-400 font-medium select-none">
+                  <span>{msg.time || msg.timestamp}</span>
                 </div>
               </div>
             </div>
@@ -282,6 +343,56 @@ export default function MobileChat() {
         members={members}
         currentUserId={currentUserId}
       />
+
+      <MobileSheet
+        isOpen={isActionSheetOpen}
+        onClose={() => {
+          setIsActionSheetOpen(false);
+          setSelectedMessage(null);
+        }}
+        title="Ações da Mensagem"
+      >
+        <div className="space-y-2 py-1">
+          <button
+            type="button"
+            onClick={() => {
+              if (selectedMessage) {
+                const textToCopy = selectedMessage.content || selectedMessage.text || '';
+                if (navigator.clipboard) {
+                  navigator.clipboard.writeText(textToCopy);
+                }
+              }
+              setIsActionSheetOpen(false);
+            }}
+            className="btn-secondary-glossy w-full px-4 py-3 rounded-2xl flex items-center gap-3 text-sm font-semibold justify-start active:scale-[0.98] transition-transform"
+          >
+            <Copy className="w-4 h-4 text-sky-500" />
+            <span>Copiar Texto</span>
+          </button>
+
+          {selectedMessage?.isMine && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (!selectedMessage) return;
+                const msgId = selectedMessage.id;
+                socket.emit('delete_message', { room: String(currentRoomId), messageId: msgId });
+                try {
+                  await apiRequest(`/messages/${msgId}`, { method: 'DELETE' });
+                } catch (e) {
+                  console.warn('Erro ao excluir mensagem via API:', e.message);
+                }
+                setMessages(prev => prev.filter(m => m.id !== msgId));
+                setIsActionSheetOpen(false);
+              }}
+              className="btn-secondary-glossy w-full px-4 py-3 rounded-2xl flex items-center gap-3 text-sm font-semibold justify-start text-rose-600 active:scale-[0.98] transition-transform"
+            >
+              <Trash2 className="w-4 h-4 text-rose-500" />
+              <span>Apagar Mensagem</span>
+            </button>
+          )}
+        </div>
+      </MobileSheet>
     </div>
   );
 }
