@@ -3,6 +3,7 @@ const { isAllowedOrigin } = require('../utils/security');
 const allowedOrigins = [
   'https://web-chat-project-web2.vercel.app',
   'http://localhost:5173',
+  'http://localhost:5174',
   'http://localhost:3000',
   process.env.FRONTEND_URL,
   process.env.CLIENT_URL,
@@ -12,10 +13,13 @@ const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
-    const isExplicitlyAllowed = allowedOrigins.includes(origin);
-    const isVercelDomain = /\.vercel\.app$/.test(origin);
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      /^http:\/\/localhost:\d+$/.test(origin) ||
+      origin.endsWith('.vercel.app') ||
+      isAllowedOrigin(origin, process.env.FRONTEND_URL);
 
-    if (isExplicitlyAllowed || isVercelDomain || isAllowedOrigin(origin, process.env.FRONTEND_URL)) {
+    if (isAllowed) {
       return callback(null, true);
     }
 

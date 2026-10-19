@@ -1,0 +1,34 @@
+import io from 'socket.io-client';
+import { BACKEND_URL, clearAuthSession } from './api';
+
+export const socket = io(BACKEND_URL, {
+  autoConnect: false,
+  auth: {
+    token: localStorage.getItem('chat_token')
+  }
+});
+
+socket.on('connect_error', (err) => {
+  console.error('Falha na conexão do WebSocket:', err.message);
+  if (err.message && (err.message.includes('Token') || err.message.includes('Autenticação'))) {
+    socket.disconnect();
+    clearAuthSession();
+  }
+});
+
+socket.on('connect', () => {
+  try {
+    let userId = localStorage.getItem('chat_uniqueUserId');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('chat_uniqueUserId', userId);
+    }
+
+    const joinedRooms = JSON.parse(localStorage.getItem('chat_joinedRooms') || '[]');
+    joinedRooms.forEach(room => {
+      socket.emit("join_room", { room, userId });
+    });
+  } catch (e) {
+    console.error("Erro ao recuperar salas salvas");
+  }
+});

@@ -232,6 +232,7 @@ const isAllowedOrigin = (origin, frontendUrl) => {
   if (!origin) return true;
   const allowed = [
     'http://localhost:5173',
+    'http://localhost:5174',
     'http://localhost:3000',
     'https://web-chat-project-web2.vercel.app',
     frontendUrl,

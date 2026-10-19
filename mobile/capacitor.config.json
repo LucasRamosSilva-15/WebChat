@@ -1,0 +1,9 @@
+{
+  "appId": "com.skyripple.mobile",
+  "appName": "SkyRipple",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
