@@ -12,15 +12,7 @@ export default function RoomMembersSheet({
   onMuteMember,
   onRemoveMember
 }) {
-  const defaultList = [
-    { id: 'u_owner', name: 'Lucas Ramos', username: 'lucasramos', role: 'owner', isOnline: true },
-    { id: 'u_mod', name: 'Moderação Geral', username: 'moderacao', role: 'admin', isOnline: true },
-    { id: 'u_mariana', name: 'Mariana Silva', username: 'mariana', role: 'user', isOnline: true },
-    { id: 'u_carlos', name: 'Carlos Santos', username: 'carlos', role: 'user', isOnline: false },
-    { id: 'u_ana', name: 'Ana Oliveira', username: 'ana', role: 'user', isOnline: true }
-  ];
-
-  const memberList = Array.isArray(members) && members.length > 0 ? members : defaultList;
+  const memberList = Array.isArray(members) ? members : [];
   const onlineCount = memberList.filter(m => m.isOnline).length;
   const canModerate = currentUserRole === 'owner' || currentUserRole === 'admin';
 
@@ -39,7 +31,12 @@ export default function RoomMembersSheet({
         </span>
       </div>
 
-      <div className="skeuo-well p-2 rounded-2xl max-h-[60vh] overflow-y-auto skeuo-scrollbar flex flex-col gap-2">
+      {memberList.length === 0 ? (
+        <div className="py-8 text-center text-xs text-slate-400">
+          Nenhum membro listado no momento.
+        </div>
+      ) : (
+        <div className="skeuo-well p-2 rounded-2xl max-h-[60vh] overflow-y-auto skeuo-scrollbar flex flex-col gap-2">
         {memberList.map((member) => {
           const isOwner = member.role === 'owner' || member.role === 'creator';
           const isAdmin = member.role === 'admin' || member.role === 'moderator';
@@ -128,7 +125,8 @@ export default function RoomMembersSheet({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </MobileSheet>
   );
 }

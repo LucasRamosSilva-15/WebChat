@@ -4,41 +4,50 @@ import { MessageSquarePlus, Search, UserCheck } from 'lucide-react';
 import MobileHeader from '../components/mobile/MobileHeader';
 import MobileSheet from '../components/mobile/MobileSheet';
 
-const DEFAULT_CONTACTS = [
-  { id: 'u_suporte', name: 'Suporte SkyRipple', lastMessage: 'Olá! Como posso ajudar você hoje?', time: '14:20', unread: 1, isOnline: true },
-  { id: 'u_mariana', name: 'Mariana Silva', lastMessage: 'Combinado! Te vejo mais tarde no chat.', time: 'Ontem', unread: 0, isOnline: true },
-  { id: 'u_carlos', name: 'Carlos Santos', lastMessage: 'Valeu pela dica de código!', time: '12/10', unread: 0, isOnline: false },
-  { id: 'u_ana', name: 'Ana Oliveira', lastMessage: 'Você viu a nova atualização do app?', time: '10/10', unread: 0, isOnline: true }
-];
-
 export default function MobileDirects({ onOpenNotifications, unreadCount = 0 }) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [contacts, setContacts] = useState(DEFAULT_CONTACTS);
+  const [contacts, setContacts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('chat_directContacts');
+      if (saved) return JSON.parse(saved);
+    } catch {
+    }
+    return [];
+  });
   const [isNewDmSheetOpen, setIsNewDmSheetOpen] = useState(false);
   const [contactNameInput, setContactNameInput] = useState('');
 
   const filteredContacts = contacts.filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
+    (c.lastMessage && c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleStartDm = (e) => {
     e.preventDefault();
-    if (!contactNameInput.trim()) return;
+    const cleanName = contactNameInput.trim();
+    if (!cleanName) return;
 
-    const newContact = {
-      id: 'dm_' + Date.now(),
-      name: contactNameInput.trim(),
-      lastMessage: 'Conversa iniciada',
-      time: 'Agora',
-      unread: 0,
-      isOnline: true
-    };
-
-    setContacts(prev => [newContact, ...prev]);
+    const existing = contacts.find(c => c.name.toLowerCase() === cleanName.toLowerCase());
+    if (!existing) {
+      const newContact = {
+        id: 'dm_' + Date.now(),
+        name: cleanName,
+        lastMessage: 'Conversa iniciada',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        unread: 0,
+        isOnline: true
+      };
+      const updated = [newContact, ...contacts];
+      setContacts(updated);
+      try {
+        localStorage.setItem('chat_directContacts', JSON.stringify(updated));
+      } catch {
+      }
+    }
     setIsNewDmSheetOpen(false);
-    navigate(`/chat?room=dm-${encodeURIComponent(newContact.name)}`);
+    setContactNameInput('');
+    navigate(`/chat?room=dm-${encodeURIComponent(cleanName)}`);
   };
 
   return (
@@ -136,28 +145,11 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0 }) 
               type="text"
               value={contactNameInput}
               onChange={(e) => setContactNameInput(e.target.value)}
-              placeholder="Ex: Ana, Carlos, Suporte..."
+              placeholder="Digite o nome do contato..."
               className="skeuo-input w-full px-4 py-2.5 text-sm rounded-xl"
               required
               autoFocus
             />
-          </div>
-
-          <div className="text-xs text-slate-500 font-medium pt-1">
-            Contatos rápidos recomendados:
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {['Mariana Silva', 'Suporte Técnico', 'Carlos Dev', 'Ana Mod'].map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => setContactNameInput(name)}
-                className="btn-secondary-glossy py-2 px-2 text-xs font-semibold rounded-xl truncate text-left flex items-center gap-1.5"
-              >
-                <UserCheck className="w-3.5 h-3.5 text-sky-500 shrink-0" />
-                <span className="truncate">{name}</span>
-              </button>
-            ))}
           </div>
 
           <div className="pt-3 flex gap-2">

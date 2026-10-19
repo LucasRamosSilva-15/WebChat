@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Image, ArrowLeft, Info, Users, Check, CheckCheck } from 'lucide-react';
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
+import { Send, Image, ArrowLeft, Users } from 'lucide-react';
+import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom';
 import { socket } from '../services/socket';
 import { apiRequest } from '../services/api';
 import RoomMembersSheet from '../components/mobile/RoomMembersSheet';
@@ -9,19 +9,15 @@ export default function MobileChat() {
   const navigate = useNavigate();
   const { roomId } = useParams();
   const [searchParams] = useSearchParams();
-  const room = roomId || searchParams.get('room') || 'Geral';
+  const location = useLocation();
+  const roomState = location.state?.room;
+
+  const currentRoomId = roomId || searchParams.get('roomId') || searchParams.get('room');
+  const roomTitle = roomState?.name || searchParams.get('name') || (currentRoomId ? `${currentRoomId}` : 'Geral');
   const currentUserId = localStorage.getItem('chat_uniqueUserId') || 'guest';
   const displayName = localStorage.getItem('chat_displayName') || 'Usuário';
 
-  const [messages, setMessages] = useState([
-    {
-      id: 'm1',
-      sender: 'Sistema SkyRipple',
-      text: `Bem-vindo à sala ${room}! Toque para conversar.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isSystem: true
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [isMembersSheetOpen, setIsMembersSheetOpen] = useState(false);
@@ -38,19 +34,40 @@ export default function MobileChat() {
   }, [messages]);
 
   useEffect(() => {
+    if (!currentRoomId) return;
+    apiRequest(`/rooms/${currentRoomId}/messages`)
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMessages(data.map(m => ({
+            id: m.id || String(m._id || Date.now()),
+            sender: m.user?.displayName || m.sender || m.userName || m.user_name || 'Membro',
+            text: m.content || m.text || m.message || '',
+            timestamp: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || ''),
+            isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
+            image: m.image_url || m.image || null
+          })));
+        }
+      })
+      .catch((err) => {
+        console.warn('Erro ao carregar mensagens da sala:', err.message);
+      });
+  }, [currentRoomId, currentUserId, displayName]);
+
+  useEffect(() => {
+    if (!currentRoomId) return;
     if (!socket.connected) {
       socket.connect();
     }
-    socket.emit('join_room', { room, userId: currentUserId });
+    socket.emit('join_room', { room: String(currentRoomId), roomId: currentRoomId, userId: currentUserId });
 
     const handleNewMessage = (msg) => {
       setMessages((prev) => [...prev, {
         id: msg.id || String(Date.now()),
-        sender: msg.sender || msg.userName || 'Membro',
-        text: msg.text || msg.message || '',
+        sender: msg.user?.displayName || msg.sender || msg.userName || 'Membro',
+        text: msg.content || msg.text || msg.message || '',
         timestamp: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isMine: msg.userId === currentUserId || msg.sender === displayName,
-        image: msg.image || null
+        isMine: msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName,
+        image: msg.image_url || msg.image || null
       }]);
     };
 
@@ -61,28 +78,42 @@ export default function MobileChat() {
       socket.off('receive_message', handleNewMessage);
       socket.off('chat_message', handleNewMessage);
     };
-  }, [room, currentUserId, displayName]);
+  }, [currentRoomId, currentUserId, displayName]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e?.preventDefault();
     if (!inputText.trim() && !imagePreview) return;
 
-    const newMsg = {
+    const contentText = inputText.trim();
+    const tempMsg = {
       id: String(Date.now()),
-      room,
+      room: String(currentRoomId),
+      roomId: currentRoomId,
       userId: currentUserId,
       sender: displayName,
-      text: inputText.trim(),
+      text: contentText,
       image: imagePreview,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMine: true
     };
 
-    setMessages((prev) => [...prev, newMsg]);
-    socket.emit('send_message', newMsg);
-
+    setMessages((prev) => [...prev, tempMsg]);
     setInputText('');
     setImagePreview(null);
+
+    socket.emit('send_message', tempMsg);
+
+    try {
+      await apiRequest(`/rooms/${currentRoomId}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({
+          content: contentText,
+          imageUrl: imagePreview
+        })
+      });
+    } catch (err) {
+      console.warn('Falha ao persistir mensagem na API:', err.message);
+    }
   };
 
   const handleImagePick = (e) => {
@@ -108,7 +139,7 @@ export default function MobileChat() {
           </button>
           <div>
             <h2 className="text-sm font-bold leading-tight">
-              #{room}
+              #{roomTitle}
             </h2>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
@@ -134,6 +165,16 @@ export default function MobileChat() {
         ref={containerRef}
         className="flex-1 overflow-y-auto px-3 pt-3 pb-24 skeuo-scrollbar space-y-2.5"
       >
+        {messages.length === 0 && (
+          <div className="py-20 text-center px-4">
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+              Nenhuma mensagem nesta sala
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              Envie a primeira mensagem para iniciar a conversa!
+            </p>
+          </div>
+        )}
         {messages.map((msg) => {
           if (msg.isSystem) {
             return (
@@ -237,7 +278,7 @@ export default function MobileChat() {
       <RoomMembersSheet
         isOpen={isMembersSheetOpen}
         onClose={() => setIsMembersSheetOpen(false)}
-        roomId={room}
+        roomId={roomTitle}
         members={members}
         currentUserId={currentUserId}
       />

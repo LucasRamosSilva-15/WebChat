@@ -50,25 +50,6 @@ const triggerHaptic = () => {
   }
 };
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 'notif_welcome',
-    title: 'Boas-vindas ao SkyRipple Mobile! 🎉',
-    desc: 'Explore as salas de conversação públicas e troque ideias em tempo real com fluidez tátil.',
-    time: 'Agora',
-    read: false,
-    link: '/rooms'
-  },
-  {
-    id: 'notif_dock',
-    title: 'Dock Flutuante Ativo ⚡',
-    desc: 'Navegue facilmente entre salas, mensagens diretas e ajustes na base da tela.',
-    time: '1h atrás',
-    read: false,
-    link: '/rooms'
-  }
-];
-
 export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState(() => {
     try {
@@ -76,7 +57,7 @@ export function NotificationProvider({ children }) {
       if (saved) return JSON.parse(saved);
     } catch {
     }
-    return INITIAL_NOTIFICATIONS;
+    return [];
   });
 
   const unreadCount = notifications.filter(n => !n.read).length;

@@ -133,7 +133,7 @@ export default function MobileRegister() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Lucas Ramos"
+                placeholder="Seu nome completo"
                 required
                 className="skeuo-input w-full h-12 min-h-[48px] pl-11 pr-4 text-sm rounded-2xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-sky-500"
               />

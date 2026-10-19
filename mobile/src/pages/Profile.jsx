@@ -6,8 +6,8 @@ import { supabase } from '../services/supabase';
 import { socket } from '../services/socket';
 
 export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) {
-  const [displayName, setDisplayName] = useState(() => localStorage.getItem('chat_displayName') || 'Lucas Ramos');
-  const [statusMessage, setStatusMessage] = useState(() => localStorage.getItem('chat_statusMessage') || 'Disponível no SkyRipple');
+  const [displayName, setDisplayName] = useState(() => localStorage.getItem('chat_displayName') || localStorage.getItem('chat_name') || 'Usuário');
+  const [statusMessage, setStatusMessage] = useState(() => localStorage.getItem('chat_statusMessage') || '');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
 

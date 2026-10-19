@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import MobileBottomNav from './components/mobile/MobileBottomNav';
 import MobileSheet from './components/mobile/MobileSheet';
@@ -18,6 +18,7 @@ import { clearAuthSession } from './services/api';
 function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const syncedSessionRef = useRef(null);
   const { notifications, unreadCount, markAllAsRead } = useNotifications();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const isChatScreen = location.pathname.startsWith('/chat');
@@ -27,6 +28,7 @@ function AppLayout() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
+        syncedSessionRef.current = null;
         Object.keys(localStorage).forEach((key) => {
           if (
             key.startsWith('sb-') ||
@@ -43,9 +45,11 @@ function AppLayout() {
         return;
       }
 
-      if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')) {
-        const hasToken = localStorage.getItem('chat_token');
-        if (!hasToken) {
+      if (session?.access_token && syncedSessionRef.current !== session.access_token) {
+        syncedSessionRef.current = session.access_token;
+
+        const existingToken = localStorage.getItem('chat_token');
+        if (!existingToken) {
           try {
             const synced = await syncOAuthUserSession(session);
             if (synced?.token) {
@@ -55,9 +59,9 @@ function AppLayout() {
               navigate('/rooms', { replace: true });
             }
           } catch (err) {
-            console.error('Falha ao sincronizar OAuth com o backend:', err);
+            console.warn('Sincronização OAuth adiada ou limitada:', err.message);
           }
-        } else if (['/login', '/register', '/forgot-password', '/'].includes(location.pathname)) {
+        } else if (['/login', '/register', '/forgot-password', '/'].includes(window.location.pathname)) {
           if (window.location.hash) {
             window.history.replaceState(null, '', window.location.pathname);
           }
@@ -66,10 +70,8 @@ function AppLayout() {
       }
     });
 
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [navigate, location.pathname]);
+    return () => subscription?.unsubscribe();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-slate-200/60 dark:bg-slate-950 flex justify-center font-sans select-none">
@@ -105,26 +107,34 @@ function AppLayout() {
           title="Avisos e Notificações"
         >
           <div className="space-y-2.5">
-            {notifications.map((n) => (
-              <div key={n.id} className="p-3 rounded-2xl skeuo-well flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100">{n.title}</h4>
-                  <span className="text-[10px] text-slate-400">{n.time}</span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-300">{n.desc}</p>
+            {notifications.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">
+                Nenhuma notificação no momento.
               </div>
-            ))}
+            ) : (
+              notifications.map((n) => (
+                <div key={n.id} className="p-3 rounded-2xl skeuo-well flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100">{n.title}</h4>
+                    <span className="text-[10px] text-slate-400">{n.time}</span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-300">{n.desc}</p>
+                </div>
+              ))
+            )}
 
-            <button
-              type="button"
-              onClick={() => {
-                markAllAsRead();
-                setIsNotificationsOpen(false);
-              }}
-              className="skeuo-btn-primary w-full min-h-[44px] text-xs font-bold text-white rounded-xl mt-3"
-            >
-              Marcar Todas como Lidas
-            </button>
+            {notifications.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  markAllAsRead();
+                  setIsNotificationsOpen(false);
+                }}
+                className="skeuo-btn-primary w-full min-h-[44px] text-xs font-bold text-white rounded-xl mt-3"
+              >
+                Marcar Todas como Lidas
+              </button>
+            )}
           </div>
         </MobileSheet>
       </div>

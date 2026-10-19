@@ -5,35 +5,35 @@ import MobileHeader from '../components/mobile/MobileHeader';
 import MobileSheet from '../components/mobile/MobileSheet';
 import { apiRequest } from '../services/api';
 
-const DEFAULT_ROOMS = [
-  { id: 'geral', name: 'Geral', desc: 'Canal principal para todos os membros', members: 42 },
-  { id: 'tecnologia', name: 'Tecnologia', desc: 'Programação, gadgets e novidades tech', members: 19 },
-  { id: 'musica', name: 'Música', desc: 'Compartilhe playlists e lançamentos', members: 12 },
-  { id: 'jogos', name: 'Jogos', desc: 'Partidas online, dicas e gameplays', members: 27 },
-  { id: 'estudos', name: 'Estudos', desc: 'Foco, materiais e produtividade', members: 8 }
-];
-
 export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [rooms, setRooms] = useState(DEFAULT_ROOMS);
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isNewRoomSheetOpen, setIsNewRoomSheetOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [newRoomDesc, setNewRoomDesc] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
+  const fetchRooms = () => {
+    setLoading(true);
     apiRequest('/rooms')
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setRooms(data.map(r => ({
-            id: r.name || r.id,
-            name: r.name || r.id,
-            desc: r.description || 'Sala temática do SkyRipple',
-            members: r.activeUsersCount || 5
+            id: r.id || r.name,
+            name: r.name || r.title || r.id,
+            desc: r.description || '',
+            members: r.members_count || r.members || r.activeUsersCount || 0
           })));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchRooms();
   }, []);
 
   const filteredRooms = rooms.filter(r =>
@@ -41,19 +41,32 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
     r.desc.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateRoom = (e) => {
+  const handleCreateRoom = async (e) => {
     e.preventDefault();
-    if (!newRoomName.trim()) return;
+    if (!newRoomName.trim() || isSubmitting) return;
 
-    const newR = {
-      id: newRoomName.toLowerCase().replace(/\s+/g, '-'),
-      name: newRoomName.trim(),
-      desc: newRoomDesc.trim() || 'Nova sala da comunidade',
-      members: 1
-    };
-    setRooms(prev => [newR, ...prev]);
-    setIsNewRoomSheetOpen(false);
-    navigate(`/chat?room=${encodeURIComponent(newR.name)}`);
+    setIsSubmitting(true);
+    try {
+      const savedRoom = await apiRequest('/rooms', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: newRoomName.trim(),
+          description: newRoomDesc.trim(),
+          category: 'Casual'
+        })
+      });
+
+      const targetId = savedRoom?.id || newRoomName.trim();
+      setIsNewRoomSheetOpen(false);
+      setNewRoomName('');
+      setNewRoomDesc('');
+      fetchRooms();
+      navigate(`/chat/${targetId}`, { state: { room: savedRoom } });
+    } catch {
+      setIsNewRoomSheetOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -88,37 +101,41 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
         </div>
 
         <div className="space-y-2.5">
-          {filteredRooms.map((room) => (
-            <div
-              key={room.id}
-              onClick={() => navigate(`/chat?room=${encodeURIComponent(room.name)}`)}
-              className="skeuo-card p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-all flex items-center justify-between shadow-sm hover:shadow-md"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center shadow-[inset_0_1px_2px_rgba(255,255,255,0.6),0_2px_6px_rgba(14,165,233,0.3)]">
-                  <Hash className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 leading-snug">
-                    {room.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
-                    {room.desc}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-200/80 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                <Users className="w-3.5 h-3.5" />
-                <span>{room.members}</span>
-              </div>
-            </div>
-          ))}
-
-          {filteredRooms.length === 0 && (
+          {loading ? (
             <div className="text-center py-12 text-sm text-slate-400">
-              Nenhuma sala encontrada para "{searchTerm}".
+              Carregando salas...
             </div>
+          ) : filteredRooms.length === 0 ? (
+            <div className="text-center py-12 text-sm text-slate-400">
+              {searchTerm ? `Nenhuma sala encontrada para "${searchTerm}".` : 'Nenhuma sala disponível. Toque em + para criar a primeira!'}
+            </div>
+          ) : (
+            filteredRooms.map((room) => (
+              <div
+                key={room.id}
+                onClick={() => navigate(`/chat/${room.id}`, { state: { room } })}
+                className="skeuo-card p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-all flex items-center justify-between shadow-sm hover:shadow-md"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center shadow-[inset_0_1px_2px_rgba(255,255,255,0.6),0_2px_6px_rgba(14,165,233,0.3)]">
+                    <Hash className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 leading-snug">
+                      {room.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                      {room.desc}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-200/80 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                  <Users className="w-3.5 h-3.5" />
+                  <span>{room.members}</span>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>
