@@ -50,8 +50,8 @@ const ForgotPassword = () => {
 
     const handleVerifyOtp = async (codeToVerify) => {
         const token = codeToVerify || code;
-        if (!token || token.length < 6) {
-            setError('Por favor, digite o código de 6 dígitos completo.');
+        if (!token || token.length < 8) {
+            setError('Por favor, digite o código de 8 dígitos completo.');
             return;
         }
 
@@ -154,7 +154,7 @@ const ForgotPassword = () => {
                         </h1>
 
                         <p className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-[13px] mb-6 tracking-tight leading-relaxed">
-                            Insira o seu e-mail cadastrado e enviaremos um código numérico de 6 dígitos para redefinir a sua senha.
+                            Insira o seu e-mail cadastrado e enviaremos um código numérico de 8 dígitos para redefinir a sua senha.
                         </p>
 
                         <form noValidate onSubmit={handleRequestCode} className="text-left space-y-4">
@@ -225,7 +225,7 @@ const ForgotPassword = () => {
                         </span>
 
                         <h2 className="hero-title font-bold text-2xl sm:text-[26px] mb-1.5 tracking-tight text-slate-800 dark:text-slate-100">
-                            Digite o código de 6 dígitos
+                            Digite o código de 8 dígitos
                         </h2>
 
                         <p className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-[13px] mb-5 tracking-tight leading-relaxed max-w-sm mx-auto">
@@ -241,6 +241,7 @@ const ForgotPassword = () => {
 
                         <div className="w-full py-2">
                             <OtpCodeInput
+                                length={8}
                                 value={code}
                                 onChange={(val) => {
                                     setCode(val);
@@ -258,7 +259,7 @@ const ForgotPassword = () => {
                             <button
                                 type="button"
                                 onClick={() => handleVerifyOtp(code)}
-                                disabled={loading || code.length < 6}
+                                disabled={loading || code.length < 8}
                                 className="skeuo-btn-primary w-full py-2.5 px-4 text-sm font-semibold text-white rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? (

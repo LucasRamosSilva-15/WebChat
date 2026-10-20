@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { RotateCcw } from 'lucide-react';
 
 export default function OtpCodeInput({
+  length = 6,
   value = '',
   onChange,
   onComplete,
@@ -11,9 +12,9 @@ export default function OtpCodeInput({
   resending = false
 }) {
   const [digits, setDigits] = useState(() => {
-    const arr = Array(6).fill('');
+    const arr = Array(length).fill('');
     if (value) {
-      const clean = String(value).slice(0, 6).split('');
+      const clean = String(value).slice(0, length).split('');
       clean.forEach((char, i) => {
         arr[i] = char;
       });
@@ -26,14 +27,14 @@ export default function OtpCodeInput({
 
   useEffect(() => {
     if (value !== undefined) {
-      const arr = Array(6).fill('');
-      const clean = String(value).slice(0, 6).split('');
+      const arr = Array(length).fill('');
+      const clean = String(value).slice(0, length).split('');
       clean.forEach((char, i) => {
         arr[i] = char;
       });
       setDigits(arr);
     }
-  }, [value]);
+  }, [value, length]);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -49,7 +50,7 @@ export default function OtpCodeInput({
     if (onChange) {
       onChange(code);
     }
-    if (code.length === 6 && !newDigits.includes('') && onComplete) {
+    if (code.length === length && !newDigits.includes('') && onComplete) {
       onComplete(code);
     }
   };
@@ -60,7 +61,7 @@ export default function OtpCodeInput({
     newDigits[index] = char;
     updateDigits(newDigits);
 
-    if (char && index < 5) {
+    if (char && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -79,23 +80,23 @@ export default function OtpCodeInput({
       }
     } else if (e.key === 'ArrowLeft' && index > 0) {
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && index < 5) {
+    } else if (e.key === 'ArrowRight' && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, length);
     if (!pasted) return;
 
-    const newDigits = Array(6).fill('');
+    const newDigits = Array(length).fill('');
     pasted.split('').forEach((char, i) => {
       newDigits[i] = char;
     });
     updateDigits(newDigits);
 
-    const nextIndex = Math.min(pasted.length, 5);
+    const nextIndex = Math.min(pasted.length, length - 1);
     inputRefs.current[nextIndex]?.focus();
   };
 
@@ -107,9 +108,17 @@ export default function OtpCodeInput({
     }
   };
 
+  const slotSizeClasses = length > 6
+    ? 'w-7 sm:w-9 md:w-10 h-10 sm:h-12 md:h-13 text-base sm:text-lg'
+    : 'w-11 h-13 text-xl';
+
+  const containerGapClasses = length > 6
+    ? 'gap-1 sm:gap-2'
+    : 'gap-2 sm:gap-2.5';
+
   return (
     <div className="flex flex-col items-center gap-4 w-full">
-      <div className="flex items-center justify-center gap-2 sm:gap-2.5 w-full" onPaste={handlePaste}>
+      <div className={`flex items-center justify-center ${containerGapClasses} w-full`} onPaste={handlePaste}>
         {digits.map((digit, index) => (
           <input
             key={index}
@@ -122,7 +131,7 @@ export default function OtpCodeInput({
             onChange={(e) => handleChange(index, e)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             disabled={disabled}
-            className={`w-11 h-13 rounded-xl text-center text-xl font-black skeuo-input select-none transition-all outline-none ${
+            className={`${slotSizeClasses} rounded-xl text-center font-black skeuo-input select-none transition-all outline-none ${
               error
                 ? '!border-red-400 !bg-red-50/50 dark:!bg-red-950/30 text-red-600 dark:text-red-400 focus:!ring-red-400'
                 : 'text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-sky-400/60 focus:border-sky-500'

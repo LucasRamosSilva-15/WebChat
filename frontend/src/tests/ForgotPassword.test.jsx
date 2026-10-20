@@ -116,15 +116,15 @@ describe('ForgotPassword Page Tests', () => {
     expect(screen.getByText(/usuario@exemplo\.com/i)).toBeInTheDocument();
 
     const otpInputs = screen.getAllByRole('textbox');
-    expect(otpInputs.length).toBe(6);
-    ['6', '5', '4', '3', '2', '1'].forEach((digit, i) => {
+    expect(otpInputs.length).toBe(8);
+    ['8', '7', '6', '5', '4', '3', '2', '1'].forEach((digit, i) => {
       fireEvent.change(otpInputs[i], { target: { value: digit } });
     });
 
     await waitFor(() => {
       expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({
         email: 'usuario@exemplo.com',
-        token: '654321',
+        token: '87654321',
         type: 'recovery',
       });
     });

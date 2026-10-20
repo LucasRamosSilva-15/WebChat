@@ -149,6 +149,20 @@ describe('Testes de Envio e Validação de Código OTP', () => {
         expect(input).toBeDisabled();
       });
     });
+
+    it('8. Suporta configuração de 8 dígitos de código e dispara onComplete com 8 caracteres', () => {
+      const handleComplete = vi.fn();
+      render(<OtpCodeInput length={8} onComplete={handleComplete} />);
+
+      const inputs = screen.getAllByRole('textbox');
+      expect(inputs.length).toBe(8);
+
+      ['1', '2', '3', '4', '5', '6', '7', '8'].forEach((digit, i) => {
+        fireEvent.change(inputs[i], { target: { value: digit } });
+      });
+
+      expect(handleComplete).toHaveBeenCalledWith('12345678');
+    });
   });
 
   describe('Envio e Reenvio de Código no Cadastro (Register)', () => {
@@ -273,7 +287,7 @@ describe('Testes de Envio e Validação de Código OTP', () => {
 
       expect(await screen.findByText(/código de recuperação/i)).toBeInTheDocument();
       expect(screen.getByText('recupera@exemplo.com')).toBeInTheDocument();
-      expect(screen.getAllByRole('textbox').length).toBe(6);
+      expect(screen.getAllByRole('textbox').length).toBe(8);
     });
 
     it('12. Exibe mensagem de erro ao falhar o envio de código de recuperação de senha', async () => {
