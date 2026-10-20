@@ -769,8 +769,8 @@
     },
     "/rooms/{roomId}/messages": {
       "get": {
-        "summary": "Listar histórico de mensagens de uma sala",
-        "description": "Busca todas as mensagens enviadas em uma determinada sala em ordem cronológica crescente, populando os dados do remetente.",
+        "summary": "Listar histórico paginado de mensagens de uma sala",
+        "description": "Retorna o histórico da sala com paginação por cursor. Sem parâmetros, devolve as 50 mensagens mais recentes em ordem cronológica crescente (mais antiga no topo). Para carregar mensagens anteriores, envie o `nextCursor` recebido como `before`.",
         "tags": [
           "Mensagens (Messages)"
         ],
@@ -784,34 +784,89 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Número máximo de mensagens a retornar (1 a 100). Padrão: 50.",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Cursor ISO 8601. Retorna apenas mensagens criadas antes desta data (use o `nextCursor` da resposta anterior).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Sincronização. Traz apenas mensagens criadas depois desta data, em ordem cronológica (precedência sobre before). Use nextSince para continuar."
           }
         ],
         "responses": {
           "200": {
-            "description": "Histórico de mensagens retornado.",
+            "description": "Histórico de mensagens com metadados de cursor.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Message"
-                  }
-                },
-                "example": [
-                  {
-                    "id": "8aa1c7c8-7f5b-4c01-8b29-1a3e8b09d2cc",
-                    "room_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    "user_id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
-                    "content": "Olá a todos! Sejam muito bem-vindos ao SkyRipple.",
-                    "image_url": null,
-                    "created_at": "2026-10-14T10:05:00.000Z",
-                    "user": {
-                      "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
-                      "displayName": "Lucas Ramos",
-                      "profilePhoto": "https://storage.skyripple.com/avatars/lucas.png"
+                  "type": "object",
+                  "properties": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Message"
+                      }
+                    },
+                    "hasMore": {
+                      "type": "boolean",
+                      "description": "`true` se ainda existem mensagens mais antigas a carregar."
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "description": "Data da mensagem mais antiga do bloco. Envie como `before` para carregar a página anterior. `null` quando o histórico acabou."
+                    },
+                    "nextSince": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
                     }
                   }
-                ]
+                },
+                "example": {
+                  "messages": [
+                    {
+                      "id": "8aa1c7c8-7f5b-4c01-8b29-1a3e8b09d2cc",
+                      "room_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                      "user_id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+                      "content": "Olá a todos! Sejam muito bem-vindos ao SkyRipple.",
+                      "image_url": null,
+                      "created_at": "2026-10-14T10:05:00.000Z",
+                      "user": {
+                        "id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+                        "displayName": "Lucas Ramos",
+                        "profilePhoto": "https://storage.skyripple.com/avatars/lucas.png"
+                      }
+                    }
+                  ],
+                  "hasMore": true,
+                  "nextCursor": "2026-10-14T10:05:00.000Z"
+                }
               }
             }
           }
@@ -1935,8 +1990,8 @@
     },
     "/directs/conversations/{id}/messages": {
       "get": {
-        "summary": "Histórico de mensagens da conversa direta",
-        "description": "Retorna as mensagens trocadas na conversa direta especificada ordenadas cronologicamente.",
+        "summary": "Histórico paginado da conversa direta",
+        "description": "Retorna as mensagens da conversa direta com paginação por cursor (50 mais recentes por padrão), em ordem cronológica crescente.",
         "tags": [
           "Mensagens Diretas (Directs)"
         ],
@@ -1950,17 +2005,68 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Número máximo de mensagens a retornar (1 a 100). Padrão: 50.",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "Cursor ISO 8601. Retorna apenas mensagens criadas antes desta data (use o `nextCursor` da resposta anterior).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Sincronização. Traz apenas mensagens criadas depois desta data, em ordem cronológica (precedência sobre before). Use nextSince para continuar."
           }
         ],
         "responses": {
           "200": {
-            "description": "Lista de mensagens da conversa.",
+            "description": "Mensagens da conversa com metadados de cursor.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DirectMessage"
+                  "type": "object",
+                  "properties": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DirectMessage"
+                      }
+                    },
+                    "hasMore": {
+                      "type": "boolean",
+                      "description": "`true` se ainda existem mensagens mais antigas a carregar."
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "description": "Data da mensagem mais antiga do bloco. Envie como `before` para carregar a página anterior. `null` quando o histórico acabou."
+                    },
+                    "nextSince": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    }
                   }
                 }
               }

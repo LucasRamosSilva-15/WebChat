@@ -39,8 +39,10 @@ describe('Mensagens', () => {
 
     const res = await request(app).get(`/api/rooms/${room.id}/messages`).set(authorAuth);
     expect(res.status).toBe(200);
-    expect(res.body.map(m => m.content)).toEqual(['primeira', 'segunda']);
-    expect(res.body[0].user.displayName).toBe('Autor');
+    expect(res.body.messages.map(m => m.content)).toEqual(['primeira', 'segunda']);
+    expect(res.body.messages[0].user.displayName).toBe('Autor');
+    expect(res.body.hasMore).toBe(false);
+    expect(res.body.nextCursor).toBeNull();
   });
 
   it('DELETE /api/messages/:id: o autor pode apagar', async () => {
@@ -65,5 +67,141 @@ describe('Mensagens', () => {
     const msg = await createMessage(room.id, author.id);
     const res = await request(app).delete(`/api/admin/messages/${msg.id}`).set(authHeader(adminToken()));
     expect(res.status).toBe(200);
+  });
+});
+
+describe('Paginação do histórico de mensagens (cursor)', () => {
+  // Cria N mensagens com datas distintas e crescentes: "msg 1" é a mais antiga.
+  const seedMessages = async (count, roomId = room.id) => {
+    const base = new Date('2026-01-01T00:00:00.000Z').getTime();
+    const rows = [];
+    for (let i = 1; i <= count; i++) {
+      rows.push(await createMessage(roomId, author.id, {
+        content: `msg ${i}`,
+        created_at: new Date(base + i * 60000)
+      }));
+    }
+    return rows;
+  };
+  const getPage = (query = '') =>
+    request(app).get(`/api/rooms/${room.id}/messages${query}`).set(authorAuth);
+
+  it('since devolve só mensagens mais novas, em ordem cronológica, com nextSince', async () => {
+    const rows = await seedMessages(7);
+    const since = new Date(rows[1].created_at).toISOString(); // depois de "msg 2"
+    const res = await getPage(`?limit=3&since=${encodeURIComponent(since)}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.messages.map(m => m.content)).toEqual(['msg 3', 'msg 4', 'msg 5']);
+    expect(res.body.hasMore).toBe(true);
+    expect(new Date(res.body.nextSince).getTime()).toBe(new Date(res.body.messages[2].created_at).getTime());
+
+    const next = await getPage(`?limit=3&since=${encodeURIComponent(res.body.nextSince)}`);
+    expect(next.body.messages.map(m => m.content)).toEqual(['msg 6', 'msg 7']);
+    expect(next.body.hasMore).toBe(false);
+    expect(next.body.nextSince).toBeNull();
+  });
+
+  it('since sem mensagens novas devolve lista vazia', async () => {
+    await seedMessages(2);
+    const res = await getPage(`?since=${encodeURIComponent('2030-01-01T00:00:00.000Z')}`);
+    expect(res.body.messages).toEqual([]);
+    expect(res.body.hasMore).toBe(false);
+  });
+
+  it('respeita o limit e devolve os metadados de paginação', async () => {
+    await seedMessages(7);
+    const res = await getPage('?limit=3');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('messages');
+    expect(res.body).toHaveProperty('hasMore', true);
+    expect(res.body).toHaveProperty('nextCursor');
+    // As 3 mais recentes, em ordem cronológica (a mais antiga do bloco no topo)
+    expect(res.body.messages.map(m => m.content)).toEqual(['msg 5', 'msg 6', 'msg 7']);
+    // O cursor é a data da mensagem mais antiga do bloco
+    expect(new Date(res.body.nextCursor).getTime()).toBe(new Date(res.body.messages[0].created_at).getTime());
+  });
+
+  it('carrega o bloco anterior ao receber o cursor before, sem duplicar nem pular mensagens', async () => {
+    await seedMessages(7);
+    const page1 = await getPage('?limit=3');
+    const page2 = await getPage(`?limit=3&before=${encodeURIComponent(page1.body.nextCursor)}`);
+
+    expect(page2.status).toBe(200);
+    expect(page2.body.messages.map(m => m.content)).toEqual(['msg 2', 'msg 3', 'msg 4']);
+    expect(page2.body.hasMore).toBe(true);
+    const oldest = new Date(page2.body.messages[0].created_at).getTime();
+    expect(oldest).toBeLessThan(new Date(page1.body.nextCursor).getTime());
+  });
+
+  it('percorre todo o histórico página a página até hasMore ser false', async () => {
+    await seedMessages(7);
+    const collected = [];
+    let cursor = null;
+    let guard = 0;
+
+    do {
+      const q = cursor ? `?limit=3&before=${encodeURIComponent(cursor)}` : '?limit=3';
+      const res = await getPage(q);
+      collected.unshift(...res.body.messages.map(m => m.content));
+      cursor = res.body.hasMore ? res.body.nextCursor : null;
+      guard++;
+    } while (cursor && guard < 10);
+
+    expect(collected).toEqual(['msg 1', 'msg 2', 'msg 3', 'msg 4', 'msg 5', 'msg 6', 'msg 7']);
+    expect(guard).toBe(3);
+  });
+
+  it('na última página hasMore é false e nextCursor é null', async () => {
+    await seedMessages(4);
+    const res = await getPage('?limit=4');
+    expect(res.body.messages).toHaveLength(4);
+    expect(res.body.hasMore).toBe(false);
+    expect(res.body.nextCursor).toBeNull();
+  });
+
+  it('usa 50 mensagens por padrão', async () => {
+    await seedMessages(55);
+    const res = await getPage();
+    expect(res.body.messages).toHaveLength(50);
+    expect(res.body.hasMore).toBe(true);
+    expect(res.body.messages[49].content).toBe('msg 55');
+  });
+
+  it('limita o parâmetro limit ao teto de 100 mensagens', async () => {
+    await seedMessages(105);
+    const res = await getPage('?limit=99999');
+    expect(res.status).toBe(200);
+    expect(res.body.messages).toHaveLength(100);
+    expect(res.body.hasMore).toBe(true);
+  });
+
+  it('corrige limit inválido para os limites permitidos', async () => {
+    await seedMessages(5);
+    expect((await getPage('?limit=0')).body.messages).toHaveLength(5);       // 0 => padrão (50)
+    expect((await getPage('?limit=abc')).body.messages).toHaveLength(5);     // inválido => padrão
+    expect((await getPage('?limit=-10')).body.messages).toHaveLength(1);     // negativo => mínimo 1
+  });
+
+  it('ignora um cursor before com data inválida', async () => {
+    await seedMessages(3);
+    const res = await getPage('?before=isso-nao-e-data');
+    expect(res.status).toBe(200);
+    expect(res.body.messages).toHaveLength(3);
+  });
+
+  it('não mistura mensagens de outras salas na paginação', async () => {
+    const outra = await createRoom(author.id, { name: 'Outra' });
+    await seedMessages(3);
+    await seedMessages(3, outra.id);
+    const res = await getPage('?limit=10');
+    expect(res.body.messages).toHaveLength(3);
+    expect(res.body.messages.every(m => m.room_id === room.id)).toBe(true);
+  });
+
+  it('sala sem mensagens devolve lista vazia', async () => {
+    const res = await getPage();
+    expect(res.body).toEqual({ messages: [], hasMore: false, nextCursor: null, nextSince: null });
   });
 });

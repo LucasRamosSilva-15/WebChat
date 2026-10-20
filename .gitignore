@@ -6,3 +6,6 @@ dist/
 frontend/src/pages/LayoutDemo.jsx
 frontend/src/pages/LayoutDemo1.jsx
 AGENTS.md
+# Playwright
+e2e/results/
+e2e/report/

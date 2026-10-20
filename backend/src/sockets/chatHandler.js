@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Message } = require('../models');
+const { validateAttachment } = require('../utils/attachments');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -17,14 +18,28 @@ const messageRateLimits = new Map();
 const registerChatHandlers = (io, socket) => {
   socket.on('send_message', async (data) => {
     console.log('[DEBUG] Recebido send_message:', data);
-    const { room, userId, userName, sender_name, content, imageUrl } = data;
+    const { room, userId, userName, sender_name, content, imageUrl, attachment } = data;
     const authorName = userName || sender_name || data.author || data.user?.displayName || data.user?.name;
-    if (!room || (!content && !imageUrl)) {
+    let validAttachment = null;
+    try {
+      validAttachment = validateAttachment(attachment);
+    } catch (attErr) {
+      socket.emit('message_error', { error: attErr.message });
+      return;
+    }
+
+    if (!room || (!content && !imageUrl && !validAttachment)) {
       console.log('[DEBUG] send_message ignorado por falta de dados (room, content ou imageUrl)');
       return;
     }
 
-    if (content && typeof content === 'string' && content.length > 1000) {
+    // Mensagens E2EE (envelope "e2ee:v1:...") carregam texto + anexos cifrados e podem ser maiores
+    const isE2EE = typeof content === 'string' && content.startsWith('e2ee:v1:');
+    if (isE2EE && content.length > 9 * 1024 * 1024) {
+      socket.emit('message_error', { error: 'A mensagem criptografada excede o tamanho máximo.' });
+      return;
+    }
+    if (!isE2EE && content && typeof content === 'string' && content.length > 1000) {
       socket.emit('message_error', { error: 'A mensagem excede o limite máximo de 1.000 caracteres.' });
       return;
     }
@@ -45,7 +60,8 @@ const registerChatHandlers = (io, socket) => {
           user_id: userId,
           user_name: authorName,
           content,
-          image_url: imageUrl
+          image_url: imageUrl,
+          ...(validAttachment || {})
         }])
         .select()
         .single();
@@ -63,7 +79,8 @@ const registerChatHandlers = (io, socket) => {
             room_id: room,
             user_id: userId,
             content,
-            image_url: imageUrl
+            image_url: imageUrl,
+            ...(validAttachment || {})
           });
         }
       } catch (seqError) {}

@@ -1,14 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import CryptoJS from 'crypto-js';
-import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown, FaBars, FaUsers, FaUserPlus } from 'react-icons/fa';
+import { FaPaperPlane, FaCamera, FaTimes, FaStar, FaSignOutAlt, FaTrash, FaPencilAlt, FaHeart, FaRegHeart, FaThumbtack, FaEllipsisV, FaFlag, FaCommentAlt, FaCrown, FaShieldAlt, FaUser, FaComments, FaSearch, FaChevronUp, FaChevronDown, FaBars, FaUsers, FaUserPlus, FaDownload } from 'react-icons/fa';
 import { socket } from '../socket';
 import { apiRequest } from '../services/api';
 import ChatSidebar from '../components/ChatSidebar';
 import MembersSidebar from '../components/MembersSidebar';
 import UserAvatar from '../components/UserAvatar';
 import SkeuoLoading from '../components/SkeuoLoading';
+import AttachmentView from '../components/AttachmentView';
+import AttachmentComposer from '../components/AttachmentComposer';
+import { normalizeAttachment } from '../utils/attachments';
 const SECRET_KEY = "WebChat_E2EE_Secret_Key_Minix";
 const MAX_MESSAGE_LENGTH = 1000;
 
@@ -150,6 +153,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                                     <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Enviada" className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                                 </div>
                             )}
+                            <AttachmentView attachment={msg.attachment} />
                             {msg.text && <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>}
                         </div>
                         <div className="flex items-center gap-1.5 mt-1 mr-3 text-[10px] text-slate-400 dark:text-slate-500">
@@ -239,6 +243,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                         {msg.image && (
                             <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[240px] mb-1 mt-0.5 object-cover rounded-md border border-white/20 dark:border-white/5 cursor-pointer hover:opacity-90 transition-opacity" />
                         )}
+                        <AttachmentView attachment={msg.attachment} />
                         {msg.text && <p className="break-words whitespace-pre-wrap text-[13px] leading-[1.25]">{msg.text}</p>}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 px-1 w-full justify-end">
@@ -355,6 +360,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                                     <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Recebida" className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                                 </div>
                             )}
+                            <AttachmentView attachment={msg.attachment} />
                             {msg.text && <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>}
                         </div>
 
@@ -450,6 +456,7 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
                     {msg.image && (
                         <img onClick={() => onImageClick(msg.image)} src={msg.image} alt="Sent" className="max-w-[240px] mb-1 mt-0.5 object-cover rounded-md border border-white/20 dark:border-white/5 cursor-pointer hover:opacity-90 transition-opacity" />
                     )}
+                    <AttachmentView attachment={msg.attachment} />
                     {msg.text && <p className="break-words whitespace-pre-wrap text-[#1d1d1f] dark:text-[#f8fafc] text-[13px] leading-[1.25]">{msg.text}</p>}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 px-1 w-full justify-start ml-1">
@@ -471,6 +478,65 @@ const MessageBubble = ({ msg, onAvatarClick, onImageClick, onToggleFavorite, onD
         </div>
     );
 };
+
+
+const HISTORY_PAGE_SIZE = 50;
+const HISTORY_OLDER_PAGE_SIZE = 30;
+
+const formatDateBadge = (value) => {
+    if (!value) return '';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '';
+    const startOfDay = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diffDays = Math.round((startOfDay(new Date()) - startOfDay(d)) / 86400000);
+    if (diffDays === 0) return 'Hoje';
+    if (diffDays === 1) return 'Ontem';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+const mapApiMessage = (msg, currentUserId) => {
+    const senderName =
+        msg.sender_name ||
+        msg.user?.displayName ||
+        msg.user?.name ||
+        msg.user?.username ||
+        msg.author_name ||
+        msg.author ||
+        msg.userName ||
+        msg.user_name ||
+        msg.username ||
+        (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) ||
+        'Usuário';
+
+    return {
+        messageId: msg.id,
+        text: msg.content,
+        sender: senderName,
+        sender_name: senderName,
+        userId: msg.user_id,
+        user: msg.user,
+        isMe: msg.user_id === currentUserId,
+        time: msg.created_at,
+        image: msg.image_url || null,
+        attachment: normalizeAttachment(msg),
+        avatar: msg.avatar || msg.user?.profilePhoto || null,
+        likes: [],
+        isFavorite: false,
+        isEdited: false
+    };
+};
+
+// Aceita o formato antigo (array) e o novo ({ messages, hasMore, nextCursor })
+const parseHistoryResponse = (data) => {
+    if (Array.isArray(data)) return { items: data, hasMore: false, nextCursor: null };
+    return {
+        items: Array.isArray(data?.messages) ? data.messages : [],
+        hasMore: !!data?.hasMore,
+        nextCursor: data?.nextCursor || null
+    };
+};
+
+const isSystemPlaceholder = (msg) => msg.messageId === 'system-welcome' || msg.messageId === 'system-error';
 
 const Chat = () => {
     const location = useLocation();
@@ -501,6 +567,12 @@ const Chat = () => {
         }
     }, [room]);
     const [messages, setMessages] = useState([]);
+    const [hasMore, setHasMore] = useState(false);
+    const [nextCursor, setNextCursor] = useState(null);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const loadingMoreRef = useRef(false);
+    const skipAutoScrollRef = useRef(false);
+    const initialScrollRoomRef = useRef(null);
     const [currentMessage, setCurrentMessage] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -591,6 +663,7 @@ const Chat = () => {
         setCurrentSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
     };
     const [imagePreview, setImagePreview] = useState(null);
+    const [pendingAttachment, setPendingAttachment] = useState(null);
     const [mockRoles, setMockRoles] = useState(() => {
         return JSON.parse(localStorage.getItem(`chat_roles_${room}`) || '{}');
     });
@@ -819,41 +892,17 @@ const Chat = () => {
             }
 
             try {
-                const apiMessages = await apiRequest(`/rooms/${room}/messages`);
-                const mappedMessages = Array.isArray(apiMessages) ? apiMessages.map(msg => {
-                    const senderName =
-                        msg.sender_name ||
-                        msg.user?.displayName ||
-                        msg.user?.name ||
-                        msg.user?.username ||
-                        msg.author_name ||
-                        msg.author ||
-                        msg.userName ||
-                        msg.user_name ||
-                        msg.username ||
-                        (msg.sender && msg.sender !== 'Usuário' ? msg.sender : null) ||
-                        'Usuário';
-
-                    return {
-                        messageId: msg.id,
-                        text: msg.content,
-                        sender: senderName,
-                        sender_name: senderName,
-                        userId: msg.user_id,
-                        user: msg.user,
-                        isMe: msg.user_id === currentUserId,
-                        time: msg.created_at,
-                        image: msg.image_url || null,
-                        avatar: msg.avatar || msg.user?.profilePhoto || null,
-                        likes: [],
-                        isFavorite: false,
-                        isEdited: false
-                    };
-                }) : [];
+                const apiMessages = await apiRequest(`/rooms/${room}/messages?limit=${HISTORY_PAGE_SIZE}`);
+                const page = parseHistoryResponse(apiMessages);
+                const mappedMessages = page.items.map(msg => mapApiMessage(msg, currentUserId));
+                setHasMore(page.hasMore);
+                setNextCursor(page.nextCursor);
 
                 if (mappedMessages.length > 0) {
                     setMessages(mappedMessages);
                 } else {
+                    setHasMore(false);
+                    setNextCursor(null);
                     setMessages([{ messageId: "system-welcome", text: `Bem-vindo à sala ${roomDisplayName}!`, sender: "Sistema", isMe: false, time: new Date().toISOString() }]);
                 }
             } catch (error) {
@@ -1001,6 +1050,7 @@ const Chat = () => {
                     messageId: data.id,
                     text: data.content,
                     image: data.image_url,
+                    attachment: normalizeAttachment(data),
                     sender: senderName,
                     sender_name: senderName,
                     userId: data.user_id,
@@ -1092,13 +1142,84 @@ const Chat = () => {
     }, [room, currentUserId]);
 
     useEffect(() => {
+        if (skipAutoScrollRef.current) {
+            skipAutoScrollRef.current = false;
+            return;
+        }
         if (chatContainerRef.current) {
+            // Primeira abertura da sala: vai direto ao fim (sem animação). Depois, rolagem suave.
+            // (o contêiner é recriado quando a sala recarrega, então comparamos o elemento)
+            const firstOpen = initialScrollRoomRef.current !== chatContainerRef.current && messages.length > 0;
+            if (firstOpen) initialScrollRoomRef.current = chatContainerRef.current;
             chatContainerRef.current.scrollTo({
                 top: chatContainerRef.current.scrollHeight,
-                behavior: 'smooth'
+                behavior: firstOpen ? 'auto' : 'smooth'
             });
         }
-    }, [messages]);
+    }, [messages, roomLoading]);
+
+    // O contêiner entra no DOM depois do carregamento: ao montar, já abre no fim da conversa
+    const attachChatContainer = useCallback((node) => {
+        chatContainerRef.current = node;
+        if (node) node.scrollTop = node.scrollHeight;
+    }, []);
+
+    const loadOlderMessages = useCallback(async () => {
+        if (loadingMoreRef.current || !hasMore || !nextCursor) return;
+        const container = chatContainerRef.current;
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+        const previousScrollHeight = container ? container.scrollHeight : 0;
+        const previousScrollTop = container ? container.scrollTop : 0;
+        try {
+            const data = await apiRequest(`/rooms/${room}/messages?limit=${HISTORY_OLDER_PAGE_SIZE}&before=${encodeURIComponent(nextCursor)}`);
+            const page = parseHistoryResponse(data);
+            const older = page.items.map(msg => mapApiMessage(msg, currentUserId));
+            skipAutoScrollRef.current = true;
+            setMessages(prev => {
+                const known = new Set(prev.map(m => m.messageId));
+                return [...older.filter(m => !known.has(m.messageId)), ...prev];
+            });
+            setHasMore(page.hasMore);
+            setNextCursor(page.nextCursor);
+            requestAnimationFrame(() => {
+                if (container) {
+                    container.scrollTop = container.scrollHeight - previousScrollHeight + previousScrollTop;
+                }
+            });
+        } catch (error) {
+            console.error('Erro ao carregar mensagens anteriores:', error);
+        } finally {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
+        }
+    }, [hasMore, nextCursor, room, currentUserId]);
+
+    const handleChatScroll = (e) => {
+        if (e.currentTarget.scrollTop < 80) loadOlderMessages();
+    };
+
+    const handleExportChatHistory = () => {
+        const roomName = currentRoom?.name || room;
+        const lines = messages
+            .filter(m => !isSystemPlaceholder(m))
+            .map(m => {
+                const when = m.time ? new Date(m.time).toLocaleString('pt-BR') : '';
+                const body = m.text || (m.image ? '[imagem]' : (m.attachment ? `[${m.attachment.kind === 'audio' ? 'áudio' : 'arquivo'}: ${m.attachment.name || ''}]` : ''));
+                return `[${when}] ${m.sender || 'Usuário'}: ${body}`;
+            });
+        const header = `Histórico da sala: ${roomName}\nExportado em: ${new Date().toLocaleString('pt-BR')}\n` +
+            (hasMore ? 'Obs.: apenas as mensagens já carregadas foram exportadas.\n' : '') + '\n';
+        const blob = new Blob([header + lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `historico-${String(roomName).replace(/[^a-z0-9_-]+/gi, '_')}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     const sendMessage = async (e) => {
         e.preventDefault();
@@ -1106,7 +1227,7 @@ const Chat = () => {
             alert(`A mensagem excede o limite máximo de ${MAX_MESSAGE_LENGTH.toLocaleString('pt-BR')} caracteres.`);
             return;
         }
-        if (currentMessage.trim() !== "" || imagePreview) {
+        if (currentMessage.trim() !== "" || imagePreview || (pendingAttachment && !editingMessageId)) {
             const storedName = localStorage.getItem('chat_displayName');
             const currentSender = (storedName && storedName !== 'null') ? storedName : 'Usuário';
             const currentPhoto = localStorage.getItem('chat_profilePhoto');
@@ -1141,13 +1262,15 @@ const Chat = () => {
                     userName: currentSender,
                     sender_name: currentSender,
                     content: currentMessage,
-                    imageUrl: imagePreview || null
+                    imageUrl: imagePreview || null,
+                    attachment: pendingAttachment || undefined
                 };
 
                 socket.emit("send_message", messageData);
 
                 setCurrentMessage("");
                 setImagePreview(null);
+                setPendingAttachment(null);
             }
         }
     };
@@ -1393,6 +1516,13 @@ const Chat = () => {
                                 <FaUsers size={14} className="text-gray-500 dark:text-slate-400" />
                             </button>
                             <button
+                                onClick={handleExportChatHistory}
+                                className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer border border-gray-200/50 dark:border-slate-600/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.3)] bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 transition-all"
+                                title="Exportar histórico (.txt)"
+                            >
+                                <FaDownload size={14} />
+                            </button>
+                            <button
                                 onClick={() => setSearchOpen(!searchOpen)}
                                 className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all ${searchOpen
                                     ? '!bg-gradient-to-b !from-sky-400 !to-sky-600 dark:!from-sky-600 dark:!to-sky-800 !text-white !border-transparent !shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.2)]'
@@ -1509,7 +1639,7 @@ const Chat = () => {
                         </div>
                     )}
 
-                    <div ref={chatContainerRef} className="chat-container flex-grow overflow-y-auto pt-2 pr-2 mb-2 space-y-0.5">
+                    <div ref={attachChatContainer} onScroll={handleChatScroll} className="chat-container flex-grow overflow-y-auto pt-2 pr-2 mb-2 space-y-0.5">
 
                         {messages.length === 0 && !showFavoritesOnly && (
                             <div className="opacity-80 animate-fade-in-up flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4">
@@ -1521,11 +1651,29 @@ const Chat = () => {
                             </div>
                         )}
 
+                        {loadingMore && (
+                            <div className="text-center py-2 text-xs text-[#86868b] dark:text-slate-400">Carregando mensagens anteriores...</div>
+                        )}
+                        {!hasMore && !loadingMore && messages.length > 0 && !messages.some(isSystemPlaceholder) && (
+                            <div className="text-center py-2 text-xs text-[#86868b] dark:text-slate-400">📌 Início do histórico da sala alcançado</div>
+                        )}
+
                         {messages.map((msg, index) => {
                             if (showFavoritesOnly && !msg.isFavorite) return null;
                             const isCurrentSearch = searchResults.length > 0 && searchResults[currentSearchIndex]?.id === msg.messageId;
+                            const dateLabel = formatDateBadge(msg.time);
+                            const prevLabel = index > 0 ? formatDateBadge(messages[index - 1].time) : null;
+                            const showDateSeparator = !!dateLabel && dateLabel !== prevLabel;
                             return (
-                                <div key={index} className="animate-fade-in-up" style={{ zIndex: openMenuId === msg.messageId ? 9999 : 1, position: 'relative' }}>
+                                <Fragment key={msg.messageId || index}>
+                                {showDateSeparator && (
+                                    <div className="flex items-center justify-center my-3 select-none">
+                                        <span className="px-3 py-1 rounded-full text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80">
+                                            {dateLabel}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="animate-fade-in-up" style={{ zIndex: openMenuId === msg.messageId ? 9999 : 1, position: 'relative' }}>
                                     <MessageBubble
                                         msg={msg}
                                         innerRef={(el) => messageRefs.current[msg.messageId] = el}
@@ -1548,6 +1696,7 @@ const Chat = () => {
                                         currentUserRole={currentUserRole}
                                     />
                                 </div>
+                                </Fragment>
                             );
                         })}
 
@@ -1581,6 +1730,9 @@ const Chat = () => {
                                 <FaCamera size={14} className="drop-shadow-xs" />
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                             </label>
+                            {!editingMessageId && (
+                                <AttachmentComposer value={pendingAttachment} onChange={setPendingAttachment} />
+                            )}
                             <div className="relative flex-grow flex items-center">
                                 <input
                                     type="text"
@@ -1614,7 +1766,7 @@ const Chat = () => {
                             </div>
                             <button
                                 type="submit"
-                                disabled={!currentMessage.trim() && !imagePreview}
+                                disabled={!currentMessage.trim() && !imagePreview && !pendingAttachment}
                                 className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] transition-all enabled:hover:scale-105 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale cursor-pointer"
                                 title={editingMessageId ? "Salvar Edição" : "Enviar Mensagem"}
                             >

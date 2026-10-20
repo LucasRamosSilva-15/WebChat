@@ -18,13 +18,21 @@ import {
     FaEllipsisV,
     FaChevronUp,
     FaChevronDown,
-    FaCopy
+    FaCopy,
+    FaDownload,
+    FaLock,
+    FaLockOpen
 } from 'react-icons/fa';
 import ChatSidebar from '../components/ChatSidebar';
 import UserAvatar from '../components/UserAvatar';
 import NewDirectMessageModal from '../components/NewDirectMessageModal';
 import { socket } from '../socket';
 import { apiRequest } from '../services/api';
+import AttachmentView from '../components/AttachmentView';
+import AttachmentComposer from '../components/AttachmentComposer';
+import { normalizeAttachment } from '../utils/attachments';
+import { getConversationCrypto, encryptMessage, decryptIncoming, initIdentity } from '../services/directCrypto';
+import { isEncryptedContent } from '../utils/e2ee';
 
 const formatMessageTime = (timeStr, createdAt) => {
     const candidate = createdAt || timeStr;
@@ -54,6 +62,20 @@ const formatFullDateTime = (timeStr, createdAt) => {
         return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' às ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     return timeStr || '';
+};
+
+// Cache local das mensagens: remove dados pesados (anexos/imagens grandes) e nunca estoura a cota do localStorage.
+const cacheMessages = (convId, list) => {
+    try {
+        // Mensagens criptografadas nunca são gravadas em texto claro no navegador
+        const slim = list.filter(m => !m.encrypted).map(m => {
+            let out = m;
+            if (out.attachment?.url) out = { ...out, attachment: { ...out.attachment, url: null } };
+            if (typeof out.image === 'string' && out.image.length > 200000) out = { ...out, image: null };
+            return out;
+        });
+        cacheMessages(convId, slim);
+    } catch { /* cota cheia: o histórico real vem do servidor */ }
 };
 
 const getMessageDateKey = (msg) => {
@@ -156,6 +178,8 @@ const Directs = () => {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [imagePreview, setImagePreview] = useState(null);
+    const [pendingAttachment, setPendingAttachment] = useState(null);
+    const [e2eeInfo, setE2eeInfo] = useState({ active: false, safety: null });
     const [isNewConvModalOpen, setIsNewConvModalOpen] = useState(false);
     const [newContactName, setNewContactName] = useState('');
     const [registeredUsers, setRegisteredUsers] = useState([]);
@@ -169,6 +193,12 @@ const Directs = () => {
     const [roomOnlineUserIds, setRoomOnlineUserIds] = useState(new Set());
     const fileInputRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const chatContainerRef = useRef(null);
+    const skipAutoScrollRef = useRef(false);
+    const loadingMoreRef = useRef(false);
+    const [hasMore, setHasMore] = useState(false);
+    const [nextCursor, setNextCursor] = useState(null);
+    const [loadingMore, setLoadingMore] = useState(false);
     const isSubmittingRef = useRef(false);
     const [bubbleFormat, setBubbleFormat] = useState(() => {
         const saved = localStorage.getItem('chat_bubbleFormat');
@@ -277,40 +307,7 @@ const Directs = () => {
         selectedConvRef.current = selectedConv;
     }, [selectedConv]);
 
-    useEffect(() => {
-        if (!selectedConv?.id) return;
-
-        const convId = selectedConv.id;
-        const convName = selectedConv.name;
-        const savedMessages = localStorage.getItem(`chat_messages_${convId}`);
-        if (savedMessages) {
-            try {
-                setMessages(JSON.parse(savedMessages));
-            } catch {
-                setMessages([]);
-            }
-        } else {
-            const now = new Date();
-            const initialMsgs = [
-                {
-                    messageId: 'sys-start',
-                    sender: convName,
-                    text: selectedConv.lastMessage || 'Conversa direta iniciada com sucesso.',
-                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    created_at: now.toISOString(),
-                    isMe: false,
-                    likes: []
-                }
-            ];
-            setMessages(initialMsgs);
-            localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(initialMsgs));
-        }
-
-        if (convId && !String(convId).startsWith('privado-')) {
-            apiRequest(`/directs/conversations/${convId}/messages`)
-                .then(serverMessages => {
-                    if (Array.isArray(serverMessages) && serverMessages.length > 0) {
-                        const mapped = serverMessages.map(msg => {
+    const mapServerMessage = (msg, convName) => {
                             const isMe = (msg.user_id && msg.user_id === currentUserId) ||
                                 (msg.userId && msg.userId === currentUserId) ||
                                 msg.sender_id === currentUserId ||
@@ -347,9 +344,144 @@ const Directs = () => {
                                 created_at: msg.created_at || msg.time,
                                 isMe: Boolean(isMe)
                             };
+                        };
+
+    const peerIdOf = (conv) => {
+        const id = conv?.partnerId;
+        return id && id !== 'suporte' && id !== 'comunidade' ? id : null;
+    };
+
+    const decryptList = (list, conv) => {
+        const peerId = peerIdOf(conv);
+        return Promise.all(list.map(m => (isEncryptedContent(m.text) ? decryptIncoming(m, currentUserId, peerId, conv.id) : m)));
+    };
+
+    const parseDirectHistory = (data) => {
+        if (Array.isArray(data)) return { items: data, hasMore: false, nextCursor: null };
+        return {
+            items: Array.isArray(data?.messages) ? data.messages : [],
+            hasMore: !!data?.hasMore,
+            nextCursor: data?.nextCursor || null
+        };
+    };
+
+    const isDirectPlaceholder = (m) => m.messageId === 'sys-start';
+
+    const loadOlderMessages = async () => {
+        const conv = selectedConvRef.current;
+        if (loadingMoreRef.current || !hasMore || !nextCursor || !conv?.id) return;
+        const container = chatContainerRef.current;
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+        const prevHeight = container ? container.scrollHeight : 0;
+        const prevTop = container ? container.scrollTop : 0;
+        try {
+            const data = await apiRequest(`/directs/conversations/${conv.id}/messages?limit=30&before=${encodeURIComponent(nextCursor)}`);
+            const page = parseDirectHistory(data);
+            const older = await decryptList(page.items.map(msg => mapServerMessage(msg, conv.name)), conv);
+            skipAutoScrollRef.current = true;
+            setMessages(prev => {
+                const known = new Set(prev.map(m => m.messageId));
+                return [...older.filter(m => !known.has(m.messageId)), ...prev];
+            });
+            setHasMore(page.hasMore);
+            setNextCursor(page.nextCursor);
+            requestAnimationFrame(() => {
+                if (container) container.scrollTop = container.scrollHeight - prevHeight + prevTop;
+            });
+        } catch (error) {
+            console.error('Erro ao carregar mensagens anteriores:', error);
+        } finally {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
+        }
+    };
+
+    const handleChatScroll = (e) => {
+        if (e.currentTarget.scrollTop < 80) loadOlderMessages();
+    };
+
+    const handleExportChatHistory = () => {
+        const convName = selectedConv?.name || 'conversa';
+        const lines = messages
+            .filter(m => !isDirectPlaceholder(m))
+            .map(m => {
+                const when = m.created_at ? new Date(m.created_at).toLocaleString('pt-BR') : (m.time || '');
+                return `[${when}] ${m.sender || 'Usuário'}: ${m.text || (m.image ? '[imagem]' : (m.attachment ? `[${m.attachment.kind === 'audio' ? 'áudio' : 'arquivo'}: ${m.attachment.name || ''}]` : ''))}`;
+            });
+        const header = `Conversa direta com: ${convName}\nExportado em: ${new Date().toLocaleString('pt-BR')}\n` +
+            (hasMore ? 'Obs.: apenas as mensagens já carregadas foram exportadas.\n' : '') + '\n';
+        const blob = new Blob([header + lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `historico-${String(convName).replace(/[^a-z0-9_-]+/gi, '_')}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    useEffect(() => {
+        initIdentity(currentUserId);
+    }, [currentUserId]);
+
+    useEffect(() => {
+        let cancelled = false;
+        setE2eeInfo({ active: false, safety: null });
+        const peerId = peerIdOf(selectedConv);
+        if (!selectedConv?.id || String(selectedConv.id).startsWith('privado-') || !peerId || !currentUserId) return undefined;
+        getConversationCrypto(currentUserId, peerId).then(entry => {
+            if (!cancelled) setE2eeInfo(entry ? { active: true, safety: entry.safety } : { active: false, safety: null });
+        });
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedConv?.id, selectedConv?.partnerId, currentUserId]);
+
+    useEffect(() => {
+        if (!selectedConv?.id) return;
+        setHasMore(false);
+        setNextCursor(null);
+
+        const convId = selectedConv.id;
+        const convName = selectedConv.name;
+        const savedMessages = localStorage.getItem(`chat_messages_${convId}`);
+        if (savedMessages) {
+            try {
+                setMessages(JSON.parse(savedMessages));
+            } catch {
+                setMessages([]);
+            }
+        } else {
+            const now = new Date();
+            const initialMsgs = [
+                {
+                    messageId: 'sys-start',
+                    sender: convName,
+                    text: selectedConv.lastMessage || 'Conversa direta iniciada com sucesso.',
+                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    created_at: now.toISOString(),
+                    isMe: false,
+                    likes: []
+                }
+            ];
+            setMessages(initialMsgs);
+            cacheMessages(convId, initialMsgs);
+        }
+
+        if (convId && !String(convId).startsWith('privado-')) {
+            apiRequest(`/directs/conversations/${convId}/messages?limit=50`)
+                .then(data => {
+                    const { items: serverMessages, hasMore: more, nextCursor: cursor } = parseDirectHistory(data);
+                    setHasMore(more);
+                    setNextCursor(cursor);
+                    if (serverMessages.length > 0) {
+                        const mapped = serverMessages.map(msg => mapServerMessage(msg, convName));
+                        return decryptList(mapped, selectedConv).then(decrypted => {
+                            if (selectedConvRef.current?.id !== convId) return; // trocou de conversa no meio do caminho
+                            setMessages(decrypted);
+                            cacheMessages(convId, decrypted);
                         });
-                        setMessages(mapped);
-                        localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(mapped));
                     }
                 })
                 .catch(() => {});
@@ -360,7 +492,7 @@ const Directs = () => {
             user: { id: currentUserId, name: currentUserDisplayName }
         });
 
-        const handleReceiveMessage = (msg) => {
+        const processIncomingMessage = (msg) => {
             if (msg.room === convId || !msg.room) {
                 setMessages(prev => {
                     const incomingId = msg.messageId || msg.id;
@@ -420,10 +552,13 @@ const Directs = () => {
                         created_at: msg.created_at || msg.time || now.toISOString(),
                         isMe: Boolean(isMe),
                         image: msg.image || msg.imageUrl || msg.image_url || null,
+                        attachment: normalizeAttachment(msg),
+                        encrypted: Boolean(msg.encrypted),
+                        decryptFailed: Boolean(msg.decryptFailed),
                         likes: []
                     };
                     const updated = [...prev, newMsg];
-                    localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated.slice(-100)));
+                    cacheMessages(convId, updated.slice(-100));
                     return updated;
                 });
 
@@ -432,8 +567,8 @@ const Directs = () => {
                         if (c.id === convId) {
                             return {
                                 ...c,
-                                lastMessage: msg.message || msg.content || msg.text || (msg.image ? 'Foto recebida' : 'Mensagem recebida'),
-                                time: msg.created_at || now.toISOString()
+                                lastMessage: msg.encrypted ? '🔒 Mensagem criptografada' : (msg.message || msg.content || msg.text || (msg.image ? 'Foto recebida' : 'Mensagem recebida')),
+                                time: msg.created_at || new Date().toISOString()
                             };
                         }
                         return c;
@@ -444,10 +579,18 @@ const Directs = () => {
             }
         };
 
+        const handleReceiveMessage = async (rawMsg) => {
+            let msg = rawMsg;
+            if ([rawMsg.content, rawMsg.message, rawMsg.text].some(isEncryptedContent)) {
+                msg = await decryptIncoming(rawMsg, currentUserId, peerIdOf(selectedConvRef.current), convId);
+            }
+            processIncomingMessage(msg);
+        };
+
         const handleMessageDeleted = ({ messageId }) => {
             setMessages(prev => {
                 const updated = prev.filter(m => (m.messageId || m.id) !== messageId && m.messageId !== messageId && m.id !== messageId);
-                localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated));
+                cacheMessages(convId, updated);
                 return updated;
             });
         };
@@ -468,7 +611,7 @@ const Directs = () => {
                     }
                     return m;
                 });
-                localStorage.setItem(`chat_messages_${convId}`, JSON.stringify(updated));
+                cacheMessages(convId, updated);
                 return updated;
             });
         };
@@ -592,22 +735,28 @@ const Directs = () => {
     };
 
     useEffect(() => {
+        if (skipAutoScrollRef.current) {
+            skipAutoScrollRef.current = false;
+            return;
+        }
         if (typeof messagesEndRef.current?.scrollIntoView === 'function') {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages]);
 
-    const handleSendMessage = (e) => {
+    const handleSendMessage = async (e) => {
         e?.preventDefault();
         if (isSubmittingRef.current) return;
         const formElement = e?.target?.tagName === 'FORM' ? e.target : e?.currentTarget?.form;
         const fallbackText = formElement?.message?.value || '';
         const textToSend = (inputMessage || fallbackText || '').trim();
-        if ((!textToSend && !imagePreview) || !selectedConv) return;
+        if ((!textToSend && !imagePreview && !pendingAttachment) || !selectedConv) return;
 
         isSubmittingRef.current = true;
         setInputMessage('');
         setImagePreview(null);
+        const attachmentToSend = pendingAttachment;
+        setPendingAttachment(null);
         if (formElement?.message) {
             formElement.message.value = '';
         }
@@ -620,6 +769,12 @@ const Directs = () => {
         const isoTime = now.toISOString();
         const newMsgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 
+        const imageToSend = imagePreview;
+        const isServerConv = Boolean(selectedConv.id) && !String(selectedConv.id).startsWith('privado-');
+        const peerId = peerIdOf(selectedConv);
+        // Criptografia ponta a ponta quando o contato já ativou a chave dele
+        const cryptoEntry = isServerConv && peerId ? await getConversationCrypto(currentUserId, peerId) : null;
+
         const newMsg = {
             messageId: newMsgId,
             sender: currentUserDisplayName,
@@ -628,15 +783,32 @@ const Directs = () => {
             created_at: isoTime,
             timestamp: isoTime,
             isMe: true,
-            image: imagePreview || null,
+            image: imageToSend || null,
+            attachment: attachmentToSend,
+            encrypted: Boolean(cryptoEntry),
             likes: []
         };
 
         setMessages(prev => {
             const updated = [...prev, newMsg];
-            localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated.slice(-100)));
+            cacheMessages(selectedConv.id, updated.slice(-100));
             return updated;
         });
+
+        let wire; // o que realmente sai do navegador
+        if (cryptoEntry) {
+            try {
+                const envelope = await encryptMessage(cryptoEntry, selectedConv.id, { text: textToSend, image: imageToSend, attachment: attachmentToSend });
+                // Só o envelope sai daqui: texto, imagem e anexo em claro não são enviados
+                wire = { content: envelope };
+            } catch {
+                setMessages(prev => prev.filter(m => m.messageId !== newMsgId));
+                alert('Não foi possível criptografar a mensagem. Ela não foi enviada.');
+                return;
+            }
+        } else {
+            wire = { content: textToSend, message: textToSend, image: imageToSend, imageUrl: imageToSend || null, attachment: attachmentToSend || undefined };
+        }
 
         socket.emit('send_message', {
             room: selectedConv.id,
@@ -646,18 +818,18 @@ const Directs = () => {
             sender_name: currentUserDisplayName,
             author: currentUserDisplayName,
             sender: currentUserDisplayName,
-            content: textToSend,
-            message: textToSend,
             time: timeStr,
             created_at: isoTime,
             messageId: newMsgId,
-            image: imagePreview
+            ...wire
         });
 
-        if (selectedConv.id && !String(selectedConv.id).startsWith('privado-')) {
+        if (isServerConv) {
             apiRequest(`/directs/conversations/${selectedConv.id}/messages`, {
                 method: 'POST',
-                body: JSON.stringify({ content: textToSend, imageUrl: imagePreview })
+                body: JSON.stringify(cryptoEntry
+                    ? { content: wire.content }
+                    : { content: textToSend, imageUrl: imageToSend, attachment: attachmentToSend || undefined })
             }).catch(() => {});
         }
 
@@ -665,7 +837,7 @@ const Directs = () => {
             if (c.id === selectedConv.id) {
                 return {
                     ...c,
-                    lastMessage: textToSend || 'Foto enviada',
+                    lastMessage: cryptoEntry ? '🔒 Mensagem criptografada' : (textToSend || (attachmentToSend ? 'Anexo enviado' : 'Foto enviada')),
                     time: isoTime
                 };
             }
@@ -769,7 +941,7 @@ const Directs = () => {
         });
         setMessages(updated);
         if (selectedConv) {
-            localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
+            cacheMessages(selectedConv.id, updated);
         }
 
         if (isCurrentlyFav) {
@@ -809,7 +981,7 @@ const Directs = () => {
                 return m;
             });
             if (selectedConv) {
-                localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
+                cacheMessages(selectedConv.id, updated);
                 socket.emit('toggle_like', {
                     room: selectedConv.id,
                     messageId,
@@ -825,7 +997,7 @@ const Directs = () => {
         setMessages(prev => {
             const updated = prev.filter(m => (m.messageId || m.id) !== messageId && m.messageId !== messageId && m.id !== messageId);
             if (selectedConv) {
-                localStorage.setItem(`chat_messages_${selectedConv.id}`, JSON.stringify(updated));
+                cacheMessages(selectedConv.id, updated);
             }
             return updated;
         });
@@ -988,11 +1160,38 @@ const Directs = () => {
                                             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
                                                 Conversa Direta Privada
                                             </span>
+                                            {e2eeInfo.active ? (
+                                                <span
+                                                    data-testid="e2ee-badge"
+                                                    className="flex items-center gap-1 text-[10px] font-bold text-sky-600 dark:text-sky-400"
+                                                    title={`Mensagens criptografadas de ponta a ponta. Código de segurança (confira com ${selectedConv.name} por outro canal): ${e2eeInfo.safety}`}
+                                                >
+                                                    <FaLock size={9} /> Criptografia ponta a ponta
+                                                </span>
+                                            ) : (
+                                                peerIdOf(selectedConv) && !String(selectedConv.id).startsWith('privado-') && (
+                                                    <span
+                                                        data-testid="e2ee-badge-off"
+                                                        className="flex items-center gap-1 text-[10px] font-semibold text-slate-400"
+                                                        title="Este contato ainda não ativou a criptografia ponta a ponta. As mensagens seguem sem esse recurso até ele abrir o app."
+                                                    >
+                                                        <FaLockOpen size={9} /> Sem criptografia
+                                                    </span>
+                                                )
+                                            )}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center gap-1 sm:gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleExportChatHistory}
+                                        className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer border border-gray-200/50 dark:border-slate-600/50 bg-gradient-to-b from-white to-gray-100 dark:from-slate-700 dark:to-slate-800 text-gray-600 dark:text-slate-300 hover:from-sky-50 hover:to-sky-100 hover:text-sky-600 transition-all"
+                                        title="Exportar histórico (.txt)"
+                                    >
+                                        <FaDownload size={13} />
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => setIsChatSearchOpen(!isChatSearchOpen)}
@@ -1090,7 +1289,13 @@ const Directs = () => {
                                 </div>
                             </div>
 
-                            <div className="flex-grow overflow-y-auto pt-3 px-3 pb-3 space-y-2 skeuo-scrollbar">
+                            <div ref={chatContainerRef} onScroll={handleChatScroll} className="flex-grow overflow-y-auto pt-3 px-3 pb-3 space-y-2 skeuo-scrollbar">
+                                {loadingMore && (
+                                    <div className="text-center py-2 text-xs text-[#86868b] dark:text-slate-400">Carregando mensagens anteriores...</div>
+                                )}
+                                {!hasMore && !loadingMore && messages.length > 0 && !messages.some(isDirectPlaceholder) && (
+                                    <div className="text-center py-2 text-xs text-[#86868b] dark:text-slate-400">📌 Início do histórico da conversa alcançado</div>
+                                )}
                                 {displayedMessages.length === 0 && (
                                     <div className="opacity-80 animate-fade-in-up flex flex-col items-center justify-center h-full min-h-[250px] text-center px-4">
                                         <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-gradient-to-b from-gray-50 to-gray-200 border border-[#d2d2d7] shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)] text-[#86868b] dark:text-slate-400">
@@ -1242,6 +1447,7 @@ const Directs = () => {
                                                                         />
                                                                     </div>
                                                                 )}
+                                                                <AttachmentView attachment={msg.attachment} />
                                                                 {msg.text && (
                                                                     <p className="break-words whitespace-pre-wrap leading-relaxed">
                                                                         {msg.text}
@@ -1372,6 +1578,7 @@ const Directs = () => {
                                                                     className="max-w-[240px] mb-1 mt-0.5 object-cover rounded-md border border-white/20 dark:border-white/5 cursor-pointer hover:opacity-90 transition-opacity"
                                                                 />
                                                             )}
+                                                            <AttachmentView attachment={msg.attachment} />
                                                             {msg.text && (
                                                                 <p className="break-words whitespace-pre-wrap text-[13px] leading-[1.25]">
                                                                     {msg.text}
@@ -1519,6 +1726,7 @@ const Directs = () => {
                                                                         />
                                                                     </div>
                                                                 )}
+                                                                <AttachmentView attachment={msg.attachment} />
                                                                 {msg.text && (
                                                                     <p className="break-words whitespace-pre-wrap leading-relaxed">
                                                                         {msg.text}
@@ -1661,6 +1869,7 @@ const Directs = () => {
                                                                 />
                                                             </div>
                                                         )}
+                                                        <AttachmentView attachment={msg.attachment} />
                                                         {msg.text && (
                                                             <p className="break-words whitespace-pre-wrap text-[13px] leading-[1.25]">
                                                                 {msg.text}
@@ -1730,6 +1939,7 @@ const Directs = () => {
                                     >
                                         <FaCamera size={14} className="drop-shadow-xs" />
                                     </label>
+                                    <AttachmentComposer value={pendingAttachment} onChange={setPendingAttachment} />
 
                                     <div className="relative flex-grow flex items-center">
                                         <input
@@ -1760,7 +1970,7 @@ const Directs = () => {
 
                                     <button
                                         type="submit"
-                                        disabled={!inputMessage.trim() && !imagePreview}
+                                        disabled={!inputMessage.trim() && !imagePreview && !pendingAttachment}
                                         className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-b from-sky-400 to-sky-600 text-white shadow-[0_2px_4px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] transition-all enabled:hover:scale-105 enabled:active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                         title="Enviar mensagem"
                                         aria-label="Enviar mensagem"

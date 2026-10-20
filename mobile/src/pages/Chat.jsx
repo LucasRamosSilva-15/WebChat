@@ -65,7 +65,9 @@ export default function MobileChat() {
   useEffect(() => {
     if (!currentRoomId) return;
     apiRequest(`/rooms/${currentRoomId}/messages`)
-      .then((data) => {
+      .then((response) => {
+        // Compatível com o formato paginado { messages, hasMore, nextCursor } e com array simples
+        const data = Array.isArray(response) ? response : response?.messages;
         if (Array.isArray(data)) {
           setMessages(data.map(m => ({
             id: m.id || String(m._id || Date.now()),

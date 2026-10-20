@@ -1,5 +1,8 @@
-const DirectRepository = require('../repositories/DirectRepository');
+const { validateAttachment, toAttachmentView } = require('../utils/attachments');
+const { normalizePublicKey } = require('../utils/e2ee');
 const UserRepository = require('../repositories/UserRepository');
+const DirectRepository = require('../repositories/DirectRepository');
+const { parseHistoryParams } = require('../utils/pagination');
 
 class DirectService {
   async listConversations(userId) {
@@ -74,7 +77,7 @@ class DirectService {
     };
   }
 
-  async getConversationMessages(conversationId, userId) {
+  async getConversationMessages(conversationId, userId, { limit, before, since } = {}) {
     if (!userId) {
       throw new Error('Usuário não autenticado.');
     }
@@ -91,9 +94,12 @@ class DirectService {
       throw new Error('Sem permissão para acessar esta conversa.');
     }
 
-    const rawMessages = await DirectRepository.findMessagesByConversation(conversationId);
+    const { messages: rawMessages, hasMore, nextCursor, nextSince } = await DirectRepository.findMessagesByConversation(
+      conversationId,
+      parseHistoryParams({ limit, before, since })
+    );
 
-    return rawMessages.map(msg => {
+    const messages = rawMessages.map(msg => {
       let timeFormatted = '';
       if (msg.created_at) {
         try {
@@ -115,21 +121,26 @@ class DirectService {
         userId: msg.sender_id,
         text: msg.content || '',
         time: timeFormatted,
+        created_at: msg.created_at,
         isMe: msg.sender_id === userId,
         image: msg.image_url || null,
+        attachment: toAttachmentView(msg),
         likes: []
       };
     });
+
+    return { messages, hasMore, nextCursor, nextSince: nextSince || null };
   }
 
-  async sendMessage(conversationId, senderId, content, imageUrl) {
+  async sendMessage(conversationId, senderId, content, imageUrl, attachment = null) {
+    const validAttachment = validateAttachment(attachment);
     if (!senderId) {
       throw new Error('Usuário não autenticado.');
     }
     if (!conversationId) {
       throw new Error('ID da conversa é obrigatório.');
     }
-    if (!content && !imageUrl) {
+    if (!content && !imageUrl && !validAttachment) {
       throw new Error('Mensagem ou imagem é obrigatória.');
     }
 
@@ -146,7 +157,8 @@ class DirectService {
       conversation_id: conversationId,
       sender_id: senderId,
       content: content || '',
-      image_url: imageUrl || null
+      image_url: imageUrl || null,
+      ...(validAttachment || {})
     });
 
     let timeFormatted = 'Agora';
@@ -167,7 +179,7 @@ class DirectService {
         await NotificationService.addNotification(recipientId, {
           type: 'message',
           title: `Nova mensagem de ${senderDisplayName}`,
-          content: content ? (content.length > 60 ? content.substring(0, 60) + '...' : content) : 'Enviou uma foto',
+          content: content && !String(content).startsWith('e2ee:') ? (content.length > 60 ? content.substring(0, 60) + '...' : content) : (validAttachment ? 'Enviou um anexo' : (content ? 'Nova mensagem' : 'Enviou uma foto')),
           link: `/directs?conv=${conversationId}`
         });
       }
@@ -185,9 +197,28 @@ class DirectService {
       userId: newMsg.sender_id,
       text: newMsg.content || '',
       time: timeFormatted,
+      created_at: newMsg.created_at,
       isMe: true,
-      image: newMsg.image_url || null
+      image: newMsg.image_url || null,
+      attachment: toAttachmentView(newMsg)
     };
+  }
+
+  /** Registra (ou troca) a chave pública E2EE do usuário autenticado. */
+  async setPublicKey(userId, publicKey) {
+    if (!userId) throw new Error('Usuário não autenticado.');
+    const normalized = normalizePublicKey(publicKey);
+    const user = await UserRepository.update(userId, { public_key: normalized });
+    if (!user) throw new Error('Usuário não encontrado.');
+    return { userId, publicKey: JSON.parse(normalized) };
+  }
+
+  /** Chave pública de um usuário (null se ele ainda não ativou a criptografia). */
+  async getPublicKey(requesterId, targetUserId) {
+    if (!requesterId) throw new Error('Usuário não autenticado.');
+    const user = await UserRepository.findById(targetUserId);
+    if (!user) throw new Error('Usuário não encontrado.');
+    return { userId: user.id, publicKey: user.public_key ? JSON.parse(user.public_key) : null };
   }
 
   async deleteConversation(conversationId, userId) {

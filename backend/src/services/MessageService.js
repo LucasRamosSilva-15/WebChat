@@ -2,12 +2,15 @@ const MessageRepository = require('../repositories/MessageRepository');
 const RoomMemberRepository = require('../repositories/RoomMemberRepository');
 const { sanitizeText } = require('../utils/security');
 const { logSecurityEvent } = require('../utils/auditLogger');
+const { parseHistoryParams } = require('../utils/pagination');
+const { validateAttachment } = require('../utils/attachments');
 
 class MessageService {
-  async sendMessage(roomId, userId, content, imageUrl) {
+  async sendMessage(roomId, userId, content, imageUrl, attachment = null) {
     const cleanContent = content ? sanitizeText(content) : content;
+    const validAttachment = validateAttachment(attachment);
 
-    if ((!cleanContent || cleanContent.trim() === '') && !imageUrl) {
+    if ((!cleanContent || cleanContent.trim() === '') && !imageUrl && !validAttachment) {
       throw new Error('O conteúdo da mensagem ou a imagem não podem estar vazios.');
     }
 
@@ -19,17 +22,22 @@ class MessageService {
       room_id: roomId,
       user_id: userId,
       content: cleanContent,
-      image_url: imageUrl
+      image_url: imageUrl,
+      ...(validAttachment || {})
     });
 
     return newMessage;
   }
 
-  async getMessagesByRoom(roomId) {
+  /**
+   * Histórico paginado: { messages, hasMore, nextCursor }.
+   * Sanitiza limit (1 a 100) e before (data válida) antes de chegar ao banco.
+   */
+  async getMessagesByRoom(roomId, { limit, before, since } = {}) {
     if (!roomId) {
       throw new Error('ID da sala é obrigatório.');
     }
-    return await MessageRepository.findByRoomId(roomId);
+    return await MessageRepository.findByRoomId(roomId, parseHistoryParams({ limit, before, since }));
   }
 
   async searchMessages(roomId, query) {

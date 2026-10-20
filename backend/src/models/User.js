@@ -36,6 +36,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     defaultValue: 'active',
   },
+  public_key: {
+    // Chave pública E2EE (JWK ECDH P-256). A privada fica só no navegador.
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

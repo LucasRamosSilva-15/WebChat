@@ -3,4 +3,10 @@ title: "Histórico de Mensagens Diretas"
 openapi: "GET /directs/conversations/{id}/messages"
 ---
 
-Retorna o histórico cronológico de mensagens trocadas na conversa direta privada. Apenas os dois participantes da conversa possuem autorização para consultar seu histórico.
+Retorna o histórico de mensagens trocadas na conversa direta privada, com **paginação por cursor**. Apenas os dois participantes da conversa possuem autorização para consultar seu histórico.
+
+Funciona exatamente como o histórico das salas: sem parâmetros vêm as 50 mensagens mais recentes; use o `nextCursor` da resposta como `before` para carregar mensagens mais antigas, até `hasMore` ser `false`.
+
+## Sincronizar mensagens novas (`since`)
+
+Após uma reconexão, envie `since=<data da última mensagem que você tem>`. A resposta traz só as mensagens mais novas, em ordem cronológica. Se `hasMore` for `true`, repita a chamada com `since=<nextSince>`. `since` tem precedência sobre `before`.

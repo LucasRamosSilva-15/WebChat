@@ -4,7 +4,7 @@ const { handleError } = require('./errorHandler');
 class MessageController {
   async send(req, res) {
     try {
-      const message = await MessageService.sendMessage(req.params.roomId, req.userId, req.body.content, req.body.imageUrl);
+      const message = await MessageService.sendMessage(req.params.roomId, req.userId, req.body.content, req.body.imageUrl, req.body.attachment);
       return res.status(201).json(message);
     } catch (error) {
       return handleError(res, error);
@@ -13,8 +13,9 @@ class MessageController {
 
   async listByRoom(req, res) {
     try {
-      const messages = await MessageService.getMessagesByRoom(req.params.roomId);
-      return res.status(200).json(messages);
+      const { limit, before, since } = req.query;
+      const data = await MessageService.getMessagesByRoom(req.params.roomId, { limit, before, since });
+      return res.status(200).json(data);
     } catch (error) {
       return handleError(res, error);
     }

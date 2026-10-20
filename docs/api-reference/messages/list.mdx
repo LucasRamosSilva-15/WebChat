@@ -3,4 +3,26 @@ title: "Histórico de Mensagens"
 openapi: "GET /rooms/{roomId}/messages"
 ---
 
-Retorna o histórico cronológico de mensagens de uma sala, incluindo anexos e perfil básico dos remetentes.
+Retorna o histórico de mensagens de uma sala com **paginação por cursor**, incluindo anexos e perfil básico dos remetentes.
+
+## Como paginar
+
+1. Na primeira chamada, envie apenas `limit` (opcional, padrão `50`, máximo `100`). A resposta traz as mensagens **mais recentes**, já em ordem cronológica (a mais antiga no topo).
+2. Se `hasMore` for `true`, chame novamente enviando o `nextCursor` recebido como `before`. A resposta traz o bloco imediatamente anterior, sem duplicar nem pular mensagens.
+
+## Sincronizar mensagens novas (`since`)
+
+Após uma reconexão, envie `since=<data da última mensagem que você tem>`. A resposta traz só as mensagens mais novas, em ordem cronológica. Se `hasMore` for `true`, repita a chamada com `since=<nextSince>`. `since` tem precedência sobre `before`.
+3. Repita até `hasMore` ser `false`: o início da história da sala foi alcançado.
+
+```bash
+curl -H "Authorization: Bearer SEU_TOKEN" \
+  "http://localhost:3001/api/rooms/ID_DA_SALA/messages?limit=30"
+
+curl -H "Authorization: Bearer SEU_TOKEN" \
+  "http://localhost:3001/api/rooms/ID_DA_SALA/messages?limit=30&before=2026-10-17T14:00:00.000Z"
+```
+
+<Note>
+  Valores de `limit` fora do intervalo são ajustados (mínimo 1, máximo 100) e um `before` com data inválida é ignorado.
+</Note>

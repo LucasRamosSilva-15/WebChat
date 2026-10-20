@@ -33,13 +33,35 @@ const DirectMessage = sequelize.define('DirectMessage', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  attachment_url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  attachment_type: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  attachment_name: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  attachment_size: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   }
 }, {
   tableName: 'direct_messages',
-  timestamps: false
+  timestamps: false,
+  indexes: [
+    {
+      name: 'idx_direct_messages_conv_created_at',
+      fields: ['conversation_id', { name: 'created_at', order: 'DESC' }]
+    }
+  ]
 });
 
 module.exports = DirectMessage;

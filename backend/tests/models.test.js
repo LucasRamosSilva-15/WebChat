@@ -1,5 +1,5 @@
 // Testes unitários dos Models (Sequelize + SQLite em memória)
-const { User, Room, Message, Report, Feedback } = require('../src/models');
+const { sequelize, User, Room, Message, Report, Feedback } = require('../src/models');
 const { resetDb, closeDb, createUser, createRoom, createMessage } = require('./helpers');
 
 beforeEach(resetDb);
@@ -95,6 +95,21 @@ describe('Models', () => {
     it('rejeita feedback sem comentário', async () => {
       const user = await createUser();
       await expect(Feedback.create({ user_id: user.id })).rejects.toThrow();
+    });
+  });
+
+  describe('Índices do histórico paginado', () => {
+    const indexNames = async (table) => {
+      const indexes = await sequelize.getQueryInterface().showIndex(table);
+      return indexes.map(i => i.name);
+    };
+
+    it('cria o índice composto (room_id, created_at DESC) em messages', async () => {
+      expect(await indexNames('messages')).toContain('idx_messages_room_created_at');
+    });
+
+    it('cria o índice composto (conversation_id, created_at DESC) em direct_messages', async () => {
+      expect(await indexNames('direct_messages')).toContain('idx_direct_messages_conv_created_at');
     });
   });
 });

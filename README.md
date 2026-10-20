@@ -971,3 +971,13 @@ classDiagram
 ## Autor
 
 Desenvolvido por **Lucas Ramos Silva, Wssihélio Vasconcelos, Ruan Victor e Gabriel Lobão.** como parte da disciplina de Programação Web II.
+
+## Testes ponta a ponta (E2E)
+
+A suíte Playwright (`e2e/`) sobe sozinha um backend de teste (SQLite em memória, porta 3101) e o frontend (Vite, porta 5273) e cobre cadastro/login, chat em tempo real, histórico paginado (rolagem infinita e exportação), Directs com criptografia ponta a ponta e anexos (documento e áudio).
+
+```bash
+npm install
+npm run test:e2e:install   # baixa o Chromium (uma vez)
+npm run test:e2e
+```

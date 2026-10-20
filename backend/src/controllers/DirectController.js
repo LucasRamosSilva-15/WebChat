@@ -23,8 +23,9 @@ class DirectController {
 
   async listMessages(req, res) {
     try {
-      const messages = await DirectService.getConversationMessages(req.params.id, req.userId);
-      return res.status(200).json(messages);
+      const { limit, before, since } = req.query;
+      const data = await DirectService.getConversationMessages(req.params.id, req.userId, { limit, before, since });
+      return res.status(200).json(data);
     } catch (error) {
       return handleError(res, error);
     }
@@ -32,9 +33,27 @@ class DirectController {
 
   async sendMessage(req, res) {
     try {
-      const { content, imageUrl } = req.body;
-      const message = await DirectService.sendMessage(req.params.id, req.userId, content, imageUrl);
+      const { content, imageUrl, attachment } = req.body;
+      const message = await DirectService.sendMessage(req.params.id, req.userId, content, imageUrl, attachment);
       return res.status(201).json(message);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  }
+
+  async setPublicKey(req, res) {
+    try {
+      const result = await DirectService.setPublicKey(req.userId, req.body.publicKey);
+      return res.status(200).json(result);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  }
+
+  async getPublicKey(req, res) {
+    try {
+      const result = await DirectService.getPublicKey(req.userId, req.params.userId);
+      return res.status(200).json(result);
     } catch (error) {
       return handleError(res, error);
     }

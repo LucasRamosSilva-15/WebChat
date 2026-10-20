@@ -7,6 +7,11 @@
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "cd backend && npm run test",
     "test:frontend": "cd frontend && npm run test",
-    "docs:dev": "cd docs && npx -y mintlify@4.2.1051 dev"
+    "docs:dev": "cd docs && npx -y mintlify@4.2.1051 dev",
+    "test:e2e": "playwright test -c e2e/playwright.config.js",
+    "test:e2e:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
   }
 }
