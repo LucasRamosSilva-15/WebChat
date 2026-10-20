@@ -141,6 +141,7 @@ erDiagram
         text profileDesc
         string role "user | admin"
         string status "active | banned"
+        text public_key "nullable (JWK ECDH P-256)"
         datetime created_at
     }
 
@@ -158,17 +159,21 @@ erDiagram
     room_members {
         uuid room_id PK,FK
         uuid user_id PK,FK
-        string role "owner | admin | user"
+        string role "owner | moderator | user"
         datetime joined_at
     }
 
     messages {
         uuid id PK
-        uuid room_id FK
+        uuid room_id FK "idx_messages_room_created_at"
         uuid user_id FK
         text content
-        text image_url
-        datetime created_at
+        text image_url "nullable"
+        text attachment_url "nullable (Data URL)"
+        string attachment_type "nullable"
+        string attachment_name "nullable"
+        int attachment_size "nullable"
+        datetime created_at "idx_messages_room_created_at"
     }
 
     direct_conversations {
@@ -182,12 +187,16 @@ erDiagram
 
     direct_messages {
         uuid id PK
-        uuid conversation_id FK
+        uuid conversation_id FK "idx_direct_messages_conv_created_at"
         uuid sender_id FK
-        text content
-        text image_url
+        text content "plain ou envelope e2ee:v1:..."
+        text image_url "nullable"
+        text attachment_url "nullable"
+        string attachment_type "nullable"
+        string attachment_name "nullable"
+        int attachment_size "nullable"
         boolean read
-        datetime created_at
+        datetime created_at "idx_direct_messages_conv_created_at"
     }
 
     favorites {

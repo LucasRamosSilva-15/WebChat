@@ -2672,6 +2672,150 @@
           }
         }
       }
+    },
+    "/directs/keys": {
+      "put": {
+        "summary": "Registrar chave pública E2EE do usuário",
+        "description": "Registra a chave pública ECDH P-256 no formato JWK para viabilizar criptografia ponta a ponta nas conversas diretas. O servidor armazena unicamente a chave pública; a chave privada nunca sai do dispositivo do usuário.",
+        "tags": [
+          "Directs"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "publicKey"
+                ],
+                "properties": {
+                  "publicKey": {
+                    "$ref": "#/components/schemas/PublicKeyJwk"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chave pública registrada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Chave pública inválida ou contém material privado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/directs/keys/{userId}": {
+      "get": {
+        "summary": "Obter chave pública E2EE de um usuário",
+        "description": "Recupera a chave pública JWK registrada pelo usuário para derivação de segredo compartilhado via ECDH.",
+        "tags": [
+          "Directs"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "ID do usuário para consulta da chave pública",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chave pública recuperada com sucesso (ou null se o usuário ainda não ativou a criptografia).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "publicKey": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/PublicKeyJwk"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2819,6 +2963,11 @@
             "type": "string",
             "format": "date-time",
             "example": "2026-10-14T18:00:00.000Z"
+          },
+          "public_key": {
+            "type": "string",
+            "nullable": true,
+            "description": "Chave pública E2EE do usuário em formato JWK ECDH P-256"
           }
         }
       },
@@ -3051,6 +3200,9 @@
             "format": "uri",
             "description": "URL de imagem anexada",
             "example": "https://storage.skyripple.com/uploads/diagram.png"
+          },
+          "attachment": {
+            "$ref": "#/components/schemas/AttachmentInput"
           }
         }
       },
@@ -3107,6 +3259,22 @@
                 "nullable": true
               }
             }
+          },
+          "attachment_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachment_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachment_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachment_size": {
+            "type": "integer",
+            "nullable": true
           }
         }
       },
@@ -3522,6 +3690,22 @@
           },
           "sender": {
             "$ref": "#/components/schemas/PublicUser"
+          },
+          "attachment_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachment_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachment_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "attachment_size": {
+            "type": "integer",
+            "nullable": true
           }
         }
       },
@@ -3540,6 +3724,9 @@
             "type": "string",
             "nullable": true,
             "example": null
+          },
+          "attachment": {
+            "$ref": "#/components/schemas/AttachmentInput"
           }
         }
       },
@@ -3705,6 +3892,61 @@
           "meta": {
             "type": "object",
             "nullable": true
+          }
+        }
+      },
+      "PublicKeyJwk": {
+        "type": "object",
+        "required": [
+          "kty",
+          "crv",
+          "x",
+          "y"
+        ],
+        "description": "Chave pública ECDH P-256 serializada no padrão JWK para criptografia E2EE ponta a ponta.",
+        "properties": {
+          "kty": {
+            "type": "string",
+            "example": "EC"
+          },
+          "crv": {
+            "type": "string",
+            "example": "P-256"
+          },
+          "x": {
+            "type": "string",
+            "description": "Coordenada X em base64url"
+          },
+          "y": {
+            "type": "string",
+            "description": "Coordenada Y em base64url"
+          }
+        }
+      },
+      "AttachmentInput": {
+        "type": "object",
+        "required": [
+          "url",
+          "type",
+          "name"
+        ],
+        "description": "Anexo multimídia (áudio gravado ou documento até 5MB) serializado como Data URL base64.",
+        "properties": {
+          "url": {
+            "type": "string",
+            "example": "data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC..."
+          },
+          "type": {
+            "type": "string",
+            "example": "audio/webm"
+          },
+          "name": {
+            "type": "string",
+            "example": "audio-2026-10-19.webm"
+          },
+          "size": {
+            "type": "integer",
+            "example": 524288
           }
         }
       }

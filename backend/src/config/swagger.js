@@ -56,7 +56,30 @@ const swaggerOptions = {
             profileDesc: { type: 'string', nullable: true },
             role: { type: 'string', enum: ['user', 'admin'] },
             status: { type: 'string', enum: ['active', 'banned'] },
+            public_key: { type: 'string', nullable: true, description: 'Chave pública E2EE do usuário em formato JWK ECDH P-256' },
             created_at: { type: 'string', format: 'date-time' }
+          }
+        },
+        PublicKeyJwk: {
+          type: 'object',
+          required: ['kty', 'crv', 'x', 'y'],
+          description: 'Chave pública ECDH P-256 serializada em formato JWK',
+          properties: {
+            kty: { type: 'string', example: 'EC' },
+            crv: { type: 'string', example: 'P-256' },
+            x: { type: 'string' },
+            y: { type: 'string' }
+          }
+        },
+        AttachmentInput: {
+          type: 'object',
+          description: 'Estrutura de anexo multimídia (áudio, imagem ou documento) em base64 Data URL',
+          required: ['url', 'type', 'name'],
+          properties: {
+            url: { type: 'string', example: 'data:audio/webm;base64,GkXfo59ChoEBQveBAULygQRC...' },
+            type: { type: 'string', example: 'audio/webm' },
+            name: { type: 'string', example: 'audio-2026-10-19.webm' },
+            size: { type: 'integer', example: 1048576 }
           }
         },
         Room: {
@@ -90,6 +113,10 @@ const swaggerOptions = {
             user_id: { type: 'string', format: 'uuid' },
             content: { type: 'string' },
             image_url: { type: 'string', nullable: true },
+            attachment_url: { type: 'string', nullable: true },
+            attachment_type: { type: 'string', nullable: true },
+            attachment_name: { type: 'string', nullable: true },
+            attachment_size: { type: 'integer', nullable: true },
             created_at: { type: 'string', format: 'date-time' }
           }
         },
@@ -111,6 +138,10 @@ const swaggerOptions = {
             sender_id: { type: 'string', format: 'uuid' },
             content: { type: 'string' },
             image_url: { type: 'string', nullable: true },
+            attachment_url: { type: 'string', nullable: true },
+            attachment_type: { type: 'string', nullable: true },
+            attachment_name: { type: 'string', nullable: true },
+            attachment_size: { type: 'integer', nullable: true },
             read: { type: 'boolean' },
             created_at: { type: 'string', format: 'date-time' }
           }

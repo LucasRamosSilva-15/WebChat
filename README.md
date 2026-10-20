@@ -29,12 +29,18 @@ O SkyRipple é uma aplicação web de chat em tempo real onde os usuários podem
 
 O SkyRipple funciona como um ponto de encontro virtual. De forma simples, ele permite:
 
-* Criar uma conta e fazer login;
-* Visualizar e favoritar diferentes salas de conversa;
-* Entrar em salas e conversar em tempo real com outras pessoas;
-* Personalizar o seu perfil (nome e recado/status);
-* Usar o sistema de busca interna do chat para encontrar mensagens;
-* Navegar de forma confortável tanto no Modo Claro quanto no Modo Escuro (com o visual dos botões e painéis se adaptando).
+* Criar conta com verificação em duas etapas (código numérico OTP);
+* Recuperar acesso à conta via código de verificação numérico de 8 dígitos enviado ao e-mail;
+* Visualizar, criar, moderar e favoritar diferentes salas de bate-papo temáticas;
+* Entrar em salas e conversar em tempo real com histórico paginado por cursor (`before`, `since` e `limit`);
+* Conversar em canais diretos privados 1x1 (Directs) protegidos por Criptografia Ponta a Ponta (E2EE - ECDH P-256 e AES-GCM);
+* Gravar e reproduzir mensagens de áudio nativas no navegador e compartilhar arquivos e documentos em anexo (até 5 MB);
+* Personalizar o perfil completo (foto de exibição, avatar SVG dinâmico, nome público, recado e biografia);
+* Usar o sistema de busca textual interna do chat para encontrar mensagens e histórico em tempo real;
+* Receber e gerenciar notificações instantâneas com suporte a leitura individual ou em lote;
+* Painel administrativo exclusivo para gestão de denúncias, banimentos, monitoramento e métricas globais (`/stats`);
+* Navegar com suporte completo a Modo Claro e Modo Escuro com controles de cor e estética Web 2.0 Gloss / Skeuomórfica refinada;
+* Experiência responsiva para Desktop e aplicação móvel dedicada (Mobile SPA).
 
 ## Qual problema ele resolve
 
@@ -164,17 +170,21 @@ npm run test:backend && npm run test:frontend
 * [x] Layout responsivo e menus modais
 * [x] Envio de imagens e anexos com compressão no cliente
 * [x] Refinamentos na persistência e histórico de mensagens
-* [x] Testes automatizados (134 testes no backend com Jest/Supertest e 68 testes no frontend com Vitest — 202 testes no total)
+* [x] Testes automatizados (182 testes no backend com Jest/Supertest e 128 testes no frontend com Vitest — 310 testes no total 100% aprovados)
 * [x] Documentação interativa da API (Swagger UI local/produção e Mintlify)
 * [x] Endurecimento de Segurança CIS Controls IG1 & OWASP ASVS (Rate Limiting rigoroso, Helmet com HSTS, Sanitização XSS, Auditoria de Segurança)
 * [x] Mensagens Diretas (Directs / Chat Privado) com histórico persistido e conversas individuais
+* [x] Criptografia Ponta-a-Ponta (*E2EE*) em conversas diretas com chaves assimétricas (ECDH P-256 + AES-GCM-256) via Web Crypto API
 * [x] Central de Notificações em tempo real com contador de não-lidas e sincronização via WebSockets
 * [x] Sistema de Dono de Sala e Moderação Hierárquica (Promover/Rebaixar moderadores, Expulsar participantes, Transferir liderança da sala e Moderação de mensagens)
 * [x] Edição de dados da sala (nome e descrição) pelo Dono da Sala
 * [x] Sistema de denúncias (Reports) e feedback integrado
 * [x] Painel Administrativo centralizado (Admin Dashboard)
-* [ ] Histórico com paginação baseada em cursor (*Cursor-Based Pagination*) (Próximo passo)
-* [ ] Criptografia Ponta-a-Ponta (*E2EE*) com chaves assimétricas via Web Crypto API (Próximo passo)
+* [x] Histórico com paginação baseada em cursor (*Cursor-Based Pagination* com `before`, `since` e `limit`)
+* [x] Gravação nativa de áudio no navegador e compartilhamento de anexos multimídia (documentos e imagens até 5 MB)
+* [x] Verificação de código numérico OTP em duas etapas no cadastro (6 dígitos) e recuperação de senha (8 dígitos)
+* [x] Rotina resiliente de logout com timeout defensivo de 2s e expurgo estrito de chaves de sessão
+* [x] Aplicação móvel dedicada (Mobile SPA) com gestos táteis e layout ergonômico
 
 ## Estrutura do projeto
 
@@ -251,18 +261,21 @@ npm run test:backend && npm run test:frontend
 │   │   └── utils/
 │   │       ├── auditLogger.js          # Auditoria de segurança estruturada
 │   │       └── security.js             # Criptografia, JWT e sanitização XSS
-│   ├── tests/                          # 15 suítes e 134 testes Jest/Supertest
+│   ├── tests/                          # 18 suítes e 182 testes Jest/Supertest
+│   │   ├── attachments.test.js
 │   │   ├── authMiddleware.test.js
 │   │   ├── chat.test.js
 │   │   ├── controllers.test.js
 │   │   ├── directs.test.js
 │   │   ├── e2e-flow.test.js
+│   │   ├── e2ee-keys.test.js
 │   │   ├── favorites.test.js
 │   │   ├── feedback.test.js
 │   │   ├── helpers.js
 │   │   ├── message.test.js
 │   │   ├── models.test.js
 │   │   ├── oauthSync.test.js
+│   │   ├── pagination.test.js
 │   │   ├── report.test.js
 │   │   ├── room.test.js
 │   │   ├── roomModeration.test.js
@@ -280,6 +293,7 @@ npm run test:backend && npm run test:frontend
 │   │   │   ├── ChatSidebar.jsx         # Lista de conversas e salas no chat
 │   │   │   ├── Navbar.jsx              # Barra superior e navegação
 │   │   │   ├── NotificationsDropdown.jsx # Dropdown de notificações em tempo real
+│   │   │   ├── OtpCodeInput.jsx        # Seletor numérico de slots OTP
 │   │   │   ├── UserAvatar.jsx          # Avatar com indicador de presença
 │   │   │   └── ...
 │   │   ├── context/
@@ -294,14 +308,20 @@ npm run test:backend && npm run test:frontend
 │   │   │   ├── Settings.jsx            # Configurações do perfil
 │   │   │   └── ...
 │   │   ├── services/
-│   │   │   └── api.js                  # Cliente fetch autenticado
+│   │   │   ├── api.js                  # Cliente fetch autenticado
+│   │   │   ├── attachments.js          # Conversão de áudio e arquivos
+│   │   │   └── e2ee.js                 # Criptografia Web Crypto ECDH/AES-GCM
 │   │   ├── styles/
 │   │   │   ├── skeuo.css               # Tokens de design Web 2.0 Gloss
 │   │   │   └── chat.css
-│   │   ├── tests/                      # 13 suítes e 68 testes Vitest
+│   │   ├── tests/                      # 19 suítes e 128 testes Vitest
+│   │   │   ├── attachments.test.jsx
+│   │   │   ├── auth.test.jsx
 │   │   │   ├── chat.test.jsx
-│   │   │   ├── Directs.test.jsx
-│   │   │   ├── MembersSidebar.test.jsx
+│   │   │   ├── directs-e2ee.test.jsx
+│   │   │   ├── e2ee.test.js
+│   │   │   ├── logout.test.jsx
+│   │   │   ├── otp.test.jsx
 │   │   │   └── ...
 │   │   ├── App.jsx                     # Rotas e layout principal
 │   │   ├── socket.js                   # Instância global do Socket.IO Client
@@ -341,8 +361,8 @@ A aplicação web é composta por 18 telas com design skeuomórfico reativo:
 ## Status atual
 
 O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, estabilidade e conformidade arquitetural:
-* **Frontend**: Totalmente integrado via REST e WebSockets, contando com interface skeuomórfica refinada (Modo Claro/Escuro), chat em salas públicas e privadas, mensagens diretas (Directs), central de notificações em tempo real, painel administrativo e interface tátil de moderação de sala (promover/rebaixar, expulsar participantes e transferir dono).
-* **Backend**: Arquitetura profissional em camadas (Controllers, Services, Repositories e Models ORM com Sequelize e Supabase PostgreSQL), endurecimento de segurança baseado nos padrões **CIS Controls IG1 & OWASP ASVS**, logs estruturados de auditoria, suíte robusta com 134 testes automatizados no backend e 68 testes no frontend (202 testes no total) 100% aprovados e documentação Swagger 3.0 interativa.
+* **Frontend**: Totalmente integrado via REST e WebSockets, contando com interface skeuomórfica refinada (Modo Claro/Escuro), chat em salas públicas e privadas, mensagens diretas com E2EE (Directs), fluxo de cadastro e recuperação com código OTP, central de notificações em tempo real, painel administrativo e interface tátil de moderação de sala (promover/rebaixar, expulsar participantes e transferir dono).
+* **Backend**: Arquitetura profissional em camadas (Controllers, Services, Repositories e Models ORM com Sequelize e Supabase PostgreSQL), auto-migração resiliente de esquema, endurecimento de segurança baseado nos padrões **CIS Controls IG1 & OWASP ASVS**, logs estruturados de auditoria, suíte robusta com **182 testes automatizados no backend e 128 testes no frontend (310 testes no total) 100% aprovados** e documentação Swagger 3.0 interativa.
 
 ## Link da documentação Swagger
 
@@ -352,20 +372,29 @@ O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, 
 
 ### Cobertura da Documentação OpenAPI 3.0
 A documentação interativa via Swagger UI reflete 100% dos contratos da API:
-* **38 Rotas Documentadas** categorizadas em 9 tags (`Auth`, `Rooms`, `Messages`, `Directs`, `Notifications`, `Favorites`, `Reports`, `Feedbacks`, `Admin`).
-* **11 Schemas Canônicos**: `User`, `Room`, `RoomMember`, `Message`, `DirectConversation`, `DirectMessage`, `Notification`, `Favorite`, `Report`, `Feedback` e `ErrorResponse`.
+* **40 Rotas Documentadas** categorizadas em 9 tags (`Auth`, `Rooms`, `Messages`, `Directs`, `Notifications`, `Favorites`, `Reports`, `Feedbacks`, `Admin`).
+* **13 Schemas Canônicos**: `User`, `PublicKeyJwk`, `AttachmentInput`, `Room`, `RoomMember`, `Message`, `DirectConversation`, `DirectMessage`, `Notification`, `Favorite`, `Report`, `Feedback` e `ErrorResponse`.
 * **Autenticação Interativa**: Suporte a autorização no Swagger UI com token JWT (`BearerAuth`) e chave administrativa (`AdminAuth`).
 
 ## Link da documentação Mintlify
 
 <https://lucas-ramos.mintlify.site/guides/overview>
 
+## Funcionalidades Recentes & Entregas Concluídas
+
+* **Criptografia Ponta-a-Ponta (E2EE)**: Criptografia assimétrica ponta a ponta no cliente para conversas diretas 1x1 via Web Crypto API (par de chaves ECDH P-256, chave AES-GCM-256 bits, envelope cifrado `e2ee:v1:...` e armazenamento cego no servidor).
+* **Paginação por Cursor no Histórico**: Implementação de parâmetros `before`, `since` e `limit` com índices compostos B-Tree (`idx_messages_room_created_at`, `idx_direct_messages_conv_created_at`) para rolagem infinita instantânea em salas e directs.
+* **Mídias e Anexos Multimídia**: Suporte nativo à gravação e reprodução de áudio no navegador e compartilhamento de documentos e imagens em anexo (até 5 MB) em base64 Data URL.
+* **Verificação de Código OTP**: Fluxo de cadastro em duas etapas com código numérico OTP de 6 dígitos e recuperação de senha com código numérico de 8 dígitos integrado ao Supabase.
+* **Resiliência de Logout**: Rotina com timeout defensivo de 2s com `Promise.race`, encerramento de WebSocket, expurgo estrito de chaves de sessão locais e emissão do evento global `profileUpdated`.
+* **Cobertura Completa de Testes**: Suíte de 310 testes automatizados (unitários, integração e E2E com Playwright) com 100% de aprovação.
+
 ## Próximos passos
 
-* **Paginação por Cursor no Histórico**: Implementar parâmetros `before`/`since`/`limit` com índices B-Tree sobre mensagens para rolagem infinita escalável em salas com milhões de registros.
-* **Criptografia Ponta-a-Ponta (E2EE)**: Implementação de criptografia assimétrica ponta-a-ponta no cliente para canais privados (Directs) através da Web Crypto API.
-* **Mídias e Arquivos**: Suporte nativo a envio e pré-visualização de áudio gravado e documentos em anexo.
-* **Testes End-to-End (E2E)**: Criação de suíte de testes de ponta a ponta com Playwright automatizando a jornada completa do usuário.
+* **Chamadas de Voz e Vídeo P2P (WebRTC)**: Estabelecer sinalização via Socket.io para comunicação de áudio e vídeo de baixa latência ponto a ponto.
+* **Notificações Push Nativas (Web Push & Service Workers)**: Alertar usuários sobre novas mensagens mesmo com o navegador fechado ou em segundo plano.
+* **Sincronização Offline com IndexedDB**: Cache local de histórico e mensagens pendentes para envio automático ao restabelecer conectividade.
+* **Reações Rápidas com Emojis**: Sistema tátil de reações em balões de mensagens com sincronização em tempo real na sala.
 
 ## Diagramas Arquiteturais & de Modelagem
 
@@ -373,10 +402,13 @@ A documentação interativa via Swagger UI reflete 100% dos contratos da API:
 
 ```mermaid
 graph TD
-    subgraph ClientLayer["Camada de Cliente (Frontend SPA)"]
-        UI["React 19 + Vite Application"]
+    subgraph ClientLayer["Camada de Cliente (Frontend SPA & Mobile)"]
+        UI["React 19 + Vite (Web & Mobile)"]
         Skeuo["Skeuomorphic & Frutiger Aero Gloss Design System"]
-        State["React Context & Hooks"]
+        State["React Context & State Management"]
+        E2EEEngine["Módulo E2EE Web Crypto (ECDH P-256 + AES-GCM)"]
+        MediaEngine["Gravador de Áudio & Anexos (attachments.js)"]
+        OTPEngine["Verificação OTP (OtpCodeInput.jsx)"]
         SocketClient["Socket.io Client (socket.js)"]
         HTTPClient["Fetch API (services/api.js)"]
     end
@@ -387,8 +419,8 @@ graph TD
         
         subgraph Middlewares["Middlewares & Segurança"]
             Helmet["Helmet (HSTS, Headers Seguros)"]
-            Cors["CORS Estrito (src/config/cors.js)"]
-            RateLimit["Rate Limiting (Global & Auth)"]
+            Cors["CORS Estrito & Dinâmico (src/config/cors.js)"]
+            RateLimit["Rate Limiting (Global, Auth & Mensagens)"]
             AuthGuard["JWT Auth & Admin Guard"]
             SocketAuth["Handshake JWT Auth (socketAuth.js)"]
         end
@@ -397,6 +429,8 @@ graph TD
     subgraph BusinessLayer["Camada de Aplicação & Regras de Negócio"]
         Controllers["Controladores REST (src/controllers)"]
         Services["Serviços de Domínio (src/services)"]
+        CursorEngine["Paginação por Cursor (before, since, limit)"]
+        KeyExchange["Acordo de Chaves E2EE (/directs/keys)"]
         SocketHandlers["Manipuladores Socket (chatHandler.js & presence.js)"]
         PresenceMap["Mapa de Presença em Memória (roomPresence)"]
     end
@@ -404,24 +438,31 @@ graph TD
     subgraph PersistenceLayer["Camada de Persistência & Dados"]
         Repos["Repositórios de Dados (src/repositories)"]
         ORM["Sequelize ORM (src/models)"]
-        DB["PostgreSQL / Supabase (RLS Centralizado)"]
+        AutoMigrate["Auto-Migração Resiliente de Esquema"]
+        DB["PostgreSQL / Supabase (Índices B-Tree, public_key, attachment_*)"]
         MemDB["SQLite em Memória (Ambiente de Testes)"]
     end
 
     UI --> HTTPClient
     UI --> SocketClient
+    UI --> E2EEEngine
+    UI --> MediaEngine
+    UI --> OTPEngine
     HTTPClient --> Helmet --> Cors --> RateLimit --> AuthGuard --> Controllers
     SocketClient --> SocketAuth --> Socket_Server --> SocketHandlers
     SocketHandlers --> PresenceMap
     Controllers --> Services
+    Controllers --> CursorEngine
+    Controllers --> KeyExchange
     SocketHandlers --> Services
     Services --> Repos
     Repos --> ORM
-    ORM --> DB
+    ORM --> AutoMigrate
+    AutoMigrate --> DB
     ORM -.-> MemDB
 ```
 
-### 2. Diagrama de Fluxo de Mensageria em Tempo Real (WebSockets & Presença)
+### 2. Diagrama de Fluxo de Mensageria em Tempo Real & Criptografia E2EE
 
 ```mermaid
 sequenceDiagram
@@ -430,10 +471,11 @@ sequenceDiagram
     participant SocketGW as Gateway Socket.io (src/sockets)
     participant Presence as Gestor de Presença (presence.js)
     participant ChatHdl as Chat Handler (chatHandler.js)
-    participant Service as MessageService
+    participant Service as MessageService / DirectService
     participant DB as PostgreSQL (Supabase)
     actor Bob as Usuário (Bob)
 
+    Note over Alice,SocketGW: Handshake e Presença
     Alice->>SocketGW: Handshake com JWT (auth.token)
     SocketGW->>SocketGW: Validação de Token (socketAuth.js)
     SocketGW-->>Alice: Conexão Estabelecida
@@ -442,44 +484,77 @@ sequenceDiagram
     Presence-->>Alice: roomPresenceUpdated { onlineUsers, count }
     Presence-->>Bob: roomPresenceUpdated { onlineUsers, count }
 
-    Alice->>ChatHdl: send_message { room, content, imageUrl }
-    ChatHdl->>ChatHdl: Verifica Rate Limit (janela de 500ms)
-    ChatHdl->>Service: Valida e higieniza conteúdo (Anti-XSS)
-    Service->>DB: Persiste Mensagem no Banco
-    DB-->>Service: Mensagem Salva (UUID, Timestamp)
-    Service-->>ChatHdl: Objeto completo da Mensagem
+    Note over Alice,Bob: Cenário A: Mensagem com Anexo em Sala Temática
+    Alice->>ChatHdl: send_message { room, content, attachment: { url, type, name, size } }
+    ChatHdl->>ChatHdl: Rate limit (janela de 500ms) e validação de tamanho (<= 5MB)
+    ChatHdl->>Service: Sanitiza texto e valida metadados do anexo
+    Service->>DB: INSERT INTO messages (content, attachment_url, attachment_type, ...)
+    DB-->>Service: Mensagem persistida com UUID e Timestamp
+    Service-->>ChatHdl: Mensagem completa
     ChatHdl-->>Alice: receive_message (Broadcast da sala)
     ChatHdl-->>Bob: receive_message (Broadcast da sala)
+
+    Note over Alice,Bob: Cenário B: Mensagem Direta Cifrada Ponta a Ponta (E2EE)
+    Alice->>Alice: Cifra texto e anexo via Web Crypto API (AES-GCM-256)
+    Alice->>SocketGW: send_direct_message { conversationId, content: "e2ee:v1:iv:ciphertext" }
+    SocketGW->>Service: Registra envelope cifrado no banco (servidor cego)
+    Service->>DB: INSERT INTO direct_messages (content: "e2ee:v1:...")
+    DB-->>Service: Salvo
+    SocketGW-->>Bob: receive_direct_message { content: "e2ee:v1:iv:ciphertext" }
+    Bob->>Bob: Decifra o envelope no navegador usando sua chave privada ECDH
 ```
 
-### 3. Diagrama de Autenticação Híbrida & Políticas de Acesso (RBAC)
+### 3. Diagrama de Autenticação Híbrida, Recuperação de Senha & Fluxo OTP
 
 ```mermaid
 flowchart TD
-    Start(["Requisição de Autenticação"]) --> Mode{"Origem do Acesso"}
+    Start(["Requisição de Autenticação"]) --> Mode{"Fluxo Selecionado"}
     
+    Mode -->|"Cadastro em 2 Etapas"| FormRegister["POST /api/auth/register"]
+    Mode -->|"Recuperação de Senha"| FormForgot["POST /api/auth/forgot-password"]
     Mode -->|"Credenciais Tradicionais"| FormLogin["POST /api/auth/login"]
     Mode -->|"Google OAuth"| OAuthSync["POST /api/auth/oauth-sync"]
     Mode -->|"Administrador"| AdminAuth["POST /api/admin/auth"]
+    Mode -->|"Sair da Conta (Logout)"| LogoutFlow["Rotina Resiliente de Logout"]
+
+    FormRegister --> SendRegOTP["Supabase dispara OTP numérico de 6 dígitos ao e-mail"]
+    SendRegOTP --> InputRegOTP["Entrada de Código em 6 slots (OtpCodeInput)"]
+    InputRegOTP --> VerifyRegOTP{"Validação supabase.auth.verifyOtp"}
+    VerifyRegOTP -->|"Incorreto / Expirado"| RegError["Exibe erro e habilita reenvio com timer de 60s"]
+    VerifyRegOTP -->|"Aprovado"| UpsertReg["Persiste usuário com perfil ativo"]
+
+    FormForgot --> SendForgotOTP["Supabase dispara OTP numérico de 8 dígitos ao e-mail"]
+    SendForgotOTP --> InputForgotOTP["Entrada de Código em 8 slots (OtpCodeInput length=8)"]
+    InputForgotOTP --> VerifyForgotOTP{"Validação supabase.auth.verifyOtp"}
+    VerifyForgotOTP -->|"Incorreto / Expirado"| ForgotError["Exibe erro e habilita reenvio com timer de 60s"]
+    VerifyForgotOTP -->|"Aprovado"| StepNewPass["Formulário de Nova Senha (supabase.auth.updateUser)"]
+    StepNewPass --> PasswordUpdated["Senha atualizada com sucesso"]
 
     FormLogin --> RateCheck{"Tentativas consecutivas?"}
-    RateCheck -->|"5 tentativas incorretas"| Lockout["Bloqueio Temporário 15 min (429 Too Many Requests)"]
+    RateCheck -->|"Excesso de falhas"| Lockout["Bloqueio Temporário 15 min (429 Too Many Requests)"]
     RateCheck -->|"Dentro do limite"| VerifyHash["Verificação Argon2id / Bcrypt"]
     VerifyHash -->|"Senha Incorreta"| DummyTiming["Dummy Hash (Anti-Enumeração) -> 401 Unauthorized"]
     VerifyHash -->|"Sucesso"| AutoRehash["Auto-rehash transparente para Argon2id"]
     
     OAuthSync --> Normalize["Normaliza Nome, Foto e E-mail"]
-    Normalize --> UpsertUser["Sincroniza Perfil (password = null)"]
+    Normalize --> UpsertUser["Sincroniza Perfil no Banco (password = null)"]
     
     AdminAuth --> TimingSafe["crypto.timingSafeEqual com ADMIN_SECRET_KEY"]
     TimingSafe -->|"Válido"| IssueAdminJWT["Emite JWT Admin (TTL: 8h, role: admin)"]
     TimingSafe -->|"Inválido"| RejectAdmin["401 Unauthorized"]
 
-    AutoRehash --> IssueUserJWT["Emite JWT Usuário (TTL: 7d, role: user)"]
+    UpsertReg --> IssueUserJWT["Emite JWT Usuário (TTL: 7d, role: user)"]
+    AutoRehash --> IssueUserJWT
     UpsertUser --> IssueUserJWT
 
-    IssueUserJWT --> AccessApp["Acesso a Salas, Chat, Directs & Favoritos"]
+    IssueUserJWT --> AccessApp["Acesso a Salas, Directs E2EE, Anexos & Favoritos"]
     IssueAdminJWT --> AccessAdmin["Acesso ao Console /admin e Métricas /stats"]
+
+    LogoutFlow --> TimeoutRace["Promise.race (signOut com timeout de 2000ms)"]
+    TimeoutRace --> CleanSession["Expurgo estrito de tokens e chat_* no localStorage/sessionStorage"]
+    CleanSession --> DisconnectSocket["socket.disconnect() e removeAuthToken()"]
+    DisconnectSocket --> DispatchEvent["Disparo do evento global profileUpdated"]
+    DispatchEvent --> RedirectLogin["Redirecionamento limpo para /login"]
 ```
 
 ### 4. Diagrama Entidade-Relacionamento (DER)
@@ -506,10 +581,11 @@ erDiagram
         string email UK
         string password "nullable (OAuth)"
         string displayName
-        string profilePhoto
-        text profileDesc
+        string profilePhoto "nullable"
+        text profileDesc "nullable"
         string role "user | admin"
         string status "active | banned"
+        text public_key "nullable (JWK ECDH P-256)"
         datetime created_at
     }
 
@@ -517,9 +593,9 @@ erDiagram
         uuid id PK
         string name
         string type "public | private"
-        text description
-        string category
-        text image_url
+        text description "nullable"
+        string category "nullable"
+        text image_url "nullable"
         uuid owner_id FK "created_by"
         datetime created_at
     }
@@ -533,40 +609,49 @@ erDiagram
 
     MESSAGES {
         uuid id PK
-        uuid room_id FK
+        uuid room_id FK "idx_messages_room_created_at"
         uuid user_id FK
         text content
-        text image_url
-        datetime created_at
+        text image_url "nullable"
+        text attachment_url "nullable (Data URL)"
+        string attachment_type "nullable"
+        string attachment_name "nullable"
+        int attachment_size "nullable"
+        datetime created_at "idx_messages_room_created_at"
     }
 
     DIRECT_CONVERSATIONS {
         uuid id PK
         uuid user1_id FK
         uuid user2_id FK
-        text last_message
-        datetime last_message_at
+        text last_message "nullable"
+        datetime last_message_at "nullable"
         datetime created_at
     }
 
     DIRECT_MESSAGES {
         uuid id PK
-        uuid conversation_id FK
+        uuid conversation_id FK "idx_direct_messages_conv_created_at"
         uuid sender_id FK
-        text content
-        text image_url
-        datetime created_at
+        text content "plain ou envelope e2ee:v1:..."
+        text image_url "nullable"
+        text attachment_url "nullable"
+        string attachment_type "nullable"
+        string attachment_name "nullable"
+        int attachment_size "nullable"
+        boolean read
+        datetime created_at "idx_direct_messages_conv_created_at"
     }
 
     NOTIFICATIONS {
         uuid id PK
         uuid user_id FK
-        string type "system | mention | direct | alert"
+        string type "system | message | invite | reaction | info"
         string title
         text content
-        string link
+        string link "nullable"
         boolean read
-        json data
+        json data "nullable"
         datetime created_at
     }
 
@@ -576,8 +661,8 @@ erDiagram
         string item_type "room | conversation"
         string item_id
         string title
-        text content
-        json meta
+        text content "nullable"
+        json meta "nullable"
         datetime created_at
     }
 
@@ -594,7 +679,7 @@ erDiagram
         uuid id PK
         uuid user_id FK
         text message "comment"
-        json images
+        json images "nullable"
         string status "pending | reviewed | resolved"
         datetime created_at
     }
@@ -643,6 +728,8 @@ classDiagram
         +sendMessage(req, res)
         +removeConversation(req, res)
         +listUsers(req, res)
+        +setPublicKey(req, res)
+        +getPublicKey(req, res)
     }
 
     class NotificationController {
@@ -706,8 +793,8 @@ classDiagram
     }
 
     class MessageService {
-        +sendMessage(data) Message
-        +getMessagesByRoom(roomId, options) List~Message~
+        +sendMessage(roomId, userId, content, imageUrl, attachment) Message
+        +getMessagesByRoom(roomId, options) Object
         +searchMessages(roomId, query) List~Message~
         +deleteMessage(id, userId, isAdmin) boolean
     }
@@ -715,10 +802,12 @@ classDiagram
     class DirectService {
         +listConversations(userId) List~DirectConversation~
         +getOrCreateConversation(user1, user2) DirectConversation
-        +getConversationMessages(convId, userId, options) List~DirectMessage~
+        +getConversationMessages(convId, userId, options) Object
         +sendMessage(data) DirectMessage
         +deleteConversation(convId, userId) boolean
         +searchAvailableUsers(query, excludeId) List~User~
+        +setPublicKey(userId, jwkKey) boolean
+        +getPublicKey(userId) Object
     }
 
     class NotificationService {
@@ -843,6 +932,7 @@ classDiagram
         +String profileDesc
         +String role
         +String status
+        +String public_key
         +Date created_at
     }
 
@@ -870,6 +960,10 @@ classDiagram
         +UUID user_id
         +String content
         +String image_url
+        +String attachment_url
+        +String attachment_type
+        +String attachment_name
+        +Integer attachment_size
         +Date created_at
     }
 
@@ -888,6 +982,11 @@ classDiagram
         +UUID sender_id
         +String content
         +String image_url
+        +String attachment_url
+        +String attachment_type
+        +String attachment_name
+        +Integer attachment_size
+        +Boolean read
         +Date created_at
     }
 
@@ -966,6 +1065,51 @@ classDiagram
     FavoriteRepository ..> Favorite
     ReportRepository ..> Report
     FeedbackRepository ..> Feedback
+```
+
+### 6. Diagrama de Troca de Chaves & Cifragem Ponta a Ponta (E2EE)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Alice as Navegador de Alice (Remetente)
+    participant API as Backend REST (/api/directs)
+    participant DB as Banco PostgreSQL (Supabase)
+    participant WS as Socket.io Broker
+    actor Bob as Navegador de Bob (Destinatário)
+
+    Note over Alice,Bob: Fase 1: Acordo e Registro de Chaves Públicas ECDH (P-256)
+    Alice->>Alice: Gera par de chaves ECDH P-256 (Web Crypto API)
+    Alice->>Alice: Armazena chave privada no IndexedDB/LocalStorage local
+    Alice->>API: PUT /api/directs/keys { publicKey: JWK_Alice }
+    API->>DB: UPDATE users SET public_key = JWK_Alice WHERE id = Alice.id
+    
+    Bob->>Bob: Gera par de chaves ECDH P-256 (Web Crypto API)
+    Bob->>Bob: Armazena chave privada no IndexedDB/LocalStorage local
+    Bob->>API: PUT /api/directs/keys { publicKey: JWK_Bob }
+    API->>DB: UPDATE users SET public_key = JWK_Bob WHERE id = Bob.id
+
+    Note over Alice,Bob: Fase 2: Derivação de Segredo Compartilhado e Cifragem Local
+    Alice->>API: GET /api/directs/keys/{bobId}
+    API->>DB: SELECT public_key FROM users WHERE id = bobId
+    DB-->>API: Retorna JWK_Bob
+    API-->>Alice: { userId: bobId, publicKey: JWK_Bob }
+    
+    Alice->>Alice: deriveKey(ECDH Alice_PrivKey + Bob_PubKey) via HKDF
+    Alice->>Alice: Produz chave simétrica AES-GCM (256 bits)
+    Alice->>Alice: Gera IV aleatório de 12 bytes
+    Alice->>Alice: Cifra payload { text, attachment } com AES-GCM
+    Alice->>Alice: Empacota no envelope 'e2ee:v1:IV_Base64:Ciphertext_Base64'
+
+    Note over Alice,Bob: Fase 3: Transmissão Cega pelo Servidor e Decifragem
+    Alice->>WS: send_direct_message { conversationId, content: "e2ee:v1:..." }
+    WS->>DB: INSERT INTO direct_messages (content: "e2ee:v1:...")
+    WS-->>Bob: receive_direct_message { content: "e2ee:v1:..." }
+
+    Bob->>Bob: deriveKey(ECDH Bob_PrivKey + Alice_PubKey) via HKDF
+    Bob->>Bob: Produz a mesma chave simétrica AES-GCM (256 bits)
+    Bob->>Bob: Decifra o envelope com o IV contido no cabeçalho da mensagem
+    Bob->>Bob: Renderiza mensagem e anexo em texto claro na tela
 ```
 
 ## Autor

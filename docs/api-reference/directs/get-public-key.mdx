@@ -1,0 +1,6 @@
+---
+title: "Obter Chave Pública de Usuário"
+openapi: "GET /directs/keys/{userId}"
+---
+
+Obtém a chave pública ECDH P-256 de um usuário específico para realização do acordo de chaves criptográficas ponta a ponta (E2EE) no canal direto. Retorna `publicKey: null` caso o usuário ainda não tenha registrado sua chave.

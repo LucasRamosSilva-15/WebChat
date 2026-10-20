@@ -38,6 +38,19 @@ const initModels = async () => {
     console.log('[Sequelize] Conexão com o banco de dados estabelecida com sucesso.');
     if (process.env.NODE_ENV !== 'test') {
       await sequelize.sync();
+      try {
+        await sequelize.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS public_key TEXT;');
+        await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachment_url TEXT;');
+        await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachment_type VARCHAR(100);');
+        await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachment_name VARCHAR(255);');
+        await sequelize.query('ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachment_size INTEGER;');
+        await sequelize.query('ALTER TABLE direct_messages ADD COLUMN IF NOT EXISTS attachment_url TEXT;');
+        await sequelize.query('ALTER TABLE direct_messages ADD COLUMN IF NOT EXISTS attachment_type VARCHAR(100);');
+        await sequelize.query('ALTER TABLE direct_messages ADD COLUMN IF NOT EXISTS attachment_name VARCHAR(255);');
+        await sequelize.query('ALTER TABLE direct_messages ADD COLUMN IF NOT EXISTS attachment_size INTEGER;');
+      } catch (colErr) {
+        console.warn('[Sequelize] Aviso ao sincronizar colunas adicionais:', colErr.message);
+      }
       console.log('[Sequelize] Tabelas verificadas/sincronizadas com sucesso.');
     }
   } catch (error) {

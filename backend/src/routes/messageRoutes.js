@@ -102,6 +102,7 @@ router.get('/rooms/:roomId/messages/search', authMiddleware, MessageController.s
  * /rooms/{roomId}/messages:
  *   post:
  *     summary: Enviar mensagem para uma sala
+ *     description: Permite envio de texto, imagem opcional e anexo multimídia (áudio gravado ou arquivo até 5MB em Data URL)
  *     tags: [Messages]
  *     security:
  *       - BearerAuth: []
@@ -111,22 +112,42 @@ router.get('/rooms/:roomId/messages/search', authMiddleware, MessageController.s
  *         required: true
  *         schema:
  *           type: string
+ *           format: uuid
+ *         description: Identificador único da sala
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [content]
  *             properties:
  *               content:
  *                 type: string
  *                 maxLength: 1000
+ *                 example: Olá pessoal, sejam bem-vindos à sala!
+ *               imageUrl:
+ *                 type: string
+ *                 nullable: true
+ *                 example: https://exemplo.com/imagem.png
+ *               attachment:
+ *                 $ref: '#/components/schemas/AttachmentInput'
  *     responses:
  *       201:
- *         description: Mensagem criada
+ *         description: Mensagem criada e distribuída com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
  *       400:
- *         description: Conteúdo vazio ou excede 1.000 caracteres
+ *         description: Mensagem vazia, formato inválido ou arquivo excede limite de tamanho
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Usuário não tem permissão para postar nesta sala
  */
 router.post('/rooms/:roomId/messages', authMiddleware, MessageController.send);
 
