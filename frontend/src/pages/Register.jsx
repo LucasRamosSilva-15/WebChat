@@ -3,22 +3,26 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi';
 import { FaTimes } from 'react-icons/fa';
-import { apiRequest, setAuthToken } from '../services/api';
+import { MailCheck, AlertCircle, ArrowLeft } from 'lucide-react';
+import OtpCodeInput from '../components/common/OtpCodeInput';
 import { socket } from '../socket';
-import { supabase } from '../services/supabase';
+import { supabase, syncOAuthUserSession } from '../services/supabase';
 
 const Register = () => {
     const navigate = useNavigate();
+    const [step, setStep] = useState(1);
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [resending, setResending] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
     const [termsModalType, setTermsModalType] = useState('terms');
+    const [otpCode, setOtpCode] = useState("");
 
     const handleGoogleSignIn = async () => {
         try {
@@ -43,30 +47,106 @@ const Register = () => {
             return;
         }
 
-        if (username.trim() !== "" && email.trim() !== "" && password.trim() !== "") {
+        const cleanUsername = username.trim();
+        const cleanEmail = email.trim();
+        const cleanPassword = password.trim();
+
+        if (cleanUsername !== "" && cleanEmail !== "" && cleanPassword !== "") {
             setLoading(true);
             try {
-                const data = await apiRequest('/auth/register', {
-                    method: 'POST',
-                    body: JSON.stringify({ name: username, email, password })
+                const { error: signUpError } = await supabase.auth.signUp({
+                    email: cleanEmail,
+                    password: cleanPassword,
+                    options: {
+                        data: {
+                            name: cleanUsername,
+                            full_name: cleanUsername
+                        }
+                    }
                 });
 
-                setAuthToken(data.token);
-                localStorage.setItem('chat_isLoggedIn', 'true');
-                localStorage.setItem('chat_displayName', data.user.displayName || data.user.name || username);
-                localStorage.setItem('chat_uniqueUserId', data.user.id);
+                if (signUpError) {
+                    throw signUpError;
+                }
 
-                socket.auth = { token: data.token };
-                socket.disconnect();
-                socket.connect();
-
-                window.dispatchEvent(new Event('profileUpdated'));
-                navigate('/rooms');
+                setStep(2);
             } catch (err) {
                 setError(err.message || 'Erro ao criar conta.');
             } finally {
                 setLoading(false);
             }
+        }
+    };
+
+    const handleVerifyOtp = async (codeToVerify) => {
+        const code = codeToVerify || otpCode;
+        if (!code || code.length < 6) {
+            setError("Por favor, digite o código de 6 dígitos completo.");
+            return;
+        }
+        setError(null);
+        setLoading(true);
+        try {
+            const { data, error: verifyError } = await supabase.auth.verifyOtp({
+                email: email.trim(),
+                token: code,
+                type: 'signup'
+            });
+
+            if (verifyError) {
+                throw verifyError;
+            }
+
+            if (data?.session) {
+                try {
+                    await syncOAuthUserSession(data.session);
+                } catch (syncErr) {
+                    console.warn('Falha na sincronização após OTP:', syncErr.message);
+                }
+            }
+
+            localStorage.setItem('chat_isLoggedIn', 'true');
+            localStorage.setItem('chat_displayName', data?.user?.user_metadata?.name || username.trim());
+            localStorage.setItem('chat_uniqueUserId', data?.user?.id || 'user-' + Date.now());
+
+            if (socket) {
+                socket.disconnect();
+                socket.connect();
+            }
+
+            window.dispatchEvent(new Event('profileUpdated'));
+            navigate('/rooms');
+        } catch (err) {
+            setError(err.message || 'Código de verificação incorreto ou expirado.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResendSignUp = async () => {
+        setError(null);
+        setResending(true);
+        try {
+            const { error: resendError } = await supabase.auth.resend({
+                type: 'signup',
+                email: email.trim()
+            });
+            if (resendError) {
+                await supabase.auth.signUp({
+                    email: email.trim(),
+                    password,
+                    options: {
+                        data: {
+                            name: username.trim(),
+                            full_name: username.trim()
+                        }
+                    }
+                });
+            }
+        } catch (err) {
+            setError(err.message || 'Falha ao reenviar código.');
+        } finally {
+            setResending(false);
         }
     };
 
@@ -90,188 +170,261 @@ const Register = () => {
     return (
         <main className="reveal flex-1 flex flex-col items-center justify-center px-4 py-6">
             <div className="skeuo-card px-7 py-6 sm:px-9 sm:py-7 w-full text-center max-w-[480px] rounded-[28px] shadow-[0_20px_50px_-15px_rgba(0,0,0,0.18)]">
-                <h1 className="hero-title font-bold text-2xl sm:text-[28px] mb-1 tracking-tight">
-                    Crie a sua conta
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-[13px] mb-5 tracking-tight">
-                    Preencha os campos abaixo para iniciar sua jornada
-                </p>
-
-                <form className="text-left space-y-3.5" onSubmit={handleRegister}>
-                    {error && (
-                        <div className="p-2.5 text-xs rounded-lg font-medium bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900">
-                            {error}
-                        </div>
-                    )}
-
+                {step === 1 ? (
                     <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" htmlFor="username">
-                            Nome de usuário
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <FiUser className="w-4 h-4" />
-                            </div>
-                            <input
-                                type="text"
-                                id="username"
-                                placeholder="Nome de usuário"
-                                required
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                autoComplete="off"
-                                className="skeuo-input w-full pl-9 pr-3.5 py-2.5 text-sm rounded-xl"
-                            />
-                        </div>
-                    </div>
+                        <h1 className="hero-title font-bold text-2xl sm:text-[28px] mb-1 tracking-tight">
+                            Crie a sua conta
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-[13px] mb-5 tracking-tight">
+                            Preencha os campos abaixo para iniciar sua jornada
+                        </p>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" htmlFor="email">
-                            E-mail
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <FiMail className="w-4 h-4" />
-                            </div>
-                            <input
-                                type="email"
-                                id="email"
-                                placeholder="E-mail"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                autoComplete="off"
-                                className="skeuo-input w-full pl-9 pr-3.5 py-2.5 text-sm rounded-xl"
-                            />
-                        </div>
-                    </div>
+                        <form className="text-left space-y-3.5" onSubmit={handleRegister}>
+                            {error && (
+                                <div className="p-3 text-xs rounded-xl font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-900 flex items-center gap-2 animate-fade-in">
+                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                    <span>{error}</span>
+                                </div>
+                            )}
 
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" htmlFor="password">
-                            Senha
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <FiLock className="w-4 h-4" />
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" htmlFor="username">
+                                    Nome de usuário
+                                </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <FiUser className="w-4 h-4" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        id="username"
+                                        placeholder="Nome de usuário"
+                                        required
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        autoComplete="off"
+                                        className="skeuo-input w-full pl-9 pr-3.5 py-2.5 text-sm rounded-xl"
+                                    />
+                                </div>
                             </div>
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                id="password"
-                                placeholder="Senha"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                autoComplete="new-password"
-                                className="skeuo-input w-full pl-9 pr-10 py-2.5 text-sm rounded-xl"
-                            />
+
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" htmlFor="email">
+                                    E-mail
+                                </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <FiMail className="w-4 h-4" />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        placeholder="E-mail"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        autoComplete="off"
+                                        className="skeuo-input w-full pl-9 pr-3.5 py-2.5 text-sm rounded-xl"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" htmlFor="password">
+                                    Senha
+                                </label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                        <FiLock className="w-4 h-4" />
+                                    </div>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        id="password"
+                                        placeholder="Senha"
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        autoComplete="new-password"
+                                        className="skeuo-input w-full pl-9 pr-10 py-2.5 text-sm rounded-xl"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                                        tabIndex={-1}
+                                        aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
+                                    >
+                                        {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                <div className="mt-1.5 px-0.5">
+                                    <div className="flex items-center justify-between text-[11px] mb-1">
+                                        <span className="text-slate-500 dark:text-slate-400 font-medium">Segurança da chave</span>
+                                        <span className={`font-semibold ${passwordStrength.textColor}`}>{passwordStrength.label}</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full transition-all duration-300 rounded-full ${passwordStrength.color}`}
+                                            style={{ width: passwordStrength.percent }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2 pt-0.5">
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        className="w-3.5 h-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
+                                        checked={termsAccepted}
+                                        onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    />
+                                    <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                        Li e concordo com os{' '}
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.preventDefault(); setTermsModalType('terms'); setShowTermsModal(true); }}
+                                            className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
+                                        >
+                                            Termos de Uso
+                                        </button>
+                                    </span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        className="w-3.5 h-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
+                                        checked={privacyAccepted}
+                                        onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                                    />
+                                    <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                        Li e concordo com a{' '}
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.preventDefault(); setTermsModalType('privacy'); setShowTermsModal(true); }}
+                                            className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
+                                        >
+                                            Política de Privacidade
+                                        </button>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <button
+                                type="submit"
+                                aria-label="Cadastrar"
+                                className="skeuo-btn w-full py-2.5 text-sm sm:text-[15px] font-semibold flex items-center justify-center gap-2 rounded-xl shadow-md transition-all active:scale-[0.99] mt-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={loading || !termsAccepted || !privacyAccepted}
+                            >
+                                {loading ? 'Enviando código...' : (
+                                    <>
+                                        <span>Criar Conta no SkyRipple</span>
+                                        <FiArrowRight className="w-4 h-4" />
+                                    </>
+                                )}
+                            </button>
+
+                            <div className="relative my-4">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-slate-200/80 dark:border-slate-700/60" />
+                                </div>
+                                <div className="relative flex justify-center text-[11px] uppercase">
+                                    <span className="bg-white dark:bg-slate-900 px-3 text-slate-400 font-semibold">
+                                        ou
+                                    </span>
+                                </div>
+                            </div>
+
                             <button
                                 type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-                                tabIndex={-1}
-                                aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
+                                onClick={handleGoogleSignIn}
+                                className="btn-secondary-glossy w-full py-2.5 px-4 text-xs sm:text-sm flex items-center justify-center gap-2.5 font-medium rounded-xl hover:opacity-90 transition-opacity cursor-pointer text-slate-700 dark:text-slate-200"
                             >
-                                {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                                <svg className="w-4 h-4 shrink-0" viewBox="0 0 48 48" aria-hidden="true">
+                                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                                </svg>
+                                <span>Continuar com a Google</span>
+                            </button>
+                        </form>
+
+                        <div className="mt-4 pt-1">
+                            <Link to="/login" className="text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium">
+                                Já possui uma conta? Entrar aqui ›
+                            </Link>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="animate-fade-in flex flex-col items-center">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-200 dark:border-sky-800 shadow-xs mb-3">
+                            <MailCheck className="w-3.5 h-3.5" />
+                            VERIFICAÇÃO DE E-MAIL
+                        </span>
+
+                        <h2 className="hero-title font-bold text-2xl sm:text-[26px] mb-1.5 tracking-tight text-slate-800 dark:text-slate-100">
+                            Confirme seu e-mail
+                        </h2>
+
+                        <p className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-[13px] mb-5 tracking-tight leading-relaxed max-w-sm mx-auto">
+                            Enviamos um código numérico de 6 dígitos para <strong className="text-slate-900 dark:text-white font-semibold break-all">{email}</strong>. Digite-o abaixo para concluir seu cadastro:
+                        </p>
+
+                        {error && (
+                            <div className="w-full mb-4 p-3 text-xs rounded-xl font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-900 flex items-center gap-2 animate-fade-in text-left">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <div className="w-full py-2">
+                            <OtpCodeInput
+                                value={otpCode}
+                                onChange={(code) => {
+                                    setOtpCode(code);
+                                    if (error) setError(null);
+                                }}
+                                onComplete={handleVerifyOtp}
+                                onResend={handleResendSignUp}
+                                disabled={loading}
+                                resending={resending}
+                                error={Boolean(error)}
+                            />
+                        </div>
+
+                        <div className="w-full space-y-2.5 mt-5">
+                            <button
+                                type="button"
+                                onClick={() => handleVerifyOtp(otpCode)}
+                                disabled={loading || otpCode.length < 6}
+                                className="skeuo-btn-primary w-full py-2.5 px-4 text-sm font-semibold text-white rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        <span>Confirmando...</span>
+                                    </>
+                                ) : (
+                                    <span>Confirmar Conta</span>
+                                )}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setStep(1);
+                                    setError(null);
+                                    setOtpCode('');
+                                }}
+                                disabled={loading}
+                                className="btn-secondary-glossy w-full py-2 px-4 text-xs font-semibold text-slate-700 dark:text-slate-200 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all"
+                            >
+                                <ArrowLeft className="w-3.5 h-3.5" /> Corrigir dados cadastrais
                             </button>
                         </div>
-                        <div className="mt-1.5 px-0.5">
-                            <div className="flex items-center justify-between text-[11px] mb-1">
-                                <span className="text-slate-500 dark:text-slate-400 font-medium">Segurança da chave</span>
-                                <span className={`font-semibold ${passwordStrength.textColor}`}>{passwordStrength.label}</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700/60 rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full transition-all duration-300 rounded-full ${passwordStrength.color}`}
-                                    style={{ width: passwordStrength.percent }}
-                                />
-                            </div>
-                        </div>
                     </div>
-
-                    <div className="flex flex-col gap-2 pt-0.5">
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                className="w-3.5 h-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
-                                checked={termsAccepted}
-                                onChange={(e) => setTermsAccepted(e.target.checked)}
-                            />
-                            <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                Li e concordo com os{' '}
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.preventDefault(); setTermsModalType('terms'); setShowTermsModal(true); }}
-                                    className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
-                                >
-                                    Termos de Uso
-                                </button>
-                            </span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                className="w-3.5 h-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer"
-                                checked={privacyAccepted}
-                                onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                            />
-                            <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                Li e concordo com a{' '}
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.preventDefault(); setTermsModalType('privacy'); setShowTermsModal(true); }}
-                                    className="text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer"
-                                >
-                                    Política de Privacidade
-                                </button>
-                            </span>
-                        </label>
-                    </div>
-
-                    <button
-                        type="submit"
-                        aria-label="Cadastrar"
-                        className="skeuo-btn w-full py-2.5 text-sm sm:text-[15px] font-semibold flex items-center justify-center gap-2 rounded-xl shadow-md transition-all active:scale-[0.99] mt-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={loading || !termsAccepted || !privacyAccepted}
-                    >
-                        {loading ? 'Cadastrando...' : (
-                            <>
-                                <span>Criar Conta no SkyRipple</span>
-                                <FiArrowRight className="w-4 h-4" />
-                            </>
-                        )}
-                    </button>
-
-                    <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-slate-200/80 dark:border-slate-700/60" />
-                        </div>
-                        <div className="relative flex justify-center text-[11px] uppercase">
-                            <span className="bg-white dark:bg-slate-900 px-3 text-slate-400 font-semibold">
-                                ou
-                            </span>
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={handleGoogleSignIn}
-                        className="btn-secondary-glossy w-full py-2.5 px-4 text-xs sm:text-sm flex items-center justify-center gap-2.5 font-medium rounded-xl hover:opacity-90 transition-opacity cursor-pointer text-slate-700 dark:text-slate-200"
-                    >
-                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 48 48" aria-hidden="true">
-                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                        </svg>
-                        <span>Continuar com a Google</span>
-                    </button>
-                </form>
-
-                <div className="mt-4 pt-1">
-                    <Link to="/login" className="text-xs text-sky-600 dark:text-sky-400 hover:underline font-medium">
-                        Já possui uma conta? Entrar aqui ›
-                    </Link>
-                </div>
+                )}
             </div>
 
             <div className="mt-4 flex items-center justify-center">
