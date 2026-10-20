@@ -78,7 +78,6 @@ Para mitigar ataques de força bruta, abuso de rede e sobrecarga do banco relaci
 Quando o usuário envia mensagens em intervalo inferior a 500ms, o servidor não persiste a mensagem e emite de volta para o socket emissor o evento:
 
 ```json
-// Evento: rate_limit_error
 {
   "error": "Você está enviando mensagens muito rápido. Aguarde um momento."
 }
@@ -106,10 +105,52 @@ O endpoint `GET /api/rooms` retorna todas as salas ativas complementadas dinamic
 ]
 ```
 
-### Busca Textual e Filtros de Histórico
-Para consultar mensagens de uma sala, utilize:
-- `GET /api/rooms/:roomId/messages`: Retorna o histórico completo ordenado cronologicamente (`created_at ASC`).
-- `GET /api/rooms/:roomId/messages/search?q=termo`: Executa busca textual filtrada (case-insensitive via `iLike`).
+### Paginação Baseada em Cursor (Cursor-Based Pagination)
+Tanto as mensagens de salas (`GET /api/rooms/:roomId/messages`) quanto as de conversas diretas (`GET /api/directs/conversations/:id/messages`) utilizam **paginação baseada em cursor** suportada por índices compostos B-Tree (`idx_messages_room_created_at` e `idx_direct_messages_conv_created_at`):
+
+```http
+GET /api/rooms/:roomId/messages?limit=50&before=2026-10-18T20:00:00.000Z
+```
+
+#### Por que Paginação por Cursor?
+* **Performance Constante $O(1)$**: Ao contrário do clássico `OFFSET`, que precisa escanear e descartar milhares de linhas anteriores degradando para $O(N)$, a busca por cursor salta diretamente para o ponto exato da árvore B-Tree.
+* **Resiliência a Mensagens Concorrentes**: Novas mensagens recebidas em tempo real não causam duplicação ou pulo de itens durante a rolagem.
+
+#### Parâmetros de Consulta
+
+| Parâmetro | Tipo | Padrão | Descrição |
+| :--- | :--- | :--- | :--- |
+| `limit` | integer | `50` | Quantidade de mensagens a retornar (mínimo 1, máximo 100). |
+| `before` | string (ISO 8601) | `null` | Cursor para carregar mensagens anteriores (mais antigas) ao timestamp. |
+| `since` | string (ISO 8601) | `null` | Cursor para sincronização pós-reconexão: busca mensagens mais recentes que o timestamp em ordem cronológica. |
+
+#### Estrutura de Resposta Paginada
+
+```json
+{
+  "messages": [
+    {
+      "id": "b3e5c9f2-1a4d-4e8c-9b7e-5f3a2c1d0e9b",
+      "room_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "user_id": "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
+      "content": "Olá, pessoal! Bem-vindos ao canal.",
+      "attachment_url": null,
+      "created_at": "2026-10-18T19:55:00.000Z",
+      "user": {
+        "displayName": "Lucas Ramos",
+        "profilePhoto": null
+      }
+    }
+  ],
+  "hasMore": true,
+  "nextCursor": "2026-10-18T19:55:00.000Z",
+  "nextSince": "2026-10-18T19:59:00.000Z"
+}
+```
+
+### Busca Textual Intra-Chat
+Para filtrar mensagens em uma sala específica sem paginação:
+- `GET /api/rooms/:roomId/messages/search?q=termo`: Executa busca textual filtrada case-insensitive.
 
 ---
 

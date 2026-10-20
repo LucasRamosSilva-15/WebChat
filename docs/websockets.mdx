@@ -37,11 +37,13 @@ socket.on("connect_error", (err) => {
 
 | Evento | Payload | Descrição |
 | :--- | :--- | :--- |
-| `joinRoom` | `{ roomId: string, user: { id, name, email } }` | Entra no canal da sala e transmite atualização de presença |
-| `leaveRoom` | `{ roomId: string, userId: string }` | Sai da sala e atualiza lista de usuários online |
-| `send_message` | `{ room: string, userId: string, userName: string, content: string, imageUrl?: string }` | Envia mensagem para todos os participantes da sala |
-| `edit_message` | `{ room: string, messageId: string, message: string }` | Edita o conteúdo de uma mensagem previamente enviada |
-| `delete_message` | `{ room: string, messageId: string }` | Notifica exclusão de mensagem aos membros da sala |
+| `joinRoom` | `{ roomId: string, user: { id, name, email } }` | Entra no canal da sala e transmite atualização de presença. |
+| `leaveRoom` | `{ roomId: string, userId: string }` | Sai da sala e atualiza lista de usuários online. |
+| `send_message` | `{ room: string, userId: string, userName: string, content: string, imageUrl?: string, attachment?: object }` | Envia mensagem com texto e/ou anexo multimídia/áudio (até 5MB) para a sala. |
+| `send_direct_message` | `{ conversationId: string, content: string, attachment?: object }` | Roteia mensagem direta 1x1 (suporta texto claro ou envelope cifrado E2EE `e2ee:v1:...`). |
+| `edit_message` | `{ room: string, messageId: string, message: string }` | Edita o conteúdo de uma mensagem previamente enviada. |
+| `delete_message` | `{ room: string, messageId: string }` | Notifica exclusão de mensagem aos membros da sala. |
+| `toggle_like` | `{ room: string, messageId: string, userId: string }` | Alterna curtida em uma mensagem com broadcast em tempo real. |
 
 ---
 
@@ -49,23 +51,26 @@ socket.on("connect_error", (err) => {
 
 | Evento | Payload | Descrição |
 | :--- | :--- | :--- |
-| `roomPresenceUpdated` | `{ roomId: string, onlineUsers: Array, onlineCount: number }` | Lista de usuários ativos e contagem total na sala |
-| `receive_message` | Objeto completo da mensagem salva | Disparado para todos na sala ao receber nova mensagem |
-| `message_edited` | `{ messageId: string, message: string }` | Notifica a edição de uma mensagem |
-| `message_deleted` | `{ messageId: string }` | Notifica que uma mensagem foi excluída |
-| `member_kicked` | `{ roomId: string, userId: string, reason: string }` | Notifica membros da sala sobre a expulsão de um usuário |
-| `kicked_from_room` | `{ roomId: string, roomName: string, reason: string }` | Enviado diretamente para o usuário expulso da sala |
-| `receive_direct_message` | Objeto completo da mensagem direta | Entregue em tempo real para o destinatário da conversa privada |
-| `new_notification` | Objeto de notificação | Notifica o usuário em tempo real sobre menções, convites e avisos |
-| `rate_limit_error` | `{ error: string }` | Disparado se o usuário enviar mensagens mais rápido que 1 a cada 500ms |
-| `message_error` | `{ error: string }` | Notifica falhas ao persistir mensagem no banco |
+| `roomPresenceUpdated` | `{ roomId: string, onlineUsers: Array, onlineCount: number }` | Lista de usuários ativos e contagem total na sala. |
+| `receive_message` | Objeto completo da mensagem salva | Disparado para todos na sala ao receber nova mensagem com anexos. |
+| `receive_direct_message` | Objeto completo da mensagem direta | Entregue em tempo real para o destinatário da conversa privada (com envelope E2EE). |
+| `like_toggled` | `{ messageId: string, userId: string }` | Notifica alternância de curtida para atualização dos contadores. |
+| `message_edited` | `{ messageId: string, message: string }` | Notifica a edição de uma mensagem. |
+| `message_deleted` | `{ messageId: string }` | Notifica que uma mensagem foi excluída. |
+| `room_updated` | `{ id: string, name: string, description: string }` | Notifica alterações nos detalhes da sala realizadas pelo dono/admin. |
+| `member_role_updated` | `{ roomId: string, userId: string, role: string }` | Notifica promoção ou rebaixamento de cargo na sala (`moderator`/`user`). |
+| `member_kicked` | `{ roomId: string, userId: string, reason: string }` | Notifica membros da sala sobre a expulsão de um usuário. |
+| `ownership_transferred` | `{ roomId: string, oldOwnerId: string, newOwnerId: string }` | Notifica transferência da posse e titularidade da sala. |
+| `kicked_from_room` | `{ roomId: string, roomName: string, reason: string }` | Enviado diretamente para o usuário expulso da sala. |
+| `new_notification` | Objeto de notificação | Notifica o usuário em tempo real sobre menções, convites e avisos. |
+| `rate_limit_error` | `{ error: string }` | Disparado se o usuário enviar mensagens mais rápido que 1 a cada 500ms. |
+| `message_error` | `{ error: string }` | Notifica falhas ao persistir mensagem no banco. |
 
 ---
 
 ## Exemplo Completo de Chat em Tempo Real
 
 ```javascript
-// 1. Entrar na sala
 socket.emit("joinRoom", {
   roomId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   user: {
@@ -75,23 +80,21 @@ socket.emit("joinRoom", {
   }
 });
 
-// 2. Ouvir presença de usuários
 socket.on("roomPresenceUpdated", ({ onlineUsers, onlineCount }) => {
   console.log(`Usuários online (${onlineCount}):`, onlineUsers);
 });
 
-// 3. Ouvir novas mensagens recebidas
 socket.on("receive_message", (message) => {
   console.log(`[${message.user_name}]: ${message.content}`);
 });
 
-// 4. Enviar mensagem
-function enviarMensagem(texto) {
+function enviarMensagem(texto, anexo = null) {
   socket.emit("send_message", {
     room: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     userId: "e9a0c7c8-7f5b-4c01-8b29-1a3e8b09d2ef",
     userName: "Lucas Ramos",
-    content: texto
+    content: texto,
+    attachment: anexo
   });
 }
 ```

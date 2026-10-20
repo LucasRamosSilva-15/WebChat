@@ -338,7 +338,8 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 | ------ | ------ | ------ |
 | `joinRoom` | `{ roomId, user: { id, name, email } }` | Inscreve o socket na sala virtual e emite contagem atualizada de presença. |
 | `leaveRoom` | `{ roomId, userId }` | Remove o socket da sala e notifica decremento de membros online. |
-| `send_message` | `{ room, userId, userName, content, imageUrl? }` | Aplica rate limit (500ms), salva no PostgreSQL e faz broadcast do registro para a sala. |
+| `send_message` | `{ room, userId, userName, content, imageUrl?, attachment? }` | Aplica rate limit (500ms), valida tamanho do anexo (<= 5MB), salva no PostgreSQL e faz broadcast do registro para a sala. |
+| `send_direct_message` | `{ conversationId, content, attachment? }` | Roteia e persiste envelope de mensagem direta (suporta texto claro ou envelope cifrado `e2ee:v1:...`). |
 | `edit_message` | `{ room, messageId, message }` | Atualiza a mensagem no banco e transmite `message_edited`. |
 | `delete_message` | `{ room, messageId }` | Exclui do banco e emite `message_deleted` para os participantes. |
 | `toggle_like` | `{ room, messageId, userId }` | Transmite `like_toggled` em tempo real para os clientes da sala. |
@@ -347,7 +348,8 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 | Evento | Payload | Finalidade |
 | ------ | ------ | ------ |
 | `roomPresenceUpdated` | `{ roomId, onlineUsers, onlineCount }` | Sincroniza a lista de avatares online e o total de membros ativos no cabeçalho da sala. |
-| `receive_message` | Objeto completo da mensagem persistida | Entrega a nova mensagem com autor, timestamp e URL de anexo a todos os clientes da sala. |
+| `receive_message` | Objeto completo da mensagem persistida | Entrega a nova mensagem com autor, timestamp e dados de anexo a todos os clientes da sala. |
+| `receive_direct_message` | Objeto de mensagem direta (com envelope E2EE) | Entrega a mensagem privada ao destinatário em tempo real sem expor o conteúdo descriptografado ao servidor. |
 | `message_edited` | `{ messageId, message }` | Notifica que o texto de uma mensagem foi editado. |
 | `message_deleted` | `{ messageId }` | Informa a remoção de uma mensagem para atualização da interface. |
 | `room_updated` | `{ id, name, description }` | Notifica a todos os membros que detalhes da sala foram alterados pelo dono/admin. |
@@ -370,8 +372,8 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 ##### Módulo: Autenticação & Conta (`/api/auth`)
 | Método | Endpoint | Proteção | Descrição |
 | ------ | ------ | ------ | ------ |
-| POST | `/auth/register` | Rate Limit (10/15min) | Cadastra usuário com senha bcrypt e já retorna dados públicos + token JWT. |
-| POST | `/auth/login` | Rate Limit (10/15min) | Valida credenciais e emite token de acesso válido por 7 dias. |
+| POST | `/auth/register` | Rate Limit (10/15min) | Cadastra usuário com senha bcrypt/Argon2id e já retorna dados públicos + token JWT. |
+| POST | `/auth/login` | Rate Limit (10/15min) | Valida credenciais com mitigação anti-enumeração e emite token de acesso válido por 7 dias. |
 | POST | `/auth/oauth-sync` | Rate Limit (10/15min) | Sincroniza usuário autenticado via Google OAuth (Supabase) herdando `name`, `avatar_url`, `email` e emitindo token JWT. |
 | GET | `/auth/me` | Bearer Token | Retorna os dados cadastrais completos do usuário logado. |
 | DELETE | `/auth/me` | Bearer Token | Exclui permanentemente o perfil do usuário e remove suas credenciais. |
@@ -393,20 +395,22 @@ Para prevenir travamentos por flood via socket, o backend intercepta o evento `s
 ##### Módulo: Mensagens & Histórico (`/api`)
 | Método | Endpoint | Proteção | Descrição |
 | ------ | ------ | ------ | ------ |
-| GET | `/rooms/:roomId/messages` | Bearer Token | Retorna o histórico de mensagens da sala ordenado cronologicamente (`created_at ASC`). |
+| GET | `/rooms/:roomId/messages` | Bearer Token | Retorna mensagens paginadas por cursor (`before`, `since`, `limit`) com ordenação cronológica e índice B-tree. |
 | GET | `/rooms/:roomId/messages/search` | Bearer Token | Pesquisa mensagens pelo query param `?q=termo` (case-insensitive). |
-| POST | `/rooms/:roomId/messages` | Bearer Token | Envia mensagem com texto e/ou anexo de imagem via HTTP REST. |
+| POST | `/rooms/:roomId/messages` | Bearer Token | Envia mensagem com texto e/ou anexo multimídia/áudio (até 5MB) via HTTP REST. |
 | DELETE | `/messages/:id` | Bearer Token / Mod / Owner / Admin | Exclusão hierárquica: autor (até 24h), moderador da sala (apenas mensagens de membros regulares), dono da sala (qualquer mensagem) ou administrador global. |
 
-##### Módulo: Mensagens Diretas (`/api/directs`)
+##### Módulo: Mensagens Diretas & Troca de Chaves E2EE (`/api/directs`)
 | Método | Endpoint | Proteção | Descrição |
 | ------ | ------ | ------ | ------ |
 | GET | `/directs/conversations` | Bearer Token | Lista todas as conversas diretas ativas com status, dados do interlocutor e última mensagem. |
 | POST | `/directs/conversations` | Bearer Token | Obtém conversa existente ou inicia nova conversa direta 1x1 com `targetUserId`. |
-| GET | `/directs/conversations/:id/messages` | Bearer Token | Retorna o histórico de mensagens diretas da conversa. |
-| POST | `/directs/conversations/:id/messages` | Bearer Token | Envia mensagem de texto e/ou imagem na conversa direta. |
+| GET | `/directs/conversations/:id/messages` | Bearer Token | Retorna histórico paginado por cursor (`before`, `since`, `limit`) da conversa direta. |
+| POST | `/directs/conversations/:id/messages` | Bearer Token | Envia mensagem de texto/anexo ou envelope cifrado E2EE (`e2ee:v1:...`) na conversa direta. |
 | DELETE | `/directs/conversations/:id` | Bearer Token | Oculta/remove a conversa direta para o usuário autenticado. |
 | GET | `/directs/users` | Bearer Token | Lista e pesquisa usuários cadastrados disponíveis para iniciar chat privado. |
+| PUT | `/directs/keys` | Bearer Token | Registra ou atualiza a chave pública ECDH P-256 (formato JWK) do usuário autenticado para E2EE. |
+| GET | `/directs/keys/:userId` | Bearer Token | Obtém a chave pública ECDH P-256 (JWK) de um usuário específico para derivação de segredo compartilhado. |
 
 ##### Módulo: Favoritos (`/api/favorites`)
 | Método | Endpoint | Proteção | Descrição |
@@ -574,13 +578,16 @@ backend/
 │   └── utils/                # Utilitários corporativos de segurança e auditoria
 │       ├── auditLogger.js    # Trilha forense estruturada com ofuscação de PII
 │       └── security.js       # Criptografia Argon2id, Dummy Hash, timingSafeEqual e mitigação XSS
-└── tests/                    # Suite completa de testes automatizados com Jest
+└── tests/                    # Suite completa de testes automatizados com Jest (18 suítes e 182 testes)
     ├── helpers.js            # Utilitários de reset do SQLite em memória e geradores de tokens
     ├── usuario.test.js       # Testes de registro, login e perfil
     ├── oauthSync.test.js     # Testes de sincronização OAuth (Google / Supabase)
     ├── room.test.js          # Testes de salas e controle de participantes
     ├── roomModeration.test.js# Testes de moderação, expulsão e transferência de posse
     ├── message.test.js       # Testes de mensagens e busca textual
+    ├── pagination.test.js    # Testes de paginação por cursor (before, since, limit)
+    ├── attachments.test.js   # Testes de upload, validação e sanitização de anexos (áudio e docs)
+    ├── e2ee-keys.test.js     # Testes de registro e recuperação de chaves públicas ECDH P-256
     ├── chat.test.js          # Testes de integração de fluxo de chat
     ├── directs.test.js       # Testes de conversas e mensagens diretas 1x1
     ├── favorites.test.js     # Testes de gestão de favoritos
@@ -650,22 +657,25 @@ npm test
 * Os rate limiters (`express-rate-limit`) são desativados automaticamente em testes (`skip: () => process.env.NODE_ENV === 'test'`) para permitir execução maciça sem falsos positivos.
 * O helper `tests/helpers.js` recria as tabelas do zero de forma atômica (`sequelize.sync({ force: true })`) antes de cada bateria, garantindo isolamento total entre os testes.
 
-##### Escopo Coberto (15 Suítes & 134 Testes Automatizados):
+##### Escopo Coberto (18 Suítes & 182 Testes Automatizados 100% Aprovados):
 1. **Segurança & Criptografia (CIS Controls IG1 & OWASP ASVS)**: Hashing Argon2id, motor híbrido com upgrade transparente de Bcrypt, equalização temporal contra enumeração (*Dummy Hash*), comparações em tempo constante (`timingSafeEqual`), algoritmo fixo JWT `HS256`, revogação instantânea de tokens, bloqueio progressivo contra força bruta, sanitização contra XSS e ofuscação de logs forenses (`security.test.js`).
 2. **Sincronização OAuth (Google / Supabase)**: Validação de herança de metadados (`name`, `avatar_url`, `email`), garantia de `password = null`, geração de JWT resiliente e sincronização contínua (`oauthSync.test.js`).
 3. **Autenticação, Registro & Perfil**: Validação de e-mails duplicados, políticas de senha, login com bloqueio de tentativas e expiração de sessões (`usuario.test.js`).
 4. **Salas de Chat**: Criação, busca, atualização de metadados, contagem de membros e exclusão de salas (`room.test.js`).
 5. **Moderação & Gestão Hierárquica de Salas**: Kick hierárquico (dono/moderador), promoção e rebaixamento de membros, transferência atômica de titularidade de sala (`roomModeration.test.js`).
 6. **Mensagens & Histórico**: Envio de mensagens, validação de limites de texto, uploads de anexos e busca textual case-insensitive (`message.test.js`).
-7. **Motor de Mensageria em Tempo Real**: Handshake autenticado, controle de presença em memória (`roomPresence`), rate limit de mensagens por socket (500ms) e emissão de eventos (`chat.test.js`).
-8. **Mensagens Diretas Privadas (1x1)**: Abertura de conversas diretas, listagem de contatos e trânsito confidencial de mensagens privadas (`directs.test.js`).
-9. **Favoritos**: Adição e remoção atômica de salas e conversas favoritas por usuário (`favorites.test.js`).
-10. **Denúncias de Moderação (Reports)**: Registro de denúncias contra mensagens abusivas e resolução administrativa (`report.test.js`).
-11. **Feedbacks de Usuários**: Envio de relatos de bugs e sugestões com imagens anexas (`feedback.test.js`).
-12. **Modelos ORM (Sequelize)**: Integridade de schemas, campos UUID, constraints de unicidade e associações relacionais (`models.test.js`).
-13. **Middlewares de Segurança**: Rejeição de tokens ausentes, expirados ou forjados e proteção estrita de endpoints administrativos (`authMiddleware.test.js`).
-14. **Controladores HTTP**: Mapeamento determinístico de requisições, validação de status HTTP e tratamento unificado de erros (`controllers.test.js`).
-15. **Fluxos de Ponta a Ponta (E2E)**: Simulação completa: Registro ➔ Login ➔ Criação de Sala ➔ Adesão ➔ Envio de Mensagem ➔ Busca Textual ➔ Denúncia ➔ Resolução pelo Admin (`e2e-flow.test.js`).
+7. **Paginação Baseada em Cursor**: Paginação de histórico em salas e directs com cursores `before`, `since` e `limit`, validação de ordenação cronológica e indexação composta B-Tree (`pagination.test.js`).
+8. **Anexos Multimídia & Áudios**: Validação estrita de limites de payload (5 MB), sanitização de Data URLs, suporte a mensagens de áudio gravadas e documentos (`attachments.test.js`).
+9. **Troca de Chaves Criptográficas (E2EE)**: Registro de chaves públicas ECDH P-256 no formato JWK (`PUT /api/directs/keys`), recuperação de chaves públicas de contatos (`GET /api/directs/keys/:userId`) e isolamento de segredos (`e2ee-keys.test.js`).
+10. **Motor de Mensageria em Tempo Real**: Handshake autenticado, controle de presença em memória (`roomPresence`), rate limit de mensagens por socket (500ms) e emissão de eventos (`chat.test.js`).
+11. **Mensagens Diretas Privadas (1x1)**: Abertura de conversas diretas, listagem de contatos e trânsito confidencial de mensagens privadas e envelopes cifrados E2EE (`directs.test.js`).
+12. **Favoritos**: Adição e remoção atômica de salas e conversas favoritas por usuário (`favorites.test.js`).
+13. **Denúncias de Moderação (Reports)**: Registro de denúncias contra mensagens abusivas e resolução administrativa (`report.test.js`).
+14. **Feedbacks de Usuários**: Envio de relatos de bugs e sugestões com imagens anexas (`feedback.test.js`).
+15. **Modelos ORM (Sequelize)**: Integridade de schemas, campos UUID, constraints de unicidade e associações relacionais (`models.test.js`).
+16. **Middlewares de Segurança**: Rejeição de tokens ausentes, expirados ou forjados e proteção estrita de endpoints administrativos (`authMiddleware.test.js`).
+17. **Controladores HTTP**: Mapeamento determinístico de requisições, validação de status HTTP e tratamento unificado de erros (`controllers.test.js`).
+18. **Fluxos de Ponta a Ponta (E2E)**: Simulação completa: Registro ➔ Login ➔ Criação de Sala ➔ Adesão ➔ Envio de Mensagem ➔ Busca Textual ➔ Denúncia ➔ Resolução pelo Admin (`e2e-flow.test.js`).
 
 ---
 
@@ -697,7 +707,7 @@ npm start
 O console exibirá as mensagens de inicialização:
 ```text
 [SWAGGER] Procurando arquivos em: .../src/routes/*.js
-[SWAGGER] 38 rota(s) encontrada(s)
+[SWAGGER] 40 rota(s) encontrada(s)
 [SERVER] SUPABASE_URL carregada: true
 [SERVER] SUPABASE_KEY carregada: true
 [SERVER] Rodando na porta 3001
@@ -717,24 +727,26 @@ Renderizado pelo próprio servidor Express utilizando especificações JSDoc Ope
 
 ###### Especificação OpenAPI & Cobertura
 * **Título & Versão**: `SkyRipple API — Backend Service` (v1.0.0).
-* **Rotas Documentadas**: 38 rotas cobrindo integralmente os endpoints REST do serviço.
+* **Rotas Documentadas**: 40 rotas cobrindo integralmente os endpoints REST do serviço.
 * **Tags & Agrupamentos (9 Categorias)**:
   1. `Auth` — Autenticação local, registro, sincronização Google OAuth e dados do usuário logado.
   2. `Rooms` — Criação, listagem, membros, moderação hierárquica e transferência de titularidade de salas.
-  3. `Messages` — Envio, busca textual paginada por termo e exclusão de mensagens de chat em sala.
-  4. `Directs` — Conversas diretas 1x1, listagem de contatos e trânsito confidencial de mensagens privadas.
+  3. `Messages` — Envio com anexos, paginação por cursor (`before`, `since`, `limit`), busca textual e exclusão de mensagens.
+  4. `Directs` — Conversas diretas 1x1, listagem de contatos, histórico paginado e endpoints de troca de chaves públicas E2EE (`/directs/keys`).
   5. `Notifications` — Listagem, leitura individual/em lote e deleção de notificações de sistema.
   6. `Favorites` — Gestão atômica de favoritos de salas e conversas diretas.
   7. `Reports` — Envio e consulta de denúncias contra mensagens abusivas.
   8. `Feedbacks` — Canal de sugestões e relatos de bugs com suporte a múltiplos anexos.
   9. `Admin` — Métricas `/stats`, moderação de usuários, banimentos, denúncias e governança da plataforma.
-* **Componentes & Schemas Reutilizáveis (`components.schemas`)**:
-  - `User`: Identificador UUID, nome exibido, e-mail, foto de perfil, recado, status e papel no sistema.
+* **Componentes & Schemas Reutilizáveis (`components.schemas`) (13 Schemas Canônicos)**:
+  - `User`: Identificador UUID, nome exibido, e-mail, foto de perfil, recado, status, chave pública e papel no sistema.
+  - `PublicKeyJwk`: Especificação JSON Web Key da chave pública ECDH P-256 (`crv`, `kty`, `x`, `y`).
+  - `AttachmentInput`: Metadados e payload de anexo multimídia (`url`, `type`, `name`, `size`).
   - `Room`: Identificador, nome, descrição, categoria, tipo (pública/privada), criador e contagem de membros.
   - `RoomMember`: Associação usuário-sala com papel (`owner`, `moderator`, `user`) e data de adesão.
-  - `Message`: Mensagem em sala com texto, imagem opcional, autor e carimbo de data/hora.
+  - `Message`: Mensagem em sala com texto, anexos opcionais, autor e carimbo de data/hora.
   - `DirectConversation`: Conversa privada 1x1 com interlocutor e prévia da última mensagem.
-  - `DirectMessage`: Mensagem privada entre dois usuários com status e metadados de envio.
+  - `DirectMessage`: Mensagem privada entre dois usuários (plana ou envelope cifrado E2EE) com status e metadados.
   - `Notification`: Alerta de sistema com tipo, título, mensagem e status de leitura.
   - `Favorite`: Marcação de sala ou conversa com dados do item associado.
   - `Report`: Chamado de moderação com motivo da denúncia, status e mensagem associada.
@@ -753,37 +765,25 @@ Documentação completa de design system, arquitetura de sistemas, especificaç�
 
 #### 15. Roadmap & Próximos Passos (Futuras Implementações)
 
-Com a arquitetura base, o motor em tempo real e o endurecimento **CIS Controls IG1 & OWASP ASVS** consolidados, os próximos saltos de maturidade técnica do backend contemplam:
+Com a arquitetura base, o motor em tempo real, o endurecimento **CIS Controls IG1 & OWASP ASVS**, a **Paginação por Cursor** e a **Criptografia E2EE** concluídos e entregues, os próximos passos do backend contemplam:
 
-##### 15.1. Sistema Avançado de Histórico & Paginação Baseada em Cursor (Cursor-Based Pagination)
-* **Paginação por Cursor (`before` / `since` / `limit`)**:
-  - Substituição de paginações convencionais por `OFFSET` (que sofrem degradação $O(N)$ em tabelas com milhões de registros) por busca indexada em árvore B-Tree sobre `(room_id, created_at, id)`.
-  - Suporte a rolagem infinita contínua (*infinite scroll*) no frontend com carregamento instantâneo de fatias de 30 a 50 mensagens.
-* **Filtros Temporais & Agrupamento Semântico**:
-  - Filtros avançados na API: `GET /api/rooms/:roomId/messages?from=2026-01-01&to=2026-01-31`.
-  - Agrupamento nativo por calendário e exportação de transcrições de salas em formatos estruturados (`.json`, `.txt`).
-* **Cache L2 de Mensagens Recentes**:
-  - Armazenamento em memória (Redis) das últimas 100 mensagens de salas ativas para entrega em sub-milissegundos na entrada de novos participantes.
+##### 15.1. Chamadas de Voz & Vídeo P2P (WebRTC)
+* **Sinalização via WebSockets (Socket.io Signaling Broker)**:
+  - Troca de ofertas e respostas SDP (*Session Description Protocol*) e candidatos ICE (*Interactive Connectivity Establishment*) entre participantes de uma conversa direta.
+  - Conexão ponto a ponto de áudio e vídeo de baixa latência sem trafegar mídia pesada pelo servidor.
 
-##### 15.2. Criptografia Ponta-a-Ponta (E2EE) para Mensagens Diretas (Directs 1x1)
-* **Arquitetura de Chaves com Web Crypto API (`SubtleCrypto`)**:
-  - Geração de par de chaves assimétricas **ECDH (Curva P-256 ou X25519)** no dispositivo do usuário durante o cadastro.
-  - O backend armazena apenas a **Chave Pública** do usuário em seu perfil.
-  - Na abertura de um chat direto, os clientes derivam um segredo compartilhado (*shared secret*) via troca Diffie-Hellman e cifram o conteúdo com **AES-GCM de 256 bits**.
-  - O backend e o banco de dados armazenam e transitam exclusivamente o *ciphertext* cifrado e o vetor de inicialização (*IV*), tornando impossível a leitura por terceiros ou administradores.
-
-##### 15.3. Armazenamento de Arquivos em Object Storage (S3 / Cloudflare R2 / Supabase Storage)
+##### 15.2. Armazenamento de Arquivos em Object Storage (S3 / Cloudflare R2 / Supabase Storage)
 * **Upload Direto via URLs Pré-Assinadas (*Presigned URLs*)**:
-  - Eliminação de payloads de imagem em Base64 no corpo das mensagens HTTP/Socket, reduzindo o tráfego de rede e o uso de memória do Node.js em até 70%.
+  - Eliminação de payloads em Base64 no corpo das mensagens HTTP/Socket, reduzindo o tráfego de rede e o uso de memória do Node.js em até 70%.
   - Endpoint `POST /api/media/presigned-url` para emissão de links seguros temporários com upload direto do cliente para buckets S3/R2.
   - **Validação Estrita de Magic Bytes**: Checagem de cabeçalhos binários reais dos arquivos para mitigar ataques de camuflagem de executáveis maliciosos em extensões de imagem.
 
-##### 15.4. Presença Distribuída & Escalabilidade Horizontal com Redis Adapter
+##### 15.3. Presença Distribuída & Escalabilidade Horizontal com Redis Adapter
 * **Clusterização de WebSockets (`@socket.io/redis-adapter`)**:
   - Desacoplamento da memória local do processo (`roomPresence` e `globalOnlineUsers`) para um barramento Pub/Sub no Redis.
   - Capacidade de escalar o backend horizontalmente em múltiplos containers ou nós Kubernetes mantendo broadcast de eventos e presença sincronizada globalmente.
 
-##### 15.5. Notificações Push Nativas (WebPush / FCM)
+##### 15.4. Notificações Push Nativas (WebPush / FCM)
 * **Entrega em Segundo Plano**:
   - Registro de *Service Workers* e subscrições WebPush (`web-push` RFC 8291) com chaves VAPID.
   - Disparo de notificações na área de trabalho e dispositivos móveis quando o usuário receber mensagens diretas ou menções (@usuario) com o navegador em segundo plano ou fechado.

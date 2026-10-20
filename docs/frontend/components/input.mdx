@@ -126,4 +126,23 @@ export function ChatTextarea({ value, onChange, onKeyDown }) {
   );
 }
 ```
+
+```jsx Seletor de Código OTP (OtpCodeInput)
+export function OtpSlots({ length = 6, value, onChange }) {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      {Array.from({ length }).map((_, index) => (
+        <input
+          key={index}
+          type="text"
+          inputMode="numeric"
+          maxLength={1}
+          value={value[index] || ""}
+          className="skeuo-input w-11 h-13 text-center text-xl font-black rounded-xl text-slate-800 dark:text-slate-100"
+        />
+      ))}
+    </div>
+  );
+}
+```
 </CodeGroup>

@@ -165,7 +165,6 @@ curl -X POST "https://skyripple-9vqr.onrender.com/api/auth/oauth-sync" \
 ```javascript Frontend (React / Supabase)
 import { supabase } from './services/supabase';
 
-// 1. Disparar login social
 export const loginWithGoogle = async () => {
   await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -173,7 +172,6 @@ export const loginWithGoogle = async () => {
   });
 };
 
-// 2. Sincronizar sessão capturada
 export const syncWithBackend = async (sessionUser) => {
   const res = await fetch('https://skyripple-9vqr.onrender.com/api/auth/oauth-sync', {
     method: 'POST',
@@ -218,10 +216,68 @@ const socket = io("https://skyripple-9vqr.onrender.com", {
 });
 
 socket.on("connect_error", (error) => {
-  // Disparado se o token não for enviado ou for inválido
   console.error("Conexão recusada:", error.message);
 });
 ```
+
+---
+
+## Verificação em Duas Etapas & Recuperação via Código OTP
+
+O SkyRipple implementa fluxos numéricos de verificação através do componente tátil `OtpCodeInput`:
+
+### 1. Cadastro em Duas Etapas (Código OTP de 6 Dígitos)
+* **Etapa 1**: O usuário submete nome, e-mail e senha. O sistema dispara `supabase.auth.signUp({ email, password })`.
+* **Etapa 2**: O Supabase emite um código numérico de 6 dígitos para o e-mail cadastrado.
+* **Validação**: O usuário digita o código em 6 ranhuras numéricas. O cliente valida via `supabase.auth.verifyOtp({ email, token, type: 'signup' })`.
+* **Conclusão**: O backend registra o usuário em `POST /api/auth/register`, gravando o token JWT retornado.
+* **Reenvio com Timer**: Um contador regressivo de 60 segundos bloqueia requisições repetidas e habilita reenvio seguro.
+
+### 2. Recuperação de Senha (Código OTP de 8 Dígitos)
+* **Solicitação**: O usuário informa o e-mail em `/forgot-password`, chamando `supabase.auth.resetPasswordForEmail`.
+* **Validação em 8 Slots**: O e-mail recebe um código numérico de 8 dígitos validado pelo seletor `OtpCodeInput` com propriedade `length={8}` via `supabase.auth.verifyOtp({ email, token, type: 'recovery' })`.
+* **Atualização**: Estabelecida a sessão de recuperação, o usuário define sua nova senha via `supabase.auth.updateUser({ password })`.
+
+---
+
+## Criptografia Ponta a Ponta (E2EE) & Acordo de Chaves Públicas
+
+Nas mensagens diretas privadas (Directs 1x1), o SkyRipple garante confidencialidade absoluta através da **Web Crypto API**:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Alice as Navegador de Alice
+    participant API as Backend REST (/api/directs)
+    actor Bob as Navegador de Bob
+
+    Alice->>Alice: Gera par de chaves ECDH P-256 no dispositivo
+    Alice->>API: PUT /api/directs/keys { publicKey: JWK_Alice }
+    Bob->>Bob: Gera par de chaves ECDH P-256 no dispositivo
+    Bob->>API: PUT /api/directs/keys { publicKey: JWK_Bob }
+
+    Alice->>API: GET /api/directs/keys/{bobId}
+    API-->>Alice: Retorna JWK_Bob
+    Alice->>Alice: Deriva segredo simétrico compartilhado via HKDF
+    Alice->>Alice: Cifra mensagem com AES-GCM-256 gerando envelope 'e2ee:v1:...'
+    Alice->>Bob: Transmite envelope cifrado via Socket.io (Servidor Cego)
+    Bob->>Bob: Deriva a mesma chave simétrica e decifra localmente
+```
+
+* **Servidor Cego**: O backend armazena apenas a chave pública no perfil do usuário e trafega envelopes cifrados `e2ee:v1:IV_Base64:Ciphertext_Base64` sem acesso ao texto plano.
+* **Endpoints de Chaves**:
+  - `PUT /api/directs/keys`: Registra ou atualiza a chave pública ECDH P-256 (JWK) do usuário autenticado.
+  - `GET /api/directs/keys/:userId`: Retorna a chave pública de um usuário para acordo criptográfico.
+
+---
+
+## Rotina Resiliente de Logout
+
+Para assegurar que nenhuma credencial persista em dispositivos públicos ou após encerramento de sessão, a rotina de logout executa:
+1. **Timeout Defensivo**: Executa `supabase.auth.signOut()` encapsulado em `Promise.race` com timeout máximo de 2.000 ms, impedindo que lentidões na rede congelem a interface.
+2. **Expurgo de Armazenamento Local**: Limpeza estrita de chaves de autenticação (`chat_token`, `chat_user`, `admin_token`) no `localStorage` e `sessionStorage`.
+3. **Desconexão de WebSocket**: Invocação imediata de `socket.disconnect()` e remoção do token do handshake.
+4. **Disparo de Evento Global**: Emissão do evento nativo `profileUpdated` e redirecionamento limpo para `/login`.
 
 ---
 

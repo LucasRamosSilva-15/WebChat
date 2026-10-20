@@ -21,6 +21,8 @@ A estrutura do código-fonte segue o princípio de separação de responsabilida
 ```
 frontend/src/
 ├── components/          # Componentes reutilizáveis do sistema e guardas de rota
+│   ├── common/          # Componentes atômicos e utilitários
+│   │   └── OtpCodeInput.jsx # Seletor numérico de slots OTP (6 e 8 dígitos)
 │   ├── UserAvatar.jsx   # Avatar tátil com anéis de presença e iniciais
 │   ├── SkeuoLoading.jsx # Indicador de carregamento com shimmer e barra física
 │   ├── SkyBackground.jsx# Fundo dinâmico com gradiente atmosférico
@@ -38,11 +40,12 @@ frontend/src/
 │   └── NotificationContext.jsx # Provider global de notificações e feedback sonoro
 ├── pages/               # Visões completas roteadas pelo React Router DOM v7
 │   ├── Home.jsx         # Landing page de apresentação
-│   ├── Login.jsx        # Formulário de entrada com JWT
-│   ├── Register.jsx     # Cadastro com medidor de força de senha
+│   ├── Login.jsx        # Formulário de entrada com JWT e Google OAuth
+│   ├── Register.jsx     # Cadastro em duas etapas com código OTP de 6 dígitos
+│   ├── ForgotPassword.jsx # Recuperação de credenciais com OTP de 8 dígitos
 │   ├── Rooms.jsx        # Lobby de salas com filtros e métricas
-│   ├── Chat.jsx         # Interface principal de mensageria e moderação
-│   ├── Directs.jsx      # Mensagens Diretas 1x1 privadas e busca de contatos
+│   ├── Chat.jsx         # Interface principal de mensageria com cursor, áudio e anexos
+│   ├── Directs.jsx      # Mensagens Diretas 1x1 com Criptografia E2EE e busca
 │   ├── Favorites.jsx    # Central de curadoria de salas e conversas favoritas
 │   ├── Custom.jsx       # Personalização de avatar e perfil
 │   ├── Settings.jsx     # Preferências visuais, temas e acessibilidade
@@ -53,15 +56,17 @@ frontend/src/
 │   ├── Admin.jsx        # Painel operacional de moderação e métricas
 │   ├── ButtonsTest.jsx  # Bancada de testes e vitrine viva de componentes
 │   └── NotFound.jsx     # Página 404 personalizada com bússola 3D
-├── services/            # Camada de comunicação HTTP
-│   └── api.js           # Cliente fetch com interceptor de token e auto-logout
+├── services/            # Camada de comunicação HTTP, Web Crypto e Mídia
+│   ├── api.js           # Cliente fetch com interceptor de token e auto-logout
+│   ├── attachments.js   # Conversão de áudio, validação e sanitização de anexos (até 5MB)
+│   └── e2ee.js          # Web Crypto API: ECDH P-256, HKDF e AES-GCM-256
 ├── styles/              # Módulos CSS do Design System Skeuomórfico
 │   ├── skeuo.css        # Relevos, chanfros, botões e cartões físicos
 │   ├── skeuo-extra.css  # Vidro jateado (glassmorphism) e efeitos de luz
 │   ├── animations.css   # Keyframes de pulso, shimmer e transições
 │   ├── avatar.css       # Molduras, anéis e cores de status
 │   └── loading.css      # Barras de progresso e spinners
-├── tests/               # Suíte de testes automatizados com Vitest (11 arquivos)
+├── tests/               # Suíte de testes automatizados com Vitest (19 arquivos e 128 testes 100% aprovados)
 ├── socket.js            # Instância singleton do cliente Socket.io
 ├── index.css            # Ponto de entrada Tailwind v4 e variáveis de tema
 └── main.jsx             # Bootstrap da aplicação React
@@ -145,7 +150,6 @@ sequenceDiagram
 Todas as requisições HTTP passam pela função `apiRequest`, que aplica automaticamente o Bearer Token e intercepta status `401 Unauthorized`:
 
 ```javascript
-// Exemplo simplificado de services/api.js
 export const apiRequest = async (endpoint, options = {}) => {
   const token = localStorage.getItem('chat_token');
   const headers = {
@@ -158,7 +162,7 @@ export const apiRequest = async (endpoint, options = {}) => {
 
   if (!response.ok) {
     if (response.status === 401) {
-      clearAuthSession(); // Dispara evento de expiração de sessão
+      clearAuthSession();
     }
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error || response.statusText);

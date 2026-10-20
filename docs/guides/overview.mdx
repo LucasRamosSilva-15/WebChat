@@ -16,17 +16,17 @@ O **SkyRipple** é uma plataforma de comunicação em tempo real de alto desempe
 
 ## Pilares Arquiteturais
 
-A infraestrutura foi concebida para oferecer baixa latência na entrega de mensagens, consistência transacional e isolamento estrito entre usuários e operadores administrativos.
+A infraestrutura foi concebida para oferecer baixa latência na entrega de mensagens, consistência transacional e isolamento estrito entre usuários e operadores administrativos:
 
 <CardGroup cols={3}>
   <Card title="Camada RESTful" icon="server" color="#2563EB">
-    Rotas HTTP padronizadas, hashing Argon2id/bcrypt, autenticação híbrida (Google OAuth via Supabase) e emissão de JWT.
+    Rotas HTTP padronizadas, hashing Argon2id/bcrypt, autenticação híbrida (Google OAuth via Supabase), verificação OTP e emissão de JWT.
   </Card>
-  <Card title="Realtime Engine" icon="bolt" color="#F59E0B">
-    Pipeline WebSocket com Socket.io, broadcasting por canais de salas e controle de taxa de 500ms por usuário.
+  <Card title="Realtime & E2EE" icon="lock" color="#F59E0B">
+    Pipeline WebSocket com Socket.io e suporte a Criptografia Ponta a Ponta (ECDH P-256 + AES-GCM-256) em conversas diretas.
   </Card>
   <Card title="Persistência Relacional" icon="database" color="#10B981">
-    Banco de dados PostgreSQL com modelagem transacional via Prisma/Sequelize e integridade referencial em cascata.
+    Banco de dados PostgreSQL com paginação por cursor (`before`, `since`, `limit`) sobre índices B-Tree e integridade referencial.
   </Card>
 </CardGroup>
 
@@ -38,14 +38,16 @@ O diagrama abaixo ilustra o fluxo de dados entre os clientes (Web/Mobile), a cam
 
 ```mermaid
 graph TD
-    Client[Cliente SkyRipple / SDK] -->|HTTP REST /api/*| Express[Express Server API]
+    Client[Cliente SkyRipple Web/Mobile] -->|HTTP REST /api/*| Express[Express Server API]
     Client -->|WSS Handshake + JWT| SocketIO[Socket.io Gateway]
+    Client -.->|Web Crypto API| E2EE[Cifragem Ponta a Ponta ECDH/AES-GCM]
     Express --> AuthMW[Middleware auth.js / adminAuth.js]
-    AuthMW --> Controllers[Controllers & Services]
+    AuthMW --> Controllers[Controllers, Services & Repositories]
+    Controllers --> CursorEngine[Paginação por Cursor B-Tree]
     Controllers --> Postgres[(PostgreSQL / Supabase)]
-    SocketIO --> RoomPresence[Room Presence & RateLimit]
+    SocketIO --> RoomPresence[Room Presence & RateLimit 500ms]
     RoomPresence --> Postgres
-    SocketIO -->|Broadcast de Mensagens| Client
+    SocketIO -->|Broadcast de Mensagens & Envelopes Cifrados| Client
 ```
 
 ---
@@ -68,8 +70,8 @@ Para integrar suas aplicações e realizar homologações, utilize as URLs base 
 
 O ecossistema **SkyRipple** conta com duas interfaces complementares para consumo e teste dos contratos de API:
 * **Portal Mintlify**: Documentação aprofundada de arquitetura, guias de integração, design system de componentes frontend e referência interativa de endpoints.
-* **Swagger UI (OpenAPI 3.0/3.1)**: Interface interativa embarcada no próprio backend em `/api-docs` (`https://skyripple-9vqr.onrender.com/api-docs` ou `http://localhost:3001/api-docs`), permitindo autenticação interativa via `BearerAuth` (JWT) e `AdminAuth` (chave mestra) para execução de requisições de teste diretamente pelo navegador.
-
+* **Swagger UI (OpenAPI 3.0/3.1)**: Interface interativa embarcada no próprio backend em `/api-docs` (`https://skyripple-9vqr.onrender.com/api-docs` ou `http://localhost:3001/api-docs`), documentando **40 rotas** e **13 esquemas canônicos** com suporte a autenticação interativa via `BearerAuth` (JWT) e `AdminAuth` (chave mestra).
+* **Maturidade Técnica & Testes**: Suíte robusta de **310 testes automatizados** (182 testes no backend com Jest e 128 testes no frontend com Vitest) com 100% de aprovação.
 
 ---
 
@@ -79,16 +81,16 @@ A API está dividida em 8 domínios operacionais fundamentais:
 
 <CardGroup cols={2}>
   <Card title="1. Autenticação & Usuários" icon="user-lock" href="/guides/auth-security">
-    Registro com Argon2id/bcrypt, login, resolução de perfil público (`/auth/me`) e deleção de conta.
+    Registro com Argon2id/bcrypt, verificação em duas etapas via OTP, login, Google OAuth (`oauth-sync`) e perfil (`/auth/me`).
   </Card>
   <Card title="2. Salas & Moderação" icon="people-roof" href="/api-reference/rooms/list">
     Salas temáticas, cargos hierárquicos (`owner`, `moderator`, `user`), expulsão de membros e transferência de dono.
   </Card>
   <Card title="3. Mensageria & Histórico" icon="message" href="/api-reference/messages/list">
-    Histórico cronológico, anexos de imagem via URL e busca textual case-insensitive (`q`).
+    Histórico paginado por cursor (`before`, `since`, `limit`), anexos multimídia/áudio gravado (até 5MB) e busca textual.
   </Card>
-  <Card title="4. Mensagens Diretas (Directs)" icon="comments" href="/api-reference/directs/list-conversations">
-    Conversas privadas 1x1, busca de contatos e histórico confidencial.
+  <Card title="4. Mensagens Diretas (Directs) & E2EE" icon="comments" href="/api-reference/directs/list-conversations">
+    Conversas privadas 1x1, troca de chaves públicas ECDH P-256 (`/directs/keys`), trânsito de envelopes cifrados e histórico confidencial.
   </Card>
   <Card title="5. Notificações em Tempo Real" icon="bell" href="/api-reference/notifications/list">
     Central de avisos em tempo real com persistência, leitura individual ou em lote.

@@ -14,11 +14,11 @@ O frontend do **SkyRipple** é composto por 18 telas e visões concebidas sob a 
 | :--- | :--- | :--- | :--- | :--- |
 | **Página Inicial** | `/` | `Home.jsx` | Pública | Landing page de apresentação, proposta de valor, CTA dinâmico e acesso rápido. |
 | **Login** | `/login` | `Login.jsx` | Pública | Autenticação com e-mail/senha ou Google OAuth (Supabase), emissão de JWT nativo e feedback tátil. |
-| **Cadastro** | `/register` | `Register.jsx` | Pública | Registro de contas com credenciais locais (medidor dinâmico de força) ou Google OAuth, e termos legais. |
-| **Recuperação de Senha** | `/forgot-password` | `ForgotPassword.jsx` | Pública | Recuperação de credenciais com envio de link de redefinição via Supabase Auth. |
+| **Cadastro** | `/register` | `Register.jsx` | Pública | Registro em duas etapas com código numérico OTP (6 dígitos), medidor dinâmico de força e termos legais. |
+| **Recuperação de Senha** | `/forgot-password` | `ForgotPassword.jsx` | Pública | Recuperação de credenciais com envio de código numérico OTP de 8 dígitos e redefinição de senha. |
 | **Lobby de Salas** | `/rooms` | `Rooms.jsx` | `PrivateRoute` | Catálogo de salas temáticas, métricas em tempo real (`StatCard`), filtros e criação de sala. |
-| **Sala de Chat** | `/chat` | `Chat.jsx` | `PrivateRoute` | Mensageria instantânea com Socket.io, criptografia AES-256 e moderação hierárquica. |
-| **Mensagens Diretas** | `/directs` | `Directs.jsx` | `PrivateRoute` | Bate-papo 1x1 confidencial em tempo real, lista de conversas e busca de contatos. |
+| **Sala de Chat** | `/chat` | `Chat.jsx` | `PrivateRoute` | Mensageria instantânea com Socket.io, histórico paginado por cursor, áudio, anexos e moderação. |
+| **Mensagens Diretas** | `/directs` | `Directs.jsx` | `PrivateRoute` | Bate-papo 1x1 confidencial com Criptografia Ponta a Ponta (E2EE), troca de chaves e histórico paginado. |
 | **Chat Direto (Alias)** | `/direct` | `Directs.jsx` | `PrivateRoute` | Rota alternativa de acesso rápido ao painel de mensagens diretas. |
 | **Favoritos** | `/favorites` | `Favorites.jsx` | `PrivateRoute` | Central de curadoria e acesso instantâneo a salas e conversas favoritas do usuário. |
 | **Personalização** | `/custom` | `Custom.jsx` | `PrivateRoute` | Customização de avatar, bio e perfil com pré-visualização tátil em tempo real. |

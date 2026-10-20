@@ -10,7 +10,8 @@ Bem-vindo à documentação técnica do cliente web do **SkyRipple**. Esta aplic
 - **Roteamento**: [React Router DOM v7](https://reactrouter.com/)
 - **Estilização**: [Tailwind CSS v4](https://tailwindcss.com/) + CSS Customizado (`skeuo.css`, `skeuo-extra.css`)
 - **Comunicação em Tempo Real**: [Socket.IO Client](https://socket.io/)
-- **Criptografia Client-side**: [Crypto-JS](https://cryptojs.gitbook.io/) (AES-256)
+- **Criptografia Ponta-a-Ponta (E2EE)**: [Web Crypto API nativa](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) (`SubtleCrypto` com par de chaves assimétricas ECDH P-256, derivação HKDF e cifras simétricas AES-GCM-256 bits)
+- **Processamento de Áudio & Anexos**: MediaRecorder API nativa e conversão resiliente de Base64 Data URL (até 5MB) via `attachments.js`
 - **Iconografia**: [Lucide React](https://lucide.dev/) & [React Icons](https://react-icons.github.io/react-icons/)
 - **Animações & Efeitos**: Backdrop filters, reflexos de vidro, gradientes HSL e chanfros tridimensionais
 
@@ -23,13 +24,13 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 | Rota | Componente | Acesso | Descrição Resumida |
 | :--- | :--- | :--- | :--- |
 | `/` | `Home.jsx` | Público | Landing page inicial e ponto de entrada |
-| `/login` | `Login.jsx` | Público | Autenticação de usuários existentes |
-| `/register` | `Register.jsx` | Público | Criação de conta com medidor de senha |
-| `/forgot-password` | `ForgotPassword.jsx` | Público | Recuperação de senha com envio de link via Supabase Auth |
+| `/login` | `Login.jsx` | Público | Autenticação de usuários existentes com suporte a e-mail/senha e Google OAuth |
+| `/register` | `Register.jsx` | Público | Criação de conta em duas etapas com código numérico OTP (6 dígitos) e medidor de senha |
+| `/forgot-password` | `ForgotPassword.jsx` | Público | Recuperação de senha com envio de código numérico de 8 dígitos e atualização de credenciais |
 | `/about` | `About.jsx` | Público | Apresentação institucional e acadêmica |
 | `/rooms` | `Rooms.jsx` | Protegido (`PrivateRoute`) | Lobby de salas de conversação com filtros e métricas |
-| `/chat` | `Chat.jsx` | Protegido (`PrivateRoute`) | Sala de chat ativa com moderação e tempo real |
-| `/directs` | `Directs.jsx` | Protegido (`PrivateRoute`) | Mensagens Diretas 1x1 privadas e busca de contatos |
+| `/chat` | `Chat.jsx` | Protegido (`PrivateRoute`) | Sala de chat ativa com moderação, histórico paginado por cursor, áudio e anexos |
+| `/directs` | `Directs.jsx` | Protegido (`PrivateRoute`) | Mensagens Diretas 1x1 protegidas por Criptografia Ponta a Ponta (E2EE) |
 | `/direct` | `Directs.jsx` | Protegido (`PrivateRoute`) | Rota alternativa de acesso ao chat direto |
 | `/favorites` | `Favorites.jsx` | Protegido (`PrivateRoute`) | Central de salas e conversas favoritas |
 | `/custom` | `Custom.jsx` | Protegido (`PrivateRoute`) | Customização de perfil e avatar |
@@ -56,25 +57,37 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ### 2. `Login.jsx` (Autenticação)
 - **Para que serve:**
-  Permite que usuários registrados acessem suas contas utilizando e-mail e senha.
+  Permite que usuários registrados acessem suas contas utilizando e-mail e senha tradicionais ou login social com Google OAuth.
 - **Como é feito:**
   - **Estado & Lógica:** Gerencia `email`, `password`, visibilidade de senha (`showPassword`), `loading`, `error` e mensagens de sessão expirada (`sessionExpiredNotice`) via `location.state`.
   - **Integração:** Submete credenciais para o endpoint `POST /api/auth/login`. Em caso de sucesso, armazena o token JWT (`setAuthToken`), inicializa os dados no `localStorage`, atualiza a autenticação do socket (`socket.auth = { token }`), reconecta o socket e dispara o evento global `profileUpdated`.
+  - **Google OAuth:** Botão dedicado com ícone colorido do Google que aciona o fluxo gerenciado pelo Supabase e sincroniza o perfil via `POST /api/auth/oauth-sync`.
   - **Design:** Card tátil com inputs chanfrados `.skeuo-input`, botões com gradientes glossy e feedback de erro em alerta contextual.
 
 ---
 
-### 3. `Register.jsx` (Cadastro)
+### 3. `Register.jsx` (Cadastro em Duas Etapas com Código OTP)
 - **Para que serve:**
-  Registro de novos usuários na plataforma, com validação de robustez de senha e conformidade com termos legais.
+  Registro confiável de novos usuários na plataforma, combinando medidor de robustez de senha e verificação de e-mail por código numérico de 6 dígitos.
 - **Como é feito:**
-  - **Estado & Lógica:** Controla `username`, `email`, `password`, checkboxes de termos (`termsAccepted` e `privacyAccepted`) e modais informativos via `createPortal`.
-  - **Medidor de Força de Senha:** A função `getPasswordStrength(pwd)` avalia tamanho, caracteres maiúsculos, minúsculos, números e símbolos em tempo real, renderizando uma barra de progresso reativa com badges de status ("Fraca", "Média", "Forte", "Excelente").
-  - **Integração:** Envia os dados para `POST /api/auth/register`, gravando o token retornado e sincronizando a sessão via WebSocket antes de redirecionar para `/rooms`.
+  - **Etapa 1 (Dados Pessoais & Senha):** Controla `username`, `email`, `password`, checkboxes de termos (`termsAccepted` e `privacyAccepted`) e modais informativos via `createPortal`. A função `getPasswordStrength(pwd)` avalia complexidade em tempo real gerando feedback visual reativo.
+  - **Etapa 2 (Verificação de Código OTP):** Ao submeter a etapa 1, o Supabase dispara um código numérico de 6 dígitos para o e-mail informado e a tela avança suavemente para o componente [`OtpCodeInput.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/common/OtpCodeInput.jsx).
+  - **Validação de Código:** Valida o código digitado via `supabase.auth.verifyOtp({ email, token, type: 'signup' })`. Se correto, conclui o registro na API backend (`POST /api/auth/register`), armazena o token JWT e conecta a sessão WebSocket.
+  - **Reenvio com Timer:** Contador regressivo de 60 segundos com botão tátil para solicitar novo código se necessário.
 
 ---
 
-### 4. `Rooms.jsx` (Lobby de Salas)
+### 4. `ForgotPassword.jsx` (Recuperação de Senha com OTP de 8 Dígitos)
+- **Para que serve:**
+  Permite a redefinição segura de credenciais através de código numérico de verificação de 8 dígitos enviado ao e-mail.
+- **Como é feito:**
+  - **Etapa 1 (Identificação):** Usuário informa o e-mail cadastrado e solicita o código de recuperação via `supabase.auth.resetPasswordForEmail`.
+  - **Etapa 2 (Validação do Código de 8 Dígitos):** Exibe o componente [`OtpCodeInput.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/common/OtpCodeInput.jsx) configurado com 8 ranhuras numéricas (`length={8}`). O código é conferido via `supabase.auth.verifyOtp({ email, token, type: 'recovery' })`.
+  - **Etapa 3 (Nova Senha):** Com a sessão temporária de recuperação ativa, renderiza campos para definição e confirmação da nova senha chamando `supabase.auth.updateUser({ password })`.
+
+---
+
+### 5. `Rooms.jsx` (Lobby de Salas)
 - **Para que serve:**
   Atua como o centro de navegação comunitária onde o usuário pode explorar, filtrar, criar e ingressar em salas de chat temáticas.
 - **Como é feito:**
@@ -86,17 +99,20 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 5. `Chat.jsx` (Sala de Conversação em Tempo Real)
+### 6. `Chat.jsx` (Sala de Conversação em Tempo Real)
 - **Para que serve:**
-  É o núcleo operacional do SkyRipple. Gerencia toda a troca de mensagens instantâneas dentro de uma sala selecionada, integrando moderação hierárquica completa, presença de membros e ferramentas táteis de comunicação.
+  É o núcleo operacional do SkyRipple. Gerencia toda a troca de mensagens instantâneas dentro de uma sala selecionada, integrando moderação hierárquica completa, presença de membros, histórico com paginação por cursor e envio de mídias/áudios.
 - **Como é feito:**
-  - **Socket.IO & Criptografia:** Estabelece conexão com a sala via evento `joinRoom`. As mensagens são transmitidas com compressão e criptografia simétrica client-side via AES-256 (`CryptoJS.AES`).
-  - **Renderização de Balões (`MessageBubble`):** Suporta modos de visualização configuráveis ("Grande", "Suave", "Compacto"), estados de mensagem própria (`isMe`), timestamps inteligentes com formatação humanizada ("Hoje às 14:30", "Ontem às..."), e indicadores visuais de mensagem editada ou fixada.
+  - **Socket.IO & Presença:** Estabelece conexão com a sala via evento `joinRoom`. Gerencia lista de avatares com luz LED de status online e contador em tempo real (`roomPresenceUpdated`).
+  - **Paginação Baseada em Cursor (before/since/limit):** O histórico carrega fatias de mensagens de forma instantânea. A rolagem para cima dispara o carregamento da fatia anterior (`before=timestamp`) sem saltos bruscos no scroll.
+  - **Mídias, Áudio & Anexos Multimídia:**
+    - Gravador de voz embutido utilizando a MediaRecorder API nativa do navegador com indicador de tempo e botão de cancelamento/envio.
+    - Suporte a envio de imagens e documentos (PDF, texto, mídias até 5 MB) convertidos em Data URL com sanitização client-side.
+  - **Renderização de Balões (`MessageBubble`):** Suporta modos de visualização ("Grande", "Suave", "Compacto"), estados de mensagem própria (`isMe`), timestamps inteligentes ("Hoje às 14:30"), player de áudio integrado com barra de progresso e modal de zoom para imagens.
   - **Interações Avançadas:**
     - Reações de curtida (`onToggleLike`)
     - Favoritar mensagens para consulta rápida
     - Exclusão permitida com regras de negócio (autor até 24h, moderador ou dono da sala)
-    - Envio e preview de imagens com compressão e modal de zoom
     - Denúncia in-chat (`onReportClick`) com modal de justificativa
     - Busca textual intra-chat com navegação por ocorrências (anterior/próxima)
   - **Sidebars & Moderação Hierárquica da Sala (`MembersSidebar.jsx`):**
@@ -114,23 +130,27 @@ O roteamento da aplicação é gerenciado em `src/App.jsx` com controle de guard
 
 ---
 
-### 6. [`Directs.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/pages/Directs.jsx) (Mensagens Diretas 1x1 Privadas)
+### 7. [`Directs.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/pages/Directs.jsx) (Mensagens Diretas 1x1 com Criptografia Ponta a Ponta - E2EE)
 - **Para que serve:**
-  Hub dedicado a conversas privadas e confidenciais entre dois usuários, desacoplado das salas públicas.
+  Hub dedicado a conversas privadas e confidenciais entre dois usuários, com criptografia ponta a ponta (E2EE) ativada por padrão.
 - **Como é feito:**
+  - **Motor de Chaves Assimétricas (Web Crypto API):**
+    - Na inicialização, gera localmente um par de chaves ECDH sobre a curva P-256 e armazena a chave privada de forma segura no dispositivo.
+    - Registra a chave pública no backend via `PUT /api/directs/keys` em formato JSON Web Key (JWK).
+    - Para conversar com outro usuário, busca a chave pública do interlocutor via `GET /api/directs/keys/:userId` e deriva um segredo simétrico compartilhado via HKDF.
+  - **Cifragem & Decifragem Local (AES-GCM-256):**
+    - Toda mensagem (texto e anexo) é cifrada no navegador com chave AES-GCM de 256 bits e IV aleatório de 12 bytes.
+    - O conteúdo trafega e é persistido no servidor exclusivamente dentro do envelope opaco `e2ee:v1:IV_Base64:Ciphertext_Base64`. O backend opera de forma cega, sem acesso às chaves de decifragem.
+    - O destinatário recebe o envelope via WebSocket (`receive_direct_message`), decifra o payload localmente com sua chave privada e renderiza o conteúdo descriptografado.
+  - **Paginação Baseada em Cursor:**
+    - Carregamento de histórico via cursores `before` e `limit`, permitindo rolagem infinita instantânea em conversas extensas.
+  - **Gravador de Áudio & Anexos Cifrados:**
+    - Suporte a mensagens de áudio gravadas e anexos multimídia (até 5MB) que são criptografados antes do envio.
   - **Estado & Gerenciamento:**
-    - Controla a lista de conversas ativas (`conversations`), a conversa selecionada (`activeConversation`), mensagens carregadas (`messages`) e termo de busca (`searchQuery`).
-    - Modal de Novo Chat ([`NewDirectMessageModal.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NewDirectMessageModal.jsx)): Permite buscar qualquer usuário cadastrado no sistema via `GET /api/directs/users?q=...` e iniciar o chat com um clique.
-  - **Comunicação em Tempo Real & Deduplicação:**
-    - Integra-se ao Socket.IO escutando `receive_direct_message`, atualizando instantaneamente o chat ativo e o resumo da conversa na lista lateral.
+    - Lista de conversas ativas (`conversations`), conversa selecionada (`activeConversation`), mensagens carregadas (`messages`) e busca de contatos via [`NewDirectMessageModal.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NewDirectMessageModal.jsx).
     - Mecanismo anti-duplicação: rastreia IDs únicos temporários e definitivos, impedindo mensagens duplicadas em conexões instáveis.
-    - Notifica o usuário globalmente via `NotificationContext` com som e banner flutuante (*toast*).
-  - **Sistema de Horário, Data & Estilos Táteis:**
-    - Cada balão de mensagem exibe carimbo de data e hora com relógio tátil formatado ("14:35" ou data completa), além de divisores cronológicos entre dias diferentes ("Hoje", "Ontem", etc.).
-    - Total paridade estética com o [`Chat.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/pages/Chat.jsx): suporte a cores de destaque dinâmicas (azul, verde, roxo, vermelho, slate) e modos de densidade/estilo selecionados no tema.
   - **Ações da Conversa:**
-    - Envio de texto e anexos de imagem com preview em modal de zoom.
-    - Exclusão permitida de mensagens próprias via menu contextual.
+    - Exclusão de mensagens próprias via menu contextual.
     - Remoção ou ocultação de conversas pelo endpoint `DELETE /api/directs/conversations/:id`.
     - Atalho para favoritar a conversa diretamente pelo cabeçalho do chat.
   - **Design Tátil:** Layout bifásico responsivo em `.skeuo-card` com avatares com anel de status online verde, balões com acabamento glossy e feedback tátil em botões.
@@ -281,6 +301,7 @@ A aplicação conta com um pipeline global e reativo de notificações em tempo 
 | **MembersSidebar** | [`src/components/MembersSidebar.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/MembersSidebar.jsx) | Painel de moderação e presença de membros na sala, com badges de Dono, Mod e Membro, modais de promoção, expulsão e transferência de posse. |
 | **ChatSidebar** | [`src/components/ChatSidebar.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/ChatSidebar.jsx) | Painel lateral colapsável para alternância rápida entre salas de conversa ativas. |
 | **NewDirectMessageModal** | [`src/components/NewDirectMessageModal.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NewDirectMessageModal.jsx) | Modal com campo de busca com debounce para localizar contatos e iniciar chats privados 1x1. |
+| **OtpCodeInput** | [`src/components/common/OtpCodeInput.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/common/OtpCodeInput.jsx) | Seletor de slots numéricos para códigos OTP (6 ou 8 dígitos) com avanço automático, tecla backspace, colagem e timer de 60s. |
 | **NotificationsDropdown** | [`src/components/NotificationsDropdown.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NotificationsDropdown.jsx) | Dropdown de notificações com abas, contagem em tempo real e ações de leitura. |
 | **NotificationToastContainer** | [`src/components/NotificationToastContainer.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/NotificationToastContainer.jsx) | Gerenciador de toasts flutuantes translúcidos com visual Frutiger Aero. |
 | **ChatQuickSettings** | [`src/components/ChatQuickSettings.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/components/ChatQuickSettings.jsx) | Painel popover para controle de densidade visual de balões (Compacto/Confortável/Grande) e som. |
@@ -306,20 +327,26 @@ npm test -- --run
 npm run test:watch
 ```
 
-### Cobertura da Suíte (13 Arquivos, 68 Testes 100% Aprovados):
-1. **[`auth.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/auth.test.jsx)** (8 testes): Validação de formulários de login e cadastro, medidor de força de senha e persistência de token JWT.
-2. **[`chat.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/chat.test.jsx)** (7 testes): Envio de mensagens, edição, exclusão hierárquica, criptografia e abertura de Direct a partir de membro.
-3. **[`Directs.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Directs.test.jsx)** (8 testes): Listagem de conversas, envio de mensagens diretas, deduplicação, busca de contatos e remoção de conversas.
-4. **[`Favorites.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Favorites.test.jsx)** (5 testes): Listagem de favoritos, filtros por abas ("Salas" e "Conversas") e ação de desfavoritar.
-5. **[`Notifications.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Notifications.test.jsx)** (4 testes): Notificações recebidas, alternância de abas de filtro e marcação de leitura.
-6. **[`Rooms.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Rooms.test.jsx)** (5 testes): Lobby de salas, estatísticas da API, filtros de categoria, modais de criação e tratamento de falhas.
-7. **[`MembersSidebar.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/MembersSidebar.test.jsx)**: Renderização de insígnias de moderação, botões de kick e promoção de cargos.
-8. **[`ChatSidebar.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/ChatSidebar.test.jsx)**: Alternância rápida e renderização de salas ativas.
-9. **[`PrivateRoute.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/PrivateRoute.test.jsx)** (3 testes): Proteção de rotas autenticadas e redirecionamento de usuários deslogados.
-10. **[`ForgotPassword.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/ForgotPassword.test.jsx)** (5 testes): Validação de formulário de recuperação de senha e envio de link via Supabase Auth.
-11. **[`Home.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Home.test.jsx)**: Renderização da landing page, títulos de alto impacto e alternância de botões CTA conforme estado de login.
-12. **[`Footer.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Footer.test.jsx)** (6 testes): Renderização institucional, ano corrente e links de navegação.
-13. **[`api.test.js`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/api.test.js)** (8 testes): Interceptação de tokens Bearer, injeção de cabeçalhos e expiração automática de sessão.
+### Cobertura da Suíte (19 Arquivos, 128 Testes 100% Aprovados):
+1. **[`auth.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/auth.test.jsx)** (8 testes): Formulários de login e cadastro, medidor de força de senha, persistência de token JWT e redirecionamento.
+2. **[`otp.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/otp.test.jsx)** (7 testes): Componente `OtpCodeInput`, avanço de foco entre slots, backspace, suporte a colar código (paste) e timer regressivo de 60s.
+3. **[`logout.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/logout.test.jsx)** (6 testes): Rotina resiliente de logout com timeout defensivo de 2.000ms via `Promise.race`, desconexão limpa de WebSocket, expurgo estrito de chaves locais e disparo de `profileUpdated`.
+4. **[`e2ee.test.js`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/e2ee.test.js)** (8 testes): Motor criptográfico da Web Crypto API: geração de par ECDH P-256, exportação/importação JWK, derivação HKDF, cifragem/decifragem AES-GCM e envelopes `e2ee:v1:...`.
+5. **[`directs-e2ee.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/directs-e2ee.test.jsx)** (7 testes): Integração de mensagens diretas E2EE, troca de chaves com a API REST, despacho de envelopes cifrados e decifragem em tempo real.
+6. **[`Directs.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Directs.test.jsx)** (8 testes): Listagem de conversas, envio de mensagens diretas, deduplicação, busca de contatos e remoção de conversas.
+7. **[`attachments.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/attachments.test.jsx)** (6 testes): Validação de tipos de arquivo, limites de payload (5 MB), sanitização e player de áudio nativo.
+8. **[`chat-history.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/chat-history.test.jsx)** (7 testes): Paginação de mensagens por cursor (`before`, `since`, `limit`), preservação da posição de scroll e carregamento incremental.
+9. **[`chat.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/chat.test.jsx)** (7 testes): Envio de mensagens, edição, exclusão hierárquica, criptografia e abertura de Direct a partir de membro.
+10. **[`Favorites.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Favorites.test.jsx)** (5 testes): Listagem de favoritos, filtros por abas ("Salas" e "Conversas") e ação de desfavoritar.
+11. **[`Notifications.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Notifications.test.jsx)** (4 testes): Notificações recebidas, alternância de abas de filtro e marcação de leitura.
+12. **[`Rooms.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Rooms.test.jsx)** (5 testes): Lobby de salas, estatísticas da API, filtros de categoria, modais de criação e tratamento de falhas.
+13. **[`MembersSidebar.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/MembersSidebar.test.jsx)**: Renderização de insígnias de moderação, botões de kick e promoção de cargos.
+14. **[`ChatSidebar.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/ChatSidebar.test.jsx)**: Alternância rápida e renderização de salas ativas.
+15. **[`PrivateRoute.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/PrivateRoute.test.jsx)** (3 testes): Proteção de rotas autenticadas e redirecionamento de usuários deslogados.
+16. **[`ForgotPassword.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/ForgotPassword.test.jsx)** (5 testes): Validação de formulário de recuperação de senha com código numérico OTP de 8 dígitos e Supabase Auth.
+17. **[`Home.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Home.test.jsx)**: Renderização da landing page, títulos de alto impacto e alternância de botões CTA conforme estado de login.
+18. **[`Footer.test.jsx`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/Footer.test.jsx)** (6 testes): Renderização institucional, ano corrente e links de navegação.
+19. **[`api.test.js`](file:///home/lucasramos/Documentos/WebChat/frontend/src/tests/api.test.js)** (8 testes): Interceptação de tokens Bearer, injeção de cabeçalhos e expiração automática de sessão.
 
 ---
 

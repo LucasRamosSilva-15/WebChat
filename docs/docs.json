@@ -112,7 +112,9 @@
               "api-reference/directs/list-messages",
               "api-reference/directs/send-message",
               "api-reference/directs/delete-conversation",
-              "api-reference/directs/list-users"
+              "api-reference/directs/list-users",
+              "api-reference/directs/set-public-key",
+              "api-reference/directs/get-public-key"
             ]
           },
           {
