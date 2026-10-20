@@ -5,7 +5,6 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../socket';
-
 import { supabase } from '../services/supabase';
 
 vi.mock('../services/api', () => ({
@@ -25,12 +24,15 @@ vi.mock('../services/supabase', () => ({
   supabase: {
     auth: {
       signInWithOAuth: vi.fn().mockResolvedValue({ error: null }),
+      signUp: vi.fn().mockResolvedValue({ data: { user: { id: 'user-456' } }, error: null }),
+      verifyOtp: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'user-456', email: 'new@test.com' } }, user: { id: 'user-456', user_metadata: { name: 'New User' } } }, error: null }),
+      resend: vi.fn().mockResolvedValue({ error: null }),
       onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
       getSession: vi.fn().mockResolvedValue({ data: { session: null } })
     }
   },
   handleGoogleSignIn: vi.fn(),
-  syncOAuthUserSession: vi.fn()
+  syncOAuthUserSession: vi.fn().mockResolvedValue({ token: 'fake-jwt-register', user: { id: 'user-456', displayName: 'New User' } })
 }));
 
 const mockedNavigate = vi.fn();
@@ -170,10 +172,17 @@ describe('Authentication Flow Tests', () => {
       expect(submitBtn).not.toBeDisabled();
     });
 
-    it('3. Realiza cadastro com sucesso, salva sessão e redireciona', async () => {
-      apiRequest.mockResolvedValue({
-        token: 'fake-jwt-register',
-        user: { id: 'user-456', displayName: 'New User' }
+    it('3. Realiza cadastro com sucesso através do fluxo de 2 etapas (signUp e verifyOtp)', async () => {
+      supabase.auth.signUp.mockResolvedValue({
+        data: { user: { id: 'user-456' } },
+        error: null
+      });
+      supabase.auth.verifyOtp.mockResolvedValue({
+        data: {
+          session: { user: { id: 'user-456', email: 'new@test.com' } },
+          user: { id: 'user-456', user_metadata: { name: 'New User' } }
+        },
+        error: null
       });
 
       render(
@@ -193,12 +202,36 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(screen.getByRole('button', { name: /^cadastrar$/i }));
 
       await waitFor(() => {
-        expect(apiRequest).toHaveBeenCalledWith('/auth/register', expect.any(Object));
+        expect(supabase.auth.signUp).toHaveBeenCalledWith({
+          email: 'new@test.com',
+          password: 'senha123',
+          options: {
+            data: {
+              name: 'New User',
+              full_name: 'New User'
+            }
+          }
+        });
       });
 
-      expect(setAuthToken).toHaveBeenCalledWith('fake-jwt-register');
+      expect(await screen.findByText(/verificação de e-mail/i)).toBeInTheDocument();
+      expect(screen.getByText(/new@test\.com/i)).toBeInTheDocument();
+
+      const otpInputs = screen.getAllByRole('textbox');
+      expect(otpInputs.length).toBe(6);
+      ['1', '2', '3', '4', '5', '6'].forEach((digit, i) => {
+        fireEvent.change(otpInputs[i], { target: { value: digit } });
+      });
+
+      await waitFor(() => {
+        expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({
+          email: 'new@test.com',
+          token: '123456',
+          type: 'signup'
+        });
+      });
+
       expect(localStorage.getItem('chat_isLoggedIn')).toBe('true');
-      expect(socket.connect).toHaveBeenCalled();
       expect(mockedNavigate).toHaveBeenCalledWith('/rooms');
     });
 

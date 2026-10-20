@@ -47,15 +47,26 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
         socket.disconnect();
       }
 
+      localStorage.removeItem('chat_isLoggedIn');
+      localStorage.removeItem('chat_displayName');
+      localStorage.removeItem('chat_uniqueUserId');
+      localStorage.removeItem('chat_profilePhoto');
+      localStorage.removeItem('chat_profileDesc');
+      localStorage.removeItem('chat_statusMessage');
+      localStorage.removeItem('chat_role');
+      localStorage.removeItem('chat_email');
       Object.keys(localStorage).forEach((key) => {
         if (
           key.startsWith('sb-') ||
+          key.startsWith('chat_') ||
           key.includes('token') ||
           key.includes('user') ||
           key.includes('auth') ||
           key.includes('skyripple')
         ) {
-          localStorage.removeItem(key);
+          if (key !== 'chat_primaryColor' && key !== 'chat_colorMode' && key !== 'chat_bgColor' && key !== 'theme') {
+            localStorage.removeItem(key);
+          }
         }
       });
       sessionStorage.clear();
