@@ -57,6 +57,7 @@ export default function MobileChat() {
   const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
   const [typingUser, setTypingUser] = useState(null);
+  const [pressingId, setPressingId] = useState(null);
   const [pinnedMessage, setPinnedMessage] = useState(() => {
     try {
       const stored = localStorage.getItem(`chat_pinned_${currentRoomId}`);
@@ -82,30 +83,37 @@ export default function MobileChat() {
     }
   };
 
+  const pressVisualRef = useRef(null);
+
   const handleTouchStart = (e, msg) => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    if (pressVisualRef.current) clearTimeout(pressVisualRef.current);
+    pressVisualRef.current = setTimeout(() => setPressingId(msg.id), 140);
     touchTimerRef.current = setTimeout(() => {
       setSelectedMessage(msg);
       setIsActionSheetOpen(true);
+      setPressingId(null);
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(20);
       }
     }, 400);
   };
 
-  const handleTouchEnd = () => {
+  const cancelPress = () => {
     if (touchTimerRef.current) {
       clearTimeout(touchTimerRef.current);
       touchTimerRef.current = null;
     }
+    if (pressVisualRef.current) {
+      clearTimeout(pressVisualRef.current);
+      pressVisualRef.current = null;
+    }
+    setPressingId(null);
   };
 
-  const handleTouchMove = () => {
-    if (touchTimerRef.current) {
-      clearTimeout(touchTimerRef.current);
-      touchTimerRef.current = null;
-    }
-  };
+  const handleTouchEnd = cancelPress;
+
+  const handleTouchMove = cancelPress;
 
   useEffect(() => {
     scrollToBottom();
@@ -180,7 +188,8 @@ export default function MobileChat() {
           image: msg.image_url || msg.image || null,
           replyTo: msg.replyTo || msg.reply_to || null,
           reactions: msg.reactions || {},
-          isEdited: msg.isEdited || false
+          isEdited: msg.isEdited || false,
+          isNew: true
         }
       ]);
     };
@@ -330,7 +339,8 @@ export default function MobileChat() {
       reactions: {},
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isMine: true
+      isMine: true,
+      isNew: true
     };
 
     setMessages((prev) => [...prev, tempMsg]);
@@ -541,11 +551,11 @@ export default function MobileChat() {
       </header>
 
       {typingUser && (
-        <div className="px-4 py-1.5 text-xs font-medium text-sky-600 dark:text-sky-400 bg-sky-50/80 dark:bg-sky-950/40 border-b border-sky-100 dark:border-sky-900/40 flex items-center gap-2 animate-pulse shrink-0">
+        <div className="px-4 py-1.5 text-xs font-medium text-sky-600 dark:text-sky-400 bg-sky-50/80 dark:bg-sky-950/40 border-b border-sky-100 dark:border-sky-900/40 flex items-center gap-2 shrink-0 anim-msg-enter">
           <span className="flex gap-1 items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span className="anim-typing-dot w-1.5 h-1.5 rounded-full bg-sky-500" />
+            <span className="anim-typing-dot w-1.5 h-1.5 rounded-full bg-sky-500" />
+            <span className="anim-typing-dot w-1.5 h-1.5 rounded-full bg-sky-500" />
           </span>
           <span>
             <strong>{typingUser}</strong> está a digitar...
@@ -554,7 +564,7 @@ export default function MobileChat() {
       )}
 
       {pinnedMessage && (
-        <div className="mx-3 mt-2 p-2.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300/70 dark:border-amber-700/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_4px_rgba(245,158,11,0.08)] flex items-center justify-between text-xs text-amber-900 dark:text-amber-200 shrink-0">
+        <div className="anim-pin-drop mx-3 mt-2 p-2.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300/70 dark:border-amber-700/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_4px_rgba(245,158,11,0.08)] flex items-center justify-between text-xs text-amber-900 dark:text-amber-200 shrink-0">
           <div
             onClick={() => scrollToMessage(pinnedMessage.id)}
             className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
@@ -628,7 +638,7 @@ export default function MobileChat() {
                 onTouchStart={(e) => handleTouchStart(e, msg)}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
-                className="flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none"
+                className={`flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
               >
                 <div className="bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
                   {msg.replyTo && (
@@ -686,7 +696,7 @@ export default function MobileChat() {
               onTouchStart={(e) => handleTouchStart(e, msg)}
               onTouchEnd={handleTouchEnd}
               onTouchMove={handleTouchMove}
-              className="flex items-start gap-2 max-w-[88%] mr-auto my-1.5 select-none"
+              className={`flex items-start gap-2 max-w-[88%] mr-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
             >
               <button
                 type="button"
@@ -780,7 +790,7 @@ export default function MobileChat() {
         className="fixed bottom-0 inset-x-0 max-w-md mx-auto z-20 pt-2 px-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800 shadow-[0_-5px_20px_rgba(0,0,0,0.06)] transition-[padding] duration-150"
       >
         {editingMessage && (
-          <div className="flex items-center justify-between gap-2 p-2 px-3 mb-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs">
+          <div className="anim-fade-rise flex items-center justify-between gap-2 p-2 px-3 mb-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <Pencil className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span className="font-bold text-amber-700 dark:text-amber-300 truncate">
@@ -798,7 +808,7 @@ export default function MobileChat() {
         )}
 
         {replyingTo && !editingMessage && (
-          <div className="flex items-center justify-between gap-2 p-2 px-3 mb-2 rounded-2xl bg-sky-50 dark:bg-slate-800/80 border border-sky-200 dark:border-slate-700 text-xs">
+          <div className="anim-fade-rise flex items-center justify-between gap-2 p-2 px-3 mb-2 rounded-2xl bg-sky-50 dark:bg-slate-800/80 border border-sky-200 dark:border-slate-700 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <Reply className="w-3.5 h-3.5 text-sky-500 shrink-0" />
               <div className="min-w-0">
@@ -821,7 +831,7 @@ export default function MobileChat() {
         )}
 
         {imagePreview && (
-          <div className="relative inline-block mb-2 ml-1">
+          <div className="anim-fade-rise relative inline-block mb-2 ml-1">
             <img
               src={imagePreview}
               alt="Preview"

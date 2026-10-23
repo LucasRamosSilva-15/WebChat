@@ -1,23 +1,58 @@
 import { createClient } from '@supabase/supabase-js';
 import { apiRequest, setAuthToken } from './api';
 import { socket } from './socket';
+import { GoogleAuth } from '@deldev/capacitor-google-auth';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qwdfrjsbljrnujskknqv.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_bAA4cyt55miKJ3ZGdCd_Sg__FiUEead';
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const handleGoogleSignIn = async () => {
   try {
-    const { error } = await supabase.auth.signInWithOAuth({
+    let idToken = null;
+
+    try {
+      if (typeof window !== 'undefined' && window.Capacitor?.isNativePlatform()) {
+        await GoogleAuth.initialize({
+          clientId: googleClientId || undefined,
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true
+        });
+        const googleUser = await GoogleAuth.signIn();
+        idToken = googleUser?.authentication?.idToken;
+      }
+    } catch (nativeErr) {
+      console.warn('Native Google sign-in fallback:', nativeErr.message || nativeErr);
+    }
+
+    if (idToken) {
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken
+      });
+      if (error) throw error;
+      if (data?.session) {
+        return await syncOAuthUserSession(data.session);
+      }
+    }
+
+    const redirectUrl = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform()
+      ? 'com.skyripple.app://auth/callback'
+      : window.location.origin;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
-      },
+        redirectTo: redirectUrl
+      }
     });
     if (error) throw error;
+    return data;
   } catch (error) {
     console.error('Erro na autenticação com a Google:', error.message);
+    throw error;
   }
 };
 

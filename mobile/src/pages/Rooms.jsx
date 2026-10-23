@@ -41,6 +41,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
     }
   });
   const [loading, setLoading] = useState(false);
+  const [popStarId, setPopStarId] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
   const [isNewRoomSheetOpen, setIsNewRoomSheetOpen] = useState(false);
@@ -121,6 +122,8 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
     e?.stopPropagation();
     triggerImpact();
     const idStr = String(roomId);
+    const adding = !favorites.includes(idStr);
+    setPopStarId(adding ? idStr : null);
 
     setFavorites((prev) => {
       const next = prev.includes(idStr)
@@ -289,7 +292,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
                 : 'Nenhuma sala disponível. Toque em + para criar a primeira!'}
             </div>
           ) : (
-            sortedRooms.map((room) => {
+            sortedRooms.map((room, roomIndex) => {
               const isFav =
                 favorites.includes(String(room.id)) ||
                 favorites.includes(String(room.name));
@@ -300,7 +303,8 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
                 <div
                   key={room.id}
                   onClick={() => handleRoomClick(room)}
-                  className={`skeuo-card p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-all flex items-center justify-between shadow-sm hover:shadow-md ${isFull ? 'opacity-90' : ''
+                  style={{ '--index': Math.min(roomIndex, 12) }}
+                  className={`anim-card-stagger skeuo-card p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-[transform,box-shadow] duration-150 flex items-center justify-between shadow-sm hover:shadow-md ${isFull ? 'opacity-90' : ''
                     }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
@@ -361,15 +365,16 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
                     <button
                       type="button"
                       onClick={(e) => toggleFavorite(room.id, e)}
-                      className="btn-secondary-glossy !w-9 !h-9 !p-0 rounded-full inline-flex items-center justify-center shrink-0 transition-transform active:scale-95"
+                      className="btn-secondary-glossy !w-9 !h-9 !p-0 rounded-full inline-flex items-center justify-center shrink-0"
                       aria-label={isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                       title={isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                     >
                       <Star
-                        className={`w-4 h-4 transition-colors ${isFav
+                        key={isFav && popStarId === String(room.id) ? 'pop' : 'idle'}
+                        className={`w-4 h-4 ${isFav
                             ? 'fill-amber-400 text-amber-500'
                             : 'text-slate-400 hover:text-amber-500/80'
-                          }`}
+                          } ${isFav && popStarId === String(room.id) ? 'anim-star-pop' : ''}`}
                       />
                     </button>
                   </div>

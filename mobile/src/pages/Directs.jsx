@@ -598,7 +598,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           className="shrink-0 p-3 border-t border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-950/90 backdrop-blur-md transition-[padding] duration-150"
         >
           {replyingTo && (
-            <div className="flex items-center justify-between gap-2 p-2 px-3 mb-2 rounded-2xl bg-sky-50 dark:bg-slate-800/80 border border-sky-200 dark:border-slate-700 text-xs">
+            <div className="anim-fade-rise flex items-center justify-between gap-2 p-2 px-3 mb-2 rounded-2xl bg-sky-50 dark:bg-slate-800/80 border border-sky-200 dark:border-slate-700 text-xs">
               <div className="flex items-center gap-2 min-w-0">
                 <Reply className="w-3.5 h-3.5 text-sky-500 shrink-0" />
                 <div className="min-w-0">
@@ -621,7 +621,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           )}
 
           {imagePreview && (
-            <div className="relative inline-block mb-2 ml-1">
+            <div className="anim-fade-rise relative inline-block mb-2 ml-1">
               <img
                 src={imagePreview}
                 alt="Preview"
@@ -742,11 +742,12 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               </p>
             </div>
           ) : (
-            filteredConversations.map((conv) => (
+            filteredConversations.map((conv, convIndex) => (
               <div
                 key={conv.id}
                 onClick={() => setSelectedConv(conv)}
-                className="skeuo-card p-3 rounded-2xl cursor-pointer active:scale-[0.98] transition-all flex items-center justify-between shadow-xs hover:shadow-md"
+                style={{ '--index': Math.min(convIndex, 12) }}
+                className="anim-card-stagger skeuo-card p-3 rounded-2xl cursor-pointer active:scale-[0.98] transition-[transform,box-shadow] duration-150 flex items-center justify-between shadow-xs hover:shadow-md"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative shrink-0 w-11 h-11 rounded-full border border-sky-400/80 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_2px_5px_rgba(14,165,233,0.3)]">

@@ -53,7 +53,7 @@ export default function MobileFeedback() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="anim-page-enter flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
       <header className="sticky top-0 z-40 w-full pt-[calc(env(safe-area-inset-top,0px)+8px)] px-3 pb-2.5 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-white/60 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
         <div className="flex items-center justify-between gap-2 max-w-md mx-auto">
           <div className="flex items-center gap-2.5">
@@ -79,7 +79,7 @@ export default function MobileFeedback() {
       </header>
 
       <div className="px-4 pt-4 max-w-md mx-auto w-full">
-        <div className="skeuo-card max-w-md mx-auto p-6 rounded-3xl shadow-md">
+        <div className="anim-fade-rise skeuo-card max-w-md mx-auto p-6 rounded-3xl shadow-md">
           {success ? (
             <div className="text-center py-6 animate-fade-in space-y-4">
               <div className="w-16 h-16 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-400 flex items-center justify-center text-emerald-500 shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),0_6px_15px_rgba(16,185,129,0.3)]">

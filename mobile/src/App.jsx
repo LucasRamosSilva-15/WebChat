@@ -19,6 +19,7 @@ import { supabase, syncOAuthUserSession } from './services/supabase';
 import { clearAuthSession } from './services/api';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
+import { App as CapApp } from '@capacitor/app';
 
 function AppLayout() {
   const location = useLocation();
@@ -31,6 +32,35 @@ function AppLayout() {
   const isAuthScreen = ['/login', '/register', '/forgot-password'].includes(location.pathname);
   const isInsideChat = isChatScreen || (location.pathname === '/directs' && isDirectChatOpen);
   const showBottomNav = !isInsideChat && !isAuthScreen;
+
+  useEffect(() => {
+    let appUrlSub = null;
+    try {
+      appUrlSub = CapApp.addListener('appUrlOpen', async (event) => {
+        const url = event?.url;
+        if (!url) return;
+        if (url.includes('#access_token=') || url.includes('&access_token=')) {
+          const hashIndex = url.indexOf('#');
+          if (hashIndex !== -1) {
+            const hash = url.substring(hashIndex + 1);
+            const params = new URLSearchParams(hash);
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            if (accessToken && refreshToken) {
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+            }
+          }
+        }
+      });
+    } catch {}
+
+    return () => {
+      appUrlSub?.then?.(sub => sub.remove?.()).catch?.(() => {});
+    };
+  }, []);
 
   useEffect(() => {
     if (location.pathname !== '/directs') {
@@ -123,7 +153,7 @@ function AppLayout() {
           onClose={() => setIsNotificationsOpen(false)}
           title="Avisos e Notificações"
         >
-          <div className="space-y-2.5">
+          <div className="anim-stagger-children space-y-2.5">
             {notifications.length === 0 ? (
               <div className="py-8 text-center text-xs text-slate-400">
                 Nenhuma notificação no momento.

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../services/socket';
-import { supabase } from '../services/supabase';
+import { supabase, handleGoogleSignIn } from '../services/supabase';
 
 export default function MobileLogin() {
   const navigate = useNavigate();
@@ -16,15 +16,15 @@ export default function MobileLogin() {
   const handleGoogleLogin = async () => {
     try {
       setError(null);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-        },
-      });
-      if (error) throw error;
+      setLoading(true);
+      const synced = await handleGoogleSignIn();
+      if (synced?.token) {
+        navigate('/rooms', { replace: true });
+      }
     } catch (err) {
       setError(err.message || 'Erro ao conectar com a Google.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,8 +67,8 @@ export default function MobileLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center px-4 py-8">
-      <div className="skeuo-card max-w-md mx-auto w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+    <div className="anim-page-enter min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center px-4 py-8">
+      <div className="anim-fade-rise skeuo-card max-w-md mx-auto w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
         <div className="text-center mb-6">
           <div className="w-14 h-14 mx-auto mb-3 rounded-2xl border-2 border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-extrabold text-2xl shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),0_6px_15px_rgba(14,165,233,0.35)]">
             SR

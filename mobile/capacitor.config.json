@@ -11,6 +11,10 @@
     },
     "StatusBar": {
       "overlaysWebView": true
+    },
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "forceCodeForRefreshToken": true
     }
   }
 }

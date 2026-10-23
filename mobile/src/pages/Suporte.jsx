@@ -101,7 +101,7 @@ export default function MobileSuporte() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="anim-page-enter flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
       <header className="sticky top-0 z-30 px-4 py-3 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button
@@ -136,13 +136,13 @@ export default function MobileSuporte() {
             </h2>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="anim-stagger-children space-y-2.5">
             {FAQ_DATA.map((faq) => {
               const isOpen = openFaqId === faq.id;
               return (
                 <div
                   key={faq.id}
-                  className="skeuo-card rounded-2xl overflow-hidden transition-all duration-200 border border-slate-200/80 dark:border-slate-800"
+                  className="skeuo-card rounded-2xl overflow-hidden transition-[box-shadow,border-color] duration-200 border border-slate-200/80 dark:border-slate-800"
                 >
                   <button
                     type="button"
@@ -160,7 +160,7 @@ export default function MobileSuporte() {
                   </button>
 
                   {isOpen && (
-                    <div className="px-4 pb-4 pt-1">
+                    <div className="anim-fade-rise px-4 pb-4 pt-1">
                       <div className="p-3.5 rounded-xl skeuo-well text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                         {faq.answer}
                       </div>

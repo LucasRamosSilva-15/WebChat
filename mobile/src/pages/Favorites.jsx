@@ -108,7 +108,7 @@ export default function MobileFavorites() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="anim-page-enter flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
       <header className="sticky top-0 z-40 w-full pt-[calc(env(safe-area-inset-top,0px)+8px)] px-3 pb-2.5 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-white/60 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
         <div className="flex items-center justify-between gap-2 max-w-md mx-auto">
           <div className="flex items-center gap-2.5">
@@ -177,7 +177,7 @@ export default function MobileFavorites() {
               </p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="anim-stagger-children space-y-2.5">
               {rooms.map((room) => (
                 <div
                   key={room.id}
@@ -231,7 +231,7 @@ export default function MobileFavorites() {
               </p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="anim-stagger-children space-y-2.5">
               {messages.map((msg, index) => (
                 <div
                   key={msg.id || index}

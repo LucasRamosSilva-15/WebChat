@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, MailCheck, ArrowLeft } from 'lucide-react';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../services/socket';
-import { supabase, syncOAuthUserSession } from '../services/supabase';
+import { supabase, syncOAuthUserSession, handleGoogleSignIn } from '../services/supabase';
 import OtpCodeInput from '../components/common/OtpCodeInput';
 
 export default function MobileRegister() {
@@ -24,15 +24,15 @@ export default function MobileRegister() {
   const handleGoogleLogin = async () => {
     try {
       setError(null);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin,
-        },
-      });
-      if (error) throw error;
+      setLoading(true);
+      const synced = await handleGoogleSignIn();
+      if (synced?.token) {
+        navigate('/rooms', { replace: true });
+      }
     } catch (err) {
       setError(err.message || 'Erro ao conectar com a Google.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -198,8 +198,8 @@ export default function MobileRegister() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center px-4 py-8">
-      <div className="skeuo-card max-w-md mx-auto w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+    <div className="anim-page-enter min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center px-4 py-8">
+      <div className="anim-fade-rise skeuo-card max-w-md mx-auto w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
         {step === 1 ? (
           <>
             <div className="text-center mb-6">

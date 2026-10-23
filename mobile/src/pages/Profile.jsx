@@ -155,14 +155,14 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
   };
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="anim-page-enter flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
       <MobileHeader
         title="Perfil do Usuário"
         onOpenNotifications={onOpenNotifications}
         unreadCount={unreadCount}
       />
 
-      <div className="px-4 pt-4 max-w-md mx-auto w-full space-y-4">
+      <div className="anim-stagger-children px-4 pt-4 max-w-md mx-auto w-full space-y-4">
         <div className="skeuo-card p-6 rounded-3xl flex flex-col items-center text-center shadow-md">
           <input
             type="file"
