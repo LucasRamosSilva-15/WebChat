@@ -5,83 +5,103 @@
 </div>
 
 
-![Versão](https://img.shields.io/badge/Vers%C3%A3o-9.0.0-blue?style=for-the-badge)
+![Versão](https://img.shields.io/badge/Vers%C3%A3o-10.0.0-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?style=for-the-badge&logo=capacitor&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
 ![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-634EA7?style=for-the-badge&logo=vitest&logoColor=white)
 ![Jest](https://img.shields.io/badge/Jest-323330?style=for-the-badge&logo=jest&logoColor=white)
 ![Supertest](https://img.shields.io/badge/Supertest-68BB66?style=for-the-badge&logo=supertest&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-46E4AC?style=for-the-badge&logo=render&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Swagger](https://img.shields.io/badge/Swagger-000000?style=for-the-badge&logo=swagger&logoColor=white)
 ![Sequelize](https://img.shields.io/badge/Sequelize-216D31?style=for-the-badge&logo=sequelize&logoColor=white)
 
-O SkyRipple é uma aplicação web de chat em tempo real onde os usuários podem se conectar, entrar em salas temáticas e trocar mensagens instantaneamente. O projeto foca em uma experiência rica e nostálgica, trazendo uma estética clean com identidade visual inspirada no Web 2.0 Gloss (Skeuomorfismo e com influências do Frutiger Aero) aliada a tecnologias web modernas.
+O SkyRipple é uma aplicação completa de chat em tempo real onde os usuários podem se conectar, entrar em salas temáticas e trocar mensagens instantaneamente tanto na Web quanto em aplicativo móvel nativo Android. O projeto foca em uma experiência rica e nostálgica, trazendo uma estética clean com identidade visual inspirada no Web 2.0 Gloss (Skeuomorfismo e influências do Frutiger Aero) aliada a tecnologias modernas e padrões de segurança de alto nível.
 
 ## O que o projeto faz
 
-O SkyRipple funciona como um ponto de encontro virtual. De forma simples, ele permite:
+O SkyRipple funciona como um ecossistema completo de comunicação em tempo real. De forma simples, ele permite:
 
-* Criar conta com verificação em duas etapas (código numérico OTP);
-* Recuperar acesso à conta via código de verificação numérico de 8 dígitos enviado ao e-mail;
+* Criar conta com verificação em duas etapas (código numérico OTP enviado ao e-mail);
+* Recuperar acesso à conta via código numérico de 8 dígitos;
 * Visualizar, criar, moderar e favoritar diferentes salas de bate-papo temáticas;
 * Entrar em salas e conversar em tempo real com histórico paginado por cursor (`before`, `since` e `limit`);
-* Conversar em canais diretos privados 1x1 (Directs) protegidos por Criptografia Ponta a Ponta (E2EE - ECDH P-256 e AES-GCM);
+* Conversar em canais diretos privados 1x1 (Directs) protegidos por Criptografia Ponta a Ponta (E2EE - ECDH P-256 e AES-GCM-256);
 * Gravar e reproduzir mensagens de áudio nativas no navegador e compartilhar arquivos e documentos em anexo (até 5 MB);
 * Personalizar o perfil completo (foto de exibição, avatar SVG dinâmico, nome público, recado e biografia);
 * Usar o sistema de busca textual interna do chat para encontrar mensagens e histórico em tempo real;
 * Receber e gerenciar notificações instantâneas com suporte a leitura individual ou em lote;
 * Painel administrativo exclusivo para gestão de denúncias, banimentos, monitoramento e métricas globais (`/stats`);
 * Navegar com suporte completo a Modo Claro e Modo Escuro com controles de cor e estética Web 2.0 Gloss / Skeuomórfica refinada;
-* Experiência responsiva para Desktop e aplicação móvel dedicada (Mobile SPA).
+* Aplicativo móvel dedicado (Capacitor Android, pacote `com.skyripple.app`), com navegação por gestos, resposta tátil via haptics e tratamento ergonômico de safe area;
+* Autenticação via Google OAuth sincronizada entre Web e Mobile com suporte a Deep Linking (`skyripple://auth/callback`);
+* Formatação de datas e horários adaptada nativamente ao fuso horário brasileiro (`America/Sao_Paulo` / padrão 24 horas).
 
 ## Qual problema ele resolve
 
-Este projeto foi construído como um projeto prático para a disciplina de Programação Web II. Ele resolve o problema básico de comunicação em tempo real em grupos, servindo como um excelente laboratório para conectar conceitos avançados de desenvolvimento, tais como:
+Este projeto foi construído como um projeto prático para a disciplina de Programação Web II. Ele resolve o problema básico de comunicação em tempo real em grupos e conversas privadas, servindo como um excelente laboratório para conectar conceitos avançados de desenvolvimento, tais como:
 
-* Criação de interfaces ricas e responsivas no frontend;
-* Construção de uma API robusta no backend;
-* Autenticação e segurança com JWT e criptografia de senhas;
-* Comunicação bidirecional em tempo real usando WebSockets;
-* Arquitetura visual híbrida, combinando a agilidade do Tailwind CSS com o controle detalhado do CSS para criar efeitos visuais.
+* Criação de interfaces ricas e responsivas no frontend web e mobile;
+* Construção de uma API robusta no backend com arquitetura limpa em camadas (Controller-Service-Repository);
+* Autenticação e segurança com JWT, criptografia de senhas com Argon2id/Bcrypt e conformidade CIS Controls IG1 & OWASP ASVS;
+* Criptografia ponta a ponta (E2EE) no cliente com chaves assimétricas;
+* Comunicação bidirecional de baixa latência em tempo real usando WebSockets;
+* Arquitetura visual híbrida, combinando a agilidade do Tailwind CSS com o controle detalhado do CSS para criar efeitos visuais com profundidade;
+* Empacotamento híbrido mobile para Android com Capacitor.
 
 ## Tecnologias usadas
 
-### Frontend
+### Frontend (Web)
 
 * React 19
 * Vite
 * Tailwind CSS 4
-* CSS Híbrido (para efeitos com muitos detalhes, brilhos e profundidade)
+* CSS Híbrido (efeitos Web 2.0 Gloss, brilhos e profundidade)
 * React Router DOM
 * React Icons
 * Socket.IO Client
+* Web Crypto API (E2EE ECDH P-256 + AES-GCM)
 * Vitest
+
+### Mobile (Android & Capacitor)
+
+* Capacitor 8 (`@capacitor/core`, `@capacitor/android`, `@capacitor/app`, `@capacitor/haptics`, `@capacitor/keyboard`, `@capacitor/status-bar`)
+* React 19
+* Vite
+* Tailwind CSS 4
+* Lucide React
+* Deep Linking (`skyripple://auth/callback` para login social com Google)
+* Pacote Android nativo: `com.skyripple.app` ("SkyRipple")
 
 ### Backend
 
 * Node.js
 * Express
 * Socket.IO
-* Supabase (banco de dados em nuvem)
+* Supabase (PostgreSQL em nuvem)
 * Bibliotecas de segurança e utilidades (bcryptjs, jsonwebtoken, cors, dotenv, helmet e express-rate-limit)
 * Arquitetura de banco de dados centralizada no Node.js (Supabase RLS Desativado)
 * Testes unitários e de integração (Jest, Supertest, Socket.IO Client)
 * ORM (Supabase + Sequelize)
+* Documentação OpenAPI 3.0 / Swagger UI
 
-### Ferramentas
+### Ferramentas & Infraestrutura
 
 * Git / GitHub
 * Render (deploy do Backend)
-* Vercel (Deploy do Frontend)
-* Supabase (banco de dados)
+* Vercel (Deploy do Frontend Web)
+* Android Studio / Gradle (Build do APK Android)
+* Playwright (Testes ponta a ponta E2E)
+* Supabase (PostgreSQL & Auth)
 * npm
 
 ## Como rodar localmente
@@ -95,7 +115,7 @@ cd WebChat
 
 *(Nota: substitua a URL acima caso o repositório esteja em outro endereço no GitHub).*
 
-### Frontend
+### Frontend (Web)
 
 Em um terminal, entre na pasta do frontend, instale as dependências e inicie o servidor de desenvolvimento:
 
@@ -112,6 +132,36 @@ VITE_BACKEND_URL=http://localhost:3001
 VITE_API_URL=http://localhost:3001/api
 VITE_SUPABASE_URL=sua_url_do_supabase
 VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
+```
+
+### Mobile (Capacitor / Android)
+
+Para rodar a interface móvel no navegador em modo de desenvolvimento:
+
+```bash
+cd mobile
+npm install
+npm run dev
+```
+
+Crie o arquivo `.env` na raiz da pasta `mobile`:
+
+```env
+VITE_BACKEND_URL=https://skyripple-9vqr.onrender.com
+VITE_API_URL=https://skyripple-9vqr.onrender.com/api
+VITE_SUPABASE_URL=sua_url_do_supabase
+VITE_SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
+```
+
+Para compilar e sincronizar com o projeto Android nativo:
+
+```bash
+# Compilar a SPA mobile e atualizar os assets do Android nativo
+npm run build
+npx cap sync android
+
+# Abrir o projeto no Android Studio para gerar o APK ou depurar no emulador/dispositivo
+npx cap open android
 ```
 
 ### Backend
@@ -134,17 +184,28 @@ SUPABASE_URL=sua_url_do_supabase
 SUPABASE_ANON_KEY=sua_chave_anonima_do_supabase
 FRONTEND_URL=http://localhost:5173
 ```
-## Testes automatizados do backend e frontend
 
-Em um terminal rode o comando
+## Testes automatizados
+
+O repositório conta com cobertura abrangente de testes automatizados unitários, de integração e ponta a ponta (E2E):
 
 ```bash
-npm run test:backend && npm run test:frontend
+# Executar todos os testes de Backend e Frontend
+npm run test
+
+# Executar apenas os testes do Backend (Jest / Supertest - 182 testes em 18 suítes)
+npm run test:backend
+
+# Executar apenas os testes do Frontend (Vitest - 136 testes em 20 suítes)
+npm run test:frontend
+
+# Executar a suíte de testes ponta a ponta E2E (Playwright)
+npm run test:e2e
 ```
 
 ## Link do deploy
 
-* **Frontend:** [https://skyripple-project-web2.vercel.app](https://skyripple-project-web2.vercel.app/)
+* **Frontend Web:** [https://skyripple-project-web2.vercel.app](https://skyripple-project-web2.vercel.app/)
 * **Backend/API (SkyRipple):** [https://skyripple-9vqr.onrender.com](https://skyripple-9vqr.onrender.com)
 * **Backend/API (Legado):** [https://webchat-9vqr.onrender.com](https://webchat-9vqr.onrender.com)
 
@@ -160,31 +221,33 @@ npm run test:backend && npm run test:frontend
 
 ## Funcionalidades
 
-* [x] Página inicial (Home)
-* [x] Login e Cadastro de contas com autenticação JWT e senhas criptografadas com bcrypt
-* [x] Listagem e favoritação de salas
+* [x] Página inicial (Home) com design convidativo e navegação intuitiva
+* [x] Login e Cadastro de contas com autenticação JWT e senhas criptografadas com Argon2id/Bcrypt
+* [x] Autenticação social com Google OAuth e sincronização segura de perfis
+* [x] Listagem e favoritação de salas com atualização instantânea
 * [x] Chat em tempo real (envio e recebimento de mensagens instantâneas via WebSockets)
 * [x] Busca avançada dentro do chat (filtro em tempo real e navegação entre resultados)
 * [x] Customização de perfil do usuário (avatar, nome de exibição e recado/status)
 * [x] Temas visuais: Modo Claro e Modo Escuro com estética Skeuomórfica / Web 2.0 Gloss
-* [x] Layout responsivo e menus modais
-* [x] Envio de imagens e anexos com compressão no cliente
-* [x] Refinamentos na persistência e histórico de mensagens
-* [x] Testes automatizados (182 testes no backend com Jest/Supertest e 128 testes no frontend com Vitest — 310 testes no total 100% aprovados)
-* [x] Documentação interativa da API (Swagger UI local/produção e Mintlify)
-* [x] Endurecimento de Segurança CIS Controls IG1 & OWASP ASVS (Rate Limiting rigoroso, Helmet com HSTS, Sanitização XSS, Auditoria de Segurança)
+* [x] Layout responsivo na Web e aplicativo nativo dedicado no Android (Capacitor)
+* [x] Envio de imagens e anexos com compressão no cliente (arquivos até 5 MB e mensagens de áudio)
+* [x] Refinamentos na persistência e histórico de mensagens com paginação por cursor (`before`, `since` e `limit`)
 * [x] Mensagens Diretas (Directs / Chat Privado) com histórico persistido e conversas individuais
-* [x] Criptografia Ponta-a-Ponta (*E2EE*) em conversas diretas com chaves assimétricas (ECDH P-256 + AES-GCM-256) via Web Crypto API
+* [x] Criptografia Ponta-a-Ponta (*E2EE*) em conversas diretas com chaves assimétricas (ECDH P-256 + AES-GCM-256) via Web Crypto API (Web & Mobile)
 * [x] Central de Notificações em tempo real com contador de não-lidas e sincronização via WebSockets
 * [x] Sistema de Dono de Sala e Moderação Hierárquica (Promover/Rebaixar moderadores, Expulsar participantes, Transferir liderança da sala e Moderação de mensagens)
 * [x] Edição de dados da sala (nome e descrição) pelo Dono da Sala
-* [x] Sistema de denúncias (Reports) e feedback integrado
-* [x] Painel Administrativo centralizado (Admin Dashboard)
-* [x] Histórico com paginação baseada em cursor (*Cursor-Based Pagination* com `before`, `since` e `limit`)
-* [x] Gravação nativa de áudio no navegador e compartilhamento de anexos multimídia (documentos e imagens até 5 MB)
+* [x] Sistema de denúncias (Reports) e feedback integrado com suporte a anexos de imagem
+* [x] Painel Administrativo centralizado (Admin Dashboard) com métricas em tempo real (`/stats`)
 * [x] Verificação de código numérico OTP em duas etapas no cadastro (6 dígitos) e recuperação de senha (8 dígitos)
 * [x] Rotina resiliente de logout com timeout defensivo de 2s e expurgo estrito de chaves de sessão
-* [x] Aplicação móvel dedicada (Mobile SPA) com gestos táteis e layout ergonômico
+* [x] Aplicativo móvel dedicado (Capacitor Android) com pacote `com.skyripple.app`, feedback tátil (`@capacitor/haptics`) e layout ergonômico
+* [x] Deep Linking nativo no mobile (`skyripple://auth/callback`) para login Google OAuth
+* [x] Localização temporal no padrão brasileiro (`America/Sao_Paulo` / 24h) em chats, directs e listagens
+* [x] Testes automatizados (182 testes no backend com Jest/Supertest e 136 testes no frontend com Vitest — 318 testes no total 100% aprovados)
+* [x] Suíte de testes ponta a ponta (E2E) com Playwright cobrindo fluxos críticos
+* [x] Documentação interativa da API (Swagger UI local/produção e Mintlify)
+* [x] Endurecimento de Segurança CIS Controls IG1 & OWASP ASVS (Rate Limiting rigoroso, Helmet com HSTS, Sanitização XSS, Auditoria de Segurança)
 
 ## Estrutura do projeto
 
@@ -285,7 +348,11 @@ npm run test:backend && npm run test:frontend
 │   ├── package.json
 │   └── README.md                       # Documentação técnica profunda do backend
 ├── docs/                               # Documentação técnica e Mintlify
-├── frontend/
+├── e2e/                                # Suíte automatizada de testes ponta a ponta (Playwright)
+│   ├── fixtures/                       # Fixtures isoladas e SQLite em memória
+│   ├── tests/                          # Cenários E2E (auth, chat, directs, pagination, audio)
+│   └── playwright.config.js
+├── frontend/                           # Aplicação Web SPA (React 19 + Vite + Tailwind 4)
 │   ├── src/
 │   │   ├── assets/                     # SVGs, ícones e recursos visuais
 │   │   ├── components/
@@ -314,7 +381,7 @@ npm run test:backend && npm run test:frontend
 │   │   ├── styles/
 │   │   │   ├── skeuo.css               # Tokens de design Web 2.0 Gloss
 │   │   │   └── chat.css
-│   │   ├── tests/                      # 19 suítes e 128 testes Vitest
+│   │   ├── tests/                      # 20 suítes e 136 testes Vitest
 │   │   │   ├── attachments.test.jsx
 │   │   │   ├── auth.test.jsx
 │   │   │   ├── chat.test.jsx
@@ -330,10 +397,35 @@ npm run test:backend && npm run test:frontend
 │   ├── vite.config.js
 │   ├── package.json
 │   └── .env
+├── mobile/                             # Aplicativo móvel dedicado (Capacitor 8 + React 19)
+│   ├── android/                        # Projeto nativo Android (Gradle, Manifest, APK SkyRipple)
+│   ├── src/
+│   │   ├── components/mobile/          # MobileHeader, BottomNavigation, etc.
+│   │   ├── pages/                      # Telas adaptadas para experiência mobile
+│   │   │   ├── Chat.jsx                # Conversas com cabeçalho seguro e safe-area
+│   │   │   ├── Directs.jsx             # Directs 1x1 E2EE e ordenação temporal brasileira
+│   │   │   ├── Favorites.jsx           # Salas e conversas favoritas
+│   │   │   ├── Feedback.jsx            # Envio de feedback do app
+│   │   │   ├── ForgotPassword.jsx      # Recuperação de senha com OTP
+│   │   │   ├── Login.jsx               # Login e autenticação Google com Deep Linking
+│   │   │   ├── Profile.jsx             # Gerenciamento de perfil e avatar
+│   │   │   ├── Register.jsx            # Cadastro de nova conta
+│   │   │   ├── Rooms.jsx               # Navegação e busca em salas
+│   │   │   ├── Settings.jsx            # Configurações de tema e aparência
+│   │   │   └── Suporte.jsx             # Central de ajuda e FAQ
+│   │   ├── utils/
+│   │   │   └── dateUtils.js            # Utilitários de fuso horário brasileiro (America/Sao_Paulo)
+│   │   ├── App.jsx                     # Roteamento mobile, Deep Linking e tratamento de sessão
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── capacitor.config.json           # Configuração do appId com.skyripple.app
+│   ├── vite.config.js
+│   ├── package.json
+│   └── .env
 └── README.md
 ```
 
-## Catálogo de Páginas Principais (Frontend)
+## Catálogo de Páginas Principais (Frontend Web)
 
 A aplicação web é composta por 18 telas com design skeuomórfico reativo:
 
@@ -358,10 +450,29 @@ A aplicação web é composta por 18 telas com design skeuomórfico reativo:
 | **Bancada de Testes** | `/buttons` | `ButtonsTest.jsx`| Pública | Showcase vivo de todos os tokens e componentes táteis SDS. |
 | **Não Encontrado** | `*` | `NotFound.jsx` | Pública | Página 404 personalizada com bússola 3D e navegação de resgate. |
 
+## Catálogo de Telas (Mobile Android)
+
+O aplicativo móvel dedicado conta com 11 telas com layout ergonômico, navegação inferior (`BottomNavigation`) e barra de status integrada:
+
+| Tela | Rota | Componente | Descrição & Experiência Mobile |
+| :--- | :--- | :--- | :--- |
+| **Login** | `/login` | `Login.jsx` | Autenticação por e-mail/senha e login social com Google via Deep Linking. |
+| **Cadastro** | `/register` | `Register.jsx` | Cadastro com validação de código OTP e passos otimizados para toque. |
+| **Recuperação de Senha** | `/forgot-password` | `ForgotPassword.jsx` | Validação de código numérico de 8 dígitos e definição de nova senha. |
+| **Lobby de Salas** | `/rooms` | `Rooms.jsx` | Exploração tátil de salas temáticas com contadores de presença em tempo real. |
+| **Sala de Chat** | `/chat/:id` | `Chat.jsx` | Chat em tempo real com envio de anexos, gravação de áudio e header translúcido. |
+| **Mensagens Diretas** | `/directs` | `Directs.jsx` | Lista de conversas privadas 1x1 com proteção E2EE e busca de contatos. |
+| **Conversa Direta** | `/direct/:id` | `Directs.jsx` | Bate-papo 1x1 cifrado, identificação precisa do remetente (`isMe`) e horário local. |
+| **Favoritos** | `/favorites` | `Favorites.jsx` | Acesso rápido às salas e conversas favoritas do usuário. |
+| **Perfil** | `/profile` | `Profile.jsx` | Gerenciamento de foto de perfil, avatar dinâmico e biografia. |
+| **Configurações** | `/settings` | `Settings.jsx` | Preferências de exibição e alternância instantânea entre Modo Claro e Escuro. |
+| **Feedback & Suporte** | `/feedback`, `/support` | `Feedback.jsx`, `Suporte.jsx` | FAQ interativo e canal direto de relatos com suporte a rolagem fluida. |
+
 ## Status atual
 
 O projeto **SkyRipple** encontra-se em estado avançado de maturidade técnica, estabilidade e conformidade arquitetural:
-* **Frontend**: Totalmente integrado via REST e WebSockets, contando com interface skeuomórfica refinada (Modo Claro/Escuro), chat em salas públicas e privadas, mensagens diretas com E2EE (Directs), fluxo de cadastro e recuperação com código OTP, central de notificações em tempo real, painel administrativo e interface tátil de moderação de sala (promover/rebaixar, expulsar participantes e transferir dono).
+* **Frontend Web & Mobile**: Experiência unificada e consistente em Desktop e Android. Conta com interface skeuomórfica refinada (Modo Claro/Escuro), chat em salas públicas e privadas, mensagens diretas com E2EE (Directs), fluxo de cadastro e recuperação com código OTP, central de notificações em tempo real, painel administrativo e interface tátil de moderação de sala.
+* **Aplicativo Android Nativo**: Totalmente operacional via Capacitor 8 com pacote `com.skyripple.app`, feedback tátil (`@capacitor/haptics`), deep linking nativo para login social e tratamento contra artefatos visuais de GPU no cabeçalho translúcido.
 * **Backend**: Arquitetura profissional em camadas (Controllers, Services, Repositories e Models ORM com Sequelize e Supabase PostgreSQL), auto-migração resiliente de esquema, endurecimento de segurança baseado nos padrões **CIS Controls IG1 & OWASP ASVS**, logs estruturados de auditoria, suíte robusta com **182 testes automatizados no backend e 128 testes no frontend (310 testes no total) 100% aprovados** e documentação Swagger 3.0 interativa.
 
 ## Link da documentação Swagger
@@ -382,17 +493,21 @@ A documentação interativa via Swagger UI reflete 100% dos contratos da API:
 
 ## Funcionalidades Recentes & Entregas Concluídas
 
-* **Criptografia Ponta-a-Ponta (E2EE)**: Criptografia assimétrica ponta a ponta no cliente para conversas diretas 1x1 via Web Crypto API (par de chaves ECDH P-256, chave AES-GCM-256 bits, envelope cifrado `e2ee:v1:...` e armazenamento cego no servidor).
+* **Aplicativo Mobile Nativo (Capacitor 8 Android)**: Empacotamento híbrido de alto desempenho ("SkyRipple", ID `com.skyripple.app`), com navegação inferior ergonômica, safe-area insets automáticos, resposta tátil via `@capacitor/haptics` e renderização estável sem artefatos de GPU.
+* **Deep Linking & Ponte de Autenticação Social**: Integração de esquema de URL nativo (`skyripple://auth/callback`) conectando o fluxo web de OAuth ao app móvel, permitindo login transparente com Google.
+* **Criptografia Ponta-a-Ponta (E2EE) no Web & Mobile**: Criptografia assimétrica ponta a ponta no cliente para conversas diretas 1x1 via Web Crypto API (par de chaves ECDH P-256, chave AES-GCM-256 bits, envelope cifrado `e2ee:v1:...` e armazenamento cego no servidor).
+* **Fuso Horário Brasileiro e Identificação de Mensagens (`isMe`)**: Formatação temporal estrita no padrão brasileiro (`America/Sao_Paulo` / 24h) e algoritmo resiliente de identificação de autoria de mensagens, garantindo alinhamento perfeito de balões na conversa.
 * **Paginação por Cursor no Histórico**: Implementação de parâmetros `before`, `since` e `limit` com índices compostos B-Tree (`idx_messages_room_created_at`, `idx_direct_messages_conv_created_at`) para rolagem infinita instantânea em salas e directs.
 * **Mídias e Anexos Multimídia**: Suporte nativo à gravação e reprodução de áudio no navegador e compartilhamento de documentos e imagens em anexo (até 5 MB) em base64 Data URL.
 * **Verificação de Código OTP**: Fluxo de cadastro em duas etapas com código numérico OTP de 6 dígitos e recuperação de senha com código numérico de 8 dígitos integrado ao Supabase.
 * **Resiliência de Logout**: Rotina com timeout defensivo de 2s com `Promise.race`, encerramento de WebSocket, expurgo estrito de chaves de sessão locais e emissão do evento global `profileUpdated`.
-* **Cobertura Completa de Testes**: Suíte de 310 testes automatizados (unitários, integração e E2E com Playwright) com 100% de aprovação.
+* **Limpeza e Padronização do Código**: Base de código integralmente limpa e profissional, preservando 100% dos comentários contratuais Swagger OpenAPI 3.0 para a documentação interativa.
+* **Cobertura Completa de Testes**: Suíte de 310 testes automatizados (182 testes de backend, 128 testes de frontend e suíte ponta a ponta Playwright) com 100% de aprovação.
 
 ## Próximos passos
 
 * **Chamadas de Voz e Vídeo P2P (WebRTC)**: Estabelecer sinalização via Socket.io para comunicação de áudio e vídeo de baixa latência ponto a ponto.
-* **Notificações Push Nativas (Web Push & Service Workers)**: Alertar usuários sobre novas mensagens mesmo com o navegador fechado ou em segundo plano.
+* **Notificações Push Nativas (Web Push & Firebase Cloud Messaging)**: Alertar usuários sobre novas mensagens mesmo com o app fechado ou em segundo plano.
 * **Sincronização Offline com IndexedDB**: Cache local de histórico e mensagens pendentes para envio automático ao restabelecer conectividade.
 * **Reações Rápidas com Emojis**: Sistema tátil de reações em balões de mensagens com sincronização em tempo real na sala.
 
