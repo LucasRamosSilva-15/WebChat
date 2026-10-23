@@ -126,5 +126,40 @@ describe('API Utils Tests', () => {
             expect(localStorage.getItem('chat_token')).toBeNull();
             expect(localStorage.getItem('chat_isLoggedIn')).toBeNull();
         });
+
+        it('8. Deve anexar status e response ao erro lançado', async () => {
+            fetch.mockResolvedValueOnce({
+                ok: false,
+                status: 404,
+                json: async () => ({ error: 'Recurso não encontrado' })
+            });
+
+            try {
+                await apiRequest('/nao-existe');
+                expect.unreachable('Deveria ter lançado erro');
+            } catch (err) {
+                expect(err.message).toBe('Recurso não encontrado');
+                expect(err.status).toBe(404);
+                expect(err.response?.status).toBe(404);
+            }
+        });
+    });
+
+    describe('checkBackendHealth', () => {
+        it('deve apontar para /api/health e retornar true no sucesso', async () => {
+            const { checkBackendHealth } = await import('../services/api');
+            fetch.mockResolvedValueOnce({ ok: true });
+            const result = await checkBackendHealth();
+            expect(result).toBe(true);
+            expect(fetch).toHaveBeenCalledWith(`${API_URL}/health`);
+        });
+
+        it('deve retornar false quando a requisição falha', async () => {
+            const { checkBackendHealth } = await import('../services/api');
+            fetch.mockRejectedValueOnce(new Error('Network error'));
+            const result = await checkBackendHealth();
+            expect(result).toBe(false);
+        });
     });
 });
+

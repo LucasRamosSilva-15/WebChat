@@ -22,13 +22,13 @@ const CONV_ID = 'srv-conv-1';
 const conversation = { id: CONV_ID, partnerId: PEER_ID, name: 'Mariana Silva', username: 'mariana', avatar: null, lastMessage: 'Oi', time: '10:00', online: true, unread: 0 };
 
 describe('Directs com criptografia ponta a ponta', () => {
-  let peer;          // identidade da Mariana
-  let myPublicJwk;   // capturada quando o app publica a chave
+  let peer;
+  let myPublicJwk;
   let resolveMyKey;
   let myKeyReady;
   let posts;
 
-  const install = ({ peerHasKey = true, historyEnvelopeText = null } = {}) => {
+  const install = ({ peerHasKey = true, historyEnvelopeText = null, peer404 = false } = {}) => {
     posts = [];
     apiRequest.mockImplementation(async (endpoint, options = {}) => {
       if (endpoint === '/directs/conversations') return [conversation];
@@ -38,7 +38,15 @@ describe('Directs com criptografia ponta a ponta', () => {
         return {};
       }
       if (endpoint === `/directs/keys/${USER_ID}`) return { userId: USER_ID, publicKey: null };
-      if (endpoint === `/directs/keys/${PEER_ID}`) return { userId: PEER_ID, publicKey: peerHasKey ? peer.publicJwk : null };
+      if (endpoint === `/directs/keys/${PEER_ID}`) {
+        if (peer404) {
+          const err = new Error('Chave não encontrada');
+          err.status = 404;
+          err.response = { status: 404 };
+          throw err;
+        }
+        return { userId: PEER_ID, publicKey: peerHasKey ? peer.publicJwk : null };
+      }
       if (endpoint.startsWith(`/directs/conversations/${CONV_ID}/messages`) && options.method === 'POST') {
         posts.push(JSON.parse(options.body));
         return {};
@@ -110,10 +118,8 @@ describe('Directs com criptografia ponta a ponta', () => {
     expect(posts[0].content).toBe(payload.content);
     expect(JSON.stringify(posts[0])).not.toContain('Segredo do Lucas');
 
-    // a Mariana consegue abrir
     const key = await deriveConversationKey(peer.privateKey, myPublicJwk);
     expect(await decryptPayload(key, CONV_ID, payload.content)).toMatchObject({ t: 'Segredo do Lucas' });
-    // e o texto aparece normalmente para quem enviou
     expect(screen.getByText('Segredo do Lucas')).toBeInTheDocument();
   });
 
@@ -175,6 +181,18 @@ describe('Directs com criptografia ponta a ponta', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar mensagem' }));
 
     await waitFor(() => expect(socket.emit).toHaveBeenCalledWith('send_message', expect.objectContaining({ content: 'Texto simples' })));
+  });
+
+  it('contato retornando 404 na chave: não estoura erro, mostra "Sem criptografia" e envia em texto normal', async () => {
+    install({ peer404: true });
+    await openConversation();
+    expect(await screen.findByTestId('e2ee-badge-off')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/Mensagem para Mariana Silva/i), { target: { value: 'Texto sem 404 crash' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar mensagem' }));
+
+    await waitFor(() => expect(socket.emit).toHaveBeenCalledWith('send_message', expect.objectContaining({ content: 'Texto sem 404 crash' })));
+    expect(screen.getAllByText('Texto sem 404 crash').length).toBeGreaterThan(0);
   });
 
   it('o navegador não guarda a conversa criptografada em texto claro', async () => {

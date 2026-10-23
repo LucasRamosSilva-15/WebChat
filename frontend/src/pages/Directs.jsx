@@ -334,7 +334,9 @@ const Directs = () => {
 
                             return {
                                 ...msg,
+                                id: msg.id || msg.messageId,
                                 messageId: msg.messageId || msg.id,
+                                sender_id: msg.sender_id || msg.userId || msg.user_id || (isMe ? currentUserId : undefined),
                                 text: msg.text || msg.content || '',
                                 sender: senderName,
                                 sender_name: senderName,
@@ -342,6 +344,7 @@ const Directs = () => {
                                 user: msg.user,
                                 time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
                                 created_at: msg.created_at || msg.time,
+                                timestamp: msg.created_at || msg.time,
                                 isMe: Boolean(isMe)
                             };
                         };
@@ -433,6 +436,8 @@ const Directs = () => {
         if (!selectedConv?.id || String(selectedConv.id).startsWith('privado-') || !peerId || !currentUserId) return undefined;
         getConversationCrypto(currentUserId, peerId).then(entry => {
             if (!cancelled) setE2eeInfo(entry ? { active: true, safety: entry.safety } : { active: false, safety: null });
+        }).catch(() => {
+            if (!cancelled) setE2eeInfo({ active: false, safety: null });
         });
         return () => { cancelled = true; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -507,19 +512,36 @@ const Directs = () => {
                         msg.userName === currentUserDisplayName ||
                         msg.sender_name === currentUserDisplayName;
 
-                    const alreadyExists = prev.some(m => {
-                        if (incomingId && (m.messageId === incomingId || m.id === incomingId)) {
+                    const existingIndex = prev.findIndex(m => {
+                        if (incomingId && (m.messageId === incomingId || m.id === incomingId || m.tempId === incomingId)) {
                             return true;
                         }
-                        if (isMe && m.isMe && m.text === incomingText) {
+                        if (msg.tempId && (m.tempId === msg.tempId || m.id === msg.tempId || m.messageId === msg.tempId)) {
+                            return true;
+                        }
+                        if (isMe && (m.isMe || m.tempId) && m.text === incomingText) {
                             const msgTime = new Date(m.created_at || m.timestamp || 0).getTime();
-                            if (!isNaN(msgTime) && !isNaN(incomingTime) && Math.abs(msgTime - incomingTime) < 5000) {
+                            if (!isNaN(msgTime) && !isNaN(incomingTime) && Math.abs(msgTime - incomingTime) < 10000) {
                                 return true;
                             }
                         }
                         return false;
                     });
-                    if (alreadyExists) return prev;
+
+                    if (existingIndex !== -1) {
+                        const existing = prev[existingIndex];
+                        const updated = [...prev];
+                        updated[existingIndex] = {
+                            ...existing,
+                            id: msg.id || incomingId || existing.id,
+                            messageId: msg.messageId || incomingId || existing.messageId,
+                            created_at: msg.created_at || existing.created_at,
+                            timestamp: msg.created_at || existing.timestamp,
+                            tempId: undefined
+                        };
+                        cacheMessages(convId, updated.slice(-100));
+                        return updated;
+                    }
 
                     const senderName = isMe
                         ? currentUserDisplayName
@@ -542,7 +564,9 @@ const Directs = () => {
 
                     const now = new Date();
                     const newMsg = {
-                        messageId: msg.messageId || msg.id || 'msg_' + Date.now(),
+                        id: msg.id || incomingId || ('msg_' + Date.now()),
+                        messageId: msg.messageId || msg.id || ('msg_' + Date.now()),
+                        sender_id: msg.sender_id || msg.userId || msg.user_id || (isMe ? currentUserId : undefined),
                         sender: senderName,
                         sender_name: senderName,
                         user: msg.user,
@@ -550,6 +574,7 @@ const Directs = () => {
                         text: msg.message || msg.content || msg.text || '',
                         time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })),
                         created_at: msg.created_at || msg.time || now.toISOString(),
+                        timestamp: msg.created_at || msg.time || now.toISOString(),
                         isMe: Boolean(isMe),
                         image: msg.image || msg.imageUrl || msg.image_url || null,
                         attachment: normalizeAttachment(msg),
@@ -767,17 +792,26 @@ const Directs = () => {
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const isoTime = now.toISOString();
-        const newMsgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        const newMsgId = tempId;
 
         const imageToSend = imagePreview;
         const isServerConv = Boolean(selectedConv.id) && !String(selectedConv.id).startsWith('privado-');
         const peerId = peerIdOf(selectedConv);
         // Criptografia ponta a ponta quando o contato já ativou a chave dele
-        const cryptoEntry = isServerConv && peerId ? await getConversationCrypto(currentUserId, peerId) : null;
+        let cryptoEntry = null;
+        try {
+            cryptoEntry = isServerConv && peerId ? await getConversationCrypto(currentUserId, peerId) : null;
+        } catch {
+            cryptoEntry = null;
+        }
 
         const newMsg = {
+            id: tempId,
+            tempId,
             messageId: newMsgId,
             sender: currentUserDisplayName,
+            sender_id: currentUserId,
             text: textToSend,
             time: timeStr,
             created_at: isoTime,
@@ -802,7 +836,7 @@ const Directs = () => {
                 // Só o envelope sai daqui: texto, imagem e anexo em claro não são enviados
                 wire = { content: envelope };
             } catch {
-                setMessages(prev => prev.filter(m => m.messageId !== newMsgId));
+                setMessages(prev => prev.filter(m => m.messageId !== newMsgId && m.tempId !== tempId));
                 alert('Não foi possível criptografar a mensagem. Ela não foi enviada.');
                 return;
             }
@@ -821,6 +855,7 @@ const Directs = () => {
             time: timeStr,
             created_at: isoTime,
             messageId: newMsgId,
+            tempId,
             ...wire
         });
 
@@ -830,6 +865,14 @@ const Directs = () => {
                 body: JSON.stringify(cryptoEntry
                     ? { content: wire.content }
                     : { content: textToSend, imageUrl: imageToSend, attachment: attachmentToSend || undefined })
+            }).then((savedMsg) => {
+                if (savedMsg && (savedMsg.id || savedMsg.messageId)) {
+                    setMessages(prev => {
+                        const updated = prev.map(m => (m.tempId === tempId || m.messageId === tempId || m.id === tempId) ? { ...m, ...savedMsg, tempId: undefined } : m);
+                        cacheMessages(selectedConv.id, updated.slice(-100));
+                        return updated;
+                    });
+                }
             }).catch(() => {});
         }
 
@@ -1313,7 +1356,7 @@ const Directs = () => {
                                 )}
 
                                 {displayedMessages.map((msg, index) => {
-                                    const msgKey = msg.messageId || msg.id || ('msg_' + index);
+                                    const msgKey = msg.id || msg.tempId || msg.messageId || `${msg.sender_id || 'self'}-${msg.created_at || msg.timestamp || index}-${index}`;
                                     const isGrande = bubbleFormat !== 'classico';
                                     const currentDateKey = getMessageDateKey(msg);
                                     const prevDateKey = index > 0 ? getMessageDateKey(displayedMessages[index - 1]) : null;

@@ -55,8 +55,20 @@ export const apiRequest = async (endpoint, options = {}) => {
             }
         }
 
-        throw new Error(errorMessage);
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        error.response = { status: response.status };
+        throw error;
     }
 
     return response.json();
+};
+
+export const checkBackendHealth = async () => {
+    try {
+        const response = await fetch(`${API_URL}/health`);
+        return response.ok;
+    } catch {
+        return false;
+    }
 };

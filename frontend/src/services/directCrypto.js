@@ -10,9 +10,32 @@ import {
   isEncryptedContent
 } from '../utils/e2ee';
 
+export const fetchUserPublicKey = async (userId) => {
+  if (!userId) return null;
+  try {
+    const res = await apiRequest(`/directs/keys/${userId}`);
+    return res?.publicKey ? res : null;
+  } catch (err) {
+    const status = err?.status || err?.response?.status;
+    const msg = String(err?.message || '').toLowerCase();
+    const is404 = status === 404 || msg.includes('404') || msg.includes('não encontrad') || msg.includes('not found');
+    if (is404) {
+      return null;
+    }
+    console.warn('[E2EE] Chave indisponível para o utilizador:', userId);
+    return null;
+  }
+};
+
 const api = {
-  getPublicKey: (userId) => apiRequest(`/directs/keys/${userId}`),
-  putPublicKey: (publicKey) => apiRequest('/directs/keys', { method: 'PUT', body: JSON.stringify({ publicKey }) })
+  getPublicKey: (userId) => fetchUserPublicKey(userId),
+  putPublicKey: async (publicKey) => {
+    try {
+      return await apiRequest('/directs/keys', { method: 'PUT', body: JSON.stringify({ publicKey }) });
+    } catch {
+      return null;
+    }
+  }
 };
 
 const identityPromises = new Map(); // userId -> Promise<identity|null>
@@ -31,6 +54,9 @@ const getIdentity = (userId) => {
     identityPromises.set(userId, ensureIdentity(userId, api).then((id) => {
       if (!id) identityPromises.delete(userId); // tenta de novo na próxima vez
       return id;
+    }).catch(() => {
+      identityPromises.delete(userId);
+      return null;
     }));
   }
   return identityPromises.get(userId);
@@ -74,8 +100,10 @@ export async function getConversationCrypto(userId, peerId, { refresh = false } 
 }
 
 /** Cifra { text, image, attachment } e devolve o envelope "e2ee:v1:...". */
-export const encryptMessage = (entry, conversationId, { text, image, attachment }) =>
-  encryptPayload(entry.key, conversationId, { t: text || '', i: image || null, a: attachment || null });
+export const encryptMessage = (entry, conversationId, { text, image, attachment }) => {
+  if (!entry?.key) return text || '';
+  return encryptPayload(entry.key, conversationId, { t: text || '', i: image || null, a: attachment || null });
+};
 
 export const DECRYPT_FAILED_TEXT = '🔒 Mensagem criptografada — não foi possível abrir neste dispositivo.';
 
