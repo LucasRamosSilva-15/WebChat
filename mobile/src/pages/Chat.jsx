@@ -707,26 +707,15 @@ export default function MobileChat() {
   };
 
   const handleStartDirect = (user) => {
-    try {
-      const stored = localStorage.getItem('chat_direct_conversations');
-      const list = stored ? JSON.parse(stored) : [];
-      const convId = user.id || user.userId || `privado-${Date.now()}`;
-      const existing = list.find((c) => c.partnerId === user.id || c.name === user.name);
-
-      if (!existing) {
-        list.unshift({
-          id: convId,
-          partnerId: user.id || user.userId,
-          name: user.name,
-          avatar: user.avatar,
-          online: true,
-          lastMessage: 'Conversa iniciada pelo chat'
-        });
-        localStorage.setItem('chat_direct_conversations', JSON.stringify(list));
-      }
-    } catch {}
-
-    navigate('/directs', { state: { targetUser: user } });
+    setIsProfileSheetOpen(false);
+    setSelectedUserProfile(null);
+    const target = {
+      id: user.id || user.userId,
+      name: user.name || user.displayName,
+      avatar: user.avatar,
+      isOnline: true
+    };
+    navigate('/directs', { state: { targetUser: target } });
   };
 
   const currentUserRole =

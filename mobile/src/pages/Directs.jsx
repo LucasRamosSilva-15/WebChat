@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   MessageSquarePlus,
@@ -49,11 +49,46 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   const location = useLocation();
   const { keyboardHeight } = useKeyboard();
 
+  const deduplicateConversations = (list) => {
+    if (!Array.isArray(list)) return [];
+    const map = new Map();
+
+    for (const c of list) {
+      if (!c) continue;
+      const partnerKey = (
+        c.partnerId ||
+        c.username ||
+        (c.name && c.name.toLowerCase().trim()) ||
+        c.id
+      );
+
+      if (!map.has(partnerKey)) {
+        map.set(partnerKey, c);
+      } else {
+        const existing = map.get(partnerKey);
+        const isExistingInitial = !existing.lastMessage || existing.lastMessage === 'Conversa iniciada' || existing.lastMessage === 'Conversa iniciada pelo chat';
+        const isNewInitial = !c.lastMessage || c.lastMessage === 'Conversa iniciada' || c.lastMessage === 'Conversa iniciada pelo chat';
+
+        if (isExistingInitial && !isNewInitial) {
+          map.set(partnerKey, c);
+        } else if (!isExistingInitial && !isNewInitial) {
+          const existingTime = new Date(existing.last_message_at || existing.timestamp || existing.created_at || 0).getTime();
+          const newTime = new Date(c.last_message_at || c.timestamp || c.created_at || 0).getTime();
+          if (newTime > existingTime) {
+            map.set(partnerKey, c);
+          }
+        }
+      }
+    }
+
+    return Array.from(map.values());
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const [conversations, setConversations] = useState(() => {
     try {
       const stored = localStorage.getItem('chat_direct_conversations');
-      return stored ? JSON.parse(stored) : [];
+      return stored ? deduplicateConversations(JSON.parse(stored)) : [];
     } catch {
       return [];
     }
@@ -88,6 +123,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   const [availableUsers, setAvailableUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [startingConvId, setStartingConvId] = useState(null);
+  const startingConvRef = useRef(false);
 
   const messagesEndRef = useRef(null);
   const searchDebounceRef = useRef(null);
@@ -305,9 +341,10 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     try {
       const data = await apiRequest('/directs/conversations');
       if (Array.isArray(data)) {
-        setConversations(data);
+        const unique = deduplicateConversations(data);
+        setConversations(unique);
         try {
-          localStorage.setItem('chat_direct_conversations', JSON.stringify(data));
+          localStorage.setItem('chat_direct_conversations', JSON.stringify(unique));
         } catch {}
       }
     } catch (err) {
@@ -523,7 +560,24 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   };
 
   const handleSelectUser = async (user) => {
-    if (!user?.id || startingConvId) return;
+    if (!user?.id || startingConvRef.current) return;
+
+    // Se já existir conversa com esse contato, abre diretamente sem duplicar
+    const existing = conversations.find(
+      (c) =>
+        (user.id && (c.partnerId === user.id || c.id === user.id)) ||
+        (user.name && c.name && c.name.toLowerCase() === user.name.toLowerCase()) ||
+        (user.email && c.name && c.name.toLowerCase() === user.email.split('@')[0].toLowerCase())
+    );
+
+    if (existing) {
+      setSelectedConv(existing);
+      setIsNewDmSheetOpen(false);
+      setUserSearchQuery('');
+      return;
+    }
+
+    startingConvRef.current = true;
     setStartingConvId(user.id);
 
     try {
@@ -534,28 +588,33 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
       setIsNewDmSheetOpen(false);
       setUserSearchQuery('');
-      await fetchConversations();
 
       const convEntry = {
         id: conv?.id || user.id,
-        partnerId: user.id,
-        name: user.name || user.email,
-        avatar: user.avatar,
-        online: user.isOnline,
-        lastMessage: 'Conversa iniciada'
+        partnerId: conv?.partnerId || user.id,
+        name: conv?.name || user.name || user.email?.split('@')[0] || 'Contato',
+        avatar: conv?.avatar || user.avatar,
+        online: conv?.online !== undefined ? conv.online : user.isOnline,
+        lastMessage: conv?.lastMessage || 'Conversa iniciada',
+        time: conv?.time || 'Agora'
       };
 
+      setConversations((prev) => deduplicateConversations([convEntry, ...prev]));
       setSelectedConv(convEntry);
+      fetchConversations(true);
     } catch (err) {
       console.warn('Falha ao abrir conversa direta:', err.message);
     } finally {
+      startingConvRef.current = false;
       setStartingConvId(null);
     }
   };
 
   useEffect(() => {
     if (location.state?.targetUser) {
-      handleSelectUser(location.state.targetUser);
+      const target = location.state.targetUser;
+      window.history.replaceState({}, document.title);
+      handleSelectUser(target);
     }
   }, [location.state]);
 
@@ -756,10 +815,16 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     }
   };
 
-  const filteredConversations = conversations.filter(c =>
-    (c.name && c.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (c.lastMessage && c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredConversations = useMemo(() => {
+    const unique = deduplicateConversations(conversations);
+    if (!searchTerm.trim()) return unique;
+    const term = searchTerm.toLowerCase();
+    return unique.filter(
+      (c) =>
+        (c.name && c.name.toLowerCase().includes(term)) ||
+        (c.lastMessage && c.lastMessage.toLowerCase().includes(term))
+    );
+  }, [conversations, searchTerm]);
 
   const formatLastMessage = (msg) => {
     if (!msg) return 'Conversa iniciada';
@@ -1432,8 +1497,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                   key={user.id}
                   type="button"
                   onClick={() => handleSelectUser(user)}
-                  disabled={startingConvId === user.id}
-                  className="w-full p-2.5 rounded-2xl skeuo-card flex items-center justify-between gap-3 text-left active:scale-[0.98] transition-transform cursor-pointer"
+                  disabled={Boolean(startingConvId)}
+                  className="w-full p-2.5 rounded-2xl skeuo-card flex items-center justify-between gap-3 text-left active:scale-[0.98] transition-transform cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative shrink-0 w-10 h-10 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
