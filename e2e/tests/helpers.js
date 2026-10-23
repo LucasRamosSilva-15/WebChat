@@ -2,7 +2,6 @@ const API = 'http://localhost:3101/api';
 let counter = 0;
 const uniq = () => `${Date.now().toString(36)}${(counter++).toString(36)}`;
 
-/** Cria um usuário pela API e devolve { token, user, email, password, name }. */
 async function createUser(request, name = 'Usuário') {
   const email = `${name.toLowerCase().replace(/\W+/g, '')}.${uniq()}@e2e.test`;
   const password = 'Senha@12345';
@@ -12,7 +11,6 @@ async function createUser(request, name = 'Usuário') {
   return { token: body.token, user: body.user, email, password, name };
 }
 
-/** Deixa a página já logada (token + dados no localStorage) antes de qualquer script do app. */
 async function loginViaStorage(context, session) {
   await context.addInitScript((s) => {
     localStorage.setItem('chat_token', s.token);
@@ -37,13 +35,12 @@ async function postMessage(request, token, roomId, content) {
   return res.json();
 }
 
-/** Entra na sala pela tela de confirmação, quando ela aparece. */
 async function joinIfPrompted(page) {
   const join = page.getByRole('button', { name: 'Entrar na Sala' });
   try {
     await join.waitFor({ state: 'visible', timeout: 4000 });
     await join.click();
-  } catch { /* já estava dentro da sala */ }
+  } catch { }
 }
 
 module.exports = { API, uniq, createUser, loginViaStorage, authHeaders, createRoom, postMessage, joinIfPrompted };

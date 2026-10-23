@@ -13,7 +13,6 @@ test.describe('Directs com criptografia ponta a ponta', () => {
     const pageA = await ctxA.newPage();
     const pageB = await ctxB.newPage();
 
-    // Ambos abrem os directs: cada navegador gera o par de chaves e publica só a chave pública
     await pageB.goto('/directs');
     await pageA.goto('/directs');
     await expect.poll(async () => {
@@ -36,7 +35,6 @@ test.describe('Directs com criptografia ponta a ponta', () => {
     await pageA.locator('button[type="submit"][aria-label="Enviar mensagem"]').click();
     await expect(pageA.getByText(segredo)).toBeVisible();
 
-    // No servidor o conteúdo NÃO pode estar em texto puro
     await expect.poll(async () => {
       const r = await request.get(`${API}/directs/conversations/${conv.id}/messages`, { headers: authHeaders(a.token) });
       return (await r.json()).messages.length;
@@ -44,7 +42,6 @@ test.describe('Directs com criptografia ponta a ponta', () => {
     const stored = await (await request.get(`${API}/directs/conversations/${conv.id}/messages`, { headers: authHeaders(a.token) })).json();
     expect(JSON.stringify(stored)).not.toContain(segredo);
 
-    // O destinatário decifra no navegador
     await pageB.goto('/directs');
     await expect(pageB.getByText(segredo)).toBeVisible();
 

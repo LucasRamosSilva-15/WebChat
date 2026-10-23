@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* 1. Módulos do Design System Skeuomórfico */
 @import "./styles/skeuo.css";
 @import "./styles/skeuo-extra.css";
 @import "./styles/animations.css";
@@ -8,10 +7,8 @@
 @import "./styles/loading.css";
 @import "./styles/avatar.css";
 
-/* 2. Variante de Modo Escuro (Tailwind CSS v4) */
 @variant dark (&:where(.dark, .dark *));
 
-/* 3. Camada Base: Tokens Globais de Cores Dinâmicas */
 @layer base {
     :root {
         color-scheme: light;
@@ -83,7 +80,6 @@
         --primary-ring-focus: rgba(100, 116, 139, 0.6);
     }
 
-    /* 4. Estilos Globais de Body e Temas de Fundo */
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: #1d1d1f;
@@ -137,9 +133,8 @@
     }
 }
 
-/* 5. Camada Utilitária Especializada */
 @layer utilities {
-    /* Scrollbars Gerais e Suporte a Modo Escuro */
+
     ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -180,7 +175,6 @@
         scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
     }
 
-    /* Scrollbar Específico do Chat */
     .chat-container::-webkit-scrollbar {
         width: 8px;
     }

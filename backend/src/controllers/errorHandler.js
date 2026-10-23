@@ -1,8 +1,3 @@
-/**
- * Traduz os erros lançados pelos Services (throw new Error('...')) em status HTTP.
- * Os Services usam mensagens em português, então o mapeamento é feito pelo texto.
- * Erros inesperados do Sequelize/banco viram 500.
- */
 function statusFromError(error) {
   const msg = (error && error.message ? error.message : '').toLowerCase();
 
@@ -27,8 +22,6 @@ function handleError(res, error) {
   return res.status(status).json({ error: error.message });
 }
 
-// Nunca devolvemos o hash da senha para o cliente.
-// "name" é mantido por compatibilidade com o frontend (que lê user.name).
 function toPublicUser(user) {
   if (!user) return null;
   const plain = typeof user.toJSON === 'function' ? user.toJSON() : user;

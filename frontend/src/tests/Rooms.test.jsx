@@ -77,7 +77,7 @@ describe('Rooms Component Integration Tests', () => {
     expect(screen.getByText('Sala Teste')).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: 'Jogos' })).toBeInTheDocument();
 
-    expect(screen.getByText('100')).toBeInTheDocument(); // total users
+    expect(screen.getByText('100')).toBeInTheDocument();
   });
 
   it('3. Trata e exibe tela de erro se a API falhar', async () => {

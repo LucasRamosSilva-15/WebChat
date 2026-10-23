@@ -1,7 +1,3 @@
-/**
- * Utilitários para formatação de datas, divisores de calendário e carimbo de data/hora
- * com suporte a fuso horário brasileiro (America/Sao_Paulo) e formato 24h (pt-BR).
- */
 
 export function getAppTimeZone() {
   try {
@@ -28,18 +24,15 @@ export function parseDateSafe(val) {
     const trimmed = val.trim();
     if (!trimmed) return null;
 
-    // Se já é apenas horário (ex: "17:29" ou "08:29 PM"), não é timestamp de data completo
     if (/^\d{1,2}:\d{2}(:\d{2})?(\s*(AM|PM))?$/i.test(trimmed)) {
       return null;
     }
 
-    // SQL timestamp "YYYY-MM-DD HH:mm:ss"
     if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}/.test(trimmed)) {
       const d = new Date(trimmed.replace(' ', 'T') + 'Z');
       if (!isNaN(d.getTime())) return d;
     }
 
-    // ISO string sem sufixo de timezone explícito
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(trimmed)) {
       const d = new Date(trimmed + 'Z');
       if (!isNaN(d.getTime())) return d;
@@ -51,10 +44,6 @@ export function parseDateSafe(val) {
   return null;
 }
 
-/**
- * Converte strings de horário emitidas em UTC pelo backend (ex: "08:29 PM" ou "05:40 PM")
- * para um Date com a data de hoje e as horas/minutos UTC correspondentes.
- */
 export function parseUtcTimeStr(timeStr) {
   if (!timeStr || typeof timeStr !== 'string') return null;
   const trimmed = timeStr.trim();
@@ -132,24 +121,20 @@ export function getMessageDateKey(msgOrDate) {
 export const formatMessageDateDivider = getMessageDateKey;
 
 export function formatMessageTime(timeStr, createdAt) {
-  // 1. Sempre prioriza a data real gravada (createdAt / timestamp)
   const candidate = createdAt || timeStr;
   const d = parseDateSafe(candidate);
   if (d) {
     return formatTimeInTz(d);
   }
 
-  // 2. Se for string UTC no formato 12h AM/PM vinda do servidor (ex: "08:29 PM" de Render)
   const utcD = parseUtcTimeStr(timeStr);
   if (utcD) {
     return formatTimeInTz(utcD);
   }
 
-  // 3. Fallback caso já seja horário 24h
   if (typeof timeStr === 'string' && timeStr.trim()) {
     const trimmed = timeStr.trim();
 
-    // Se já estiver em 24h "HH:mm" ou "H:mm"
     const match24 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
     if (match24) {
       return `${match24[1].padStart(2, '0')}:${match24[2]}`;

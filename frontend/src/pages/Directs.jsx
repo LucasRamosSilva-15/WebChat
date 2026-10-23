@@ -118,10 +118,8 @@ const formatFullDateTime = (timeStr, createdAt) => {
     return timeStr || '';
 };
 
-// Cache local das mensagens: remove dados pesados (anexos/imagens grandes) e nunca estoura a cota do localStorage.
 const cacheMessages = (convId, list) => {
     try {
-        // Mensagens criptografadas nunca são gravadas em texto claro no navegador
         const slim = list.filter(m => !m.encrypted).map(m => {
             let out = m;
             if (out.attachment?.url) out = { ...out, attachment: { ...out.attachment, url: null } };
@@ -129,7 +127,7 @@ const cacheMessages = (convId, list) => {
             return out;
         });
         cacheMessages(convId, slim);
-    } catch { /* cota cheia: o histórico real vem do servidor */ }
+    } catch { }
 };
 
 const getMessageDateKey = (msg) => {
@@ -494,7 +492,6 @@ const Directs = () => {
             if (!cancelled) setE2eeInfo({ active: false, safety: null });
         });
         return () => { cancelled = true; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedConv?.id, selectedConv?.partnerId, currentUserId]);
 
     useEffect(() => {
@@ -537,7 +534,7 @@ const Directs = () => {
                     if (serverMessages.length > 0) {
                         const mapped = serverMessages.map(msg => mapServerMessage(msg, convName));
                         return decryptList(mapped, selectedConv).then(decrypted => {
-                            if (selectedConvRef.current?.id !== convId) return; // trocou de conversa no meio do caminho
+                            if (selectedConvRef.current?.id !== convId) return;
                             setMessages(decrypted);
                             cacheMessages(convId, decrypted);
                         });
@@ -852,7 +849,6 @@ const Directs = () => {
         const imageToSend = imagePreview;
         const isServerConv = Boolean(selectedConv.id) && !String(selectedConv.id).startsWith('privado-');
         const peerId = peerIdOf(selectedConv);
-        // Criptografia ponta a ponta quando o contato já ativou a chave dele
         let cryptoEntry = null;
         try {
             cryptoEntry = isServerConv && peerId ? await getConversationCrypto(currentUserId, peerId) : null;
@@ -883,11 +879,10 @@ const Directs = () => {
             return updated;
         });
 
-        let wire; // o que realmente sai do navegador
+        let wire;
         if (cryptoEntry) {
             try {
                 const envelope = await encryptMessage(cryptoEntry, selectedConv.id, { text: textToSend, image: imageToSend, attachment: attachmentToSend });
-                // Só o envelope sai daqui: texto, imagem e anexo em claro não são enviados
                 wire = { content: envelope };
             } catch {
                 setMessages(prev => prev.filter(m => m.messageId !== newMsgId && m.tempId !== tempId));

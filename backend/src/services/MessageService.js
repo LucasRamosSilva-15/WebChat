@@ -29,10 +29,6 @@ class MessageService {
     return newMessage;
   }
 
-  /**
-   * Histórico paginado: { messages, hasMore, nextCursor }.
-   * Sanitiza limit (1 a 100) e before (data válida) antes de chegar ao banco.
-   */
   async getMessagesByRoom(roomId, { limit, before, since } = {}) {
     if (!roomId) {
       throw new Error('ID da sala é obrigatório.');

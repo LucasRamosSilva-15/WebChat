@@ -33,7 +33,6 @@ const registerChatHandlers = (io, socket) => {
       return;
     }
 
-    // Mensagens E2EE (envelope "e2ee:v1:...") carregam texto + anexos cifrados e podem ser maiores
     const isE2EE = typeof content === 'string' && content.startsWith('e2ee:v1:');
     if (isE2EE && content.length > 9 * 1024 * 1024) {
       socket.emit('message_error', { error: 'A mensagem criptografada excede o tamanho máximo.' });

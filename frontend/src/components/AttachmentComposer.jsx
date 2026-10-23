@@ -11,10 +11,6 @@ import {
 
 const btn = 'w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer rounded-full bg-gradient-to-b from-white to-gray-100 hover:from-gray-50 hover:to-gray-200 dark:from-slate-700 dark:to-slate-800 dark:hover:from-slate-600 dark:hover:to-slate-700 text-[#86868b] hover:text-[#1d1d1f] dark:text-slate-300 dark:hover:text-white border border-gray-200 dark:border-slate-600 transition-all';
 
-/**
- * Botões de anexar documento e gravar áudio + prévia do anexo pendente.
- * Controlado pelo pai: value = anexo pendente ({url,type,name,size}) ou null.
- */
 export default function AttachmentComposer({ value, onChange, disabled = false }) {
   const fileRef = useRef(null);
   const recorderRef = useRef(null);
@@ -39,7 +35,7 @@ export default function AttachmentComposer({ value, onChange, disabled = false }
   useEffect(() => () => {
     cancelledRef.current = true;
     if (recorderRef.current && recorderRef.current.state !== 'inactive') {
-      try { recorderRef.current.stop(); } catch { /* já parado */ }
+      try { recorderRef.current.stop(); } catch { }
     }
     cleanup();
   }, [cleanup]);

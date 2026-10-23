@@ -1,4 +1,3 @@
-// Testes unitários dos Models (Sequelize + SQLite em memória)
 const { sequelize, User, Room, Message, Report, Feedback } = require('../src/models');
 const { resetDb, closeDb, createUser, createRoom, createMessage } = require('./helpers');
 

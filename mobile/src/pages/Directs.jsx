@@ -341,8 +341,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   const handleFileSelect = async (file, type) => {
     if (!file) return;
 
-    const maxImageSize = 5 * 1024 * 1024; // 5MB
-    const maxMediaSize = 10 * 1024 * 1024; // 10MB
+    const maxImageSize = 5 * 1024 * 1024;
+    const maxMediaSize = 10 * 1024 * 1024;
 
     if (type === 'image' && file.size > maxImageSize) {
       showFileError('Arquivo muito grande. Limite máximo: 5MB');
@@ -519,12 +519,10 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
       const isMine = checkIsMe(msg);
 
       setMessages((prev) => {
-        // Ignora duplicata se o ID da mensagem já existir na lista
         if (msg.id && prev.some((m) => m.id === msg.id)) {
           return prev;
         }
 
-        // Se for mensagem própria, substitui mensagem otimista temporária correspondente
         if (isMine) {
           const tempIdx = prev.findIndex((m) =>
             (m.tempId && (m.tempId === rawMsg.tempId || m.tempId === msg.tempId)) ||
@@ -657,7 +655,6 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   const handleSelectUser = async (user) => {
     if (!user?.id || startingConvRef.current) return;
 
-    // Se já existir conversa com esse contato, abre diretamente sem duplicar
     const existing = conversations.find(
       (c) =>
         (user.id && (c.partnerId === user.id || c.id === user.id)) ||
@@ -1409,7 +1406,6 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           title="Enviar Anexo"
         >
           <div className="p-4 grid grid-cols-3 gap-3">
-            {/* Opção Imagem */}
             <button
               type="button"
               onClick={() => {
@@ -1424,7 +1420,6 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               <span className="text-xs font-semibold">Imagem</span>
             </button>
 
-            {/* Opção Vídeo */}
             <button
               type="button"
               onClick={() => {
@@ -1439,7 +1434,6 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               <span className="text-xs font-semibold">Vídeo</span>
             </button>
 
-            {/* Opção Arquivo */}
             <button
               type="button"
               onClick={() => {

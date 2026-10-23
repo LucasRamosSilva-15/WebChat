@@ -11,7 +11,6 @@ const renderIcon = (type = '') => {
   return <FaFileAlt {...props} />;
 };
 
-/** Exibe um anexo: player para áudio ou cartão de download para documentos. */
 export default function AttachmentView({ attachment, className = '' }) {
   if (!attachment || !attachment.url) return null;
   const isAudio = attachment.kind === 'audio' || (attachment.type || '').startsWith('audio/');

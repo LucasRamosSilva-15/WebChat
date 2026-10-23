@@ -14,7 +14,6 @@ export default function MobileBottomNav({
   const location = useLocation();
   const { triggerImpact } = useHaptics();
 
-  // A barra inferior de abas deve permanecer estática e visível nas telas principais de navegação
   const isMainTab = ['/rooms', '/directs', '/profile', '/settings', '/avisos'].some((p) =>
     location.pathname.startsWith(p)
   );

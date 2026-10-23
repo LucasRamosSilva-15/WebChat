@@ -19,10 +19,8 @@ export default function AuthCallback() {
           urlParams.get('source') === 'mobile' ||
           localStorage.getItem('auth_source') === 'mobile';
 
-        // Tenta obter a sessão ativa do Supabase
         let { data: { session } } = await supabase.auth.getSession();
 
-        // Se ainda não estiver carregada na chamada imediata, aguarda brevemente
         if (!session && (window.location.hash || window.location.search)) {
           const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 2000));
           const sessionPromise = new Promise((resolve) => {
@@ -102,10 +100,8 @@ export default function AuthCallback() {
             setDeepLinkUrl(deepLink);
           }
 
-          // Redireciona imediatamente para o app nativo
           window.location.href = deepLink;
         } else {
-          // Fluxo normal da Web para utilizadores de desktop
           if (token) {
             navigate('/rooms', { replace: true });
           } else {

@@ -1,4 +1,3 @@
-// Anexos: áudio gravado e documentos (unitário + integração REST)
 const request = require('supertest');
 const { app } = require('../server');
 const { resetDb, closeDb, createUser, createRoom, tokenFor, authHeader } = require('./helpers');

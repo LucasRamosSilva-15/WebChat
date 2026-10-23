@@ -1,12 +1,3 @@
-// Criptografia ponta a ponta (E2EE) para conversas diretas — Web Crypto API.
-//
-// - Cada usuário tem um par ECDH P-256. A chave PRIVADA é não-extraível e fica no IndexedDB do
-//   navegador; só a chave PÚBLICA vai ao servidor (PUT /directs/keys).
-// - Entre duas pessoas, ECDH(minha privada, pública do outro) gera o mesmo segredo dos dois lados.
-//   O segredo passa por HKDF-SHA256 e vira uma chave AES-256-GCM.
-// - Cada mensagem é cifrada com IV aleatório de 12 bytes; o id da conversa entra como dado
-//   autenticado (AAD), então um texto cifrado não pode ser reaproveitado em outra conversa.
-// - Formato no servidor: "e2ee:v1:<iv base64>:<texto cifrado base64>". O servidor só vê isso.
 
 export const E2EE_PREFIX = 'e2ee:v1:';
 const HKDF_INFO = 'webchat-e2ee-v1';
@@ -18,7 +9,6 @@ export const isE2EESupported = () => Boolean(subtle() && globalThis.crypto?.getR
 
 export const isEncryptedContent = (value) => typeof value === 'string' && value.startsWith(E2EE_PREFIX);
 
-// ---------- base64 (em blocos, para aguentar anexos de vários MB) ----------
 export const bytesToBase64 = (bytes) => {
   let binary = '';
   const chunk = 0x8000;
@@ -35,7 +25,6 @@ export const base64ToBytes = (b64) => {
   return bytes;
 };
 
-// ---------- armazenamento da identidade (IndexedDB, com fallback em memória) ----------
 const memoryStore = new Map();
 
 const openDb = () =>
@@ -71,10 +60,9 @@ const storePut = async (key, value) => {
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
     });
-  } catch { /* fica só em memória nesta sessão */ }
+  } catch { }
 };
 
-/** Apaga a identidade local (usado em testes e no "redefinir criptografia"). */
 export const resetLocalIdentity = async (userId) => {
   memoryStore.delete(`identity:${userId}`);
   if (typeof indexedDB === 'undefined') return;
@@ -86,14 +74,12 @@ export const resetLocalIdentity = async (userId) => {
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error);
     });
-  } catch { /* nada a fazer */ }
+  } catch { }
 };
 
-// ---------- identidade ----------
 const ECDH = { name: 'ECDH', namedCurve: 'P-256' };
 
 export const generateIdentity = async () => {
-  // extractable=false só vale para a privada; a pública sempre pode ser exportada.
   const pair = await subtle().generateKey(ECDH, false, ['deriveBits']);
   const publicJwk = await subtle().exportKey('jwk', pair.publicKey);
   return { privateKey: pair.privateKey, publicJwk: { kty: publicJwk.kty, crv: publicJwk.crv, x: publicJwk.x, y: publicJwk.y } };
@@ -101,10 +87,6 @@ export const generateIdentity = async () => {
 
 const sameJwk = (a, b) => Boolean(a && b && a.x === b.x && a.y === b.y && a.crv === b.crv);
 
-/**
- * Garante que o usuário tem uma identidade local e que o servidor conhece a chave pública dela.
- * `api` precisa de { putPublicKey(jwk), getPublicKey(userId) }.
- */
 export const ensureIdentity = async (userId, api) => {
   if (!isE2EESupported() || !userId) return null;
   let identity = await storeGet(`identity:${userId}`);
@@ -118,12 +100,11 @@ export const ensureIdentity = async (userId, api) => {
       await api.putPublicKey(identity.publicJwk);
     }
   } catch {
-    return null; // sem rede/servidor: não ativa a criptografia agora
+    return null;
   }
   return identity;
 };
 
-// ---------- chave de conversa ----------
 const importPublic = (jwk) =>
   subtle().importKey('jwk', { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y, ext: true }, ECDH, false, []);
 
@@ -140,7 +121,6 @@ export const deriveConversationKey = async (privateKey, peerPublicJwk) => {
   );
 };
 
-/** Código de verificação (igual para os dois lados) para conferir a conversa por outro canal. */
 export const safetyNumber = async (jwkA, jwkB) => {
   const [first, second] = [jwkA, jwkB].sort((p, q) => (p.x + p.y).localeCompare(q.x + q.y));
   const data = new TextEncoder().encode(`${first.x}.${first.y}|${second.x}.${second.y}`);
@@ -149,8 +129,6 @@ export const safetyNumber = async (jwkA, jwkB) => {
   return hex.match(/.{1,4}/g).join(' ').toUpperCase();
 };
 
-// ---------- cifrar / decifrar ----------
-/** payload: objeto serializável { t: texto, i: imagem, a: anexo }. */
 export const encryptPayload = async (key, conversationId, payload) => {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const plain = new TextEncoder().encode(JSON.stringify(payload));

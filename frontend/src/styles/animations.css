@@ -56,7 +56,6 @@
   .animate-fade-in-up-4 { animation: fade-in-up 400ms ease-out both; animation-delay: 400ms; }
   .animate-fade-in-up-5 { animation: fade-in-up 400ms ease-out both; animation-delay: 500ms; }
 
-  /* Animações Atmosféricas (Céu, Nuvens e Ondinhas SkyRipple) */
   @keyframes cloud-float-left {
     0%, 100% { transform: translate(0, 0) scale(1); }
     50% { transform: translate(14px, -18px) scale(1.02); }

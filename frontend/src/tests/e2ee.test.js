@@ -38,7 +38,6 @@ describe('E2EE (Web Crypto)', () => {
     expect(envelope.startsWith(E2EE_PREFIX)).toBe(true);
     expect(envelope).not.toContain('Olá');
     expect(await decryptPayload(kB, 'conv-1', envelope)).toEqual({ t: 'Olá, Bob! 🔒', i: null, a: null });
-    // quem enviou também consegue reler o histórico
     expect(await decryptPayload(kA, 'conv-1', envelope)).toMatchObject({ t: 'Olá, Bob! 🔒' });
   });
 

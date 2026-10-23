@@ -58,7 +58,6 @@ const Message = sequelize.define('Message', {
   timestamps: false,
   indexes: [
     {
-      // Histórico paginado: filtra por sala e ordena pela data (mais nova primeiro)
       name: 'idx_messages_room_created_at',
       fields: ['room_id', { name: 'created_at', order: 'DESC' }]
     }

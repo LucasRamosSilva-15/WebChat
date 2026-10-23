@@ -3,7 +3,6 @@ const { sequelize, User, Room, Message } = require('../src/models');
 
 const SECRET = process.env.JWT_SECRET || 'fallback_secret';
 
-// Recria todas as tabelas no SQLite em memória (banco limpo a cada teste).
 const resetDb = () => sequelize.sync({ force: true });
 
 const closeDb = () => sequelize.close();

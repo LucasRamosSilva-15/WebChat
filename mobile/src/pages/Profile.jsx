@@ -354,7 +354,6 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
           </div>
         </div>
 
-        {/* Botão de Logout visível e com folga */}
         <div className="pt-4 pb-2 flex justify-center">
           <button
             type="button"

@@ -146,7 +146,7 @@ describe('Paginação do histórico de mensagens diretas (cursor)', () => {
   it('mantém isMe correto em cada página e respeita o teto de 100', async () => {
     await seedDirects(3);
     const res = await getPage('?limit=99999');
-    expect(res.body.messages.map(m => m.isMe)).toEqual([false, true, false]); // visão da Alice (A)
+    expect(res.body.messages.map(m => m.isMe)).toEqual([false, true, false]);
     expect(res.body.messages.length).toBeLessThanOrEqual(100);
   });
 

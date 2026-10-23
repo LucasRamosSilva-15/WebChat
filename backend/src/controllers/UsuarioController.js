@@ -11,7 +11,6 @@ class UsuarioController {
         displayName: displayName || name
       });
 
-      // Já devolve o token, como o frontend espera após o cadastro.
       const { token } = await UserService.login(email, password);
       return res.status(201).json({ user: toPublicUser(user), token });
     } catch (error) {

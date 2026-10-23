@@ -1,4 +1,3 @@
-// Testes de integração: salas
 const request = require('supertest');
 const { app } = require('../server');
 const { resetDb, closeDb, createUser, createRoom, createMessage, tokenFor, adminToken, authHeader } = require('./helpers');

@@ -33,7 +33,6 @@ socket.on('connect', () => {
         console.error("Erro ao recuperar salas salvas");
     }
 
-    // Publica a chave pública E2EE do usuário (carregamento sob demanda: não pesa no bundle inicial)
     import('./services/directCrypto')
         .then(({ initIdentity }) => initIdentity(localStorage.getItem('chat_uniqueUserId')))
         .catch(() => {});

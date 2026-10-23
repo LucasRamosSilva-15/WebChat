@@ -4,7 +4,7 @@
         display: inline-flex;
         flex-shrink: 0;
     }
-    
+
     .avatar-wrapper-clickable {
         cursor: pointer;
         transition: all 300ms;

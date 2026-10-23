@@ -28,10 +28,9 @@ test.describe('Histórico paginado', () => {
     await joinIfPrompted(page);
 
     await expect(page.getByText('msg-60', { exact: true })).toBeVisible();
-    await expect(page.getByText('msg-01', { exact: true })).toHaveCount(0); // só as 50 mais recentes
+    await expect(page.getByText('msg-01', { exact: true })).toHaveCount(0);
 
     const scroller = page.locator('.chat-container');
-    // A rolagem suave inicial pode competir com o scroll programático: repete até carregar
     await expect.poll(async () => {
       await scroller.evaluate((el) => { el.scrollTop = 0; });
       return page.getByText('msg-01', { exact: true }).count();

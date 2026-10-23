@@ -1,4 +1,3 @@
-// Testes de integração: rotas de usuário/autenticação (Controller -> Service -> Repository -> SQLite)
 const request = require('supertest');
 const { app } = require('../server');
 const { resetDb, closeDb, createUser, tokenFor, adminToken, authHeader } = require('./helpers');

@@ -1,5 +1,4 @@
-// Utilitários de anexos (áudio gravado e documentos) — espelha as regras do backend.
-export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024; // 5 MB
+export const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 export const MAX_RECORDING_SECONDS = 120;
 
 export const DOCUMENT_TYPES = [
@@ -17,7 +16,6 @@ export const DOCUMENT_TYPES = [
 
 export const DOCUMENT_ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip';
 
-// Alguns navegadores deixam file.type vazio (ex.: .csv no Windows): usa a extensão.
 const EXT_TO_TYPE = {
   pdf: 'application/pdf',
   doc: 'application/msword',
@@ -57,10 +55,8 @@ export const readFileAsDataUrl = (blobOrFile) =>
     reader.readAsDataURL(blobOrFile);
   });
 
-// Reescreve o prefixo da data URL com o MIME resolvido (sem parâmetros como codecs)
 const withMime = (dataUrl, mime) => dataUrl.replace(/^data:[^,]*,/, `data:${mime};base64,`);
 
-/** Converte um File de documento em { url, type, name, size } ou lança Error amigável. */
 export async function documentFileToAttachment(file) {
   const type = resolveDocumentType(file);
   if (!type) throw new Error('Tipo de arquivo não suportado. Envie PDF, Word, Excel, PowerPoint, TXT, CSV ou ZIP.');
@@ -70,7 +66,6 @@ export async function documentFileToAttachment(file) {
   return { url, type, name: file.name, size: file.size };
 }
 
-/** Converte o Blob gravado pelo MediaRecorder em anexo de áudio. */
 export async function audioBlobToAttachment(blob) {
   if (blob.size > MAX_ATTACHMENT_BYTES) throw new Error('A gravação excede o limite de 5 MB.');
   const baseType = (blob.type || 'audio/webm').split(';')[0];
@@ -79,7 +74,6 @@ export async function audioBlobToAttachment(blob) {
   return { url, type: baseType, name: `audio-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.${ext}`, size: blob.size };
 }
 
-/** Normaliza o anexo vindo da API (view-model dos directs ou colunas attachment_* das salas). */
 export const normalizeAttachment = (src) => {
   if (!src) return null;
   if (src.attachment && src.attachment.url) return src.attachment;

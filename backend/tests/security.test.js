@@ -109,7 +109,6 @@ describe('Security Utility (CIS IG1 Baseline)', () => {
 
       expect(verifyToken(token).id).toBe(userId);
 
-      // Simula passagem de tempo e revogação
       await new Promise(r => setTimeout(r, 10));
       revokeUserTokens(userId);
 

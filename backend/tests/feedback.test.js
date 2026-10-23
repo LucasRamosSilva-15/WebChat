@@ -1,4 +1,3 @@
-// Testes de integração: feedbacks
 const request = require('supertest');
 const { app } = require('../server');
 const { resetDb, closeDb, createUser, tokenFor, adminToken, authHeader } = require('./helpers');

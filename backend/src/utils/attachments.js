@@ -1,8 +1,4 @@
-/**
- * Validação de anexos (áudio gravado e documentos).
- * O arquivo viaja como data URL base64 (mesmo modelo das imagens já existentes).
- */
-const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024; // 5 MB já decodificado
+const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 
 const ALLOWED_TYPES = {
   audio: ['audio/webm', 'audio/ogg', 'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/x-wav', 'audio/x-m4a', 'audio/aac'],
@@ -28,11 +24,6 @@ const kindOf = (mime) => {
   return null;
 };
 
-/**
- * Valida e normaliza um anexo { url, type, name, size }.
- * Retorna null se não houver anexo; lança Error com mensagem amigável se for inválido.
- * Retorno: { attachment_url, attachment_type, attachment_name, attachment_size }
- */
 function validateAttachment(attachment) {
   if (!attachment) return null;
   if (typeof attachment !== 'object' || typeof attachment.url !== 'string') {
@@ -48,7 +39,6 @@ function validateAttachment(attachment) {
   if (!kindOf(mime)) {
     throw new Error('Tipo de arquivo não permitido.');
   }
-  // O tipo declarado, se vier, precisa bater com o do conteúdo (evita rótulo falso)
   if (attachment.type && String(attachment.type).split(';')[0].toLowerCase() !== mime) {
     throw new Error('Tipo de arquivo não confere com o conteúdo.');
   }
@@ -62,7 +52,6 @@ function validateAttachment(attachment) {
   }
 
   const rawName = typeof attachment.name === 'string' ? attachment.name : '';
-  // Remove caracteres de controle e separadores de caminho
   const name = rawName.replace(/[\u0000-\u001f\\/]/g, '').trim().slice(0, 255) || (kindOf(mime) === 'audio' ? 'audio' : 'arquivo');
 
   return {
@@ -73,7 +62,6 @@ function validateAttachment(attachment) {
   };
 }
 
-/** Converte as colunas do banco no objeto usado pela API/frontend. */
 function toAttachmentView(row) {
   if (!row || !row.attachment_url) return null;
   return {

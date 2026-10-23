@@ -6,20 +6,11 @@ class MessageRepository {
     return await Message.create(messageData);
   }
 
-  /**
-   * Histórico de uma sala com paginação baseada em cursor (data de criação).
-   * @param {string} roomId - UUID da sala
-   * @param {object} options
-   * @param {number} options.limit - quantidade de mensagens desejadas (default: 50)
-   * @param {string|Date|null} options.before - só traz mensagens criadas ANTES desta data
-   * @returns {{ messages: Array, hasMore: boolean, nextCursor: Date|null }}
-   */
   async findByRoomId(roomId, { limit = 50, before = null, since = null } = {}) {
     const pageSize = Number(limit);
     const whereClause = { room_id: roomId };
 
     if (since) {
-      // Modo sincronização: mensagens mais novas que `since`, já em ordem cronológica.
       whereClause.created_at = { [Op.gt]: new Date(since) };
       const newer = await Message.findAll({
         where: whereClause,
@@ -39,8 +30,6 @@ class MessageRepository {
       whereClause.created_at = { [Op.lt]: new Date(before) };
     }
 
-    // Pede limit + 1: se vier a mais, sabemos que ainda existem mensagens antigas
-    // sem precisar de um COUNT(*) extra.
     const found = await Message.findAll({
       where: whereClause,
       include: [
@@ -53,10 +42,8 @@ class MessageRepository {
     const hasMore = found.length > pageSize;
     const messages = hasMore ? found.slice(0, pageSize) : found;
 
-    // O banco devolve da mais nova para a mais antiga; o chat exibe em ordem cronológica.
     messages.reverse();
 
-    // Cursor da próxima página = data da mensagem mais antiga deste bloco
     const nextCursor = hasMore && messages.length > 0 ? messages[0].created_at : null;
 
     return { messages, hasMore, nextCursor, nextSince: null };

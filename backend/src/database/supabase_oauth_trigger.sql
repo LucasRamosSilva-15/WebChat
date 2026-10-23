@@ -1,13 +1,3 @@
--- ==============================================================================
--- SkyRipple - Trigger de Sincronização Automática para Google OAuth no Supabase
--- ==============================================================================
--- Este script configura o disparo automático no Supabase (PostgreSQL) para
--- herdar dados de autenticação OAuth de auth.users para as tabelas públicas (users e profiles):
---   - name: extraído de user_metadata.full_name ou user_metadata.name (ou fallback do email)
---   - avatar_url: extraído de user_metadata.avatar_url ou picture
---   - email: extraído do registo principal do OAuth
--- ==============================================================================
-
 CREATE OR REPLACE FUNCTION public.handle_new_oauth_user()
 RETURNS TRIGGER AS $$
 DECLARE

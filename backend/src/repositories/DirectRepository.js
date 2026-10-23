@@ -63,16 +63,11 @@ class DirectRepository {
     return await DirectConversation.destroy({ where: { id } });
   }
 
-  /**
-   * Histórico de uma conversa direta com paginação por cursor (mesma lógica das salas).
-   * @returns {{ messages: Array, hasMore: boolean, nextCursor: Date|null }}
-   */
   async findMessagesByConversation(conversationId, { limit = 50, before = null, since = null } = {}) {
     const pageSize = Number(limit);
     const whereClause = { conversation_id: conversationId };
 
     if (since) {
-      // Modo sincronização: mensagens mais novas que `since`, já em ordem cronológica.
       whereClause.created_at = { [Op.gt]: new Date(since) };
       const newer = await DirectMessage.findAll({
         where: whereClause,

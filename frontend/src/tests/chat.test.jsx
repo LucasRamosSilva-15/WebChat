@@ -88,7 +88,7 @@ describe('Chat Component Integration Tests', () => {
   });
 
   it('2. Exibe botão Entrar na Sala se usuário não entrou nela ainda', async () => {
-    localStorage.setItem('chat_joinedRooms', JSON.stringify([])); // clear joins
+    localStorage.setItem('chat_joinedRooms', JSON.stringify([]));
 
     renderChat();
 

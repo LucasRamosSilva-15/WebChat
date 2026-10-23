@@ -42,13 +42,11 @@ function AppLayout() {
             const rawUrl = event?.url;
             if (!rawUrl) return;
 
-            // Suporte a skyripple://auth/callback?token=... ou #access_token=...
             const formattedUrl = rawUrl.replace('#', '?');
             let urlObj;
             try {
               urlObj = new URL(formattedUrl);
             } catch (parseErr) {
-              // Fallback para URIs com esquemas não padronizados
               const queryPart = formattedUrl.includes('?') ? formattedUrl.substring(formattedUrl.indexOf('?')) : '';
               urlObj = new URL('https://auth' + queryPart);
             }
@@ -149,7 +147,6 @@ function AppLayout() {
 
                 window.dispatchEvent(new Event('profileUpdated'));
 
-                // Redireciona diretamente para a tela de salas
                 navigate('/rooms', { replace: true });
               }
             }
@@ -181,7 +178,6 @@ function AppLayout() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentPath = location.pathname || window.location.pathname;
 
-      // Não interceptar nem redirecionar se o usuário estiver no fluxo de recuperação de senha
       if (event === 'PASSWORD_RECOVERY' || currentPath === '/forgot-password') {
         return;
       }

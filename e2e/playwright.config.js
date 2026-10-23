@@ -1,5 +1,3 @@
-// Testes ponta a ponta (E2E) com Playwright.
-// Sobe sozinho: backend de teste (SQLite em memória, porta 3101) e frontend (Vite, porta 5273).
 const { defineConfig, devices } = require('@playwright/test');
 const path = require('path');
 
@@ -12,7 +10,7 @@ module.exports = defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
-  workers: 1, // o banco de teste é único e em memória
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never', outputFolder: path.join(__dirname, 'report') }]],
   outputDir: path.join(__dirname, 'results'),
@@ -23,7 +21,6 @@ module.exports = defineConfig({
     video: 'off',
     permissions: ['microphone'],
     launchOptions: {
-      // Microfone falso: permite testar a gravação de áudio sem hardware
       args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream']
     }
   },

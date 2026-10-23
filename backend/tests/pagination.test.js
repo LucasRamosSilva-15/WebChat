@@ -1,4 +1,3 @@
-// Testes unitários do helper de paginação por cursor
 const { parseHistoryParams, DEFAULT_LIMIT, MAX_LIMIT } = require('../src/utils/pagination');
 
 describe('parseHistoryParams', () => {

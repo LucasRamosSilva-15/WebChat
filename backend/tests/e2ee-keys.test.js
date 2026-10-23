@@ -1,4 +1,3 @@
-// E2EE: registro e consulta de chaves públicas (o servidor nunca vê a chave privada)
 const request = require('supertest');
 const { app } = require('../server');
 const { resetDb, closeDb, createUser, tokenFor, authHeader } = require('./helpers');

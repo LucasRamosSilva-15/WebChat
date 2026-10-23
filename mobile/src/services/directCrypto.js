@@ -15,7 +15,6 @@ export const fetchUserPublicKey = async (userId) => {
     const res = await apiRequest(`/directs/keys/${userId}`);
     return res?.publicKey ? res : null;
   } catch {
-    // 404 ou erro na rota de chaves públicas indica que o usuário não gerou chaves
     return null;
   }
 };

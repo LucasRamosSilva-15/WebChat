@@ -204,7 +204,6 @@ class DirectService {
     };
   }
 
-  /** Registra (ou troca) a chave pública E2EE do usuário autenticado. */
   async setPublicKey(userId, publicKey) {
     if (!userId) throw new Error('Usuário não autenticado.');
     const normalized = normalizePublicKey(publicKey);
@@ -213,7 +212,6 @@ class DirectService {
     return { userId, publicKey: JSON.parse(normalized) };
   }
 
-  /** Chave pública de um usuário (null se ele ainda não ativou a criptografia). */
   async getPublicKey(requesterId, targetUserId) {
     if (!requesterId) throw new Error('Usuário não autenticado.');
     const user = await UserRepository.findById(targetUserId);

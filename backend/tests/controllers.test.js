@@ -1,5 +1,3 @@
-// Testes unitários dos Controllers: o Service é mockado, então só testamos
-// a ponte HTTP (status, corpo da resposta, try/catch).
 jest.mock('../src/services/UserService');
 jest.mock('../src/services/RoomService');
 

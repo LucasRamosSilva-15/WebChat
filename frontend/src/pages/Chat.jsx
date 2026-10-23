@@ -526,7 +526,6 @@ const mapApiMessage = (msg, currentUserId) => {
     };
 };
 
-// Aceita o formato antigo (array) e o novo ({ messages, hasMore, nextCursor })
 const parseHistoryResponse = (data) => {
     if (Array.isArray(data)) return { items: data, hasMore: false, nextCursor: null };
     return {
@@ -1147,8 +1146,6 @@ const Chat = () => {
             return;
         }
         if (chatContainerRef.current) {
-            // Primeira abertura da sala: vai direto ao fim (sem animação). Depois, rolagem suave.
-            // (o contêiner é recriado quando a sala recarrega, então comparamos o elemento)
             const firstOpen = initialScrollRoomRef.current !== chatContainerRef.current && messages.length > 0;
             if (firstOpen) initialScrollRoomRef.current = chatContainerRef.current;
             chatContainerRef.current.scrollTo({
@@ -1158,7 +1155,6 @@ const Chat = () => {
         }
     }, [messages, roomLoading]);
 
-    // O contêiner entra no DOM depois do carregamento: ao montar, já abre no fim da conversa
     const attachChatContainer = useCallback((node) => {
         chatContainerRef.current = node;
         if (node) node.scrollTop = node.scrollHeight;

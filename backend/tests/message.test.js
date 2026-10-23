@@ -1,4 +1,3 @@
-// Testes de integração: mensagens
 const request = require('supertest');
 const { app } = require('../server');
 const { resetDb, closeDb, createUser, createRoom, createMessage, tokenFor, adminToken, authHeader } = require('./helpers');
@@ -71,7 +70,6 @@ describe('Mensagens', () => {
 });
 
 describe('Paginação do histórico de mensagens (cursor)', () => {
-  // Cria N mensagens com datas distintas e crescentes: "msg 1" é a mais antiga.
   const seedMessages = async (count, roomId = room.id) => {
     const base = new Date('2026-01-01T00:00:00.000Z').getTime();
     const rows = [];
@@ -88,7 +86,7 @@ describe('Paginação do histórico de mensagens (cursor)', () => {
 
   it('since devolve só mensagens mais novas, em ordem cronológica, com nextSince', async () => {
     const rows = await seedMessages(7);
-    const since = new Date(rows[1].created_at).toISOString(); // depois de "msg 2"
+    const since = new Date(rows[1].created_at).toISOString();
     const res = await getPage(`?limit=3&since=${encodeURIComponent(since)}`);
 
     expect(res.status).toBe(200);
@@ -117,9 +115,7 @@ describe('Paginação do histórico de mensagens (cursor)', () => {
     expect(res.body).toHaveProperty('messages');
     expect(res.body).toHaveProperty('hasMore', true);
     expect(res.body).toHaveProperty('nextCursor');
-    // As 3 mais recentes, em ordem cronológica (a mais antiga do bloco no topo)
     expect(res.body.messages.map(m => m.content)).toEqual(['msg 5', 'msg 6', 'msg 7']);
-    // O cursor é a data da mensagem mais antiga do bloco
     expect(new Date(res.body.nextCursor).getTime()).toBe(new Date(res.body.messages[0].created_at).getTime());
   });
 
@@ -179,9 +175,9 @@ describe('Paginação do histórico de mensagens (cursor)', () => {
 
   it('corrige limit inválido para os limites permitidos', async () => {
     await seedMessages(5);
-    expect((await getPage('?limit=0')).body.messages).toHaveLength(5);       // 0 => padrão (50)
-    expect((await getPage('?limit=abc')).body.messages).toHaveLength(5);     // inválido => padrão
-    expect((await getPage('?limit=-10')).body.messages).toHaveLength(1);     // negativo => mínimo 1
+    expect((await getPage('?limit=0')).body.messages).toHaveLength(5);
+    expect((await getPage('?limit=abc')).body.messages).toHaveLength(5);
+    expect((await getPage('?limit=-10')).body.messages).toHaveLength(1);
   });
 
   it('ignora um cursor before com data inválida', async () => {

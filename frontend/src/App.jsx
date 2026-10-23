@@ -15,7 +15,6 @@ import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
 import SkyBackground from './components/SkyBackground';
 
-// Páginas que ainda vamos implementar
 
 import Admin from './pages/Admin';
 import AdminLogin from './pages/AdminLogin';

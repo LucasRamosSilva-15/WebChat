@@ -5,7 +5,6 @@ class FeedbackController {
   async create(req, res) {
     try {
       const { comment, reason, message, images } = req.body;
-      // O frontend antigo enviava "reason" + "message"; o modelo novo guarda tudo em "comment".
       const text = comment || [reason, message].filter(Boolean).join(': ');
       const feedback = await FeedbackService.submitFeedback(req.userId, text, images || []);
       return res.status(201).json(feedback);
