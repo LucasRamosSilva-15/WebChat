@@ -6,7 +6,34 @@ import { socket } from '../services/socket';
 
 export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) {
   const fileInputRef = useRef(null);
-  const [displayName, setDisplayName] = useState(() => localStorage.getItem('chat_displayName') || localStorage.getItem('chat_name') || 'Usuário');
+
+  const getStoredUserData = () => {
+    let u = null;
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored) u = JSON.parse(stored);
+    } catch (_) {}
+
+    const realName =
+      u?.user_metadata?.full_name ||
+      u?.user_metadata?.name ||
+      u?.displayName ||
+      u?.name ||
+      localStorage.getItem('chat_displayName') ||
+      localStorage.getItem('chat_name') ||
+      (u?.email ? u.email.split('@')[0] : 'Usuário');
+
+    const usernameHandle =
+      u?.user_metadata?.user_name ||
+      u?.username ||
+      u?.handle ||
+      (u?.email ? u.email.split('@')[0] : (realName && realName !== 'Usuário' ? realName.toLowerCase().replace(/\s+/g, '_') : 'usuario'));
+
+    return { realName, usernameHandle, u };
+  };
+
+  const [displayName, setDisplayName] = useState(() => getStoredUserData().realName);
+  const [usernameHandle, setUsernameHandle] = useState(() => getStoredUserData().usernameHandle);
   const [statusMessage, setStatusMessage] = useState(() => localStorage.getItem('chat_statusMessage') || '');
   const [profilePhoto, setProfilePhoto] = useState(() => localStorage.getItem('chat_profilePhoto') || null);
   const [primaryColor, setPrimaryColor] = useState(() => localStorage.getItem('chat_primaryColor') || 'blue');
@@ -33,6 +60,17 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
   useEffect(() => {
     applyColorTheme(primaryColor);
   }, [primaryColor]);
+
+  useEffect(() => {
+    const handleProfileUpdated = () => {
+      const { realName, usernameHandle: handle } = getStoredUserData();
+      setDisplayName(realName);
+      setUsernameHandle(handle);
+      setProfilePhoto(localStorage.getItem('chat_profilePhoto') || null);
+    };
+    window.addEventListener('profileUpdated', handleProfileUpdated);
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdated);
+  }, []);
 
   const handleColorSelect = (colorId) => {
     setPrimaryColor(colorId);
@@ -94,6 +132,17 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
     if (profilePhoto) {
       localStorage.setItem('chat_profilePhoto', profilePhoto);
     }
+
+    try {
+      const rawUser = localStorage.getItem('user');
+      const u = rawUser ? JSON.parse(rawUser) : {};
+      u.displayName = displayName;
+      u.name = displayName;
+      u.username = usernameHandle;
+      u.handle = usernameHandle;
+      localStorage.setItem('user', JSON.stringify(u));
+    } catch (_) {}
+
     window.dispatchEvent(new Event('profileUpdated'));
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2000);
@@ -162,8 +211,8 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
         unreadCount={unreadCount}
       />
 
-      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-24 skeuo-scrollbar">
-        <div className="anim-stagger-children px-4 pt-4 max-w-md mx-auto w-full space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] skeuo-scrollbar">
+        <div className="anim-stagger-children max-w-md mx-auto w-full space-y-4">
         <div className="skeuo-card p-6 rounded-3xl flex flex-col items-center text-center shadow-md">
           <input
             type="file"
@@ -199,7 +248,7 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
             {displayName}
           </h2>
           <p className="text-xs text-slate-400 font-medium">
-            @{displayName.toLowerCase().replace(/\s+/g, '_')}
+            @{usernameHandle.replace(/^@/, '')}
           </p>
         </div>
 
@@ -303,14 +352,17 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
               />
             </button>
           </div>
+        </div>
 
+        {/* Botão de Logout visível e com folga */}
+        <div className="pt-4 pb-2 flex justify-center">
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full min-h-[44px] btn-secondary-glossy !text-rose-600 dark:!text-rose-400 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 mt-2 cursor-pointer"
+            className="skeuo-btn-danger w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-xs shadow-md cursor-pointer active:scale-95 transition-transform"
           >
             <LogOut className="w-4 h-4" />
-            Sair da Conta
+            <span>Sair da Conta</span>
           </button>
         </div>
       </div>

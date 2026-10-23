@@ -59,15 +59,37 @@ export default function AuthCallback() {
           urlParams.get('refresh_token') ||
           hashParams.get('refresh_token');
 
-        const user = synced?.user || session?.user || null;
+        const rawUser = synced?.user || session?.user || null;
+        let userToSend = null;
+        if (rawUser) {
+          const realName =
+            rawUser?.user_metadata?.full_name ||
+            rawUser?.user_metadata?.name ||
+            rawUser?.displayName ||
+            rawUser?.name ||
+            (rawUser?.email ? rawUser.email.split('@')[0] : 'Usuário');
+
+          const usernameHandle =
+            rawUser?.user_metadata?.user_name ||
+            rawUser?.username ||
+            (rawUser?.email ? rawUser.email.split('@')[0] : 'usuario');
+
+          userToSend = {
+            ...rawUser,
+            displayName: realName,
+            name: realName,
+            username: usernameHandle,
+            handle: usernameHandle
+          };
+        }
 
         if (isMobile && token) {
           localStorage.removeItem('auth_source');
           setStatusMessage('Retornando para o aplicativo SkyRipple...');
 
           let deepLink = `skyripple://auth/callback?token=${encodeURIComponent(token)}`;
-          if (user) {
-            deepLink += `&user=${encodeURIComponent(JSON.stringify(user))}`;
+          if (userToSend) {
+            deepLink += `&user=${encodeURIComponent(JSON.stringify(userToSend))}`;
           }
           if (refreshToken) {
             deepLink += `&refresh_token=${encodeURIComponent(refreshToken)}`;

@@ -78,16 +78,42 @@ function AppLayout() {
                 if (userParam) {
                   try {
                     const decodedUser = typeof userParam === 'string' ? decodeURIComponent(userParam) : userParam;
-                    localStorage.setItem('user', decodedUser);
                     const parsedUser = typeof decodedUser === 'string' ? JSON.parse(decodedUser) : decodedUser;
-                    if (parsedUser.name || parsedUser.displayName) {
-                      localStorage.setItem('chat_displayName', parsedUser.name || parsedUser.displayName);
-                    }
+
+                    const realName =
+                      parsedUser?.user_metadata?.full_name ||
+                      parsedUser?.user_metadata?.name ||
+                      parsedUser?.displayName ||
+                      parsedUser?.name ||
+                      (parsedUser?.email ? parsedUser.email.split('@')[0] : 'Usuário');
+
+                    const usernameHandle =
+                      parsedUser?.user_metadata?.user_name ||
+                      parsedUser?.username ||
+                      parsedUser?.handle ||
+                      (parsedUser?.email ? parsedUser.email.split('@')[0] : 'usuario');
+
+                    const normalizedUser = {
+                      ...parsedUser,
+                      displayName: realName,
+                      name: realName,
+                      username: usernameHandle,
+                      handle: usernameHandle
+                    };
+
+                    localStorage.setItem('user', JSON.stringify(normalizedUser));
+                    localStorage.setItem('chat_displayName', realName);
+
                     if (parsedUser.id || parsedUser.uniqueUserId) {
                       localStorage.setItem('chat_uniqueUserId', parsedUser.id || parsedUser.uniqueUserId);
                     }
-                    if (parsedUser.profilePhoto || parsedUser.avatar_url) {
-                      localStorage.setItem('chat_profilePhoto', parsedUser.profilePhoto || parsedUser.avatar_url);
+                    const photo =
+                      parsedUser.profilePhoto ||
+                      parsedUser.avatar_url ||
+                      parsedUser?.user_metadata?.avatar_url ||
+                      parsedUser?.user_metadata?.picture;
+                    if (photo) {
+                      localStorage.setItem('chat_profilePhoto', photo);
                     }
                   } catch (userErr) {
                     console.warn('[DeepLink] Erro ao extrair dados de user:', userErr);

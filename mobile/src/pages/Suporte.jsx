@@ -101,8 +101,8 @@ export default function MobileSuporte() {
   };
 
   return (
-    <div className="anim-page-enter flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
-      <header className="sticky top-0 z-30 px-4 py-3 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between shadow-sm">
+    <div className="anim-page-enter flex flex-col h-[100dvh] overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+      <header className="shrink-0 z-30 px-4 py-3 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -127,7 +127,7 @@ export default function MobileSuporte() {
         </div>
       </header>
 
-      <main className="px-4 pt-4 max-w-md mx-auto w-full space-y-5">
+      <main className="flex-1 overflow-y-auto overscroll-y-contain px-4 pt-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] skeuo-scrollbar max-w-md mx-auto w-full space-y-5">
         <section className="space-y-3">
           <div className="flex items-center gap-2 px-1">
             <HelpCircle className="w-4 h-4 text-sky-500" />

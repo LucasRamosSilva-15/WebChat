@@ -135,7 +135,7 @@ export default function MobileSettings({ onOpenNotifications, unreadCount = 0 })
         unreadCount={unreadCount}
       />
 
-      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-24 skeuo-scrollbar">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-[calc(6.5rem+env(safe-area-inset-bottom))] skeuo-scrollbar">
         <div className="anim-stagger-children px-4 pt-4 max-w-md mx-auto w-full space-y-4">
         <div className="grid grid-cols-3 gap-2">
           <button

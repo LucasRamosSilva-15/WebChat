@@ -234,7 +234,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-24 skeuo-scrollbar">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-[calc(6.5rem+env(safe-area-inset-bottom))] skeuo-scrollbar">
         <div className="px-3 pt-3 max-w-md mx-auto w-full">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">

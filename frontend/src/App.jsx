@@ -77,7 +77,27 @@ function App() {
         if (isMobile) {
           localStorage.removeItem('auth_source');
           const tokenToSend = synced?.token || localStorage.getItem('chat_token') || session.access_token;
-          const userToSend = synced?.user || session.user;
+          const rawUser = synced?.user || session.user;
+          const realName =
+            rawUser?.user_metadata?.full_name ||
+            rawUser?.user_metadata?.name ||
+            rawUser?.displayName ||
+            rawUser?.name ||
+            (rawUser?.email ? rawUser.email.split('@')[0] : 'Usuário');
+
+          const usernameHandle =
+            rawUser?.user_metadata?.user_name ||
+            rawUser?.username ||
+            (rawUser?.email ? rawUser.email.split('@')[0] : 'usuario');
+
+          const userToSend = {
+            ...(rawUser || {}),
+            displayName: realName,
+            name: realName,
+            username: usernameHandle,
+            handle: usernameHandle
+          };
+
           const deepLink = `skyripple://auth/callback?token=${encodeURIComponent(tokenToSend)}&user=${encodeURIComponent(JSON.stringify(userToSend))}${session.refresh_token ? `&refresh_token=${encodeURIComponent(session.refresh_token)}` : ''}`;
           window.location.href = deepLink;
         }

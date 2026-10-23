@@ -153,6 +153,30 @@ html.dark .skeuo-card {
   transform: scale(0.96) translateY(1.5px);
 }
 
+.skeuo-btn-danger {
+  background: linear-gradient(180deg, #f43f5e 0%, #e11d48 50%, #be123c 51%, #9f1239 100%);
+  border: 1px solid #881337;
+  border-radius: 0.75rem;
+  color: white !important;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 2px 4px rgba(225, 29, 72, 0.35);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), box-shadow 160ms cubic-bezier(0.2, 0, 0, 1), filter 160ms cubic-bezier(0.2, 0, 0, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.skeuo-btn-danger:active {
+  background: linear-gradient(180deg, #9f1239 0%, #881337 100%);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+  transform: scale(0.96) translateY(1.5px);
+}
+
 .btn-secondary-glossy,
 .btn-white-glossy {
   background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 50%, #f0f0f0 51%, #e6e6e6 100%);

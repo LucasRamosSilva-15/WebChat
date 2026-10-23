@@ -68,23 +68,52 @@ export const syncOAuthUserSession = async (session) => {
   const user = session.user;
   const metadata = user.user_metadata || {};
 
-  const name = metadata.full_name || metadata.name || user.email?.split('@')[0] || 'Usuário';
+  const realName =
+    metadata.full_name ||
+    metadata.name ||
+    user.displayName ||
+    user.name ||
+    (user.email ? user.email.split('@')[0] : 'Usuário');
+
+  const usernameHandle =
+    metadata.user_name ||
+    user.username ||
+    (user.email ? user.email.split('@')[0] : 'usuario');
+
   const avatar_url = metadata.avatar_url || metadata.picture || null;
   const email = user.email;
 
   const data = await apiRequest('/auth/oauth-sync', {
     method: 'POST',
-    body: JSON.stringify({ email, name, avatar_url })
+    body: JSON.stringify({ email, name: realName, avatar_url })
   });
 
   if (data?.token) {
     setAuthToken(data.token);
+    const resolvedName = data.user?.displayName || data.user?.name || realName;
+    const resolvedHandle = data.user?.username || usernameHandle;
+
     localStorage.setItem('chat_isLoggedIn', 'true');
-    localStorage.setItem('chat_displayName', data.user?.displayName || data.user?.name || name);
+    localStorage.setItem('chat_displayName', resolvedName);
     localStorage.setItem('chat_uniqueUserId', data.user?.id || user.id);
-    if (data.user?.profilePhoto || avatar_url) {
-      localStorage.setItem('chat_profilePhoto', data.user?.profilePhoto || avatar_url);
+
+    const photo = data.user?.profilePhoto || avatar_url;
+    if (photo) {
+      localStorage.setItem('chat_profilePhoto', photo);
     }
+
+    const normalizedUser = {
+      ...(data.user || {}),
+      ...user,
+      id: data.user?.id || user.id,
+      displayName: resolvedName,
+      name: resolvedName,
+      username: resolvedHandle,
+      handle: resolvedHandle,
+      email: email,
+      avatar_url: photo
+    };
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
 
     if (socket) {
       socket.auth = { token: data.token };

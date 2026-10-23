@@ -199,7 +199,7 @@ export default function MobileRegister() {
   };
 
   return (
-    <div className="anim-page-enter min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center px-4 py-8">
+    <div className="anim-page-enter min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center px-4 pt-8 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
       <div className="anim-fade-rise skeuo-card max-w-md mx-auto w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
         {step === 1 ? (
           <>
