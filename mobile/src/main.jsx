@@ -5,7 +5,7 @@ import './styles/skeuo.css';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://webchat-9vqr.onrender.com';
 try {
-  fetch(`${BACKEND_URL}/health`, { method: 'GET', keepalive: true }).catch(() => {});
+  fetch(`${BACKEND_URL}/api/health`, { method: 'GET', keepalive: true }).catch(() => {});
 } catch {}
 
 ReactDOM.createRoot(document.getElementById('root')).render(

@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   UserCheck,
   Lock,
+  LockOpen,
   Loader2,
   ArrowLeft,
   Send,
@@ -60,6 +61,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   const [selectedConv, setSelectedConv] = useState(null);
 
   const [messages, setMessages] = useState([]);
+  const [isE2EEActive, setIsE2EEActive] = useState(true);
   const [inputText, setInputText] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [showAttachSheet, setShowAttachSheet] = useState(false);
@@ -336,6 +338,18 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
       userId: currentUserId
     });
 
+    getConversationCrypto(currentUserId, partnerId)
+      .then((entry) => {
+        if (selectedConvRef.current?.id === convId) {
+          setIsE2EEActive(Boolean(entry));
+        }
+      })
+      .catch(() => {
+        if (selectedConvRef.current?.id === convId) {
+          setIsE2EEActive(false);
+        }
+      });
+
     apiRequest(`/directs/conversations/${convId}/messages?limit=50`)
       .then(async (response) => {
         const rawList = Array.isArray(response) ? response : response?.messages || [];
@@ -343,8 +357,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           rawList.map(m => decryptIncoming(m, currentUserId, partnerId, convId))
         );
         if (selectedConvRef.current?.id === convId) {
-          setMessages(decryptedList.map(m => ({
-            id: m.id || String(m._id || Date.now()),
+          setMessages(decryptedList.map((m, index) => ({
+            id: m.id || String(m._id || `init_${Date.now()}_${index}`),
             sender: m.user?.displayName || m.sender || m.userName || selectedConv.name || 'Contato',
             text: m.content || m.text || '',
             content: m.content || m.text || '',
@@ -365,20 +379,57 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
     const handleReceiveMessage = async (rawMsg) => {
       const msg = await decryptIncoming(rawMsg, currentUserId, partnerId, convId);
-      setMessages((prev) => [...prev, {
-        id: msg.id || String(Date.now()),
-        sender: msg.user?.displayName || msg.sender || msg.userName || 'Contato',
-        text: msg.content || msg.text || '',
-        content: msg.content || msg.text || '',
-        time: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isMine: msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName,
-        image: msg.image_url || msg.image || (msg.attachment?.type === 'image' ? msg.attachment.url : null) || null,
-        video: msg.video_url || msg.video || (msg.attachment?.type === 'video' ? msg.attachment.url : (typeof msg.attachment === 'string' && msg.attachment.startsWith('data:video') ? msg.attachment : null)) || null,
-        file: msg.file_url || msg.file || (msg.attachment?.type === 'file' ? msg.attachment : null) || null,
-        replyTo: msg.replyTo || msg.reply_to || null,
-        encrypted: Boolean(msg.encrypted),
-        reactions: msg.reactions || {}
-      }]);
+      const isMine = msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName;
+
+      setMessages((prev) => {
+        // Ignora duplicata se o ID da mensagem já existir na lista
+        if (msg.id && prev.some((m) => m.id === msg.id)) {
+          return prev;
+        }
+
+        // Se for mensagem própria, substitui mensagem otimista temporária correspondente
+        if (isMine) {
+          const tempIdx = prev.findIndex((m) =>
+            (m.tempId && (m.tempId === rawMsg.tempId || m.tempId === msg.tempId)) ||
+            (m.tempId && m.isMine && (m.text === (msg.content || msg.text)))
+          );
+
+          if (tempIdx !== -1) {
+            const updated = [...prev];
+            updated[tempIdx] = {
+              id: msg.id || updated[tempIdx].id,
+              tempId: undefined,
+              sender: msg.user?.displayName || msg.sender || msg.userName || displayName,
+              text: msg.content || msg.text || '',
+              content: msg.content || msg.text || '',
+              time: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isMine: true,
+              image: msg.image_url || msg.image || (msg.attachment?.type === 'image' ? msg.attachment.url : null) || null,
+              video: msg.video_url || msg.video || (msg.attachment?.type === 'video' ? msg.attachment.url : (typeof msg.attachment === 'string' && msg.attachment.startsWith('data:video') ? msg.attachment : null)) || null,
+              file: msg.file_url || msg.file || (msg.attachment?.type === 'file' ? msg.attachment : null) || null,
+              replyTo: msg.replyTo || msg.reply_to || null,
+              encrypted: Boolean(msg.encrypted),
+              reactions: msg.reactions || {}
+            };
+            return updated;
+          }
+        }
+
+        return [...prev, {
+          id: msg.id || `recv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          sender: msg.user?.displayName || msg.sender || msg.userName || 'Contato',
+          text: msg.content || msg.text || '',
+          content: msg.content || msg.text || '',
+          time: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isMine,
+          image: msg.image_url || msg.image || (msg.attachment?.type === 'image' ? msg.attachment.url : null) || null,
+          video: msg.video_url || msg.video || (msg.attachment?.type === 'video' ? msg.attachment.url : (typeof msg.attachment === 'string' && msg.attachment.startsWith('data:video') ? msg.attachment : null)) || null,
+          file: msg.file_url || msg.file || (msg.attachment?.type === 'file' ? msg.attachment : null) || null,
+          replyTo: msg.replyTo || msg.reply_to || null,
+          encrypted: Boolean(msg.encrypted),
+          reactions: msg.reactions || {}
+        }];
+      });
       scrollToBottom();
     };
 
@@ -563,8 +614,11 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     setSelectedAttachment(null);
     setReplyingTo(null);
 
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
     const tempMsg = {
-      id: String(Date.now()),
+      id: tempId,
+      tempId,
       sender: displayName,
       text: textToSend,
       content: textToSend,
@@ -574,21 +628,34 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
       replyTo: replyToSend,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMine: true,
-      encrypted: true
+      encrypted: isE2EEActive
     };
 
     setMessages((prev) => [...prev, tempMsg]);
 
     try {
-      const cryptoEntry = await getConversationCrypto(currentUserId, selectedConv.partnerId);
+      let cryptoEntry = null;
+      try {
+        cryptoEntry = await getConversationCrypto(currentUserId, selectedConv.partnerId);
+      } catch {
+        cryptoEntry = null;
+      }
+
+      const hasCrypto = Boolean(cryptoEntry);
+      setIsE2EEActive(hasCrypto);
+
       let payloadContent = textToSend;
 
       if (cryptoEntry) {
-        payloadContent = await encryptMessage(cryptoEntry, selectedConv.id, {
-          text: textToSend,
-          image: imageToSend,
-          attachment: attachmentToSend
-        });
+        try {
+          payloadContent = await encryptMessage(cryptoEntry, selectedConv.id, {
+            text: textToSend,
+            image: imageToSend,
+            attachment: attachmentToSend
+          });
+        } catch {
+          payloadContent = textToSend;
+        }
       }
 
       socket.emit('send_message', {
@@ -598,22 +665,29 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
         userId: currentUserId,
         replyTo: replyToSend,
         timestamp: tempMsg.time,
+        tempId,
         image: imageToSend,
         video: videoToSend,
         file: fileToSend,
         attachment: attachmentToSend
       });
 
-      await apiRequest(`/directs/conversations/${selectedConv.id}/messages`, {
+      const response = await apiRequest(`/directs/conversations/${selectedConv.id}/messages`, {
         method: 'POST',
         body: JSON.stringify({
           content: payloadContent,
           imageUrl: imageToSend,
           videoUrl: videoToSend,
           attachment: attachmentToSend,
-          replyTo: replyToSend
+          replyTo: replyToSend,
+          tempId
         })
       });
+
+      if (response?.id || response?.message?.id) {
+        const realId = response.id || response.message.id;
+        setMessages((prev) => prev.map((m) => (m.tempId === tempId ? { ...m, id: realId, tempId: undefined } : m)));
+      }
 
       setConversations((prev) => prev.map(c => {
         if (c.id === selectedConv.id) {
@@ -633,7 +707,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
         return c;
       }));
     } catch (err) {
-      console.warn('Erro ao enviar mensagem direta cifrada:', err.message);
+      console.warn('Erro ao enviar mensagem direta:', err.message);
     }
   };
 
@@ -718,7 +792,9 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                 <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                   {selectedConv.name}
                 </h2>
-                <ShieldCheck className="w-4 h-4 text-sky-500 shrink-0" title="Criptografia Ponta a Ponta Ativa" />
+                {isE2EEActive ? (
+                  <ShieldCheck className="w-4 h-4 text-sky-500 shrink-0" title="Criptografia Ponta a Ponta Ativa" />
+                ) : null}
               </div>
               <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                 {partnerTyping ? 'a escrever...' : (selectedConv.online ? 'Online' : 'Visto recentemente')}
@@ -726,10 +802,23 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
             </div>
           </div>
 
-          <div className="px-2.5 py-1 rounded-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 text-[10px] font-extrabold text-sky-600 dark:text-sky-400 flex items-center gap-1">
-            <Lock className="w-3 h-3" />
-            <span>E2EE</span>
-          </div>
+          {isE2EEActive ? (
+            <div
+              title="Criptografia Ponta a Ponta Ativa"
+              className="px-2.5 py-1 rounded-full bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-slate-700 text-[10px] font-extrabold text-sky-600 dark:text-sky-400 flex items-center gap-1"
+            >
+              <Lock className="w-3 h-3" />
+              <span>E2EE</span>
+            </div>
+          ) : (
+            <div
+              title="Chat sem E2EE: o contato ainda não ativou chaves"
+              className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-[10px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1"
+            >
+              <LockOpen className="w-3 h-3 text-slate-400" />
+              <span>Sem E2EE</span>
+            </div>
+          )}
         </header>
 
         {partnerTyping && (
@@ -743,22 +832,25 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           {messages.length === 0 && (
             <div className="py-20 text-center px-4">
               <div className="w-12 h-12 mx-auto rounded-full bg-sky-50 dark:bg-slate-900 border border-sky-200 dark:border-slate-800 flex items-center justify-center text-sky-500 mb-2">
-                <Lock className="w-5 h-5" />
+                {isE2EEActive ? <Lock className="w-5 h-5" /> : <LockOpen className="w-5 h-5 text-slate-400" />}
               </div>
               <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                Conversa Criptografada
+                {isE2EEActive ? 'Conversa Criptografada' : 'Conversa Direta'}
               </p>
               <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto leading-relaxed">
-                As mensagens enviadas aqui são protegidas com criptografia de ponta a ponta (Web Crypto API).
+                {isE2EEActive
+                  ? 'As mensagens enviadas aqui são protegidas com criptografia de ponta a ponta (Web Crypto API).'
+                  : 'O contato ainda não gerou par de chaves E2EE. As mensagens serão entregues diretamente em texto padrão.'}
               </p>
             </div>
           )}
 
           {messages.map((msg, index) => {
+            const messageKey = msg.id || msg.tempId || `${msg.sender_id || msg.sender}-${msg.created_at || msg.timestamp || index}-${index}`;
             if (msg.isMine) {
               return (
                 <div
-                  key={msg.id || index}
+                  key={messageKey}
                   onTouchStart={(e) => handleTouchStart(e, msg)}
                   onTouchEnd={handleTouchEnd}
                   onTouchMove={handleTouchMove}
@@ -824,7 +916,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
             return (
               <div
-                key={msg.id || index}
+                key={messageKey}
                 onTouchStart={(e) => handleTouchStart(e, msg)}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
@@ -1071,7 +1163,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
             <input
               type="text"
-              placeholder="Mensagem segura (E2EE)..."
+              placeholder={isE2EEActive ? "Mensagem segura (E2EE)..." : "Digite uma mensagem..."}
               value={inputText}
               onChange={handleInputChange}
               onFocus={() => setTimeout(scrollToBottom, 150)}
