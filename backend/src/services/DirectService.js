@@ -20,7 +20,7 @@ class DirectService {
       if (conv.last_message_at) {
         try {
           const date = new Date(conv.last_message_at);
-          timeFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          timeFormatted = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Sao_Paulo' });
         } catch {
           timeFormatted = 'Agora';
         }
@@ -103,7 +103,7 @@ class DirectService {
       let timeFormatted = '';
       if (msg.created_at) {
         try {
-          timeFormatted = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          timeFormatted = new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Sao_Paulo' });
         } catch {
           timeFormatted = '';
         }
@@ -164,7 +164,7 @@ class DirectService {
     let timeFormatted = 'Agora';
     if (newMsg.created_at) {
       try {
-        timeFormatted = new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        timeFormatted = new Date(newMsg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Sao_Paulo' });
       } catch {
         timeFormatted = 'Agora';
       }

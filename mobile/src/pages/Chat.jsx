@@ -27,6 +27,7 @@ import {
   getMessageDateKey,
   formatMessageDateDivider,
   formatMessageTime,
+  formatTimeInTz,
   formatFullDateTime,
   isDifferentCalendarDay
 } from '../utils/dateUtils';
@@ -158,7 +159,7 @@ export default function MobileChat() {
             role: m.user?.role || m.role || 'user',
             text: m.content || m.text || m.message || '',
             content: m.content || m.text || m.message || '',
-            time: m.time || (m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || '')),
+            time: formatMessageTime(m.time, m.created_at || m.timestamp),
             timestamp: m.timestamp || m.created_at || '',
             created_at: m.created_at || m.timestamp || null,
             isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
@@ -198,7 +199,7 @@ export default function MobileChat() {
           role: msg.user?.role || msg.role || 'user',
           text: msg.content || msg.text || msg.message || '',
           content: msg.content || msg.text || msg.message || '',
-          time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
+          time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
           timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
           created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
           isMine: msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName,
@@ -563,7 +564,7 @@ export default function MobileChat() {
           }
         : null,
       reactions: {},
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: formatTimeInTz(new Date()),
       timestamp: new Date().toISOString(),
       created_at: new Date().toISOString(),
       isMine: true,

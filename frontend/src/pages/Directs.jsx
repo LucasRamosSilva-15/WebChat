@@ -34,32 +34,86 @@ import { normalizeAttachment } from '../utils/attachments';
 import { getConversationCrypto, encryptMessage, decryptIncoming, initIdentity } from '../services/directCrypto';
 import { isEncryptedContent } from '../utils/e2ee';
 
+const getAppTimeZone = () => {
+    try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (!tz || tz === 'UTC' || tz === 'Etc/UTC' || tz.startsWith('Etc/GMT')) {
+            return 'America/Sao_Paulo';
+        }
+        return tz;
+    } catch {
+        return 'America/Sao_Paulo';
+    }
+};
+
+const parseUtcTimeStr = (timeStr) => {
+    if (!timeStr || typeof timeStr !== 'string') return null;
+    const trimmed = timeStr.trim();
+    const match12 = trimmed.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
+    if (match12) {
+        let hours = parseInt(match12[1], 10);
+        const minutes = parseInt(match12[2], 10);
+        const seconds = match12[3] ? parseInt(match12[3], 10) : 0;
+        const meridiem = match12[4].toUpperCase();
+        if (meridiem === 'PM' && hours < 12) hours += 12;
+        if (meridiem === 'AM' && hours === 12) hours = 0;
+        const now = new Date();
+        return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hours, minutes, seconds));
+    }
+    return null;
+};
+
 const formatMessageTime = (timeStr, createdAt) => {
     const candidate = createdAt || timeStr;
-    if (!candidate) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    if (typeof candidate === 'string' && candidate.includes('T')) {
-        const d = new Date(candidate);
-        if (!isNaN(d.getTime())) {
-            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (candidate) {
+        let d = null;
+        if (candidate instanceof Date && !isNaN(candidate.getTime())) {
+            d = candidate;
+        } else if (typeof candidate === 'string' && (candidate.includes('T') || candidate.includes('-'))) {
+            const parsed = new Date(candidate.includes(' ') && !candidate.includes('T') ? candidate.replace(' ', 'T') + 'Z' : candidate);
+            if (!isNaN(parsed.getTime())) d = parsed;
+        } else if (typeof candidate === 'number') {
+            const parsed = new Date(candidate);
+            if (!isNaN(parsed.getTime())) d = parsed;
+        }
+        if (d) {
+            return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: getAppTimeZone() });
         }
     }
-    if (typeof timeStr === 'string' && timeStr.length <= 8 && timeStr.includes(':')) {
-        return timeStr;
+
+    const utcD = parseUtcTimeStr(timeStr);
+    if (utcD) {
+        return utcD.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: getAppTimeZone() });
     }
-    const d = new Date(candidate);
-    if (!isNaN(d.getTime())) {
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (typeof timeStr === 'string' && timeStr.trim()) {
+        const trimmed = timeStr.trim();
+        const match24 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+        if (match24) return `${match24[1].padStart(2, '0')}:${match24[2]}`;
+        if (trimmed === 'Agora') return 'Agora';
+        return trimmed;
     }
-    return timeStr || '';
+
+    return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: getAppTimeZone() });
 };
 
 const formatFullDateTime = (timeStr, createdAt) => {
     const candidate = createdAt || timeStr;
     if (!candidate) return '';
-    const d = new Date(candidate);
-    if (!isNaN(d.getTime())) {
-        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' às ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let d = null;
+    if (candidate instanceof Date && !isNaN(candidate.getTime())) {
+        d = candidate;
+    } else if (typeof candidate === 'string') {
+        const parsed = new Date(candidate.includes(' ') && !candidate.includes('T') ? candidate.replace(' ', 'T') + 'Z' : candidate);
+        if (!isNaN(parsed.getTime())) d = parsed;
+    }
+    if (d) {
+        const tz = getAppTimeZone();
+        return (
+            d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: tz }) +
+            ' às ' +
+            d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz })
+        );
     }
     return timeStr || '';
 };

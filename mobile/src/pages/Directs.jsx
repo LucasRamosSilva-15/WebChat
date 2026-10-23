@@ -37,6 +37,7 @@ import {
   getMessageDateKey,
   formatMessageDateDivider,
   formatMessageTime,
+  formatTimeInTz,
   formatFullDateTime,
   formatConversationTime,
   isDifferentCalendarDay
@@ -88,7 +89,12 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   const [conversations, setConversations] = useState(() => {
     try {
       const stored = localStorage.getItem('chat_direct_conversations');
-      return stored ? deduplicateConversations(JSON.parse(stored)) : [];
+      if (!stored) return [];
+      const parsed = deduplicateConversations(JSON.parse(stored));
+      return parsed.map(c => ({
+        ...c,
+        time: formatConversationTime(c.time)
+      }));
     } catch {
       return [];
     }
@@ -341,7 +347,10 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     try {
       const data = await apiRequest('/directs/conversations');
       if (Array.isArray(data)) {
-        const unique = deduplicateConversations(data);
+        const unique = deduplicateConversations(data).map(c => ({
+          ...c,
+          time: formatConversationTime(c.time)
+        }));
         setConversations(unique);
         try {
           localStorage.setItem('chat_direct_conversations', JSON.stringify(unique));
@@ -406,7 +415,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
             id: m.id || String(m._id || `init_${Date.now()}_${index}`),
             sender: m.user?.displayName || m.sender || m.userName || selectedConv.name || 'Contato',
             text: m.content || m.text || '',
-            time: m.time || (m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || '')),
+            time: formatMessageTime(m.time, m.created_at || m.timestamp),
             timestamp: m.timestamp || m.created_at || '',
             created_at: m.created_at || m.timestamp || null,
             isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
@@ -447,7 +456,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               tempId: undefined,
               sender: msg.user?.displayName || msg.sender || msg.userName || displayName,
               text: msg.content || msg.text || '',
-              time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
+              time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
               timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
               created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
               isMine: true,
@@ -466,7 +475,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           id: msg.id || `recv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           sender: msg.user?.displayName || msg.sender || msg.userName || 'Contato',
           text: msg.content || msg.text || '',
-          time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
+          time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
           timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
           created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
           isMine,
@@ -696,7 +705,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
       video: videoToSend,
       file: fileToSend,
       replyTo: replyToSend,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: formatTimeInTz(new Date()),
       timestamp: new Date().toISOString(),
       created_at: new Date().toISOString(),
       isMine: true,
