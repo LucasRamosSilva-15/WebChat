@@ -211,7 +211,7 @@ export default function MobileProfile({ onOpenNotifications, unreadCount = 0 }) 
         unreadCount={unreadCount}
       />
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] skeuo-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 pt-3 pb-[calc(6.5rem+env(safe-area-inset-bottom))] skeuo-scrollbar">
         <div className="anim-stagger-children max-w-md mx-auto w-full space-y-4">
         <div className="skeuo-card p-6 rounded-3xl flex flex-col items-center text-center shadow-md">
           <input

@@ -102,7 +102,15 @@ export default function MobileSuporte() {
 
   return (
     <div className="anim-page-enter flex flex-col h-[100dvh] overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
-      <header className="shrink-0 z-30 px-4 py-3 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between shadow-sm">
+      <header
+        style={{
+          transform: 'translate3d(0, 0, 0)',
+          WebkitTransform: 'translate3d(0, 0, 0)',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden'
+        }}
+        className="shrink-0 z-30 px-4 py-3 bg-slate-100/95 dark:bg-[#0b1120] border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between shadow-sm"
+      >
         <div className="flex items-center gap-3">
           <button
             type="button"
