@@ -17,6 +17,7 @@ import PrivateRoute from './components/PrivateRoute';
 import { NotificationProvider, useNotifications } from './context/NotificationContext';
 import { supabase, syncOAuthUserSession } from './services/supabase';
 import { clearAuthSession } from './services/api';
+import { socket } from './services/socket';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
 import { App as CapApp } from '@capacitor/app';
@@ -34,33 +35,105 @@ function AppLayout() {
   const showBottomNav = !isInsideChat && !isAuthScreen;
 
   useEffect(() => {
-    let appUrlSub = null;
-    try {
-      appUrlSub = CapApp.addListener('appUrlOpen', async (event) => {
-        const url = event?.url;
-        if (!url) return;
-        if (url.includes('#access_token=') || url.includes('&access_token=')) {
-          const hashIndex = url.indexOf('#');
-          if (hashIndex !== -1) {
-            const hash = url.substring(hashIndex + 1);
-            const params = new URLSearchParams(hash);
-            const accessToken = params.get('access_token');
-            const refreshToken = params.get('refresh_token');
-            if (accessToken && refreshToken) {
-              await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken
-              });
-            }
-          }
-        }
-      });
-    } catch {}
+    const setupDeepLinkListener = async () => {
+      try {
+        const handle = await CapApp.addListener('appUrlOpen', async (event) => {
+          try {
+            const rawUrl = event?.url;
+            if (!rawUrl) return;
 
-    return () => {
-      appUrlSub?.then?.(sub => sub.remove?.()).catch?.(() => {});
+            // Suporte a skyripple://auth/callback?token=... ou #access_token=...
+            const formattedUrl = rawUrl.replace('#', '?');
+            let urlObj;
+            try {
+              urlObj = new URL(formattedUrl);
+            } catch (parseErr) {
+              // Fallback para URIs com esquemas não padronizados
+              const queryPart = formattedUrl.includes('?') ? formattedUrl.substring(formattedUrl.indexOf('?')) : '';
+              urlObj = new URL('https://auth' + queryPart);
+            }
+
+            const isAuthCallback =
+              urlObj.host === 'auth' ||
+              urlObj.pathname.includes('callback') ||
+              rawUrl.startsWith('skyripple://') ||
+              rawUrl.startsWith('com.skyripple.app://');
+
+            if (isAuthCallback) {
+              const token =
+                urlObj.searchParams.get('token') ||
+                urlObj.searchParams.get('access_token');
+              const refreshToken = urlObj.searchParams.get('refresh_token');
+              const userParam = urlObj.searchParams.get('user');
+
+              if (token) {
+                localStorage.setItem('chat_token', token);
+                localStorage.setItem('token', token);
+                localStorage.setItem('chat_isLoggedIn', 'true');
+
+                if (refreshToken) {
+                  localStorage.setItem('refresh_token', refreshToken);
+                }
+
+                if (userParam) {
+                  try {
+                    const decodedUser = typeof userParam === 'string' ? decodeURIComponent(userParam) : userParam;
+                    localStorage.setItem('user', decodedUser);
+                    const parsedUser = typeof decodedUser === 'string' ? JSON.parse(decodedUser) : decodedUser;
+                    if (parsedUser.name || parsedUser.displayName) {
+                      localStorage.setItem('chat_displayName', parsedUser.name || parsedUser.displayName);
+                    }
+                    if (parsedUser.id || parsedUser.uniqueUserId) {
+                      localStorage.setItem('chat_uniqueUserId', parsedUser.id || parsedUser.uniqueUserId);
+                    }
+                    if (parsedUser.profilePhoto || parsedUser.avatar_url) {
+                      localStorage.setItem('chat_profilePhoto', parsedUser.profilePhoto || parsedUser.avatar_url);
+                    }
+                  } catch (userErr) {
+                    console.warn('[DeepLink] Erro ao extrair dados de user:', userErr);
+                  }
+                }
+
+                if (refreshToken) {
+                  try {
+                    await supabase.auth.setSession({
+                      access_token: token,
+                      refresh_token: refreshToken
+                    });
+                  } catch (supabaseErr) {
+                    console.warn('[DeepLink] Erro ao sincronizar sessão Supabase:', supabaseErr);
+                  }
+                }
+
+                if (socket) {
+                  socket.auth = { token };
+                  socket.disconnect();
+                  socket.connect();
+                }
+
+                window.dispatchEvent(new Event('profileUpdated'));
+
+                // Redireciona diretamente para a tela de salas
+                navigate('/rooms', { replace: true });
+              }
+            }
+          } catch (err) {
+            console.error('[DeepLink] Erro ao processar URL de autenticação:', err);
+          }
+        });
+
+        return handle;
+      } catch (e) {
+        console.warn('[DeepLink] Falha ao registrar listener CapApp:', e);
+        return null;
+      }
     };
-  }, []);
+
+    const listenerPromise = setupDeepLinkListener();
+    return () => {
+      listenerPromise.then((handle) => handle?.remove?.()).catch(() => {});
+    };
+  }, [navigate]);
 
   useEffect(() => {
     if (location.pathname !== '/directs') {

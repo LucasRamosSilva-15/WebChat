@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { apiRequest, setAuthToken } from './api';
 import { socket } from './socket';
-import { GoogleAuth } from '@deldev/capacitor-google-auth';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qwdfrjsbljrnujskknqv.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_bAA4cyt55miKJ3ZGdCd_Sg__FiUEead';
@@ -38,9 +38,16 @@ export const handleGoogleSignIn = async () => {
       }
     }
 
-    const redirectUrl = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform()
-      ? 'com.skyripple.app://auth/callback'
+    try {
+      localStorage.setItem('auth_source', 'mobile');
+    } catch (_) {}
+
+    const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform();
+    const webBase = isNative
+      ? (import.meta.env.VITE_FRONTEND_URL || 'https://web-chat-project-web2.vercel.app')
       : window.location.origin;
+
+    const redirectUrl = `${webBase}/auth/callback?source=mobile`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -25,6 +25,7 @@ import Settings from './pages/Settings';
 import ButtonsTest from './pages/ButtonsTest';
 import Favorites from './pages/Favorites';
 import Directs from './pages/Directs';
+import AuthCallback from './pages/AuthCallback';
 import { NotificationProvider } from './context/NotificationContext';
 import NotificationToastContainer from './components/NotificationToastContainer';
 
@@ -57,13 +58,28 @@ function App() {
       }
 
       if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const isMobile =
+          urlParams.get('source') === 'mobile' ||
+          localStorage.getItem('auth_source') === 'mobile';
+
         const hasToken = localStorage.getItem('chat_token');
+        let synced = null;
         if (!hasToken) {
           try {
-            await syncOAuthUserSession(session);
+            synced = await syncOAuthUserSession(session);
           } catch (err) {
             console.error('Falha ao sincronizar OAuth com o backend:', err);
           }
+        }
+
+        if (isMobile) {
+          localStorage.removeItem('auth_source');
+          const tokenToSend = synced?.token || localStorage.getItem('chat_token') || session.access_token;
+          const userToSend = synced?.user || session.user;
+          const deepLink = `skyripple://auth/callback?token=${encodeURIComponent(tokenToSend)}&user=${encodeURIComponent(JSON.stringify(userToSend))}${session.refresh_token ? `&refresh_token=${encodeURIComponent(session.refresh_token)}` : ''}`;
+          window.location.href = deepLink;
         }
       }
     });
@@ -84,6 +100,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/about" element={<About />} />
           <Route path="/rooms" element={<PrivateRoute><Rooms /></PrivateRoute>} />
           <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />

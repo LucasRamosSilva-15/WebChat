@@ -17,6 +17,7 @@ export default function MobileLogin() {
     try {
       setError(null);
       setLoading(true);
+      localStorage.setItem('auth_source', 'mobile');
       const synced = await handleGoogleSignIn();
       if (synced?.token) {
         navigate('/rooms', { replace: true });
