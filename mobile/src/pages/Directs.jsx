@@ -1259,14 +1259,15 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
       <MobileHeader
         title="Mensagens Diretas"
         onOpenNotifications={onOpenNotifications}
         unreadCount={unreadCount}
       />
 
-      <div className="px-3 pt-3 max-w-md mx-auto w-full">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-24 skeuo-scrollbar">
+        <div className="px-3 pt-3 max-w-md mx-auto w-full">
         <div className="flex items-center gap-2 mb-3">
           <div className="relative flex-1">
             <input
@@ -1355,6 +1356,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
             ))
           )}
         </div>
+      </div>
       </div>
 
       <MobileSheet

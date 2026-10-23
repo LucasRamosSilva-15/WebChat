@@ -128,14 +128,15 @@ export default function MobileSettings({ onOpenNotifications, unreadCount = 0 })
   };
 
   return (
-    <div className="anim-page-enter flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="anim-page-enter flex flex-col h-[100dvh] overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
       <MobileHeader
         title="Ajustes e Preferências"
         onOpenNotifications={onOpenNotifications}
         unreadCount={unreadCount}
       />
 
-      <div className="anim-stagger-children px-4 pt-4 max-w-md mx-auto w-full space-y-4">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-24 skeuo-scrollbar">
+        <div className="anim-stagger-children px-4 pt-4 max-w-md mx-auto w-full space-y-4">
         <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
@@ -387,6 +388,7 @@ export default function MobileSettings({ onOpenNotifications, unreadCount = 0 })
             <span className="font-semibold text-emerald-500">Conectado (Render)</span>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

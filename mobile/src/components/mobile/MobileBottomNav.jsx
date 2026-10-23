@@ -7,15 +7,21 @@ import { useScrollDirection } from '../../hooks/useScrollDirection';
 export default function MobileBottomNav({
   unreadCount = 0,
   onOpenNotifications,
-  hideOnScroll = true,
+  hideOnScroll = false,
   visible: visibleProp
 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { triggerImpact } = useHaptics();
-  const { isVisible: scrollVisible } = useScrollDirection();
 
-  const isVisible = visibleProp !== undefined ? visibleProp : (hideOnScroll ? scrollVisible : true);
+  // A barra inferior de abas deve permanecer estática e visível nas telas principais de navegação
+  const isMainTab = ['/rooms', '/directs', '/profile', '/settings', '/avisos'].some((p) =>
+    location.pathname.startsWith(p)
+  );
+  const shouldHideOnScroll = hideOnScroll && !isMainTab;
+  const { isVisible: scrollVisible } = useScrollDirection({ enabled: shouldHideOnScroll });
+
+  const isVisible = visibleProp !== undefined ? visibleProp : (shouldHideOnScroll ? scrollVisible : true);
 
   const items = [
     { id: 'rooms', path: '/rooms', label: 'Salas', icon: Users },
@@ -27,11 +33,19 @@ export default function MobileBottomNav({
 
   return (
     <nav
-      className={`fixed bottom-0 inset-x-0 max-w-md mx-auto z-50 px-3 pb-[calc(env(safe-area-inset-bottom,12px)+6px)] pt-2 pointer-events-none transition-[transform,opacity] duration-[320ms] will-change-transform ${
+      className={`fixed bottom-0 inset-x-0 max-w-md mx-auto z-40 px-3 pb-[calc(env(safe-area-inset-bottom,12px)+6px)] pt-2 pointer-events-none transition-[transform,opacity] duration-[320ms] ${
         isVisible
           ? 'translate-y-0 opacity-100 scale-100 ease-[cubic-bezier(0.16,1,0.3,1)]'
           : 'translate-y-[calc(100%+32px)] opacity-0 scale-95 ease-[cubic-bezier(0.7,0,0.84,0)]'
       }`}
+      style={{
+        transform: 'translate3d(0, 0, 0)',
+        WebkitTransform: 'translate3d(0, 0, 0)',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        contain: 'layout style paint',
+        willChange: 'transform'
+      }}
       aria-hidden={!isVisible}
     >
       <div className="skeuo-card pointer-events-auto mx-auto max-w-md p-1.5 flex items-center justify-around rounded-3xl border border-white/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-[0_10px_35px_rgba(0,102,204,0.2),inset_0_1.5px_0_rgba(255,255,255,0.95)]">

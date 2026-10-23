@@ -211,7 +211,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
   });
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
       <MobileHeader
         title="Salas de Conversa"
         onOpenNotifications={onOpenNotifications}
@@ -234,7 +234,8 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
         </div>
       )}
 
-      <div className="px-3 pt-3 max-w-md mx-auto w-full">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain pb-24 skeuo-scrollbar">
+        <div className="px-3 pt-3 max-w-md mx-auto w-full">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <input
@@ -383,6 +384,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
             })
           )}
         </div>
+      </div>
       </div>
 
       <MobileSheet

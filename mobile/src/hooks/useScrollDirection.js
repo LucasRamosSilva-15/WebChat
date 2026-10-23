@@ -4,7 +4,8 @@ import { useLocation } from 'react-router-dom';
 export function useScrollDirection({
   threshold = 12,
   initialVisible = true,
-  topOffset = 24
+  topOffset = 24,
+  enabled = true
 } = {}) {
   const [isVisible, setIsVisible] = useState(initialVisible);
   const [scrollDirection, setScrollDirection] = useState('none');
@@ -75,6 +76,11 @@ export function useScrollDirection({
   }, [location.pathname]);
 
   useEffect(() => {
+    if (!enabled) {
+      setIsVisible(true);
+      return undefined;
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true });
     document.addEventListener('scroll', onScroll, { passive: true });
 
@@ -112,7 +118,7 @@ export function useScrollDirection({
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
     };
-  }, [onScroll, topOffset]);
+  }, [enabled, onScroll, topOffset]);
 
   return {
     isVisible,

@@ -117,8 +117,8 @@ function AppLayout() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-slate-200/60 dark:bg-slate-950 flex justify-center font-sans select-none">
-      <div className="w-full max-w-md min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col relative shadow-2xl overflow-x-hidden">
+    <div className="h-[100dvh] bg-slate-200/60 dark:bg-slate-950 flex justify-center font-sans select-none overflow-hidden">
+      <div className="w-full max-w-md h-[100dvh] bg-slate-100 dark:bg-slate-900 flex flex-col relative shadow-2xl overflow-hidden">
         <Routes>
           <Route path="/login" element={<MobileLogin />} />
           <Route path="/register" element={<MobileRegister />} />
