@@ -8,6 +8,13 @@ import { useHaptics } from '../hooks/useHaptics';
 
 const CATEGORIES = ['Todas', 'Casual', 'Tecnologia', 'Jogos', 'Arte', 'Estudos'];
 
+const DEFAULT_ROOMS = [
+  { id: 'geral', name: 'Geral', desc: 'Canal de conversa geral da comunidade', category: 'Casual', members: 1, memberCount: 1, status: 'Ativa' },
+  { id: 'tecnologia', name: 'Tecnologia', desc: 'Discussões sobre programação, dev e novidades tech', category: 'Tecnologia', members: 1, memberCount: 1, status: 'Ativa' },
+  { id: 'jogos', name: 'Jogos', desc: 'Encontre squad, compartilhe clipes e novidades gamer', category: 'Jogos', members: 1, memberCount: 1, status: 'Ativa' },
+  { id: 'estudos', name: 'Estudos', desc: 'Grupo focado em aprendizado e troca de materiais', category: 'Estudos', members: 1, memberCount: 1, status: 'Ativa' }
+];
+
 export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
   const navigate = useNavigate();
   const { triggerImpact } = useHaptics();
@@ -15,7 +22,16 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas');
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState(() => {
+    try {
+      const cached = localStorage.getItem('chat_cached_rooms');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return DEFAULT_ROOMS;
+  });
   const [favorites, setFavorites] = useState(() => {
     try {
       const stored = localStorage.getItem('chat_favorites');
@@ -24,7 +40,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
       return [];
     }
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
   const [isNewRoomSheetOpen, setIsNewRoomSheetOpen] = useState(false);
@@ -34,31 +50,33 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
   const [newRoomImage, setNewRoomImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchRooms = () => {
-    setLoading(true);
+  const fetchRooms = (silent = false) => {
+    if (!silent) setLoading(true);
     apiRequest('/rooms')
       .then((data) => {
         if (Array.isArray(data)) {
-          setRooms(
-            data.map((r) => ({
-              id: r.id || r.name,
-              name: r.name || r.title || r.id,
-              desc: r.description || '',
-              category: r.category || 'Casual',
-              image_url: r.image_url || r.imageUrl || null,
-              members: r.members_count || r.members || r.activeUsersCount || 0,
-              memberCount: r.members_count || r.members || r.activeUsersCount || 0,
-              status: r.status || (r.members_count >= 200 ? 'Lotada' : 'Ativa')
-            }))
-          );
+          const mapped = data.map((r) => ({
+            id: r.id || r.name,
+            name: r.name || r.title || r.id,
+            desc: r.description || '',
+            category: r.category || 'Casual',
+            image_url: r.image_url || r.imageUrl || null,
+            members: r.members_count || r.members || r.activeUsersCount || 0,
+            memberCount: r.members_count || r.members || r.activeUsersCount || 0,
+            status: r.status || (r.members_count >= 200 ? 'Lotada' : 'Ativa')
+          }));
+          setRooms(mapped);
+          try {
+            localStorage.setItem('chat_cached_rooms', JSON.stringify(mapped));
+          } catch {}
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    fetchRooms();
+    fetchRooms(true);
   }, []);
 
   const handleCoverChange = (e) => {
@@ -115,7 +133,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
 
     try {
       await apiRequest(`/rooms/${roomId}/favorite`, { method: 'POST' });
-    } catch {}
+    } catch { }
   };
 
   const handleRoomClick = async (room) => {
@@ -136,7 +154,7 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
 
     try {
       await apiRequest(`/rooms/${room.id}/join`, { method: 'POST' });
-    } catch {}
+    } catch { }
 
     navigate(`/chat/${room.id}`, { state: { room } });
   };
@@ -282,9 +300,8 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
                 <div
                   key={room.id}
                   onClick={() => handleRoomClick(room)}
-                  className={`skeuo-card p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-all flex items-center justify-between shadow-sm hover:shadow-md ${
-                    isFull ? 'opacity-90' : ''
-                  }`}
+                  className={`skeuo-card p-3.5 rounded-2xl cursor-pointer active:scale-[0.98] transition-all flex items-center justify-between shadow-sm hover:shadow-md ${isFull ? 'opacity-90' : ''
+                    }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
                     {room.image_url ? (
@@ -349,11 +366,10 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
                       title={isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                     >
                       <Star
-                        className={`w-4 h-4 transition-colors ${
-                          isFav
+                        className={`w-4 h-4 transition-colors ${isFav
                             ? 'fill-amber-400 text-amber-500'
                             : 'text-slate-400 hover:text-amber-500/80'
-                        }`}
+                          }`}
                       />
                     </button>
                   </div>
@@ -436,11 +452,10 @@ export default function MobileRooms({ onOpenNotifications, unreadCount = 0 }) {
                     key={cat}
                     type="button"
                     onClick={() => setNewRoomCategory(cat)}
-                    className={`py-2 px-1 text-xs font-semibold rounded-xl transition-all min-h-[38px] ${
-                      isSelected
+                    className={`py-2 px-1 text-xs font-semibold rounded-xl transition-all min-h-[38px] ${isSelected
                         ? 'skeuo-btn-primary text-white shadow-sm'
                         : 'btn-secondary-glossy text-slate-600 dark:text-slate-300'
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>

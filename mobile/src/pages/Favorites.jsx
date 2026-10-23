@@ -7,12 +7,40 @@ import { apiRequest } from '../services/api';
 export default function MobileFavorites() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('rooms');
-  const [rooms, setRooms] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [rooms, setRooms] = useState(() => {
+    try {
+      const storedFavs = localStorage.getItem('chat_favorites');
+      const favIds = storedFavs ? JSON.parse(storedFavs) : [];
+      const storedRooms = localStorage.getItem('chat_cached_rooms');
+      const allRooms = storedRooms ? JSON.parse(storedRooms) : [];
+      if (favIds.length > 0 && allRooms.length > 0) {
+        return allRooms.filter(r => favIds.includes(r.id) || favIds.includes(r.name));
+      }
+      return favIds.map(id => ({ id, name: id, description: 'Sala favorita', activeUsersCount: 1 }));
+    } catch {
+      return [];
+    }
+  });
+  const [messages, setMessages] = useState(() => {
+    try {
+      const storedMsgs = localStorage.getItem('chat_saved_messages');
+      return storedMsgs ? JSON.parse(storedMsgs) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      const storedFavs = localStorage.getItem('chat_favorites');
+      const storedMsgs = localStorage.getItem('chat_saved_messages');
+      return !storedFavs && !storedMsgs;
+    } catch {
+      return false;
+    }
+  });
 
-  const loadFavorites = async () => {
-    setLoading(true);
+  const loadFavorites = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const storedRooms = localStorage.getItem('chat_favorites');
       const parsedRooms = storedRooms ? JSON.parse(storedRooms) : [];
@@ -54,7 +82,8 @@ export default function MobileFavorites() {
   };
 
   useEffect(() => {
-    loadFavorites();
+    const hasCached = Boolean(localStorage.getItem('chat_favorites') || localStorage.getItem('chat_saved_messages'));
+    loadFavorites(hasCached);
   }, []);
 
   const handleRemoveFavoriteRoom = async (roomId, e) => {
@@ -132,7 +161,7 @@ export default function MobileFavorites() {
           </button>
         </div>
 
-        {loading ? (
+        {loading && rooms.length === 0 && messages.length === 0 ? (
           <div className="text-center py-16 text-xs text-slate-400">
             Carregando favoritos...
           </div>

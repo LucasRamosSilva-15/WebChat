@@ -35,8 +35,22 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   const { keyboardHeight } = useKeyboard();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [conversations, setConversations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [conversations, setConversations] = useState(() => {
+    try {
+      const stored = localStorage.getItem('chat_direct_conversations');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      const stored = localStorage.getItem('chat_direct_conversations');
+      return !stored;
+    } catch {
+      return false;
+    }
+  });
   const [selectedConv, setSelectedConv] = useState(null);
 
   const [messages, setMessages] = useState([]);
@@ -75,12 +89,15 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const fetchConversations = async () => {
-    setLoading(true);
+  const fetchConversations = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data = await apiRequest('/directs/conversations');
       if (Array.isArray(data)) {
         setConversations(data);
+        try {
+          localStorage.setItem('chat_direct_conversations', JSON.stringify(data));
+        } catch {}
       }
     } catch (err) {
       console.warn('Erro ao carregar conversas diretas:', err.message);
@@ -90,7 +107,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   };
 
   useEffect(() => {
-    fetchConversations();
+    const hasCached = Boolean(localStorage.getItem('chat_direct_conversations'));
+    fetchConversations(hasCached);
   }, []);
 
   useEffect(() => {
@@ -453,9 +471,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                 (selectedConv.name || 'U').charAt(0).toUpperCase()
               )}
               <span
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 ${
-                  selectedConv.online ? 'bg-emerald-500' : 'bg-slate-400'
-                }`}
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 ${selectedConv.online ? 'bg-emerald-500' : 'bg-slate-400'
+                  }`}
               />
             </div>
 
@@ -707,7 +724,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
         </div>
 
         <div className="space-y-2">
-          {loading ? (
+          {loading && filteredConversations.length === 0 ? (
             <div className="text-center py-16 text-sm text-slate-400 flex flex-col items-center gap-2">
               <Loader2 className="w-6 h-6 animate-spin text-sky-500" />
               <span>Carregando conversas...</span>
@@ -739,9 +756,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                       (conv.name || 'U').charAt(0).toUpperCase()
                     )}
                     <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 ${
-                        conv.online ? 'bg-emerald-500' : 'bg-slate-400'
-                      }`}
+                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 ${conv.online ? 'bg-emerald-500' : 'bg-slate-400'
+                        }`}
                     />
                   </div>
 
@@ -819,9 +835,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                         (user.name || 'U').charAt(0).toUpperCase()
                       )}
                       <span
-                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-1.5 ring-white dark:ring-slate-900 ${
-                          user.isOnline ? 'bg-emerald-500' : 'bg-slate-400'
-                        }`}
+                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-1.5 ring-white dark:ring-slate-900 ${user.isOnline ? 'bg-emerald-500' : 'bg-slate-400'
+                          }`}
                       />
                     </div>
 

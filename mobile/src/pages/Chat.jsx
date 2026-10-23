@@ -34,7 +34,15 @@ export default function MobileChat() {
   const displayName = localStorage.getItem('chat_displayName') || 'Usuário';
 
   const { keyboardHeight } = useKeyboard();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      if (!currentRoomId) return [];
+      const cached = localStorage.getItem(`chat_room_msgs_${currentRoomId}`);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [inputText, setInputText] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
@@ -117,28 +125,30 @@ export default function MobileChat() {
       .then((response) => {
         const data = Array.isArray(response) ? response : response?.messages;
         if (Array.isArray(data)) {
-          setMessages(
-            data.map((m) => ({
-              id: m.id || String(m._id || Date.now()),
-              sender: m.user?.displayName || m.sender || m.userName || m.user_name || 'Membro',
-              userId: m.user_id || m.userId,
-              avatar: m.user?.profilePhoto || m.avatar || null,
-              role: m.user?.role || m.role || 'user',
-              text: m.content || m.text || m.message || '',
-              content: m.content || m.text || m.message || '',
-              time: m.created_at
-                ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                : m.timestamp || '',
-              timestamp: m.created_at
-                ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                : m.timestamp || '',
-              isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
-              image: m.image_url || m.image || null,
-              replyTo: m.replyTo || m.reply_to || null,
-              reactions: m.reactions || {},
-              isEdited: m.isEdited || m.is_edited || false
-            }))
-          );
+          const mapped = data.map((m) => ({
+            id: m.id || String(m._id || Date.now()),
+            sender: m.user?.displayName || m.sender || m.userName || m.user_name || 'Membro',
+            userId: m.user_id || m.userId,
+            avatar: m.user?.profilePhoto || m.avatar || null,
+            role: m.user?.role || m.role || 'user',
+            text: m.content || m.text || m.message || '',
+            content: m.content || m.text || m.message || '',
+            time: m.created_at
+              ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : m.timestamp || '',
+            timestamp: m.created_at
+              ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : m.timestamp || '',
+            isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
+            image: m.image_url || m.image || null,
+            replyTo: m.replyTo || m.reply_to || null,
+            reactions: m.reactions || {},
+            isEdited: m.isEdited || m.is_edited || false
+          }));
+          setMessages(mapped);
+          try {
+            localStorage.setItem(`chat_room_msgs_${currentRoomId}`, JSON.stringify(mapped.slice(-50)));
+          } catch {}
         }
       })
       .catch((err) => {
@@ -632,6 +642,8 @@ export default function MobileChat() {
                     <img
                       src={msg.image}
                       alt="Upload"
+                      loading="lazy"
+                      decoding="async"
                       className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
                     />
                   )}
@@ -682,7 +694,7 @@ export default function MobileChat() {
                 className="shrink-0 w-8 h-8 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs mt-1 cursor-pointer active:scale-90 transition-transform overflow-hidden"
               >
                 {msg.avatar ? (
-                  <img src={msg.avatar} alt={msg.sender} className="w-full h-full object-cover" />
+                  <img src={msg.avatar} alt={msg.sender} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 ) : (
                   (msg.sender || 'U').charAt(0).toUpperCase()
                 )}
@@ -722,6 +734,8 @@ export default function MobileChat() {
                     <img
                       src={msg.image}
                       alt="Upload"
+                      loading="lazy"
+                      decoding="async"
                       className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
                     />
                   )}

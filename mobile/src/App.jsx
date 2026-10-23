@@ -174,7 +174,7 @@ export default function App() {
         await StatusBar.setOverlaysWebView({ overlay: true });
         await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
         await Keyboard.setResizeMode({ mode: KeyboardResize.Native });
-      } catch (e) {}
+      } catch (e) { }
     };
 
     configureNativeApp();
