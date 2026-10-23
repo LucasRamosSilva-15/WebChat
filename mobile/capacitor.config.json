@@ -1,9 +1,16 @@
 {
-  "appId": "com.skyripple.mobile",
+  "appId": "com.skyripple.app",
   "appName": "SkyRipple",
   "webDir": "dist",
   "bundledWebRuntime": false,
-  "server": {
-    "androidScheme": "https"
+  "plugins": {
+    "Keyboard": {
+      "resize": "native",
+      "style": "DARK",
+      "resizeOnFullScreen": true
+    },
+    "StatusBar": {
+      "overlaysWebView": true
+    }
   }
 }

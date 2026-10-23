@@ -7,6 +7,9 @@ import MobileChat from './pages/Chat';
 import MobileDirects from './pages/Directs';
 import MobileProfile from './pages/Profile';
 import MobileSettings from './pages/Settings';
+import MobileFavorites from './pages/Favorites';
+import MobileFeedback from './pages/Feedback';
+import MobileSuporte from './pages/Suporte';
 import MobileLogin from './pages/Login';
 import MobileRegister from './pages/Register';
 import MobileForgotPassword from './pages/ForgotPassword';
@@ -14,6 +17,8 @@ import PrivateRoute from './components/PrivateRoute';
 import { NotificationProvider, useNotifications } from './context/NotificationContext';
 import { supabase, syncOAuthUserSession } from './services/supabase';
 import { clearAuthSession } from './services/api';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
 
 function AppLayout() {
   const location = useLocation();
@@ -21,9 +26,17 @@ function AppLayout() {
   const syncedSessionRef = useRef(null);
   const { notifications, unreadCount, markAllAsRead } = useNotifications();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isDirectChatOpen, setIsDirectChatOpen] = useState(false);
   const isChatScreen = location.pathname.startsWith('/chat');
   const isAuthScreen = ['/login', '/register', '/forgot-password'].includes(location.pathname);
-  const showBottomNav = !isChatScreen && !isAuthScreen;
+  const isInsideChat = isChatScreen || (location.pathname === '/directs' && isDirectChatOpen);
+  const showBottomNav = !isInsideChat && !isAuthScreen;
+
+  useEffect(() => {
+    if (location.pathname !== '/directs') {
+      setIsDirectChatOpen(false);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -86,9 +99,13 @@ function AppLayout() {
             <Route path="/rooms" element={<MobileRooms onOpenNotifications={() => setIsNotificationsOpen(true)} unreadCount={unreadCount} />} />
             <Route path="/chat" element={<MobileChat />} />
             <Route path="/chat/:roomId" element={<MobileChat />} />
-            <Route path="/directs" element={<MobileDirects onOpenNotifications={() => setIsNotificationsOpen(true)} unreadCount={unreadCount} />} />
+            <Route path="/directs" element={<MobileDirects onOpenNotifications={() => setIsNotificationsOpen(true)} unreadCount={unreadCount} onChatOpenChange={setIsDirectChatOpen} />} />
             <Route path="/profile" element={<MobileProfile onOpenNotifications={() => setIsNotificationsOpen(true)} unreadCount={unreadCount} />} />
             <Route path="/settings" element={<MobileSettings onOpenNotifications={() => setIsNotificationsOpen(true)} unreadCount={unreadCount} />} />
+            <Route path="/favorites" element={<MobileFavorites />} />
+            <Route path="/feedback" element={<MobileFeedback />} />
+            <Route path="/support" element={<MobileSuporte />} />
+            <Route path="/suporte" element={<MobileSuporte />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/rooms" replace />} />
@@ -145,11 +162,22 @@ function AppLayout() {
 export default function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    const configureNativeApp = async () => {
+      try {
+        await StatusBar.setOverlaysWebView({ overlay: true });
+        await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
+        await Keyboard.setResizeMode({ mode: KeyboardResize.Native });
+      } catch (e) {}
+    };
+
+    configureNativeApp();
   }, []);
 
   return (
