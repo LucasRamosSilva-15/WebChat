@@ -40,13 +40,89 @@ import {
   formatTimeInTz,
   formatFullDateTime,
   formatConversationTime,
-  isDifferentCalendarDay
+  isDifferentCalendarDay,
+  formatMessageTimeWithDate
 } from '../utils/dateUtils';
 
 export default function MobileDirects({ onOpenNotifications, unreadCount = 0, onChatOpenChange }) {
   const { triggerImpact } = useHaptics();
-  const currentUserId = localStorage.getItem('chat_uniqueUserId') || 'guest';
-  const displayName = localStorage.getItem('chat_displayName') || 'Usuário';
+
+  const currentUser = (() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const myId = String(
+    currentUser?.id ||
+    currentUser?.userId ||
+    currentUser?.uuid ||
+    currentUser?.user_metadata?.sub ||
+    currentUser?.sub ||
+    localStorage.getItem('chat_uniqueUserId') ||
+    ''
+  ).trim();
+
+  const myName = String(
+    currentUser?.name ||
+    currentUser?.displayName ||
+    currentUser?.user_metadata?.full_name ||
+    currentUser?.user_metadata?.name ||
+    localStorage.getItem('chat_displayName') ||
+    ''
+  ).trim().toLowerCase();
+
+  const myUsername = String(
+    currentUser?.username ||
+    currentUser?.user_metadata?.user_name ||
+    currentUser?.handle ||
+    (currentUser?.email ? currentUser.email.split('@')[0] : '')
+  ).trim().toLowerCase();
+
+  const myEmail = String(currentUser?.email || '').trim().toLowerCase();
+
+  const currentUserId = myId || localStorage.getItem('chat_uniqueUserId') || 'guest';
+  const displayName = currentUser?.displayName || currentUser?.name || localStorage.getItem('chat_displayName') || 'Usuário';
+
+  const checkIsMe = (msg) => {
+    if (!msg) return false;
+    if (msg.isMine === true || msg.isMe === true || msg.is_outgoing === true || msg.outgoing === true) {
+      return true;
+    }
+
+    const senderId = String(
+      msg.sender_id ||
+      msg.senderId ||
+      msg.sender_uuid ||
+      msg.user_id ||
+      msg.userId ||
+      (typeof msg.sender === 'string' ? msg.sender : msg.sender?.id) ||
+      (typeof msg.user === 'object' ? msg.user?.id : '') ||
+      ''
+    ).trim();
+
+    const senderName = String(
+      (typeof msg.sender === 'object' ? (msg.sender?.displayName || msg.sender?.name) : msg.sender_name) ||
+      msg.sender ||
+      msg.userName ||
+      (typeof msg.user === 'object' ? (msg.user?.displayName || msg.user?.name) : '') ||
+      ''
+    ).trim().toLowerCase();
+
+    return Boolean(
+      (myId && senderId && myId === senderId) ||
+      (currentUserId && senderId && currentUserId === senderId) ||
+      (myUsername && senderName && myUsername === senderName) ||
+      (myName && senderName && myName === senderName) ||
+      (myEmail && senderName && senderName.includes(myEmail)) ||
+      msg.is_outgoing === true ||
+      msg.outgoing === true
+    );
+  };
+
   const location = useLocation();
   const { keyboardHeight } = useKeyboard();
 
@@ -411,21 +487,27 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           rawList.map(m => decryptIncoming(m, currentUserId, partnerId, convId))
         );
         if (selectedConvRef.current?.id === convId) {
-          setMessages(decryptedList.map((m, index) => ({
-            id: m.id || String(m._id || `init_${Date.now()}_${index}`),
-            sender: m.user?.displayName || m.sender || m.userName || selectedConv.name || 'Contato',
-            text: m.content || m.text || '',
-            time: formatMessageTime(m.time, m.created_at || m.timestamp),
-            timestamp: m.timestamp || m.created_at || '',
-            created_at: m.created_at || m.timestamp || null,
-            isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
-            image: m.image_url || m.image || (m.attachment?.type === 'image' ? m.attachment.url : null) || null,
-            video: m.video_url || m.video || (m.attachment?.type === 'video' ? m.attachment.url : (typeof m.attachment === 'string' && m.attachment.startsWith('data:video') ? m.attachment : null)) || null,
-            file: m.file_url || m.file || (m.attachment?.type === 'file' ? m.attachment : null) || null,
-            replyTo: m.replyTo || m.reply_to || null,
-            encrypted: Boolean(m.encrypted),
-            reactions: m.reactions || {}
-          })));
+          setMessages(decryptedList.map((m, index) => {
+            const isMe = checkIsMe(m);
+            return {
+              id: m.id || String(m._id || `init_${Date.now()}_${index}`),
+              sender: m.user?.displayName || m.sender || m.userName || (isMe ? displayName : (selectedConv.name || 'Contato')),
+              sender_id: m.sender_id || m.senderId || m.user_id || m.userId || (isMe ? currentUserId : undefined),
+              sender_name: m.sender_name || (typeof m.sender === 'string' ? m.sender : m.sender?.displayName) || '',
+              text: m.content || m.text || '',
+              time: formatMessageTime(m.time, m.created_at || m.timestamp),
+              timestamp: m.timestamp || m.created_at || '',
+              created_at: m.created_at || m.timestamp || null,
+              isMine: isMe,
+              isMe: isMe,
+              image: m.image_url || m.image || (m.attachment?.type === 'image' ? m.attachment.url : null) || null,
+              video: m.video_url || m.video || (m.attachment?.type === 'video' ? m.attachment.url : (typeof m.attachment === 'string' && m.attachment.startsWith('data:video') ? m.attachment : null)) || null,
+              file: m.file_url || m.file || (m.attachment?.type === 'file' ? m.attachment : null) || null,
+              replyTo: m.replyTo || m.reply_to || null,
+              encrypted: Boolean(m.encrypted),
+              reactions: m.reactions || {}
+            };
+          }));
         }
       })
       .catch((err) => {
@@ -434,7 +516,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
     const handleReceiveMessage = async (rawMsg) => {
       const msg = await decryptIncoming(rawMsg, currentUserId, partnerId, convId);
-      const isMine = msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName;
+      const isMine = checkIsMe(msg);
 
       setMessages((prev) => {
         // Ignora duplicata se o ID da mensagem já existir na lista
@@ -446,7 +528,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
         if (isMine) {
           const tempIdx = prev.findIndex((m) =>
             (m.tempId && (m.tempId === rawMsg.tempId || m.tempId === msg.tempId)) ||
-            (m.tempId && m.isMine && (m.text === (msg.content || msg.text)))
+            (m.tempId && (m.isMine || m.isMe) && (m.text === (msg.content || msg.text)))
           );
 
           if (tempIdx !== -1) {
@@ -455,11 +537,13 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               id: msg.id || updated[tempIdx].id,
               tempId: undefined,
               sender: msg.user?.displayName || msg.sender || msg.userName || displayName,
+              sender_id: msg.sender_id || msg.senderId || currentUserId,
               text: msg.content || msg.text || '',
               time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
               timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
               created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
               isMine: true,
+              isMe: true,
               image: msg.image_url || msg.image || (msg.attachment?.type === 'image' ? msg.attachment.url : null) || null,
               video: msg.video_url || msg.video || (msg.attachment?.type === 'video' ? msg.attachment.url : (typeof msg.attachment === 'string' && msg.attachment.startsWith('data:video') ? msg.attachment : null)) || null,
               file: msg.file_url || msg.file || (msg.attachment?.type === 'file' ? msg.attachment : null) || null,
@@ -473,12 +557,14 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
         return [...prev, {
           id: msg.id || `recv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          sender: msg.user?.displayName || msg.sender || msg.userName || 'Contato',
+          sender: msg.user?.displayName || msg.sender || msg.userName || (isMine ? displayName : 'Contato'),
+          sender_id: msg.sender_id || msg.senderId || msg.user_id || msg.userId || (isMine ? currentUserId : undefined),
           text: msg.content || msg.text || '',
           time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
           timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
           created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
           isMine,
+          isMe: isMine,
           image: msg.image_url || msg.image || (msg.attachment?.type === 'image' ? msg.attachment.url : null) || null,
           video: msg.video_url || msg.video || (msg.attachment?.type === 'video' ? msg.attachment.url : (typeof msg.attachment === 'string' && msg.attachment.startsWith('data:video') ? msg.attachment : null)) || null,
           file: msg.file_url || msg.file || (msg.attachment?.type === 'file' ? msg.attachment : null) || null,
@@ -946,7 +1032,9 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               </div>
             ) : null;
 
-            if (msg.isMine) {
+            const isMe = checkIsMe(msg);
+
+            if (isMe) {
               return (
                 <React.Fragment key={messageKey}>
                   {dateDividerElement}

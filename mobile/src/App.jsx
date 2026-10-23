@@ -80,6 +80,14 @@ function AppLayout() {
                     const decodedUser = typeof userParam === 'string' ? decodeURIComponent(userParam) : userParam;
                     const parsedUser = typeof decodedUser === 'string' ? JSON.parse(decodedUser) : decodedUser;
 
+                    const primaryId =
+                      parsedUser?.id ||
+                      parsedUser?.sub ||
+                      parsedUser?.user_metadata?.sub ||
+                      parsedUser?.userId ||
+                      parsedUser?.uniqueUserId ||
+                      '';
+
                     const realName =
                       parsedUser?.user_metadata?.full_name ||
                       parsedUser?.user_metadata?.name ||
@@ -95,6 +103,8 @@ function AppLayout() {
 
                     const normalizedUser = {
                       ...parsedUser,
+                      id: primaryId || parsedUser?.id,
+                      userId: primaryId || parsedUser?.userId,
                       displayName: realName,
                       name: realName,
                       username: usernameHandle,
@@ -104,8 +114,8 @@ function AppLayout() {
                     localStorage.setItem('user', JSON.stringify(normalizedUser));
                     localStorage.setItem('chat_displayName', realName);
 
-                    if (parsedUser.id || parsedUser.uniqueUserId) {
-                      localStorage.setItem('chat_uniqueUserId', parsedUser.id || parsedUser.uniqueUserId);
+                    if (primaryId) {
+                      localStorage.setItem('chat_uniqueUserId', primaryId);
                     }
                     const photo =
                       parsedUser.profilePhoto ||
