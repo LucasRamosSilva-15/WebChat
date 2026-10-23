@@ -421,11 +421,14 @@ html.dark .skeuo-scrollbar::-webkit-scrollbar-thumb {
   transform-origin: center;
 }
 
-.anim-long-press {
-  animation: longPressLift 180ms var(--ease-touch) both;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  position: relative;
-  z-index: 1;
+.bubble-lift {
+  transition: transform 180ms var(--ease-touch), box-shadow 180ms var(--ease-touch);
+  transform-origin: center;
+}
+
+.anim-long-press .bubble-lift {
+  transform: scale(1.03);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .skeuo-drag-handle {

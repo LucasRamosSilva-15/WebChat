@@ -9,7 +9,10 @@ import {
   X,
   Pin,
   Pencil,
-  AlertTriangle
+  AlertTriangle,
+  Plus,
+  Video,
+  FileText
 } from 'lucide-react';
 import { useNavigate, useSearchParams, useParams, useLocation } from 'react-router-dom';
 import { socket } from '../services/socket';
@@ -19,6 +22,7 @@ import { useHaptics } from '../hooks/useHaptics';
 import RoomMembersSheet from '../components/mobile/RoomMembersSheet';
 import MessageActionsSheet from '../components/mobile/MessageActionsSheet';
 import UserProfileSheet from '../components/mobile/UserProfileSheet';
+import MobileSheet from '../components/mobile/MobileSheet';
 
 export default function MobileChat() {
   const navigate = useNavigate();
@@ -45,6 +49,12 @@ export default function MobileChat() {
   });
   const [inputText, setInputText] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
+  const [showAttachSheet, setShowAttachSheet] = useState(false);
+  const [selectedAttachment, setSelectedAttachment] = useState(null);
+  const [attachError, setAttachError] = useState(null);
+  const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
   const [isMembersSheetOpen, setIsMembersSheetOpen] = useState(false);
@@ -149,6 +159,8 @@ export default function MobileChat() {
               : m.timestamp || '',
             isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
             image: m.image_url || m.image || null,
+            video: m.video_url || m.video || null,
+            file: m.file_url || m.file || null,
             replyTo: m.replyTo || m.reply_to || null,
             reactions: m.reactions || {},
             isEdited: m.isEdited || m.is_edited || false
@@ -186,6 +198,8 @@ export default function MobileChat() {
           timestamp: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isMine: msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName,
           image: msg.image_url || msg.image || null,
+          video: msg.video_url || msg.video || null,
+          file: msg.file_url || msg.file || null,
           replyTo: msg.replyTo || msg.reply_to || null,
           reactions: msg.reactions || {},
           isEdited: msg.isEdited || false,
@@ -283,9 +297,205 @@ export default function MobileChat() {
     }
   };
 
+  const formatFileSize = (bytes) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  };
+
+  const showFileError = (message) => {
+    setAttachError(message);
+    triggerImpact();
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([30, 50, 30]);
+    }
+    setTimeout(() => {
+      setAttachError(null);
+    }, 4000);
+  };
+
+  const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL(file.type || 'image/jpeg', quality);
+            resolve(dataUrl);
+          } else {
+            resolve(e.target.result);
+          }
+        };
+        img.onerror = () => resolve(e.target.result);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const generateVideoThumbnail = (file) => {
+    return new Promise((resolve) => {
+      try {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.muted = true;
+        video.playsInline = true;
+        const objectUrl = URL.createObjectURL(file);
+        video.src = objectUrl;
+
+        let hasResolved = false;
+        const cleanUp = () => {
+          try {
+            URL.revokeObjectURL(objectUrl);
+          } catch {}
+        };
+
+        const finish = (result) => {
+          if (!hasResolved) {
+            hasResolved = true;
+            cleanUp();
+            resolve(result);
+          }
+        };
+
+        video.onloadeddata = () => {
+          video.currentTime = Math.min(0.5, (video.duration || 1) / 2);
+        };
+
+        video.onseeked = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.min(video.videoWidth || 320, 320);
+            canvas.height = Math.min(video.videoHeight || 240, 240);
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const thumb = canvas.toDataURL('image/jpeg', 0.7);
+              finish(thumb);
+              return;
+            }
+          } catch {}
+          finish(null);
+        };
+
+        video.onerror = () => finish(null);
+        setTimeout(() => finish(null), 2500);
+      } catch {
+        resolve(null);
+      }
+    });
+  };
+
+  const readFileAsDataUrl = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleClearAttachment = () => {
+    setSelectedAttachment(null);
+    setImagePreview(null);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+    if (videoInputRef.current) videoInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleFileSelect = async (file, type) => {
+    if (!file) return;
+
+    const maxImageSize = 5 * 1024 * 1024; // 5MB
+    const maxMediaSize = 10 * 1024 * 1024; // 10MB
+
+    if (type === 'image' && file.size > maxImageSize) {
+      showFileError('Arquivo muito grande. Limite máximo: 5MB');
+      return;
+    }
+
+    if ((type === 'video' || type === 'file') && file.size > maxMediaSize) {
+      showFileError('Arquivo muito grande. Limite máximo: 10MB');
+      return;
+    }
+
+    const extension = file.name ? file.name.split('.').pop() : '';
+    const formattedSize = formatFileSize(file.size);
+
+    try {
+      if (type === 'image') {
+        const compressedDataUrl = await compressImage(file);
+        setSelectedAttachment({
+          type: 'image',
+          data: compressedDataUrl,
+          name: file.name,
+          size: file.size,
+          formattedSize,
+          extension
+        });
+        setImagePreview(compressedDataUrl);
+      } else if (type === 'video') {
+        const [thumbnail, dataUrl] = await Promise.all([
+          generateVideoThumbnail(file),
+          readFileAsDataUrl(file)
+        ]);
+        setSelectedAttachment({
+          type: 'video',
+          data: dataUrl,
+          thumbnail,
+          name: file.name,
+          size: file.size,
+          formattedSize,
+          extension
+        });
+        setImagePreview(null);
+      } else if (type === 'file') {
+        const dataUrl = await readFileAsDataUrl(file);
+        setSelectedAttachment({
+          type: 'file',
+          data: dataUrl,
+          name: file.name,
+          size: file.size,
+          formattedSize,
+          extension
+        });
+        setImagePreview(null);
+      }
+    } catch (err) {
+      console.error('Erro ao processar anexo:', err);
+      showFileError('Falha ao processar arquivo.');
+    }
+  };
+
+  const handleImagePick = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file, 'image');
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e?.preventDefault();
-    if (!inputText.trim() && !imagePreview) return;
+    if (!inputText.trim() && !imagePreview && !selectedAttachment) return;
     triggerImpact();
 
     const contentText = inputText.trim();
@@ -320,6 +530,15 @@ export default function MobileChat() {
       return;
     }
 
+    const imageToSend = selectedAttachment?.type === 'image' ? selectedAttachment.data : (imagePreview || null);
+    const videoToSend = selectedAttachment?.type === 'video' ? selectedAttachment.data : null;
+    const fileToSend = selectedAttachment?.type === 'file' ? {
+      name: selectedAttachment.name,
+      size: selectedAttachment.formattedSize,
+      url: selectedAttachment.data,
+      extension: selectedAttachment.extension
+    } : null;
+
     const tempMsg = {
       id: String(Date.now()),
       room: String(currentRoomId),
@@ -328,7 +547,9 @@ export default function MobileChat() {
       sender: displayName,
       text: contentText,
       content: contentText,
-      image: imagePreview,
+      image: imageToSend,
+      video: videoToSend,
+      file: fileToSend,
       replyTo: replyingTo
         ? {
             id: replyingTo.id,
@@ -345,7 +566,7 @@ export default function MobileChat() {
 
     setMessages((prev) => [...prev, tempMsg]);
     setInputText('');
-    setImagePreview(null);
+    handleClearAttachment();
     setReplyingTo(null);
 
     socket.emit('send_message', tempMsg);
@@ -355,21 +576,14 @@ export default function MobileChat() {
         method: 'POST',
         body: JSON.stringify({
           content: contentText,
-          imageUrl: imagePreview,
+          imageUrl: imageToSend,
+          videoUrl: videoToSend,
+          file: fileToSend,
           replyTo: tempMsg.replyTo
         })
       });
     } catch (err) {
       console.warn('Falha ao persistir mensagem na API:', err.message);
-    }
-  };
-
-  const handleImagePick = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setImagePreview(reader.result);
-      reader.readAsDataURL(file);
     }
   };
 
@@ -640,7 +854,7 @@ export default function MobileChat() {
                 onTouchMove={handleTouchMove}
                 className={`flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
               >
-                <div className="bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
+                <div className="bubble-lift bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
                   {msg.replyTo && (
                     <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-white/20 border-l-3 border-white text-xs text-sky-50">
                       <div className="font-bold text-[10px] opacity-90">{msg.replyTo.sender}</div>
@@ -656,6 +870,35 @@ export default function MobileChat() {
                       decoding="async"
                       className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
                     />
+                  )}
+
+                  {msg.video && (
+                    <video
+                      src={msg.video}
+                      controls
+                      playsInline
+                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                    />
+                  )}
+
+                  {msg.file && (
+                    <a
+                      href={typeof msg.file === 'string' ? msg.file : msg.file.url}
+                      download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-98 transition-all text-white"
+                    >
+                      <FileText className="w-5 h-5 shrink-0" />
+                      <div className="min-w-0 text-left">
+                        <div className="text-xs font-semibold truncate">
+                          {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
+                        </div>
+                        {typeof msg.file === 'object' && msg.file.size && (
+                          <div className="text-[10px] opacity-80">{msg.file.size}</div>
+                        )}
+                      </div>
+                    </a>
                   )}
                   <span>{msg.content || msg.text}</span>
 
@@ -730,7 +973,7 @@ export default function MobileChat() {
                   ) : null}
                 </div>
 
-                <div className="skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
+                <div className="bubble-lift skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
                   {msg.replyTo && (
                     <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-l-3 border-sky-500 text-xs text-slate-600 dark:text-slate-300">
                       <div className="font-bold text-[10px] text-sky-600 dark:text-sky-400">
@@ -748,6 +991,35 @@ export default function MobileChat() {
                       decoding="async"
                       className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
                     />
+                  )}
+
+                  {msg.video && (
+                    <video
+                      src={msg.video}
+                      controls
+                      playsInline
+                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
+                    />
+                  )}
+
+                  {msg.file && (
+                    <a
+                      href={typeof msg.file === 'string' ? msg.file : msg.file.url}
+                      download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-98 transition-all text-slate-800 dark:text-slate-100"
+                    >
+                      <FileText className="w-5 h-5 text-sky-500 shrink-0" />
+                      <div className="min-w-0 text-left">
+                        <div className="text-xs font-semibold truncate">
+                          {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
+                        </div>
+                        {typeof msg.file === 'object' && msg.file.size && (
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400">{msg.file.size}</div>
+                        )}
+                      </div>
+                    </a>
                   )}
                   <span>{msg.content || msg.text}</span>
                   <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-400 font-medium select-none">
@@ -830,7 +1102,101 @@ export default function MobileChat() {
           </div>
         )}
 
-        {imagePreview && (
+        {attachError && (
+          <div className="anim-fade-rise flex items-center justify-between gap-2 p-2 px-3 mb-2 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-medium">
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
+              <span className="truncate">{attachError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAttachError(null)}
+              className="p-1 rounded-full hover:bg-rose-500/10 shrink-0 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {selectedAttachment?.type === 'image' && (
+          <div className="anim-fade-rise relative inline-block mb-2 ml-1">
+            <img
+              src={selectedAttachment.data}
+              alt="Preview"
+              className="w-16 h-16 object-cover rounded-xl border border-sky-400 shadow-md"
+            />
+            <button
+              type="button"
+              onClick={handleClearAttachment}
+              className="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-md cursor-pointer hover:bg-rose-600 transition-colors"
+              aria-label="Remover anexo"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {selectedAttachment?.type === 'video' && (
+          <div className="anim-fade-rise flex items-center justify-between gap-3 p-2 px-3 mb-2 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {selectedAttachment.thumbnail ? (
+                <img
+                  src={selectedAttachment.thumbnail}
+                  alt="Prévia do vídeo"
+                  className="w-12 h-12 object-cover rounded-lg border border-purple-400/30 shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-500 flex items-center justify-center border border-purple-400/30 shrink-0">
+                  <Video className="w-5 h-5" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <span className="font-bold text-purple-700 dark:text-purple-300 block truncate text-xs">
+                  {selectedAttachment.name}
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Vídeo • {selectedAttachment.formattedSize}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleClearAttachment}
+              className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors shrink-0 cursor-pointer"
+              aria-label="Remover vídeo"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {selectedAttachment?.type === 'file' && (
+          <div className="anim-fade-rise flex items-center justify-between gap-3 p-2.5 px-3 mb-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center border border-emerald-400/30 shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-bold text-emerald-700 dark:text-emerald-300 block truncate text-xs">
+                  {selectedAttachment.name}
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">
+                  {selectedAttachment.extension || 'Arquivo'} • {selectedAttachment.formattedSize}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleClearAttachment}
+              className="w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors shrink-0 cursor-pointer"
+              aria-label="Remover arquivo"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {imagePreview && !selectedAttachment && (
           <div className="anim-fade-rise relative inline-block mb-2 ml-1">
             <img
               src={imagePreview}
@@ -847,16 +1213,46 @@ export default function MobileChat() {
           </div>
         )}
 
-        <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-md mx-auto">
-          <label className="btn-secondary-glossy !w-11 !h-11 min-h-[44px] !p-0 rounded-full inline-flex items-center justify-center cursor-pointer text-slate-600 dark:text-slate-300 active:scale-95 transition-transform">
-            <Image className="w-5 h-5" />
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImagePick}
-            />
-          </label>
+        <input
+          type="file"
+          ref={imageInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0]) handleFileSelect(e.target.files[0], 'image');
+            e.target.value = '';
+          }}
+        />
+        <input
+          type="file"
+          ref={videoInputRef}
+          accept="video/*"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0]) handleFileSelect(e.target.files[0], 'video');
+            e.target.value = '';
+          }}
+        />
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="*/*"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files?.[0]) handleFileSelect(e.target.files[0], 'file');
+            e.target.value = '';
+          }}
+        />
+
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2 w-full">
+          <button
+            type="button"
+            onClick={() => setShowAttachSheet(true)}
+            className="w-11 h-11 shrink-0 rounded-2xl skeuo-card flex items-center justify-center text-slate-300 active:scale-95 transition-transform"
+            aria-label="Abrir menu de anexos"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
 
           <input
             type="text"
@@ -864,13 +1260,13 @@ export default function MobileChat() {
             onChange={handleInputChange}
             onFocus={() => setTimeout(scrollToBottom, 150)}
             placeholder={editingMessage ? 'Atualize a sua mensagem...' : 'Digite uma mensagem...'}
-            className="skeuo-input flex-1 min-h-[44px] px-4 py-2 text-sm rounded-full text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-sky-400"
+            className="skeuo-input flex-1 min-w-0 min-h-[44px] px-4 py-2 text-sm rounded-full text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-sky-400"
           />
 
           <button
             type="submit"
-            disabled={!inputText.trim() && !imagePreview}
-            className="skeuo-btn-primary !w-11 !h-11 min-h-[44px] !p-0 rounded-full inline-flex items-center justify-center text-white disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition-transform shadow-md cursor-pointer"
+            disabled={!inputText.trim() && !imagePreview && !selectedAttachment}
+            className="skeuo-btn-primary !w-11 !h-11 min-h-[44px] !p-0 rounded-full inline-flex items-center justify-center text-white disabled:opacity-50 disabled:pointer-events-none active:scale-95 transition-transform shadow-md cursor-pointer shrink-0"
             aria-label="Enviar mensagem"
           >
             <Send className="w-4 h-4 ml-0.5" />
@@ -913,6 +1309,59 @@ export default function MobileChat() {
         user={selectedUserProfile}
         onStartDirect={handleStartDirect}
       />
+
+      <MobileSheet
+        isOpen={showAttachSheet}
+        onClose={() => setShowAttachSheet(false)}
+        title="Enviar Anexo"
+      >
+        <div className="p-4 grid grid-cols-3 gap-3">
+          {/* Opção Imagem */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowAttachSheet(false);
+              imageInputRef.current?.click();
+            }}
+            className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl skeuo-card active:scale-95 transition-all text-slate-200"
+          >
+            <div className="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+              <Image className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-semibold">Imagem</span>
+          </button>
+
+          {/* Opção Vídeo */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowAttachSheet(false);
+              videoInputRef.current?.click();
+            }}
+            className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl skeuo-card active:scale-95 transition-all text-slate-200"
+          >
+            <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+              <Video className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-semibold">Vídeo</span>
+          </button>
+
+          {/* Opção Arquivo */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowAttachSheet(false);
+              fileInputRef.current?.click();
+            }}
+            className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl skeuo-card active:scale-95 transition-all text-slate-200"
+          >
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-400/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+              <FileText className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-semibold">Arquivo</span>
+          </button>
+        </div>
+      </MobileSheet>
     </div>
   );
 }
