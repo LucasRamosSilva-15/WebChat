@@ -53,8 +53,8 @@ export default function MobileFeedback() {
   };
 
   return (
-    <div className="anim-page-enter flex flex-col min-h-screen pb-[calc(6.5rem+env(safe-area-inset-bottom))] bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
-      <header className="sticky top-0 z-40 w-full pt-[calc(env(safe-area-inset-top,0px)+8px)] px-3 pb-2.5 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-white/60 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+    <div className="anim-page-enter flex flex-col h-[100dvh] overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+      <header className="shrink-0 z-40 w-full pt-[calc(env(safe-area-inset-top,0px)+8px)] px-3 pb-2.5 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-white/60 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
         <div className="flex items-center justify-between gap-2 max-w-md mx-auto">
           <div className="flex items-center gap-2.5">
             <button
@@ -78,7 +78,7 @@ export default function MobileFeedback() {
         </div>
       </header>
 
-      <div className="px-4 pt-4 max-w-md mx-auto w-full">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 pt-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] skeuo-scrollbar max-w-md mx-auto w-full">
         <div className="anim-fade-rise skeuo-card max-w-md mx-auto p-6 rounded-3xl shadow-md">
           {success ? (
             <div className="text-center py-6 animate-fade-in space-y-4">

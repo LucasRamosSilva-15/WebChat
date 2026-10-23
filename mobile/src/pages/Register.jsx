@@ -199,8 +199,8 @@ export default function MobileRegister() {
   };
 
   return (
-    <div className="anim-page-enter min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center px-4 pt-8 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
-      <div className="anim-fade-rise skeuo-card max-w-md mx-auto w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+    <div className="anim-page-enter h-[100dvh] overflow-y-auto overscroll-y-contain skeuo-scrollbar bg-slate-100 dark:bg-slate-950 flex flex-col px-4 pt-8 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
+      <div className="anim-fade-rise skeuo-card max-w-md mx-auto my-auto w-full p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
         {step === 1 ? (
           <>
             <div className="text-center mb-6">

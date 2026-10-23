@@ -169,6 +169,13 @@ function AppLayout() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentPath = location.pathname || window.location.pathname;
+
+      // Não interceptar nem redirecionar se o usuário estiver no fluxo de recuperação de senha
+      if (event === 'PASSWORD_RECOVERY' || currentPath === '/forgot-password') {
+        return;
+      }
+
       if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
         syncedSessionRef.current = null;
         Object.keys(localStorage).forEach((key) => {
@@ -203,7 +210,7 @@ function AppLayout() {
           } catch (err) {
             console.warn('Sincronização OAuth adiada ou limitada:', err.message);
           }
-        } else if (['/login', '/register', '/forgot-password', '/'].includes(window.location.pathname)) {
+        } else if (['/login', '/register', '/'].includes(currentPath)) {
           if (window.location.hash) {
             window.history.replaceState(null, '', window.location.pathname);
           }
@@ -213,7 +220,7 @@ function AppLayout() {
     });
 
     return () => subscription?.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   return (
     <div className="h-[100dvh] bg-slate-200/60 dark:bg-slate-950 flex justify-center font-sans select-none overflow-hidden">
