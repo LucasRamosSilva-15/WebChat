@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Reply, Trash2, Pencil, Pin, AlertTriangle, Star, Check } from 'lucide-react';
 import MobileSheet from './MobileSheet';
+import { formatFullDateTime } from '../../utils/dateUtils';
 
 export default function MessageActionsSheet({
   isOpen,
@@ -160,6 +161,12 @@ export default function MessageActionsSheet({
         </div>
       ) : (
         <div className="space-y-4 py-1">
+          {message && (
+            <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="font-semibold truncate mr-2">{message.sender || 'Mensagem'}</span>
+              <span className="shrink-0">{formatFullDateTime(message.time, message.created_at || message.timestamp)}</span>
+            </div>
+          )}
           <div className="flex items-center justify-around gap-1.5 p-2 rounded-2xl skeuo-well">
             {emojis.map((emoji) => (
               <button

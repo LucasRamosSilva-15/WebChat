@@ -23,6 +23,13 @@ import RoomMembersSheet from '../components/mobile/RoomMembersSheet';
 import MessageActionsSheet from '../components/mobile/MessageActionsSheet';
 import UserProfileSheet from '../components/mobile/UserProfileSheet';
 import MobileSheet from '../components/mobile/MobileSheet';
+import {
+  getMessageDateKey,
+  formatMessageDateDivider,
+  formatMessageTime,
+  formatFullDateTime,
+  isDifferentCalendarDay
+} from '../utils/dateUtils';
 
 export default function MobileChat() {
   const navigate = useNavigate();
@@ -151,12 +158,9 @@ export default function MobileChat() {
             role: m.user?.role || m.role || 'user',
             text: m.content || m.text || m.message || '',
             content: m.content || m.text || m.message || '',
-            time: m.created_at
-              ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : m.timestamp || '',
-            timestamp: m.created_at
-              ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : m.timestamp || '',
+            time: m.time || (m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || '')),
+            timestamp: m.timestamp || m.created_at || '',
+            created_at: m.created_at || m.timestamp || null,
             isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
             image: m.image_url || m.image || null,
             video: m.video_url || m.video || null,
@@ -194,8 +198,9 @@ export default function MobileChat() {
           role: msg.user?.role || msg.role || 'user',
           text: msg.content || msg.text || msg.message || '',
           content: msg.content || msg.text || msg.message || '',
-          time: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          timestamp: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
+          timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
+          created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
           isMine: msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName,
           image: msg.image_url || msg.image || null,
           video: msg.video_url || msg.video || null,
@@ -559,7 +564,8 @@ export default function MobileChat() {
         : null,
       reactions: {},
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       isMine: true,
       isNew: true
     };
@@ -826,13 +832,28 @@ export default function MobileChat() {
         )}
 
         {messages.map((msg, index) => {
+          const currentDateKey = getMessageDateKey(msg);
+          const prevDateKey = index > 0 ? getMessageDateKey(messages[index - 1]) : null;
+          const showDateDivider = index === 0 || currentDateKey !== prevDateKey;
+
+          const dateDividerElement = showDateDivider ? (
+            <div className="flex items-center justify-center my-3 select-none">
+              <span className="px-3.5 py-1 rounded-full text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-xs backdrop-blur-xs">
+                {currentDateKey}
+              </span>
+            </div>
+          ) : null;
+
           if (msg.isSystem) {
             return (
-              <div key={msg.id || index} className="flex justify-center my-2">
-                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full shadow-xs">
-                  {msg.content || msg.text}
-                </span>
-              </div>
+              <React.Fragment key={msg.id || index}>
+                {dateDividerElement}
+                <div className="flex justify-center my-2">
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-full shadow-xs">
+                    {msg.content || msg.text}
+                  </span>
+                </div>
+              </React.Fragment>
             );
           }
 
@@ -844,209 +865,223 @@ export default function MobileChat() {
 
           if (msg.isMine) {
             return (
+              <React.Fragment key={msg.id || index}>
+                {dateDividerElement}
+                <div
+                  ref={(el) => {
+                    if (el) messageRefs.current[msg.id] = el;
+                  }}
+                  onTouchStart={(e) => handleTouchStart(e, msg)}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchMove={handleTouchMove}
+                  className={`flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
+                >
+                  <div className="bubble-lift bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
+                    {msg.replyTo && (
+                      <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-white/20 border-l-3 border-white text-xs text-sky-50">
+                        <div className="font-bold text-[10px] opacity-90">{msg.replyTo.sender}</div>
+                        <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
+                      </div>
+                    )}
+
+                    {msg.image && (
+                      <img
+                        src={msg.image}
+                        alt="Upload"
+                        loading="lazy"
+                        decoding="async"
+                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                      />
+                    )}
+
+                    {msg.video && (
+                      <video
+                        src={msg.video}
+                        controls
+                        playsInline
+                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                      />
+                    )}
+
+                    {msg.file && (
+                      <a
+                        href={typeof msg.file === 'string' ? msg.file : msg.file.url}
+                        download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-98 transition-all text-white"
+                      >
+                        <FileText className="w-5 h-5 shrink-0" />
+                        <div className="min-w-0 text-left">
+                          <div className="text-xs font-semibold truncate">
+                            {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
+                          </div>
+                          {typeof msg.file === 'object' && msg.file.size && (
+                            <div className="text-[10px] opacity-80">{msg.file.size}</div>
+                          )}
+                        </div>
+                      </a>
+                    )}
+                    <span>{msg.content || msg.text}</span>
+
+                    <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-sky-100 font-medium select-none">
+                      <span
+                        title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
+                        className="text-[10px] text-sky-100 font-medium tracking-tight"
+                      >
+                        {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
+                      </span>
+                      {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
+                      <CheckCheck className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                    </div>
+                  </div>
+
+                  {reactionEntries.length > 0 && (
+                    <div className="flex items-center gap-1 mt-1 mr-1">
+                      {reactionEntries.map(([emoji, count]) => (
+                        <span
+                          key={emoji}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
+                        >
+                          <span>{emoji}</span>
+                          {count > 1 && (
+                            <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
+                              {count}
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </React.Fragment>
+            );
+          }
+
+          return (
+            <React.Fragment key={msg.id || index}>
+              {dateDividerElement}
               <div
-                key={msg.id || index}
                 ref={(el) => {
                   if (el) messageRefs.current[msg.id] = el;
                 }}
                 onTouchStart={(e) => handleTouchStart(e, msg)}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
-                className={`flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
+                className={`flex items-start gap-2 max-w-[88%] mr-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
               >
-                <div className="bubble-lift bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
-                  {msg.replyTo && (
-                    <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-white/20 border-l-3 border-white text-xs text-sky-50">
-                      <div className="font-bold text-[10px] opacity-90">{msg.replyTo.sender}</div>
-                      <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
+                <button
+                  type="button"
+                  onClick={() => handleAvatarClick(msg)}
+                  className="shrink-0 w-8 h-8 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs mt-1 cursor-pointer active:scale-90 transition-transform overflow-hidden"
+                >
+                  {msg.avatar ? (
+                    <img src={msg.avatar} alt={msg.sender} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  ) : (
+                    (msg.sender || 'U').charAt(0).toUpperCase()
+                  )}
+                </button>
+
+                <div className="flex flex-col items-start min-w-0">
+                  <div className="flex items-center gap-1.5 ml-1 mb-0.5">
+                    <span
+                      onClick={() => handleAvatarClick(msg)}
+                      className="text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 cursor-pointer"
+                    >
+                      {msg.sender}
+                    </span>
+
+                    {authorRole === 'owner' ? (
+                      <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-amber-800 bg-gradient-to-b from-amber-100 to-amber-200 border border-amber-300 shadow-xs inline-flex items-center gap-1">
+                        👑 DONO
+                      </span>
+                    ) : authorRole === 'moderator' || authorRole === 'admin' ? (
+                      <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-sky-800 bg-gradient-to-b from-sky-100 to-sky-200 border border-sky-300 shadow-xs inline-flex items-center gap-1">
+                        🛡️ MOD
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="bubble-lift skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
+                    {msg.replyTo && (
+                      <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-l-3 border-sky-500 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="font-bold text-[10px] text-sky-600 dark:text-sky-400">
+                          {msg.replyTo.sender}
+                        </div>
+                        <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
+                      </div>
+                    )}
+
+                    {msg.image && (
+                      <img
+                        src={msg.image}
+                        alt="Upload"
+                        loading="lazy"
+                        decoding="async"
+                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
+                      />
+                    )}
+
+                    {msg.video && (
+                      <video
+                        src={msg.video}
+                        controls
+                        playsInline
+                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
+                      />
+                    )}
+
+                    {msg.file && (
+                      <a
+                        href={typeof msg.file === 'string' ? msg.file : msg.file.url}
+                        download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-98 transition-all text-slate-800 dark:text-slate-100"
+                      >
+                        <FileText className="w-5 h-5 text-sky-500 shrink-0" />
+                        <div className="min-w-0 text-left">
+                          <div className="text-xs font-semibold truncate">
+                            {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
+                          </div>
+                          {typeof msg.file === 'object' && msg.file.size && (
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400">{msg.file.size}</div>
+                          )}
+                        </div>
+                      </a>
+                    )}
+                    <span>{msg.content || msg.text}</span>
+                    <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-400 font-medium select-none">
+                      <span
+                        title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
+                        className="text-[10px] text-slate-400 font-medium tracking-tight"
+                      >
+                        {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
+                      </span>
+                      {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
+                    </div>
+                  </div>
+
+                  {reactionEntries.length > 0 && (
+                    <div className="flex items-center gap-1 mt-1 ml-1">
+                      {reactionEntries.map(([emoji, count]) => (
+                        <span
+                          key={emoji}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
+                        >
+                          <span>{emoji}</span>
+                          {count > 1 && (
+                            <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
+                              {count}
+                            </span>
+                          )}
+                        </span>
+                      ))}
                     </div>
                   )}
-
-                  {msg.image && (
-                    <img
-                      src={msg.image}
-                      alt="Upload"
-                      loading="lazy"
-                      decoding="async"
-                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
-                    />
-                  )}
-
-                  {msg.video && (
-                    <video
-                      src={msg.video}
-                      controls
-                      playsInline
-                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
-                    />
-                  )}
-
-                  {msg.file && (
-                    <a
-                      href={typeof msg.file === 'string' ? msg.file : msg.file.url}
-                      download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-98 transition-all text-white"
-                    >
-                      <FileText className="w-5 h-5 shrink-0" />
-                      <div className="min-w-0 text-left">
-                        <div className="text-xs font-semibold truncate">
-                          {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
-                        </div>
-                        {typeof msg.file === 'object' && msg.file.size && (
-                          <div className="text-[10px] opacity-80">{msg.file.size}</div>
-                        )}
-                      </div>
-                    </a>
-                  )}
-                  <span>{msg.content || msg.text}</span>
-
-                  <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-sky-100 font-medium select-none">
-                    <span>{msg.time || msg.timestamp || ''}</span>
-                    {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
-                    <CheckCheck className="w-3.5 h-3.5 text-white stroke-[2.5]" />
-                  </div>
                 </div>
-
-                {reactionEntries.length > 0 && (
-                  <div className="flex items-center gap-1 mt-1 mr-1">
-                    {reactionEntries.map(([emoji, count]) => (
-                      <span
-                        key={emoji}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
-                      >
-                        <span>{emoji}</span>
-                        {count > 1 && (
-                          <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
-                            {count}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
-            );
-          }
-
-          return (
-            <div
-              key={msg.id || index}
-              ref={(el) => {
-                if (el) messageRefs.current[msg.id] = el;
-              }}
-              onTouchStart={(e) => handleTouchStart(e, msg)}
-              onTouchEnd={handleTouchEnd}
-              onTouchMove={handleTouchMove}
-              className={`flex items-start gap-2 max-w-[88%] mr-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
-            >
-              <button
-                type="button"
-                onClick={() => handleAvatarClick(msg)}
-                className="shrink-0 w-8 h-8 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs mt-1 cursor-pointer active:scale-90 transition-transform overflow-hidden"
-              >
-                {msg.avatar ? (
-                  <img src={msg.avatar} alt={msg.sender} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                ) : (
-                  (msg.sender || 'U').charAt(0).toUpperCase()
-                )}
-              </button>
-
-              <div className="flex flex-col items-start min-w-0">
-                <div className="flex items-center gap-1.5 ml-1 mb-0.5">
-                  <span
-                    onClick={() => handleAvatarClick(msg)}
-                    className="text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 cursor-pointer"
-                  >
-                    {msg.sender}
-                  </span>
-
-                  {authorRole === 'owner' ? (
-                    <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-amber-800 bg-gradient-to-b from-amber-100 to-amber-200 border border-amber-300 shadow-xs inline-flex items-center gap-1">
-                      👑 DONO
-                    </span>
-                  ) : authorRole === 'moderator' || authorRole === 'admin' ? (
-                    <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-sky-800 bg-gradient-to-b from-sky-100 to-sky-200 border border-sky-300 shadow-xs inline-flex items-center gap-1">
-                      🛡️ MOD
-                    </span>
-                  ) : null}
-                </div>
-
-                <div className="bubble-lift skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
-                  {msg.replyTo && (
-                    <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-l-3 border-sky-500 text-xs text-slate-600 dark:text-slate-300">
-                      <div className="font-bold text-[10px] text-sky-600 dark:text-sky-400">
-                        {msg.replyTo.sender}
-                      </div>
-                      <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
-                    </div>
-                  )}
-
-                  {msg.image && (
-                    <img
-                      src={msg.image}
-                      alt="Upload"
-                      loading="lazy"
-                      decoding="async"
-                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
-                    />
-                  )}
-
-                  {msg.video && (
-                    <video
-                      src={msg.video}
-                      controls
-                      playsInline
-                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
-                    />
-                  )}
-
-                  {msg.file && (
-                    <a
-                      href={typeof msg.file === 'string' ? msg.file : msg.file.url}
-                      download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-98 transition-all text-slate-800 dark:text-slate-100"
-                    >
-                      <FileText className="w-5 h-5 text-sky-500 shrink-0" />
-                      <div className="min-w-0 text-left">
-                        <div className="text-xs font-semibold truncate">
-                          {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
-                        </div>
-                        {typeof msg.file === 'object' && msg.file.size && (
-                          <div className="text-[10px] text-slate-500 dark:text-slate-400">{msg.file.size}</div>
-                        )}
-                      </div>
-                    </a>
-                  )}
-                  <span>{msg.content || msg.text}</span>
-                  <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-400 font-medium select-none">
-                    <span>{msg.time || msg.timestamp}</span>
-                    {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
-                  </div>
-                </div>
-
-                {reactionEntries.length > 0 && (
-                  <div className="flex items-center gap-1 mt-1 ml-1">
-                    {reactionEntries.map(([emoji, count]) => (
-                      <span
-                        key={emoji}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
-                      >
-                        <span>{emoji}</span>
-                        {count > 1 && (
-                          <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
-                            {count}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+            </React.Fragment>
           );
         })}
         <div ref={messagesEndRef} />

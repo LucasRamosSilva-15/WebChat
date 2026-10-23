@@ -33,6 +33,14 @@ import {
   decryptIncoming,
   initIdentity
 } from '../services/directCrypto';
+import {
+  getMessageDateKey,
+  formatMessageDateDivider,
+  formatMessageTime,
+  formatFullDateTime,
+  formatConversationTime,
+  isDifferentCalendarDay
+} from '../utils/dateUtils';
 
 export default function MobileDirects({ onOpenNotifications, unreadCount = 0, onChatOpenChange }) {
   const { triggerImpact } = useHaptics();
@@ -361,8 +369,9 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
             id: m.id || String(m._id || `init_${Date.now()}_${index}`),
             sender: m.user?.displayName || m.sender || m.userName || selectedConv.name || 'Contato',
             text: m.content || m.text || '',
-            content: m.content || m.text || '',
-            time: m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || ''),
+            time: m.time || (m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (m.timestamp || '')),
+            timestamp: m.timestamp || m.created_at || '',
+            created_at: m.created_at || m.timestamp || null,
             isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
             image: m.image_url || m.image || (m.attachment?.type === 'image' ? m.attachment.url : null) || null,
             video: m.video_url || m.video || (m.attachment?.type === 'video' ? m.attachment.url : (typeof m.attachment === 'string' && m.attachment.startsWith('data:video') ? m.attachment : null)) || null,
@@ -401,8 +410,9 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               tempId: undefined,
               sender: msg.user?.displayName || msg.sender || msg.userName || displayName,
               text: msg.content || msg.text || '',
-              content: msg.content || msg.text || '',
-              time: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
+              timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
+              created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
               isMine: true,
               image: msg.image_url || msg.image || (msg.attachment?.type === 'image' ? msg.attachment.url : null) || null,
               video: msg.video_url || msg.video || (msg.attachment?.type === 'video' ? msg.attachment.url : (typeof msg.attachment === 'string' && msg.attachment.startsWith('data:video') ? msg.attachment : null)) || null,
@@ -419,8 +429,9 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           id: msg.id || `recv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           sender: msg.user?.displayName || msg.sender || msg.userName || 'Contato',
           text: msg.content || msg.text || '',
-          content: msg.content || msg.text || '',
-          time: msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: msg.time || (msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (msg.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
+          timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
+          created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
           isMine,
           image: msg.image_url || msg.image || (msg.attachment?.type === 'image' ? msg.attachment.url : null) || null,
           video: msg.video_url || msg.video || (msg.attachment?.type === 'video' ? msg.attachment.url : (typeof msg.attachment === 'string' && msg.attachment.startsWith('data:video') ? msg.attachment : null)) || null,
@@ -627,6 +638,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
       file: fileToSend,
       replyTo: replyToSend,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       isMine: true,
       encrypted: isE2EEActive
     };
@@ -847,19 +860,105 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
           {messages.map((msg, index) => {
             const messageKey = msg.id || msg.tempId || `${msg.sender_id || msg.sender}-${msg.created_at || msg.timestamp || index}-${index}`;
+            const currentDateKey = getMessageDateKey(msg);
+            const prevDateKey = index > 0 ? getMessageDateKey(messages[index - 1]) : null;
+            const showDateDivider = index === 0 || currentDateKey !== prevDateKey;
+
+            const dateDividerElement = showDateDivider ? (
+              <div className="flex items-center justify-center my-3 select-none">
+                <span className="px-3.5 py-1 rounded-full text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 shadow-xs backdrop-blur-xs">
+                  {currentDateKey}
+                </span>
+              </div>
+            ) : null;
+
             if (msg.isMine) {
               return (
+                <React.Fragment key={messageKey}>
+                  {dateDividerElement}
+                  <div
+                    onTouchStart={(e) => handleTouchStart(e, msg)}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchMove={handleTouchMove}
+                    className="flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none"
+                  >
+                    <div className="bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
+                      {msg.replyTo && (
+                        <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-white/20 border-l-3 border-white text-xs text-sky-50">
+                          <div className="font-bold text-[10px] opacity-90">{msg.replyTo.sender}</div>
+                          <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
+                        </div>
+                      )}
+
+                      {msg.image && (
+                        <img
+                          src={msg.image}
+                          alt="Upload"
+                          loading="lazy"
+                          decoding="async"
+                          className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                        />
+                      )}
+
+                      {msg.video && (
+                        <video
+                          src={msg.video}
+                          controls
+                          playsInline
+                          className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                        />
+                      )}
+
+                      {msg.file && (
+                        <a
+                          href={typeof msg.file === 'string' ? msg.file : msg.file.url}
+                          download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-98 transition-all text-white"
+                        >
+                          <FileText className="w-5 h-5 shrink-0" />
+                          <div className="min-w-0 text-left">
+                            <div className="text-xs font-semibold truncate">
+                              {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
+                            </div>
+                            {typeof msg.file === 'object' && msg.file.size && (
+                              <div className="text-[10px] opacity-80">{msg.file.size}</div>
+                            )}
+                          </div>
+                        </a>
+                      )}
+                      <span>{msg.content || msg.text}</span>
+
+                      <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-sky-100 font-medium select-none">
+                        {msg.encrypted && <Lock className="w-2.5 h-2.5 opacity-80" />}
+                        <span
+                          title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
+                          className="text-[10px] text-sky-100 font-medium tracking-tight"
+                        >
+                          {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
+                        </span>
+                        <CheckCheck className={`w-3.5 h-3.5 stroke-[2.5] ${msg.read ? 'text-sky-200' : 'text-white'}`} />
+                      </div>
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            }
+
+            return (
+              <React.Fragment key={messageKey}>
+                {dateDividerElement}
                 <div
-                  key={messageKey}
                   onTouchStart={(e) => handleTouchStart(e, msg)}
                   onTouchEnd={handleTouchEnd}
                   onTouchMove={handleTouchMove}
-                  className="flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none"
+                  className="flex flex-col items-start max-w-[85%] mr-auto my-1.5 select-none"
                 >
-                  <div className="bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
+                  <div className="skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
                     {msg.replyTo && (
-                      <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-white/20 border-l-3 border-white text-xs text-sky-50">
-                        <div className="font-bold text-[10px] opacity-90">{msg.replyTo.sender}</div>
+                      <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-l-3 border-sky-500 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="font-bold text-[10px] text-sky-600 dark:text-sky-400">{msg.replyTo.sender}</div>
                         <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
                       </div>
                     )}
@@ -870,7 +969,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                         alt="Upload"
                         loading="lazy"
                         decoding="async"
-                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
                       />
                     )}
 
@@ -879,7 +978,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                         src={msg.video}
                         controls
                         playsInline
-                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
+                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
                       />
                     )}
 
@@ -889,92 +988,32 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                         download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-98 transition-all text-white"
+                        className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-98 transition-all text-slate-800 dark:text-slate-100"
                       >
-                        <FileText className="w-5 h-5 shrink-0" />
+                        <FileText className="w-5 h-5 text-sky-500 shrink-0" />
                         <div className="min-w-0 text-left">
                           <div className="text-xs font-semibold truncate">
                             {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
                           </div>
                           {typeof msg.file === 'object' && msg.file.size && (
-                            <div className="text-[10px] opacity-80">{msg.file.size}</div>
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400">{msg.file.size}</div>
                           )}
                         </div>
                       </a>
                     )}
                     <span>{msg.content || msg.text}</span>
-
-                    <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-sky-100 font-medium select-none">
-                      {msg.encrypted && <Lock className="w-2.5 h-2.5 opacity-80" />}
-                      <span>{msg.time}</span>
-                      <CheckCheck className={`w-3.5 h-3.5 stroke-[2.5] ${msg.read ? 'text-sky-200' : 'text-white'}`} />
+                    <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-400 font-medium select-none">
+                      {msg.encrypted && <Lock className="w-2.5 h-2.5 text-sky-500" />}
+                      <span
+                        title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
+                        className="text-[10px] text-slate-400 font-medium tracking-tight"
+                      >
+                        {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
+                      </span>
                     </div>
                   </div>
                 </div>
-              );
-            }
-
-            return (
-              <div
-                key={messageKey}
-                onTouchStart={(e) => handleTouchStart(e, msg)}
-                onTouchEnd={handleTouchEnd}
-                onTouchMove={handleTouchMove}
-                className="flex flex-col items-start max-w-[85%] mr-auto my-1.5 select-none"
-              >
-                <div className="skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
-                  {msg.replyTo && (
-                    <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-l-3 border-sky-500 text-xs text-slate-600 dark:text-slate-300">
-                      <div className="font-bold text-[10px] text-sky-600 dark:text-sky-400">{msg.replyTo.sender}</div>
-                      <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
-                    </div>
-                  )}
-
-                  {msg.image && (
-                    <img
-                      src={msg.image}
-                      alt="Upload"
-                      loading="lazy"
-                      decoding="async"
-                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
-                    />
-                  )}
-
-                  {msg.video && (
-                    <video
-                      src={msg.video}
-                      controls
-                      playsInline
-                      className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
-                    />
-                  )}
-
-                  {msg.file && (
-                    <a
-                      href={typeof msg.file === 'string' ? msg.file : msg.file.url}
-                      download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-98 transition-all text-slate-800 dark:text-slate-100"
-                    >
-                      <FileText className="w-5 h-5 text-sky-500 shrink-0" />
-                      <div className="min-w-0 text-left">
-                        <div className="text-xs font-semibold truncate">
-                          {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
-                        </div>
-                        {typeof msg.file === 'object' && msg.file.size && (
-                          <div className="text-[10px] text-slate-500 dark:text-slate-400">{msg.file.size}</div>
-                        )}
-                      </div>
-                    </a>
-                  )}
-                  <span>{msg.content || msg.text}</span>
-                  <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-400 font-medium select-none">
-                    {msg.encrypted && <Lock className="w-2.5 h-2.5 text-sky-500" />}
-                    <span>{msg.time}</span>
-                  </div>
-                </div>
-              </div>
+              </React.Fragment>
             );
           })}
           <div ref={messagesEndRef} />
@@ -1344,7 +1383,7 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
 
                 <div className="flex flex-col items-end shrink-0 gap-1 pl-2">
                   <span className="text-[10px] text-slate-400 font-medium">
-                    {conv.time || 'Agora'}
+                    {formatConversationTime(conv.time) || conv.time || 'Agora'}
                   </span>
                   {conv.unread > 0 && (
                     <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center border border-white">
