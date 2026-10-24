@@ -18,7 +18,7 @@ O **SkyRipple** é uma plataforma de comunicação em tempo real de alto desempe
 
 A infraestrutura foi concebida para oferecer baixa latência na entrega de mensagens, consistência transacional e isolamento estrito entre usuários e operadores administrativos:
 
-<CardGroup cols={3}>
+<CardGroup cols={4}>
   <Card title="Camada RESTful" icon="server" color="#2563EB">
     Rotas HTTP padronizadas, hashing Argon2id/bcrypt, autenticação híbrida (Google OAuth via Supabase), verificação OTP e emissão de JWT.
   </Card>
@@ -27,6 +27,9 @@ A infraestrutura foi concebida para oferecer baixa latência na entrega de mensa
   </Card>
   <Card title="Persistência Relacional" icon="database" color="#10B981">
     Banco de dados PostgreSQL com paginação por cursor (`before`, `since`, `limit`) sobre índices B-Tree e integridade referencial.
+  </Card>
+  <Card title="Ecossistema Mobile" icon="mobile-screen" color="#8B5CF6">
+    Aplicativo nativo Android (Capacitor 8) com Deep Linking (`skyripple://auth/callback`), Haptics e Safe Area Insets.
   </Card>
 </CardGroup>
 
@@ -41,6 +44,7 @@ graph TD
     Client[Cliente SkyRipple Web/Mobile] -->|HTTP REST /api/*| Express[Express Server API]
     Client -->|WSS Handshake + JWT| SocketIO[Socket.io Gateway]
     Client -.->|Web Crypto API| E2EE[Cifragem Ponta a Ponta ECDH/AES-GCM]
+    Client -.->|Deep Linking skyripple://| MobileAuth[Ponte OAuth Mobile / Web]
     Express --> AuthMW[Middleware auth.js / adminAuth.js]
     AuthMW --> Controllers[Controllers, Services & Repositories]
     Controllers --> CursorEngine[Paginação por Cursor B-Tree]
@@ -69,9 +73,10 @@ Para integrar suas aplicações e realizar homologações, utilize as URLs base 
 ## Documentação Interativa & OpenAPI
 
 O ecossistema **SkyRipple** conta com duas interfaces complementares para consumo e teste dos contratos de API:
-* **Portal Mintlify**: Documentação aprofundada de arquitetura, guias de integração, design system de componentes frontend e referência interativa de endpoints.
+* **Portal Mintlify**: Documentação aprofundada de arquitetura, guias de integração, design system de componentes frontend, aplicativo mobile e referência interativa de endpoints.
 * **Swagger UI (OpenAPI 3.0/3.1)**: Interface interativa embarcada no próprio backend em `/api-docs` (`https://skyripple-9vqr.onrender.com/api-docs` ou `http://localhost:3001/api-docs`), documentando **40 rotas** e **13 esquemas canônicos** com suporte a autenticação interativa via `BearerAuth` (JWT) e `AdminAuth` (chave mestra).
-* **Maturidade Técnica & Testes**: Suíte robusta de **310 testes automatizados** (182 testes no backend com Jest e 128 testes no frontend com Vitest) com 100% de aprovação.
+* **Maturidade Técnica & Testes**: Suíte robusta de **318 testes automatizados** (182 testes no backend com Jest/Supertest e 136 testes no frontend com Vitest) com 100% de aprovação, além de suíte completa ponta a ponta (E2E) com Playwright.
+* **Versão Canônica**: **v10.0.0** com ecossistema Web e Android unificados.
 
 ---
 

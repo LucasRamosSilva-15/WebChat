@@ -70,6 +70,7 @@
       "group": "Arquitetura & Design System",
       "pages": [
         "frontend/architecture",
+        "frontend/mobile",
         "frontend/pages",
         "frontend/tailwind-tokens"
       ]

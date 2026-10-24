@@ -238,6 +238,13 @@ O SkyRipple implementa fluxos numéricos de verificação através do componente
 * **Validação em 8 Slots**: O e-mail recebe um código numérico de 8 dígitos validado pelo seletor `OtpCodeInput` com propriedade `length={8}` via `supabase.auth.verifyOtp({ email, token, type: 'recovery' })`.
 * **Atualização**: Estabelecida a sessão de recuperação, o usuário define sua nova senha via `supabase.auth.updateUser({ password })`.
 
+### 3. Autenticação Mobile com Deep Linking (`skyripple://auth/callback`)
+No aplicativo nativo Android (Capacitor 8), o login federado com Google utiliza uma ponte por URL Scheme:
+* O usuário clica em **Continuar com Google** no aplicativo móvel.
+* O fluxo é aberto no navegador do dispositivo para autorização OAuth do Supabase.
+* Após sucesso, o Supabase redireciona para `skyripple://auth/callback#access_token=...`.
+* O listener `@capacitor/app` (`appUrlOpen`) captura a URL, extrai o token e sincroniza o perfil chamando `POST /api/auth/oauth-sync`, concedendo acesso transparente e seguro sem exibir telas intermediárias de consentimento no app.
+
 ---
 
 ## Criptografia Ponta a Ponta (E2EE) & Acordo de Chaves Públicas

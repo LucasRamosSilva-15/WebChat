@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Send,
   Image,
@@ -42,8 +42,82 @@ export default function MobileChat() {
 
   const currentRoomId = roomId || searchParams.get('roomId') || searchParams.get('room');
   const roomTitle = roomState?.name || searchParams.get('name') || (currentRoomId ? `${currentRoomId}` : 'Geral');
-  const currentUserId = localStorage.getItem('chat_uniqueUserId') || 'guest';
-  const displayName = localStorage.getItem('chat_displayName') || 'Usuário';
+  const currentUser = (() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const myId = String(
+    currentUser?.id ||
+    currentUser?.userId ||
+    currentUser?.uuid ||
+    currentUser?.user_metadata?.sub ||
+    currentUser?.sub ||
+    localStorage.getItem('chat_uniqueUserId') ||
+    ''
+  ).trim();
+
+  const myName = String(
+    currentUser?.name ||
+    currentUser?.displayName ||
+    currentUser?.user_metadata?.full_name ||
+    currentUser?.user_metadata?.name ||
+    localStorage.getItem('chat_displayName') ||
+    ''
+  ).trim().toLowerCase();
+
+  const myUsername = String(
+    currentUser?.username ||
+    currentUser?.user_metadata?.user_name ||
+    currentUser?.handle ||
+    (currentUser?.email ? currentUser.email.split('@')[0] : '')
+  ).trim().toLowerCase();
+
+  const myEmail = String(currentUser?.email || '').trim().toLowerCase();
+
+  const currentUserId = myId || localStorage.getItem('chat_uniqueUserId') || 'guest';
+  const displayName = currentUser?.displayName || currentUser?.name || localStorage.getItem('chat_displayName') || 'Usuário';
+
+  const checkIsMe = (msg) => {
+    if (!msg) return false;
+    if (msg.isMine === true || msg.isMe === true || msg.is_outgoing === true || msg.outgoing === true) {
+      return true;
+    }
+
+    const senderId = String(
+      msg.sender_id ||
+      msg.senderId ||
+      msg.sender_uuid ||
+      msg.user_id ||
+      msg.userId ||
+      (typeof msg.sender === 'string' ? msg.sender : msg.sender?.id) ||
+      (typeof msg.user === 'object' ? msg.user?.id : '') ||
+      ''
+    ).trim();
+
+    const senderName = String(
+      (typeof msg.sender === 'object' ? (msg.sender?.displayName || msg.sender?.name) : msg.sender_name) ||
+      msg.sender ||
+      msg.userName ||
+      msg.user_name ||
+      (typeof msg.user === 'object' ? (msg.user?.displayName || msg.user?.name) : '') ||
+      ''
+    ).trim().toLowerCase();
+
+    return Boolean(
+      (myId && senderId && myId === senderId) ||
+      (currentUserId && senderId && currentUserId === senderId) ||
+      (myUsername && senderName && myUsername === senderName) ||
+      (myName && senderName && myName === senderName) ||
+      (myEmail && senderName && senderName.includes(myEmail)) ||
+      msg.is_outgoing === true ||
+      msg.outgoing === true
+    );
+  };
 
   const { keyboardHeight } = useKeyboard();
   const [messages, setMessages] = useState(() => {
@@ -67,6 +141,10 @@ export default function MobileChat() {
   const [editingMessage, setEditingMessage] = useState(null);
   const [isMembersSheetOpen, setIsMembersSheetOpen] = useState(false);
   const [members, setMembers] = useState([]);
+  const [onlinePresence, setOnlinePresence] = useState(() => ({
+    users: [{ id: currentUserId, name: displayName }],
+    count: 1
+  }));
 
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
@@ -108,7 +186,11 @@ export default function MobileChat() {
     if (pressVisualRef.current) clearTimeout(pressVisualRef.current);
     pressVisualRef.current = setTimeout(() => setPressingId(msg.id), 140);
     touchTimerRef.current = setTimeout(() => {
-      setSelectedMessage(msg);
+      setSelectedMessage({
+        ...msg,
+        isMine: checkIsMe(msg),
+        isMe: checkIsMe(msg)
+      });
       setIsActionSheetOpen(true);
       setPressingId(null);
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -151,25 +233,29 @@ export default function MobileChat() {
       .then((response) => {
         const data = Array.isArray(response) ? response : response?.messages;
         if (Array.isArray(data)) {
-          const mapped = data.map((m) => ({
-            id: m.id || String(m._id || Date.now()),
-            sender: m.user?.displayName || m.sender || m.userName || m.user_name || 'Membro',
-            userId: m.user_id || m.userId,
-            avatar: m.user?.profilePhoto || m.avatar || null,
-            role: m.user?.role || m.role || 'user',
-            text: m.content || m.text || m.message || '',
-            content: m.content || m.text || m.message || '',
-            time: formatMessageTime(m.time, m.created_at || m.timestamp),
-            timestamp: m.timestamp || m.created_at || '',
-            created_at: m.created_at || m.timestamp || null,
-            isMine: m.user_id === currentUserId || m.userId === currentUserId || m.sender === displayName,
-            image: m.image_url || m.image || null,
-            video: m.video_url || m.video || null,
-            file: m.file_url || m.file || null,
-            replyTo: m.replyTo || m.reply_to || null,
-            reactions: m.reactions || {},
-            isEdited: m.isEdited || m.is_edited || false
-          }));
+          const mapped = data.map((m) => {
+            const isMe = checkIsMe(m);
+            return {
+              id: m.id || String(m._id || Date.now()),
+              sender: m.user?.displayName || m.sender || m.userName || m.user_name || 'Membro',
+              userId: m.user_id || m.userId,
+              avatar: m.user?.profilePhoto || m.avatar || null,
+              role: m.user?.role || m.role || 'user',
+              text: m.content || m.text || m.message || '',
+              content: m.content || m.text || m.message || '',
+              time: formatMessageTime(m.time, m.created_at || m.timestamp),
+              timestamp: m.timestamp || m.created_at || '',
+              created_at: m.created_at || m.timestamp || null,
+              isMine: isMe,
+              isMe: isMe,
+              image: m.image_url || m.image || null,
+              video: m.video_url || m.video || null,
+              file: m.file_url || m.file || null,
+              replyTo: m.replyTo || m.reply_to || null,
+              reactions: m.reactions || {},
+              isEdited: m.isEdited || m.is_edited || false
+            };
+          });
           setMessages(mapped);
           try {
             localStorage.setItem(`chat_room_msgs_${currentRoomId}`, JSON.stringify(mapped.slice(-50)));
@@ -179,16 +265,88 @@ export default function MobileChat() {
       .catch((err) => {
         console.warn('Erro ao carregar mensagens da sala:', err.message);
       });
-  }, [currentRoomId, currentUserId, displayName]);
+  }, [currentRoomId, currentUserId, displayName, myId, myName, myUsername, myEmail]);
 
   useEffect(() => {
     if (!currentRoomId) return;
+
+    const joinPayload = {
+      roomId: String(currentRoomId),
+      room: String(currentRoomId),
+      user: {
+        id: currentUserId,
+        name: displayName,
+        email: myEmail
+      },
+      userId: currentUserId,
+      userName: displayName,
+      email: myEmail
+    };
+
+    const emitJoin = () => {
+      socket.emit('joinRoom', joinPayload);
+      socket.emit('join_room', joinPayload);
+      socket.emit('get_online_users');
+    };
+
     if (!socket.connected) {
       socket.connect();
     }
-    socket.emit('join_room', { room: String(currentRoomId), roomId: currentRoomId, userId: currentUserId });
+    emitJoin();
+    socket.on('connect', emitJoin);
+
+    const handlePresenceUpdated = (data) => {
+      if (!data) return;
+      if (String(data.roomId) === String(currentRoomId)) {
+        const users = Array.isArray(data.onlineUsers) ? data.onlineUsers : [];
+        const count = typeof data.onlineCount === 'number' ? data.onlineCount : users.length;
+        setOnlinePresence({
+          users,
+          count: Math.max(count, 1)
+        });
+      }
+    };
+
+    const handleOnlineUsersList = (usersList) => {
+      if (Array.isArray(usersList)) {
+        setOnlinePresence((prev) => {
+          const prevUserIds = new Set((prev.users || []).map((u) => String(u.id || u.userId || u)));
+          const updatedUsers = [...(prev.users || [])];
+          usersList.forEach((uid) => {
+            const idStr = String(uid);
+            if (!prevUserIds.has(idStr)) {
+              updatedUsers.push({ id: idStr, online: true });
+            }
+          });
+          return {
+            users: updatedUsers,
+            count: Math.max(prev.count, updatedUsers.length, 1)
+          };
+        });
+      }
+    };
+
+    const handleUserPresenceChanged = ({ userId, isOnline }) => {
+      if (!userId) return;
+      const uidStr = String(userId);
+      setOnlinePresence((prev) => {
+        let newUsers;
+        const currentList = prev.users || [];
+        if (isOnline) {
+          const exists = currentList.some((u) => String(u.id || u.userId || u) === uidStr);
+          newUsers = exists ? currentList : [...currentList, { id: uidStr, online: true }];
+        } else {
+          newUsers = currentList.filter((u) => String(u.id || u.userId || u) !== uidStr);
+        }
+        return {
+          users: newUsers,
+          count: Math.max(newUsers.length, 1)
+        };
+      });
+    };
 
     const handleNewMessage = (msg) => {
+      const isMe = checkIsMe(msg);
       setMessages((prev) => [
         ...prev,
         {
@@ -202,7 +360,8 @@ export default function MobileChat() {
           time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
           timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
           created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
-          isMine: msg.user_id === currentUserId || msg.userId === currentUserId || msg.sender === displayName,
+          isMine: isMe,
+          isMe: isMe,
           image: msg.image_url || msg.image || null,
           video: msg.video_url || msg.video || null,
           file: msg.file_url || msg.file || null,
@@ -265,8 +424,14 @@ export default function MobileChat() {
     socket.on('user_typing', handleUserTyping);
     socket.on('user_stop_typing', handleUserStopTyping);
     socket.on('message_edited', handleMessageEdited);
+    socket.on('roomPresenceUpdated', handlePresenceUpdated);
+    socket.on('online_users_list', handleOnlineUsersList);
+    socket.on('user_presence_changed', handleUserPresenceChanged);
 
     return () => {
+      socket.off('connect', emitJoin);
+      socket.emit('leaveRoom', { roomId: String(currentRoomId), userId: currentUserId });
+      socket.emit('leave_room', { room: String(currentRoomId), roomId: String(currentRoomId), userId: currentUserId });
       socket.off('receive_message', handleNewMessage);
       socket.off('chat_message', handleNewMessage);
       socket.off('message_deleted', handleDeleteMessage);
@@ -275,8 +440,11 @@ export default function MobileChat() {
       socket.off('user_typing', handleUserTyping);
       socket.off('user_stop_typing', handleUserStopTyping);
       socket.off('message_edited', handleMessageEdited);
+      socket.off('roomPresenceUpdated', handlePresenceUpdated);
+      socket.off('online_users_list', handleOnlineUsersList);
+      socket.off('user_presence_changed', handleUserPresenceChanged);
     };
-  }, [currentRoomId, currentUserId, displayName]);
+  }, [currentRoomId, currentUserId, displayName, myId, myName, myUsername, myEmail]);
 
   const handleInputChange = (e) => {
     const text = e.target.value;
@@ -568,6 +736,7 @@ export default function MobileChat() {
       timestamp: new Date().toISOString(),
       created_at: new Date().toISOString(),
       isMine: true,
+      isMe: true,
       isNew: true
     };
 
@@ -719,10 +888,51 @@ export default function MobileChat() {
     navigate('/directs', { state: { targetUser: target } });
   };
 
+  const onlineUserIds = useMemo(() => {
+    const set = new Set();
+    if (currentUserId) set.add(String(currentUserId));
+    if (myId) set.add(String(myId));
+    if (Array.isArray(onlinePresence.users)) {
+      onlinePresence.users.forEach((u) => {
+        const id = u?.id || u?.userId || (typeof u === 'string' ? u : null);
+        if (id) set.add(String(id));
+      });
+    }
+    return set;
+  }, [currentUserId, myId, onlinePresence.users]);
+
+  const enhancedMembers = useMemo(() => {
+    return members.map((m) => {
+      const memberId = String(m.id || m.userId || m.user_id || '');
+      const isSelf = Boolean(
+        (currentUserId && memberId === String(currentUserId)) ||
+        (myId && memberId === String(myId)) ||
+        (myEmail && m.email && m.email.toLowerCase() === myEmail) ||
+        (myUsername && m.username && m.username.toLowerCase() === myUsername)
+      );
+      const isOnline = isSelf || m.isOnline || m.online || onlineUserIds.has(memberId);
+      return {
+        ...m,
+        isSelf,
+        isOnline: Boolean(isOnline)
+      };
+    });
+  }, [members, currentUserId, myId, myEmail, myUsername, onlineUserIds]);
+
+  const activeOnlineCount = useMemo(() => {
+    const memberOnlineCount = enhancedMembers.filter((m) => m.isOnline).length;
+    return Math.max(onlinePresence.count || 0, memberOnlineCount, 1);
+  }, [onlinePresence.count, enhancedMembers]);
+
   const currentUserRole =
-    roomState?.created_by === currentUserId
+    (myId && (roomState?.owner_id === myId || roomState?.created_by === myId)) ||
+    (currentUserId && (roomState?.owner_id === currentUserId || roomState?.created_by === currentUserId))
       ? 'owner'
-      : members.find((m) => m.id === currentUserId || m.user_id === currentUserId)?.role || 'user';
+      : enhancedMembers.find(
+          (m) =>
+            (myId && (m.id === myId || m.user_id === myId)) ||
+            (currentUserId && (m.id === currentUserId || m.user_id === currentUserId))
+        )?.role || 'user';
 
   const canModerate = currentUserRole === 'owner' || currentUserRole === 'moderator' || currentUserRole === 'admin';
 
@@ -741,9 +951,17 @@ export default function MobileChat() {
           <div>
             <h2 className="text-sm font-bold leading-tight">#{roomTitle}</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
-              <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                Ao Vivo
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]" />
+              </span>
+              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 tracking-tight flex items-center gap-1">
+                <span>{activeOnlineCount} {activeOnlineCount === 1 ? 'online' : 'onlines'}</span>
+                {enhancedMembers.length > 0 && (
+                  <span className="text-slate-400 dark:text-slate-500 font-normal">
+                    de {enhancedMembers.length}
+                  </span>
+                )}
               </span>
             </div>
           </div>
@@ -752,11 +970,15 @@ export default function MobileChat() {
         <button
           type="button"
           onClick={() => setIsMembersSheetOpen(true)}
-          className="btn-secondary-glossy !w-10 !h-10 min-h-[44px] !p-0 rounded-full inline-flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-sky-600 cursor-pointer"
+          className="btn-secondary-glossy !h-10 min-h-[44px] !px-3 rounded-full inline-flex items-center gap-1.5 text-slate-700 dark:text-slate-200 hover:text-sky-600 cursor-pointer shadow-xs"
           title="Ver membros da sala"
           aria-label="Ver membros da sala"
         >
-          <Users className="w-4 h-4" />
+          <Users className="w-4 h-4 text-sky-500" />
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+            {activeOnlineCount}
+          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.9)]" />
         </button>
       </header>
 
@@ -852,8 +1074,9 @@ export default function MobileChat() {
             (m) => m.id === msg.userId || m.user_id === msg.userId || m.name === msg.sender
           );
           const authorRole = authorMember?.role || msg.role || 'user';
+          const isMe = checkIsMe(msg);
 
-          if (msg.isMine) {
+          if (isMe) {
             return (
               <React.Fragment key={msg.id || index}>
                 {dateDividerElement}
@@ -1303,8 +1526,10 @@ export default function MobileChat() {
         isOpen={isMembersSheetOpen}
         onClose={() => setIsMembersSheetOpen(false)}
         roomId={roomTitle}
-        members={members}
+        members={enhancedMembers}
+        onlineCount={activeOnlineCount}
         currentUserId={currentUserId}
+        currentUserRole={currentUserRole}
       />
 
       <MessageActionsSheet

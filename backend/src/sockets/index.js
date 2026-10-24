@@ -33,8 +33,24 @@ const initSockets = (server) => {
       handleJoinRoom(io, socket, payload);
     });
 
+    socket.on('join_room', (payload) => {
+      const roomId = payload?.roomId || payload?.room;
+      const user = payload?.user || {
+        id: payload?.userId || socket.user?.id,
+        name: payload?.userName || payload?.displayName || socket.user?.displayName || 'Usuário',
+        email: payload?.email || socket.user?.email
+      };
+      handleJoinRoom(io, socket, { roomId, user });
+    });
+
     socket.on('leaveRoom', (payload) => {
       handleLeaveRoom(io, socket, payload);
+    });
+
+    socket.on('leave_room', (payload) => {
+      const roomId = payload?.roomId || payload?.room;
+      const userId = payload?.userId || socket.user?.id;
+      handleLeaveRoom(io, socket, { roomId, userId });
     });
 
     registerChatHandlers(io, socket);

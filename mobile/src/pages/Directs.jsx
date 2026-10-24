@@ -184,7 +184,44 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     }
   });
   const [selectedConv, setSelectedConv] = useState(null);
+  const [onlineUserIds, setOnlineUserIds] = useState(() => new Set());
+  const [roomOnlineUserIds, setRoomOnlineUserIds] = useState(() => new Set());
 
+  const isConversationOnline = (conv) => {
+    if (!conv) return false;
+    const nameLower = String(conv.name || '').toLowerCase();
+    const usernameLower = String(conv.username || '').toLowerCase();
+    if (
+      usernameLower === 'suporte' ||
+      nameLower.includes('suporte') ||
+      usernameLower === 'bot'
+    ) {
+      return true;
+    }
+
+    if (selectedConv && String(conv.id) === String(selectedConv.id) && roomOnlineUserIds.size > 0) {
+      return true;
+    }
+
+    const partnerId = String(conv.partnerId || conv.partner_id || conv.userId || conv.user_id || '').trim();
+    if (partnerId && onlineUserIds.has(partnerId)) {
+      return true;
+    }
+
+    if (conv.username && onlineUserIds.has(String(conv.username))) {
+      return true;
+    }
+
+    if (conv.id) {
+      const parts = String(conv.id).replace('privado-', '').split('-');
+      const partnerFromId = parts.find((p) => p && p !== currentUserId && p !== myId);
+      if (partnerFromId && onlineUserIds.has(String(partnerFromId))) {
+        return true;
+      }
+    }
+
+    return Boolean(conv.online || conv.isOnline);
+  };
   const [messages, setMessages] = useState([]);
   const [isE2EEActive, setIsE2EEActive] = useState(true);
   const [inputText, setInputText] = useState('');
@@ -445,9 +482,115 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   }, []);
 
   useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    const handleUserPresenceChanged = ({ userId, isOnline }) => {
+      if (!userId) return;
+      const uidStr = String(userId);
+      setOnlineUserIds((prev) => {
+        const next = new Set(prev);
+        if (isOnline) {
+          next.add(uidStr);
+        } else {
+          next.delete(uidStr);
+        }
+        return next;
+      });
+
+      if (uidStr === currentUserId || uidStr === myId) return;
+
+      setConversations((prev) =>
+        prev.map((c) => {
+          const parts = c.id ? String(c.id).replace('privado-', '').split('-') : [];
+          const partnerFromId = parts.find((p) => p !== currentUserId && p !== myId);
+          const isMatch =
+            String(c.partnerId) === uidStr ||
+            String(partnerFromId) === uidStr ||
+            String(c.username) === uidStr;
+          if (isMatch && c.online !== isOnline) {
+            return { ...c, online: isOnline };
+          }
+          return c;
+        })
+      );
+
+      setSelectedConv((prev) => {
+        if (!prev) return prev;
+        const parts = prev.id ? String(prev.id).replace('privado-', '').split('-') : [];
+        const partnerFromId = parts.find((p) => p !== currentUserId && p !== myId);
+        const isMatch =
+          String(prev.partnerId) === uidStr ||
+          String(partnerFromId) === uidStr ||
+          String(prev.username) === uidStr;
+        if (isMatch && prev.online !== isOnline) {
+          return { ...prev, online: isOnline };
+        }
+        return prev;
+      });
+    };
+
+    const handleOnlineUsersList = (usersList) => {
+      if (!Array.isArray(usersList)) return;
+      const onlineSet = new Set(usersList.map((u) => String(u)));
+      setOnlineUserIds(onlineSet);
+
+      setConversations((prev) =>
+        prev.map((c) => {
+          const nameLower = String(c.name || '').toLowerCase();
+          const usernameLower = String(c.username || '').toLowerCase();
+          if (usernameLower === 'suporte' || nameLower.includes('suporte')) {
+            return { ...c, online: true };
+          }
+          const parts = c.id ? String(c.id).replace('privado-', '').split('-') : [];
+          const partnerFromId = parts.find((p) => p !== currentUserId && p !== myId);
+          const isOnline =
+            (c.partnerId && onlineSet.has(String(c.partnerId))) ||
+            (partnerFromId && onlineSet.has(String(partnerFromId))) ||
+            (c.username && onlineSet.has(String(c.username)));
+          return { ...c, online: Boolean(isOnline) };
+        })
+      );
+
+      setSelectedConv((prev) => {
+        if (!prev) return prev;
+        const nameLower = String(prev.name || '').toLowerCase();
+        const usernameLower = String(prev.username || '').toLowerCase();
+        if (usernameLower === 'suporte' || nameLower.includes('suporte')) {
+          return { ...prev, online: true };
+        }
+        const parts = prev.id ? String(prev.id).replace('privado-', '').split('-') : [];
+        const partnerFromId = parts.find((p) => p !== currentUserId && p !== myId);
+        const isOnline =
+          (prev.partnerId && onlineSet.has(String(prev.partnerId))) ||
+          (partnerFromId && onlineSet.has(String(partnerFromId))) ||
+          (prev.username && onlineSet.has(String(prev.username)));
+        return { ...prev, online: Boolean(isOnline) };
+      });
+    };
+
+    const handleConnect = () => {
+      socket.emit('get_online_users');
+    };
+
+    socket.on('user_presence_changed', handleUserPresenceChanged);
+    socket.on('online_users_list', handleOnlineUsersList);
+    socket.on('connect', handleConnect);
+    socket.emit('get_online_users');
+
+    return () => {
+      socket.off('user_presence_changed', handleUserPresenceChanged);
+      socket.off('online_users_list', handleOnlineUsersList);
+      socket.off('connect', handleConnect);
+    };
+  }, [currentUserId, myId]);
+
+  useEffect(() => {
     if (!selectedConv?.id) {
       setMessages([]);
       setPartnerTyping(null);
+      setRoomOnlineUserIds(new Set());
       return;
     }
 
@@ -458,15 +601,39 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
       socket.connect();
     }
 
-    socket.emit('joinRoom', {
+    const joinPayload = {
       roomId: String(convId),
-      user: { id: currentUserId, name: displayName }
-    });
+      room: String(convId),
+      user: { id: currentUserId, name: displayName, email: myEmail },
+      userId: currentUserId,
+      userName: displayName,
+      email: myEmail
+    };
 
-    socket.emit('direct_read_receipt', {
-      conversationId: convId,
-      userId: currentUserId
-    });
+    const emitJoin = () => {
+      socket.emit('joinRoom', joinPayload);
+      socket.emit('join_room', joinPayload);
+      socket.emit('direct_read_receipt', {
+        conversationId: convId,
+        userId: currentUserId
+      });
+      socket.emit('get_online_users');
+    };
+
+    emitJoin();
+    socket.on('connect', emitJoin);
+
+    const handlePresenceUpdated = (data) => {
+      if (!data || String(data.roomId) !== String(convId)) return;
+      const otherUsers = (Array.isArray(data.onlineUsers) ? data.onlineUsers : []).filter(
+        (u) => String(u.id || u.userId) !== String(currentUserId) && String(u.id || u.userId) !== String(myId)
+      );
+      setRoomOnlineUserIds(new Set(otherUsers.map((u) => String(u.id || u.userId))));
+      if (otherUsers.length > 0) {
+        setSelectedConv((prev) => (prev ? { ...prev, online: true } : prev));
+      }
+    };
+    socket.on('roomPresenceUpdated', handlePresenceUpdated);
 
     getConversationCrypto(currentUserId, partnerId)
       .then((entry) => {
@@ -603,14 +770,18 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     socket.on('delete_message', handleDeleteMessage);
 
     return () => {
+      setRoomOnlineUserIds(new Set());
+      socket.off('connect', emitJoin);
       socket.emit('leaveRoom', { roomId: String(convId), userId: currentUserId });
+      socket.emit('leave_room', { roomId: String(convId), room: String(convId), userId: currentUserId });
+      socket.off('roomPresenceUpdated', handlePresenceUpdated);
       socket.off('receive_message', handleReceiveMessage);
       socket.off('typing_direct', handleTypingDirect);
       socket.off('stop_typing_direct', handleStopTypingDirect);
       socket.off('direct_read_receipt', handleReadReceipt);
       socket.off('delete_message', handleDeleteMessage);
     };
-  }, [selectedConv?.id, currentUserId, displayName]);
+  }, [selectedConv?.id, currentUserId, displayName, myId, myEmail]);
 
   useEffect(() => {
     scrollToBottom();
@@ -918,6 +1089,20 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
     );
   }, [conversations, searchTerm]);
 
+  const onlineConversationsCount = useMemo(() => {
+    return filteredConversations.filter((c) => isConversationOnline(c)).length;
+  }, [filteredConversations, onlineUserIds, roomOnlineUserIds]);
+
+  const sortedAvailableUsers = useMemo(() => {
+    return [...availableUsers].sort((a, b) => {
+      const aOnline = isConversationOnline({ ...a, partnerId: a.id });
+      const bOnline = isConversationOnline({ ...b, partnerId: b.id });
+      if (aOnline && !bOnline) return -1;
+      if (!aOnline && bOnline) return 1;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  }, [availableUsers, onlineUserIds]);
+
   const formatLastMessage = (msg) => {
     if (!msg) return 'Conversa iniciada';
     if (typeof msg === 'string' && msg.startsWith('e2ee:v1:')) {
@@ -927,6 +1112,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
   };
 
   if (selectedConv) {
+    const isPartnerOnline = isConversationOnline(selectedConv);
+
     return (
       <div className="fixed inset-0 z-40 max-w-md mx-auto bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col h-[100dvh] overflow-hidden">
         <header className="shrink-0 pt-[calc(env(safe-area-inset-top,0px)+8px)] px-3 pb-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between z-30">
@@ -952,8 +1139,11 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                 (selectedConv.name || 'U').charAt(0).toUpperCase()
               )}
               <span
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 ${selectedConv.online ? 'bg-emerald-500' : 'bg-slate-400'
-                  }`}
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 transition-colors ${
+                  isPartnerOnline
+                    ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]'
+                    : 'bg-slate-300 dark:bg-slate-600'
+                }`}
               />
             </div>
 
@@ -966,9 +1156,29 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                   <ShieldCheck className="w-4 h-4 text-sky-500 shrink-0" title="Criptografia Ponta a Ponta Ativa" />
                 ) : null}
               </div>
-              <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                {partnerTyping ? 'a escrever...' : (selectedConv.online ? 'Online' : 'Visto recentemente')}
-              </div>
+              {partnerTyping ? (
+                <div className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 text-[11px] font-semibold tracking-wide">
+                  <span className="flex gap-0.5 items-center">
+                    <span className="anim-typing-dot w-1 h-1 rounded-full bg-sky-500" />
+                    <span className="anim-typing-dot w-1 h-1 rounded-full bg-sky-500" />
+                    <span className="anim-typing-dot w-1 h-1 rounded-full bg-sky-500" />
+                  </span>
+                  <span>digitando...</span>
+                </div>
+              ) : isPartnerOnline ? (
+                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold tracking-wide">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.9)]" />
+                  </span>
+                  <span>Online agora</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-medium tracking-wide">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                  <span>Visto recentemente</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1485,6 +1695,21 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
           </button>
         </div>
 
+        <div className="flex items-center justify-between px-1 mb-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            Conversas Recentes
+          </span>
+          {onlineConversationsCount > 0 && (
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.9)]" />
+              </span>
+              <span>{onlineConversationsCount} {onlineConversationsCount === 1 ? 'online' : 'onlines'}</span>
+            </div>
+          )}
+        </div>
+
         <div className="space-y-2">
           {loading && filteredConversations.length === 0 ? (
             <div className="text-center py-16 text-sm text-slate-400 flex flex-col items-center gap-2">
@@ -1504,51 +1729,60 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
               </p>
             </div>
           ) : (
-            filteredConversations.map((conv, convIndex) => (
-              <div
-                key={conv.id}
-                onClick={() => setSelectedConv(conv)}
-                style={{ '--index': Math.min(convIndex, 12) }}
-                className="anim-card-stagger skeuo-card p-3 rounded-2xl cursor-pointer active:scale-[0.98] transition-[transform,box-shadow] duration-150 flex items-center justify-between shadow-xs hover:shadow-md"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative shrink-0 w-11 h-11 rounded-full border border-sky-400/80 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_2px_5px_rgba(14,165,233,0.3)]">
-                    {conv.avatar ? (
-                      <img src={conv.avatar} alt={conv.name} className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                      (conv.name || 'U').charAt(0).toUpperCase()
-                    )}
-                    <span
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 ${conv.online ? 'bg-emerald-500' : 'bg-slate-400'
+            filteredConversations.map((conv, convIndex) => {
+              const isConvOnline = isConversationOnline(conv);
+              return (
+                <div
+                  key={conv.id}
+                  onClick={() => setSelectedConv(conv)}
+                  style={{ '--index': Math.min(convIndex, 12) }}
+                  className="anim-card-stagger skeuo-card p-3 rounded-2xl cursor-pointer active:scale-[0.98] transition-[transform,box-shadow] duration-150 flex items-center justify-between shadow-xs hover:shadow-md"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="relative shrink-0 w-11 h-11 rounded-full border border-sky-400/80 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-[inset_0_1px_2px_rgba(255,255,255,0.7),0_2px_5px_rgba(14,165,233,0.3)]">
+                      {conv.avatar ? (
+                        <img src={conv.avatar} alt={conv.name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        (conv.name || 'U').charAt(0).toUpperCase()
+                      )}
+                      <span
+                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full ring-2 ring-white dark:ring-slate-900 transition-colors ${
+                          isConvOnline
+                            ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]'
+                            : 'bg-slate-300 dark:bg-slate-600'
                         }`}
-                    />
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                        {conv.name}
-                      </h4>
-                      <ShieldCheck className="w-3.5 h-3.5 text-sky-500 shrink-0" title="Criptografia ponta a ponta ativa" />
+                      />
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                      {formatLastMessage(conv.lastMessage)}
-                    </p>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                          {conv.name}
+                        </h4>
+                        {isConvOnline && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.8)]" title="Online" />
+                        )}
+                        <ShieldCheck className="w-3.5 h-3.5 text-sky-500 shrink-0" title="Criptografia ponta a ponta ativa" />
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                        {formatLastMessage(conv.lastMessage)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end shrink-0 gap-1 pl-2">
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      {formatConversationTime(conv.time) || conv.time || 'Agora'}
+                    </span>
+                    {conv.unread > 0 && (
+                      <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center border border-white">
+                        {conv.unread}
+                      </span>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex flex-col items-end shrink-0 gap-1 pl-2">
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    {formatConversationTime(conv.time) || conv.time || 'Agora'}
-                  </span>
-                  {conv.unread > 0 && (
-                    <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center border border-white">
-                      {conv.unread}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
@@ -1583,36 +1817,48 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                 {userSearchQuery ? 'Nenhum usuário encontrado.' : 'Nenhum contato disponível.'}
               </div>
             ) : (
-              availableUsers.map((user) => (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => handleSelectUser(user)}
-                  disabled={Boolean(startingConvId)}
-                  className="w-full p-2.5 rounded-2xl skeuo-card flex items-center justify-between gap-3 text-left active:scale-[0.98] transition-transform cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative shrink-0 w-10 h-10 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                      {user.avatar ? (
-                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        (user.name || 'U').charAt(0).toUpperCase()
-                      )}
-                      <span
-                        className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-1.5 ring-white dark:ring-slate-900 ${user.isOnline ? 'bg-emerald-500' : 'bg-slate-400'
+              sortedAvailableUsers.map((user) => {
+                const isUserOnline = isConversationOnline({ ...user, partnerId: user.id });
+                return (
+                  <button
+                    key={user.id}
+                    type="button"
+                    onClick={() => handleSelectUser(user)}
+                    disabled={Boolean(startingConvId)}
+                    className="w-full p-2.5 rounded-2xl skeuo-card flex items-center justify-between gap-3 text-left active:scale-[0.98] transition-transform cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative shrink-0 w-10 h-10 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                        {user.avatar ? (
+                          <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                          (user.name || 'U').charAt(0).toUpperCase()
+                        )}
+                        <span
+                          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-1.5 ring-white dark:ring-slate-900 transition-colors ${
+                            isUserOnline
+                              ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.9)]'
+                              : 'bg-slate-300 dark:bg-slate-600'
                           }`}
-                      />
-                    </div>
+                        />
+                      </div>
 
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                        {user.name}
-                      </div>
-                      <div className="text-[11px] text-slate-400 truncate">
-                        {user.email}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                            {user.name}
+                          </span>
+                          {isUserOnline && (
+                            <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                              Online
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-400 truncate">
+                          {user.email}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
                   {startingConvId === user.id ? (
                     <Loader2 className="w-4 h-4 animate-spin text-sky-500 shrink-0 mr-2" />
@@ -1620,7 +1866,8 @@ export default function MobileDirects({ onOpenNotifications, unreadCount = 0, on
                     <UserCheck className="w-4 h-4 text-sky-500 shrink-0 mr-2" />
                   )}
                 </button>
-              ))
+              );
+            })
             )}
           </div>
         </div>

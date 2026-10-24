@@ -200,7 +200,7 @@ export default function MessageActionsSheet({
               <span>Responder / Citar</span>
             </button>
 
-            {message?.isMine && (
+            {(message?.isMine || message?.isMe) && (
               <button
                 type="button"
                 onClick={handleEditClick}
@@ -231,7 +231,7 @@ export default function MessageActionsSheet({
               <span>{isFavorite ? 'Remover dos Favoritos' : 'Favoritar Mensagem'}</span>
             </button>
 
-            {!message?.isMine && (
+            {!(message?.isMine || message?.isMe) && (
               <button
                 type="button"
                 onClick={() => setReporting(true)}
@@ -242,7 +242,7 @@ export default function MessageActionsSheet({
               </button>
             )}
 
-            {message?.isMine && (
+            {(message?.isMine || message?.isMe) && (
               <button
                 type="button"
                 onClick={handleDeleteClick}

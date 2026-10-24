@@ -33,6 +33,26 @@ O frontend do **SkyRipple** é composto por 18 telas e visões concebidas sob a 
 
 ---
 
+## 📱 Catálogo de Telas (Mobile Android)
+
+O aplicativo móvel nativo (`mobile/`) dispõe de 11 visões otimizadas para toque, barra de status integrada e navegação inferior (`BottomNavigation`):
+
+| Tela | Rota | Componente | Descrição & Experiência Mobile |
+| :--- | :--- | :--- | :--- |
+| **Login** | `/login` | `Login.jsx` | Autenticação por e-mail/senha e login social com Google via Deep Linking. |
+| **Cadastro** | `/register` | `Register.jsx` | Cadastro com validação de código OTP e passos otimizados para telas menores. |
+| **Recuperação de Senha** | `/forgot-password` | `ForgotPassword.jsx` | Validação de código numérico de 8 dígitos e definição de nova senha. |
+| **Lobby de Salas** | `/rooms` | `Rooms.jsx` | Exploração tátil de salas temáticas com contadores de presença em tempo real. |
+| **Sala de Chat** | `/chat/:id` | `Chat.jsx` | Chat em tempo real com envio de anexos, gravação de áudio e header translúcido. |
+| **Mensagens Diretas** | `/directs` | `Directs.jsx` | Lista de conversas privadas 1x1 com proteção E2EE e busca de contatos. |
+| **Conversa Direta** | `/direct/:id` | `Directs.jsx` | Bate-papo 1x1 cifrado, identificação precisa do remetente (`isMe`) e horário local. |
+| **Favoritos** | `/favorites` | `Favorites.jsx` | Acesso rápido às salas e conversas favoritas do usuário. |
+| **Perfil** | `/profile` | `Profile.jsx` | Gerenciamento de foto de perfil, avatar dinâmico e biografia. |
+| **Configurações** | `/settings` | `Settings.jsx` | Preferências de exibição e alternância instantânea entre Modo Claro e Escuro. |
+| **Feedback & Suporte** | `/feedback`, `/support` | `Feedback.jsx`, `Suporte.jsx` | FAQ interativo e canal direto de relatos com suporte a rolagem fluida. |
+
+---
+
 ## 🎯 Domínios Operacionais das Telas
 
 <CardGroup cols={3}>
