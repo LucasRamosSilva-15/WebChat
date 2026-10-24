@@ -50,37 +50,42 @@ export default function MobileChat() {
       return null;
     }
   })();
+  const user = currentUser;
 
-  const myId = String(
-    currentUser?.id ||
-    currentUser?.userId ||
-    currentUser?.uuid ||
-    currentUser?.user_metadata?.sub ||
-    currentUser?.sub ||
+  const currentUserId = String(
+    user?.id ||
+    user?.userId ||
+    user?.uuid ||
+    user?.user_metadata?.sub ||
+    user?.sub ||
     localStorage.getItem('chat_uniqueUserId') ||
     ''
   ).trim();
 
-  const myName = String(
-    currentUser?.name ||
-    currentUser?.displayName ||
-    currentUser?.user_metadata?.full_name ||
-    currentUser?.user_metadata?.name ||
+  const currentUserName = String(
+    user?.displayName ||
+    user?.name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
     localStorage.getItem('chat_displayName') ||
     ''
   ).trim().toLowerCase();
 
-  const myUsername = String(
-    currentUser?.username ||
-    currentUser?.user_metadata?.user_name ||
-    currentUser?.handle ||
-    (currentUser?.email ? currentUser.email.split('@')[0] : '')
+  const currentUsername = String(
+    user?.username ||
+    user?.user_metadata?.user_name ||
+    user?.handle ||
+    (user?.email ? user.email.split('@')[0] : '')
   ).trim().toLowerCase();
 
-  const myEmail = String(currentUser?.email || '').trim().toLowerCase();
+  const currentUserEmail = String(user?.email || '').trim().toLowerCase();
 
-  const currentUserId = myId || localStorage.getItem('chat_uniqueUserId') || 'guest';
-  const displayName = currentUser?.displayName || currentUser?.name || localStorage.getItem('chat_displayName') || 'Usuário';
+  const myId = currentUserId;
+  const myName = currentUserName;
+  const myUsername = currentUsername;
+  const myEmail = currentUserEmail;
+
+  const displayName = user?.displayName || user?.name || localStorage.getItem('chat_displayName') || 'Usuário';
 
   const checkIsMe = (msg) => {
     if (!msg) return false;
@@ -88,32 +93,31 @@ export default function MobileChat() {
       return true;
     }
 
-    const senderId = String(
-      msg.sender_id ||
-      msg.senderId ||
-      msg.sender_uuid ||
-      msg.user_id ||
+    const msgSenderId = String(
       msg.userId ||
-      (typeof msg.sender === 'string' ? msg.sender : msg.sender?.id) ||
+      msg.user_id ||
+      msg.senderId ||
+      msg.sender_id ||
+      msg.sender_uuid ||
+      (typeof msg.sender === 'object' ? msg.sender?.id : '') ||
       (typeof msg.user === 'object' ? msg.user?.id : '') ||
       ''
     ).trim();
 
-    const senderName = String(
-      (typeof msg.sender === 'object' ? (msg.sender?.displayName || msg.sender?.name) : msg.sender_name) ||
-      msg.sender ||
+    const msgSenderName = String(
+      (typeof msg.sender === 'object' ? (msg.sender?.name || msg.sender?.displayName) : msg.sender) ||
+      (typeof msg.user === 'object' ? (msg.user?.name || msg.user?.displayName) : '') ||
+      msg.sender_name ||
       msg.userName ||
       msg.user_name ||
-      (typeof msg.user === 'object' ? (msg.user?.displayName || msg.user?.name) : '') ||
       ''
     ).trim().toLowerCase();
 
     return Boolean(
-      (myId && senderId && myId === senderId) ||
-      (currentUserId && senderId && currentUserId === senderId) ||
-      (myUsername && senderName && myUsername === senderName) ||
-      (myName && senderName && myName === senderName) ||
-      (myEmail && senderName && senderName.includes(myEmail)) ||
+      (currentUserId && msgSenderId && currentUserId === msgSenderId) ||
+      (currentUserName && msgSenderName && currentUserName === msgSenderName) ||
+      (currentUsername && msgSenderName && currentUsername === msgSenderName) ||
+      (currentUserEmail && msgSenderName && msgSenderName.includes(currentUserEmail)) ||
       msg.is_outgoing === true ||
       msg.outgoing === true
     );
@@ -347,30 +351,60 @@ export default function MobileChat() {
 
     const handleNewMessage = (msg) => {
       const isMe = checkIsMe(msg);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: msg.id || String(Date.now()),
-          sender: msg.user?.displayName || msg.sender || msg.userName || 'Membro',
-          userId: msg.user_id || msg.userId,
-          avatar: msg.user?.profilePhoto || msg.avatar || null,
-          role: msg.user?.role || msg.role || 'user',
-          text: msg.content || msg.text || msg.message || '',
-          content: msg.content || msg.text || msg.message || '',
-          time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
-          timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
-          created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
-          isMine: isMe,
-          isMe: isMe,
-          image: msg.image_url || msg.image || null,
-          video: msg.video_url || msg.video || null,
-          file: msg.file_url || msg.file || null,
-          replyTo: msg.replyTo || msg.reply_to || null,
-          reactions: msg.reactions || {},
-          isEdited: msg.isEdited || false,
-          isNew: true
+      setMessages((prev) => {
+        if (msg.id && prev.some((m) => m.id === msg.id)) return prev;
+
+        if (isMe) {
+          const tempIdx = prev.findIndex(
+            (m) =>
+              (m.isMine || m.isMe) &&
+              (m.id === msg.messageId ||
+                m.id === msg.tempId ||
+                (m.content === (msg.content || msg.text || msg.message) &&
+                  Date.now() - new Date(m.created_at || 0).getTime() < 15000))
+          );
+          if (tempIdx !== -1) {
+            const updated = [...prev];
+            updated[tempIdx] = {
+              ...updated[tempIdx],
+              ...msg,
+              id: msg.id || updated[tempIdx].id,
+              userId: msg.user_id || msg.userId || updated[tempIdx].userId,
+              user_id: msg.user_id || msg.userId || updated[tempIdx].user_id,
+              isMine: true,
+              isMe: true,
+              isNew: false
+            };
+            return updated;
+          }
         }
-      ]);
+
+        return [
+          ...prev,
+          {
+            id: msg.id || String(Date.now()),
+            sender: msg.user?.displayName || msg.sender || msg.userName || msg.user_name || (isMe ? displayName : 'Membro'),
+            userId: msg.user_id || msg.userId,
+            user_id: msg.user_id || msg.userId,
+            avatar: msg.user?.profilePhoto || msg.avatar || null,
+            role: msg.user?.role || msg.role || 'user',
+            text: msg.content || msg.text || msg.message || '',
+            content: msg.content || msg.text || msg.message || '',
+            time: formatMessageTime(msg.time, msg.created_at || msg.timestamp),
+            timestamp: msg.timestamp || msg.created_at || new Date().toISOString(),
+            created_at: msg.created_at || msg.timestamp || new Date().toISOString(),
+            isMine: isMe,
+            isMe: isMe,
+            image: msg.image_url || msg.image || null,
+            video: msg.video_url || msg.video || null,
+            file: msg.file_url || msg.file || null,
+            replyTo: msg.replyTo || msg.reply_to || null,
+            reactions: msg.reactions || {},
+            isEdited: msg.isEdited || false,
+            isNew: true
+          }
+        ];
+      });
     };
 
     const handleDeleteMessage = ({ messageId }) => {
@@ -718,7 +752,18 @@ export default function MobileChat() {
       room: String(currentRoomId),
       roomId: currentRoomId,
       userId: currentUserId,
+      user_id: currentUserId,
+      senderId: currentUserId,
       sender: displayName,
+      userName: displayName,
+      sender_name: displayName,
+      author: displayName,
+      user: {
+        id: currentUserId,
+        displayName: displayName,
+        name: displayName,
+        email: currentUserEmail
+      },
       text: contentText,
       content: contentText,
       image: imageToSend,
@@ -737,6 +782,8 @@ export default function MobileChat() {
       created_at: new Date().toISOString(),
       isMine: true,
       isMe: true,
+      is_outgoing: true,
+      outgoing: true,
       isNew: true
     };
 
@@ -1074,7 +1121,38 @@ export default function MobileChat() {
             (m) => m.id === msg.userId || m.user_id === msg.userId || m.name === msg.sender
           );
           const authorRole = authorMember?.role || msg.role || 'user';
-          const isMe = checkIsMe(msg);
+
+          const msgSenderId = String(
+            msg.userId || 
+            msg.user_id || 
+            msg.senderId || 
+            msg.sender_id || 
+            msg.sender_uuid || 
+            (typeof msg.sender === 'object' ? msg.sender?.id : '') || 
+            (typeof msg.user === 'object' ? msg.user?.id : '') || 
+            ''
+          ).trim();
+
+          const msgSenderName = String(
+            (typeof msg.sender === 'object' ? (msg.sender?.name || msg.sender?.displayName) : msg.sender) || 
+            (typeof msg.user === 'object' ? (msg.user?.name || msg.user?.displayName) : '') || 
+            msg.sender_name || 
+            msg.userName || 
+            msg.user_name || 
+            ''
+          ).trim().toLowerCase();
+
+          // A mensagem é do próprio utilizador se o ID ou o nome/username coincidirem:
+          const isMe = Boolean(
+            msg.isMine === true ||
+            msg.isMe === true ||
+            (currentUserId && msgSenderId && currentUserId === msgSenderId) ||
+            (currentUserName && msgSenderName && currentUserName === msgSenderName) ||
+            (currentUsername && msgSenderName && currentUsername === msgSenderName) ||
+            (currentUserEmail && msgSenderName && msgSenderName.includes(currentUserEmail)) ||
+            msg.is_outgoing === true ||
+            msg.outgoing === true
+          );
 
           if (isMe) {
             return (
@@ -1087,85 +1165,90 @@ export default function MobileChat() {
                   onTouchStart={(e) => handleTouchStart(e, msg)}
                   onTouchEnd={handleTouchEnd}
                   onTouchMove={handleTouchMove}
-                  className={`flex flex-col items-end max-w-[85%] ml-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
+                  className={`flex justify-end w-full mb-3 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
                 >
-                  <div className="bubble-lift bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_3px_8px_rgba(14,165,233,0.3),inset_0_1px_0_rgba(255,255,255,0.45)] border border-sky-400/70 rounded-3xl rounded-tr-md px-4 py-2 text-sm leading-relaxed relative break-words">
-                    {msg.replyTo && (
-                      <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-white/20 border-l-3 border-white text-xs text-sky-50">
-                        <div className="font-bold text-[10px] opacity-90">{msg.replyTo.sender}</div>
-                        <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
+                  <div className="flex flex-col items-end max-w-[85%]">
+                    <div className="bubble-lift bg-sky-500 text-white rounded-2xl rounded-br-xs shadow-[0_4px_14px_rgba(14,165,233,0.35)] px-4 py-2 text-sm leading-relaxed relative break-words">
+                      {msg.replyTo && (
+                        <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-white/20 border-l-3 border-white text-xs text-sky-50">
+                          <div className="font-bold text-[10px] opacity-90">{msg.replyTo.sender}</div>
+                          <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
+                        </div>
+                      )}
+
+                      {msg.image && (
+                        <img
+                          src={msg.image}
+                          alt="Upload"
+                          loading="lazy"
+                          decoding="async"
+                          className="rounded-xl max-h-56 w-full object-cover mb-1.5 border border-white/20"
+                        />
+                      )}
+
+                      {msg.video && (
+                        <video
+                          src={msg.video}
+                          controls
+                          playsInline
+                          className="rounded-xl max-h-56 w-full object-cover mb-1.5 border border-white/20"
+                        />
+                      )}
+
+                      {msg.file && (
+                        <a
+                          href={typeof msg.file === 'string' ? msg.file : msg.file.url}
+                          download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-98 transition-all text-white"
+                        >
+                          <FileText className="w-5 h-5 shrink-0" />
+                          <div className="min-w-0 text-left">
+                            <div className="text-xs font-semibold truncate">
+                              {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
+                            </div>
+                            {typeof msg.file === 'object' && msg.file.size && (
+                              <div className="text-[10px] opacity-80">{msg.file.size}</div>
+                            )}
+                          </div>
+                        </a>
+                      )}
+
+                      {msg.content || msg.text ? (
+                        <span>{msg.content || msg.text}</span>
+                      ) : null}
+
+                      <div className="flex items-center justify-end gap-1 mt-1 text-[10px] text-sky-100 font-medium select-none">
+                        <span
+                          title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
+                          className="text-[10px] text-sky-100 font-medium tracking-tight"
+                        >
+                          {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
+                        </span>
+                        {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
+                        <CheckCheck className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                      </div>
+                    </div>
+
+                    {reactionEntries.length > 0 && (
+                      <div className="flex items-center gap-1 mt-1 mr-1">
+                        {reactionEntries.map(([emoji, count]) => (
+                          <span
+                            key={emoji}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
+                          >
+                            <span>{emoji}</span>
+                            {count > 1 && (
+                              <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
+                                {count}
+                              </span>
+                            )}
+                          </span>
+                        ))}
                       </div>
                     )}
-
-                    {msg.image && (
-                      <img
-                        src={msg.image}
-                        alt="Upload"
-                        loading="lazy"
-                        decoding="async"
-                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
-                      />
-                    )}
-
-                    {msg.video && (
-                      <video
-                        src={msg.video}
-                        controls
-                        playsInline
-                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-white/20"
-                      />
-                    )}
-
-                    {msg.file && (
-                      <a
-                        href={typeof msg.file === 'string' ? msg.file : msg.file.url}
-                        download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-white/20 hover:bg-white/30 active:scale-98 transition-all text-white"
-                      >
-                        <FileText className="w-5 h-5 shrink-0" />
-                        <div className="min-w-0 text-left">
-                          <div className="text-xs font-semibold truncate">
-                            {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
-                          </div>
-                          {typeof msg.file === 'object' && msg.file.size && (
-                            <div className="text-[10px] opacity-80">{msg.file.size}</div>
-                          )}
-                        </div>
-                      </a>
-                    )}
-                    <span>{msg.content || msg.text}</span>
-
-                    <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-sky-100 font-medium select-none">
-                      <span
-                        title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
-                        className="text-[10px] text-sky-100 font-medium tracking-tight"
-                      >
-                        {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
-                      </span>
-                      {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
-                      <CheckCheck className="w-3.5 h-3.5 text-white stroke-[2.5]" />
-                    </div>
                   </div>
-
-                  {reactionEntries.length > 0 && (
-                    <div className="flex items-center gap-1 mt-1 mr-1">
-                      {reactionEntries.map(([emoji, count]) => (
-                        <span
-                          key={emoji}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
-                        >
-                          <span>{emoji}</span>
-                          {count > 1 && (
-                            <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
-                              {count}
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </React.Fragment>
             );
@@ -1181,117 +1264,123 @@ export default function MobileChat() {
                 onTouchStart={(e) => handleTouchStart(e, msg)}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
-                className={`flex items-start gap-2 max-w-[88%] mr-auto my-1.5 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
+                className={`flex justify-start w-full mb-3 select-none ${msg.isNew ? 'anim-msg-enter' : ''} ${pressingId === msg.id ? 'anim-long-press' : ''}`}
               >
-                <button
-                  type="button"
-                  onClick={() => handleAvatarClick(msg)}
-                  className="shrink-0 w-8 h-8 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs mt-1 cursor-pointer active:scale-90 transition-transform overflow-hidden"
-                >
-                  {msg.avatar ? (
-                    <img src={msg.avatar} alt={msg.sender} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-                  ) : (
-                    (msg.sender || 'U').charAt(0).toUpperCase()
-                  )}
-                </button>
+                <div className="flex items-start gap-2 max-w-[85%]">
+                  <button
+                    type="button"
+                    onClick={() => handleAvatarClick(msg)}
+                    className="shrink-0 w-8 h-8 rounded-full border border-sky-400 bg-gradient-to-b from-sky-400 to-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-xs mt-0.5 cursor-pointer active:scale-90 transition-transform overflow-hidden"
+                  >
+                    {msg.avatar ? (
+                      <img src={msg.avatar} alt={msg.sender} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                    ) : (
+                      (msg.sender || 'U').charAt(0).toUpperCase()
+                    )}
+                  </button>
 
-                <div className="flex flex-col items-start min-w-0">
-                  <div className="flex items-center gap-1.5 ml-1 mb-0.5">
-                    <span
-                      onClick={() => handleAvatarClick(msg)}
-                      className="text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 cursor-pointer"
-                    >
-                      {msg.sender}
-                    </span>
-
-                    {authorRole === 'owner' ? (
-                      <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-amber-800 bg-gradient-to-b from-amber-100 to-amber-200 border border-amber-300 shadow-xs inline-flex items-center gap-1">
-                        👑 DONO
+                  <div className="flex flex-col items-start min-w-0">
+                    <div className="flex items-center gap-1.5 ml-1 mb-0.5">
+                      <span
+                        onClick={() => handleAvatarClick(msg)}
+                        className="text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 cursor-pointer"
+                      >
+                        {msg.sender}
                       </span>
-                    ) : authorRole === 'moderator' || authorRole === 'admin' ? (
-                      <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-sky-800 bg-gradient-to-b from-sky-100 to-sky-200 border border-sky-300 shadow-xs inline-flex items-center gap-1">
-                        🛡️ MOD
-                      </span>
-                    ) : null}
-                  </div>
 
-                  <div className="bubble-lift skeuo-card rounded-3xl rounded-tl-md px-4 py-2 text-sm leading-relaxed relative break-words text-slate-800 dark:text-slate-100 shadow-[0_3px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]">
-                    {msg.replyTo && (
-                      <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border-l-3 border-sky-500 text-xs text-slate-600 dark:text-slate-300">
-                        <div className="font-bold text-[10px] text-sky-600 dark:text-sky-400">
-                          {msg.replyTo.sender}
+                      {authorRole === 'owner' ? (
+                        <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-amber-800 bg-gradient-to-b from-amber-100 to-amber-200 border border-amber-300 shadow-xs inline-flex items-center gap-1">
+                          👑 DONO
+                        </span>
+                      ) : authorRole === 'moderator' || authorRole === 'admin' ? (
+                        <span className="px-1.5 py-0.2 rounded-md text-[10px] font-extrabold text-sky-800 bg-gradient-to-b from-sky-100 to-sky-200 border border-sky-300 shadow-xs inline-flex items-center gap-1">
+                          🛡️ MOD
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="bubble-lift skeuo-card bg-slate-800/90 text-slate-100 rounded-2xl rounded-bl-xs px-4 py-2 text-sm leading-relaxed relative break-words shadow-[0_3px_8px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.05)] border border-slate-700/60">
+                      {msg.replyTo && (
+                        <div className="mb-1.5 p-1.5 px-2.5 rounded-xl bg-slate-900/60 border-l-3 border-sky-500 text-xs text-slate-300">
+                          <div className="font-bold text-[10px] text-sky-400">
+                            {msg.replyTo.sender}
+                          </div>
+                          <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
                         </div>
-                        <div className="truncate text-[11px] opacity-80">{msg.replyTo.text}</div>
+                      )}
+
+                      {msg.image && (
+                        <img
+                          src={msg.image}
+                          alt="Upload"
+                          loading="lazy"
+                          decoding="async"
+                          className="rounded-xl max-h-56 w-full object-cover mb-1.5 border border-slate-700"
+                        />
+                      )}
+
+                      {msg.video && (
+                        <video
+                          src={msg.video}
+                          controls
+                          playsInline
+                          className="rounded-xl max-h-56 w-full object-cover mb-1.5 border border-slate-700"
+                        />
+                      )}
+
+                      {msg.file && (
+                        <a
+                          href={typeof msg.file === 'string' ? msg.file : msg.file.url}
+                          download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-slate-700/60 hover:bg-slate-700/80 active:scale-98 transition-all text-slate-100"
+                        >
+                          <FileText className="w-5 h-5 text-sky-400 shrink-0" />
+                          <div className="min-w-0 text-left">
+                            <div className="text-xs font-semibold truncate">
+                              {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
+                            </div>
+                            {typeof msg.file === 'object' && msg.file.size && (
+                              <div className="text-[10px] text-slate-400">{msg.file.size}</div>
+                            )}
+                          </div>
+                        </a>
+                      )}
+
+                      {msg.content || msg.text ? (
+                        <span>{msg.content || msg.text}</span>
+                      ) : null}
+
+                      <div className="flex items-center justify-end gap-1 mt-1 text-[10px] text-slate-400 font-medium select-none">
+                        <span
+                          title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
+                          className="text-[10px] text-slate-400 font-medium tracking-tight"
+                        >
+                          {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
+                        </span>
+                        {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
+                      </div>
+                    </div>
+
+                    {reactionEntries.length > 0 && (
+                      <div className="flex items-center gap-1 mt-1 ml-1">
+                        {reactionEntries.map(([emoji, count]) => (
+                          <span
+                            key={emoji}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
+                          >
+                            <span>{emoji}</span>
+                            {count > 1 && (
+                              <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
+                                {count}
+                              </span>
+                            )}
+                          </span>
+                        ))}
                       </div>
                     )}
-
-                    {msg.image && (
-                      <img
-                        src={msg.image}
-                        alt="Upload"
-                        loading="lazy"
-                        decoding="async"
-                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
-                      />
-                    )}
-
-                    {msg.video && (
-                      <video
-                        src={msg.video}
-                        controls
-                        playsInline
-                        className="rounded-2xl max-h-48 w-full object-cover mb-1.5 border border-slate-200 dark:border-slate-700"
-                      />
-                    )}
-
-                    {msg.file && (
-                      <a
-                        href={typeof msg.file === 'string' ? msg.file : msg.file.url}
-                        download={typeof msg.file === 'object' ? (msg.file.name || 'arquivo') : 'arquivo'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 p-2 px-3 mb-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-98 transition-all text-slate-800 dark:text-slate-100"
-                      >
-                        <FileText className="w-5 h-5 text-sky-500 shrink-0" />
-                        <div className="min-w-0 text-left">
-                          <div className="text-xs font-semibold truncate">
-                            {typeof msg.file === 'object' ? (msg.file.name || 'Arquivo anexado') : 'Arquivo anexado'}
-                          </div>
-                          {typeof msg.file === 'object' && msg.file.size && (
-                            <div className="text-[10px] text-slate-500 dark:text-slate-400">{msg.file.size}</div>
-                          )}
-                        </div>
-                      </a>
-                    )}
-                    <span>{msg.content || msg.text}</span>
-                    <div className="flex items-center justify-end gap-1 mt-0.5 text-[10px] text-slate-400 font-medium select-none">
-                      <span
-                        title={formatFullDateTime(msg.time, msg.created_at || msg.timestamp)}
-                        className="text-[10px] text-slate-400 font-medium tracking-tight"
-                      >
-                        {formatMessageTime(msg.time, msg.created_at || msg.timestamp)}
-                      </span>
-                      {msg.isEdited && <span className="text-[9px] opacity-80 italic">(editada)</span>}
-                    </div>
                   </div>
-
-                  {reactionEntries.length > 0 && (
-                    <div className="flex items-center gap-1 mt-1 ml-1">
-                      {reactionEntries.map(([emoji, count]) => (
-                        <span
-                          key={emoji}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs shadow-xs"
-                        >
-                          <span>{emoji}</span>
-                          {count > 1 && (
-                            <span className="font-bold text-[10px] text-slate-600 dark:text-slate-300">
-                              {count}
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             </React.Fragment>
