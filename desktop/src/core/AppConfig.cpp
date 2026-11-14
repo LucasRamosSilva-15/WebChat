@@ -27,6 +27,7 @@ AppConfig::AppConfig(QObject *parent)
     , m_apiBaseUrl(normalizeUrl(m_settings.value("network/apiBaseUrl", "https://webchat-9vqr.onrender.com/api").toString()))
 {
     const QMap<QString, QString> dotEnv = loadDotEnvFiles();
+    m_frontendBaseUrl = loadFrontendBaseUrl(m_settings, dotEnv);
     m_supabaseUrl = loadSupabaseUrl(m_settings, dotEnv);
     m_supabaseAnonKey = loadSupabaseAnonKey(m_settings, dotEnv);
 }
@@ -52,6 +53,24 @@ void AppConfig::setApiBaseUrl(const QString &url)
 void AppConfig::resetApiBaseUrl()
 {
     setApiBaseUrl("https://webchat-9vqr.onrender.com/api");
+}
+
+QString AppConfig::frontendBaseUrl() const
+{
+    return m_frontendBaseUrl;
+}
+
+void AppConfig::setFrontendBaseUrl(const QString &url)
+{
+    const QString normalized = normalizeFrontendUrl(url);
+    if (m_frontendBaseUrl == normalized) {
+        return;
+    }
+    m_frontendBaseUrl = normalized;
+    QSettings settings("SkyRipple", "SkyRippleDesktop");
+    settings.setValue("network/frontendBaseUrl", m_frontendBaseUrl);
+    settings.sync();
+    emit frontendBaseUrlChanged();
 }
 
 QString AppConfig::supabaseUrl() const
@@ -100,6 +119,13 @@ void AppConfig::reload()
     }
 
     const QMap<QString, QString> dotEnv = loadDotEnvFiles();
+
+    const QString loadedFrontend = loadFrontendBaseUrl(fresh, dotEnv);
+    if (m_frontendBaseUrl != loadedFrontend) {
+        m_frontendBaseUrl = loadedFrontend;
+        emit frontendBaseUrlChanged();
+    }
+
     const QString loadedSupaUrl = loadSupabaseUrl(fresh, dotEnv);
     if (m_supabaseUrl != loadedSupaUrl) {
         m_supabaseUrl = loadedSupaUrl;
@@ -121,6 +147,18 @@ QString AppConfig::normalizeUrl(const QString &url) const
     }
     if (trimmed.isEmpty()) {
         return "https://webchat-9vqr.onrender.com/api";
+    }
+    return trimmed;
+}
+
+QString AppConfig::normalizeFrontendUrl(const QString &url) const
+{
+    QString trimmed = stripQuotes(url);
+    while (trimmed.endsWith('/')) {
+        trimmed.chop(1);
+    }
+    if (trimmed.isEmpty()) {
+        return "https://web-chat-project-web2.vercel.app";
     }
     return trimmed;
 }
@@ -198,6 +236,31 @@ QMap<QString, QString> AppConfig::loadDotEnvFiles() const
         }
     }
     return vars;
+}
+
+QString AppConfig::loadFrontendBaseUrl(const QSettings &settings, const QMap<QString, QString> &envVars) const
+{
+    const QString stored = stripQuotes(settings.value("network/frontendBaseUrl").toString());
+    if (!stored.isEmpty()) {
+        return normalizeFrontendUrl(stored);
+    }
+    const QString envPrimary = stripQuotes(qEnvironmentVariable("FRONTEND_URL"));
+    if (!envPrimary.isEmpty()) {
+        return normalizeFrontendUrl(envPrimary);
+    }
+    const QString envVite = stripQuotes(qEnvironmentVariable("VITE_FRONTEND_URL"));
+    if (!envVite.isEmpty()) {
+        return normalizeFrontendUrl(envVite);
+    }
+    const QString filePrimary = stripQuotes(envVars.value("FRONTEND_URL"));
+    if (!filePrimary.isEmpty()) {
+        return normalizeFrontendUrl(filePrimary);
+    }
+    const QString fileVite = stripQuotes(envVars.value("VITE_FRONTEND_URL"));
+    if (!fileVite.isEmpty()) {
+        return normalizeFrontendUrl(fileVite);
+    }
+    return "https://web-chat-project-web2.vercel.app";
 }
 
 QString AppConfig::loadSupabaseUrl(const QSettings &settings, const QMap<QString, QString> &envVars) const

@@ -31,6 +31,9 @@ AuthService::AuthService(QObject *parent)
 {
     m_oauthNetwork.setTransferTimeout(15000);
 
+    connect(&m_loopbackServer, &OAuthLoopbackServer::sessionPayloadReceived,
+            this, &AuthService::handleLoopbackSession);
+
     connect(&m_loopbackServer, &OAuthLoopbackServer::tokenReceived,
             this, &AuthService::completeGoogleLoginWithToken);
 
@@ -181,6 +184,27 @@ void AuthService::registerAccount(const QString &displayName, const QString &ema
     );
 }
 
+QUrl AuthService::buildGoogleAuthorizeUrl(quint16 desktopPort) const
+{
+    const QString supabaseUrl = AppConfig::instance()->supabaseUrl();
+    const QString frontendBaseUrl = AppConfig::instance()->frontendBaseUrl();
+    const QString redirectTo = QString("%1/auth/callback?source=desktop&desktop_port=%2")
+        .arg(frontendBaseUrl)
+        .arg(desktopPort);
+
+    QUrl authUrl(supabaseUrl + "/auth/v1/authorize");
+    QUrlQuery query;
+    query.addQueryItem("provider", "google");
+    query.addQueryItem("redirect_to", redirectTo);
+    authUrl.setQuery(query);
+    return authUrl;
+}
+
+quint16 AuthService::activeGoogleLoopbackPort() const
+{
+    return m_loopbackServer.port();
+}
+
 void AuthService::loginWithGoogle()
 {
     if (m_busy || m_waitingForGoogle) {
@@ -188,15 +212,14 @@ void AuthService::loginWithGoogle()
     }
 
     const QString supabaseUrl = AppConfig::instance()->supabaseUrl();
-    const QString supabaseAnonKey = AppConfig::instance()->supabaseAnonKey();
-    if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
-        setErrorMessage("Configure a URL e a Anon Key do Supabase nas opções de servidor.");
+    if (supabaseUrl.isEmpty()) {
+        setErrorMessage("Configuração do Supabase ausente.");
         emit authFailed(m_errorMessage);
         return;
     }
 
     const QString callbackUrl = m_loopbackServer.startListening();
-    if (callbackUrl.isEmpty()) {
+    if (callbackUrl.isEmpty() || m_loopbackServer.port() == 0) {
         setErrorMessage("Não foi possível iniciar o servidor local de autenticação.");
         emit authFailed(m_errorMessage);
         return;
@@ -205,12 +228,11 @@ void AuthService::loginWithGoogle()
     setErrorMessage(QString());
     setWaitingForGoogle(true);
 
-    QUrl authUrl(supabaseUrl + "/auth/v1/authorize");
-    QUrlQuery query;
-    query.addQueryItem("provider", "google");
-    query.addQueryItem("redirect_to", callbackUrl);
-    authUrl.setQuery(query);
+    if (qEnvironmentVariableIsSet("SKYRIPPLE_SKIP_OPEN_URL")) {
+        return;
+    }
 
+    const QUrl authUrl = buildGoogleAuthorizeUrl(m_loopbackServer.port());
     if (!QDesktopServices::openUrl(authUrl)) {
         m_loopbackServer.stopListening();
         setWaitingForGoogle(false);
@@ -224,6 +246,28 @@ void AuthService::cancelGoogleLogin()
     m_loopbackServer.stopListening();
     setWaitingForGoogle(false);
     setBusy(false);
+}
+
+void AuthService::handleLoopbackSession(const QString &token, const QJsonObject &user)
+{
+    setWaitingForGoogle(false);
+    setBusy(false);
+
+    if (token.trimmed().isEmpty()) {
+        setErrorMessage("Token de autenticação não recebido.");
+        emit authFailed(m_errorMessage);
+        return;
+    }
+
+    SessionStore::instance()->setSession(token, user);
+    const bool userIncomplete = user.value("email").toString().isEmpty()
+        || (user.value("displayName").toString().isEmpty() && user.value("name").toString().isEmpty());
+    if (userIncomplete) {
+        fetchMe();
+    }
+
+    emit loginSucceeded();
+    emit requestWindowFocus();
 }
 
 void AuthService::completeGoogleLoginWithToken(const QString &accessToken)

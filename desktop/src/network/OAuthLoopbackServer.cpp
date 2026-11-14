@@ -3,8 +3,8 @@
 #include <QHostAddress>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QMap>
 #include <QUrl>
+#include <QUrlQuery>
 
 OAuthLoopbackServer::OAuthLoopbackServer(QObject *parent)
     : QObject(parent)
@@ -27,7 +27,7 @@ QString OAuthLoopbackServer::startListening()
         return QString();
     }
     m_timeoutTimer.start();
-    return QString("http://127.0.0.1:%1/callback").arg(m_server.serverPort());
+    return callbackUrl();
 }
 
 void OAuthLoopbackServer::stopListening()
@@ -46,6 +46,14 @@ bool OAuthLoopbackServer::isListening() const
 quint16 OAuthLoopbackServer::port() const
 {
     return m_server.serverPort();
+}
+
+QString OAuthLoopbackServer::callbackUrl() const
+{
+    if (!m_server.isListening()) {
+        return QString();
+    }
+    return QString("http://127.0.0.1:%1/callback").arg(m_server.serverPort());
 }
 
 void OAuthLoopbackServer::onNewConnection()
@@ -118,6 +126,63 @@ void OAuthLoopbackServer::processSocketBuffer(QTcpSocket *socket, QByteArray &bu
     buffer.remove(0, totalRequired);
 
     if (method == "GET" && path == "/callback") {
+        const QUrlQuery query(targetUrl);
+        const QString errorDesc = query.queryItemValue("error_description", QUrl::FullyDecoded).trimmed();
+        const QString errorCode = query.queryItemValue("error", QUrl::FullyDecoded).trimmed();
+        const QString token = query.queryItemValue("token", QUrl::FullyDecoded).trimmed();
+
+        if (!errorDesc.isEmpty() || !errorCode.isEmpty()) {
+            const QString msg = !errorDesc.isEmpty() ? errorDesc : errorCode;
+            sendHttpResponse(
+                socket,
+                200,
+                "text/html; charset=utf-8",
+                resultHtml(false, "Autenticação não concluída", msg)
+            );
+            stopListening();
+            emit authError(msg);
+            return;
+        }
+
+        if (!token.isEmpty()) {
+            QJsonObject userObj;
+            const QString userRaw = query.queryItemValue("user", QUrl::FullyDecoded).trimmed();
+            if (!userRaw.isEmpty()) {
+                const QJsonDocument userDoc = QJsonDocument::fromJson(userRaw.toUtf8());
+                if (userDoc.isObject()) {
+                    userObj = userDoc.object();
+                }
+            }
+
+            const QString email = query.queryItemValue("email", QUrl::FullyDecoded).trimmed();
+            const QString displayName = query.queryItemValue("displayName", QUrl::FullyDecoded).trimmed();
+            const QString profilePhoto = query.queryItemValue("profilePhoto", QUrl::FullyDecoded).trimmed();
+
+            if (!email.isEmpty() && userObj.value("email").toString().isEmpty()) {
+                userObj.insert("email", email);
+            }
+            if (!displayName.isEmpty() && userObj.value("displayName").toString().isEmpty()) {
+                userObj.insert("displayName", displayName);
+            }
+            if (!profilePhoto.isEmpty() && userObj.value("profilePhoto").toString().isEmpty()) {
+                userObj.insert("profilePhoto", profilePhoto);
+            }
+
+            sendHttpResponse(
+                socket,
+                200,
+                "text/html; charset=utf-8",
+                resultHtml(
+                    true,
+                    "Login concluído!",
+                    "Pode fechar esta aba e voltar ao SkyRipple Desktop."
+                )
+            );
+            stopListening();
+            emit sessionPayloadReceived(token, userObj);
+            return;
+        }
+
         sendHttpResponse(socket, 200, "text/html; charset=utf-8", callbackHtml());
         return;
     }
@@ -165,6 +230,45 @@ void OAuthLoopbackServer::sendHttpResponse(QTcpSocket *socket,
     socket->write(raw);
     socket->flush();
     socket->disconnectFromHost();
+}
+
+QByteArray OAuthLoopbackServer::resultHtml(bool success, const QString &title, const QString &message) const
+{
+    const QString badgeColor = success
+        ? "linear-gradient(180deg, #4da4ff 0%, #0071e3 100%)"
+        : "linear-gradient(180deg, #f87171 0%, #dc2626 100%)";
+
+    const QString html = QString(
+        "<!DOCTYPE html>"
+        "<html lang=\"pt-BR\">"
+        "<head>"
+        "<meta charset=\"utf-8\">"
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+        "<title>SkyRipple Desktop</title>"
+        "<style>"
+        "body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;"
+        "font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,sans-serif;"
+        "background:linear-gradient(180deg,#dbeafe 0%,#f1f5f9 100%);color:#1d1d1f;}"
+        ".card{background:rgba(255,255,255,0.92);border:1px solid rgba(148,163,184,0.35);"
+        "border-radius:24px;padding:36px 32px;max-width:420px;width:90%;text-align:center;"
+        "box-shadow:0 20px 50px -15px rgba(0,0,0,0.18);}"
+        ".badge{display:inline-block;padding:6px 14px;border-radius:999px;background:%1;"
+        "color:#ffffff;font-size:12px;font-weight:700;margin-bottom:16px;}"
+        "h1{font-size:20px;margin:0 0 10px 0;}"
+        "p{font-size:14px;color:#424245;margin:0;line-height:1.5;}"
+        "</style>"
+        "</head>"
+        "<body>"
+        "<div class=\"card\">"
+        "<div class=\"badge\">SkyRipple Desktop</div>"
+        "<h1>%2</h1>"
+        "<p>%3</p>"
+        "</div>"
+        "</body>"
+        "</html>"
+    ).arg(badgeColor, title.toHtmlEscaped(), message.toHtmlEscaped());
+
+    return html.toUtf8();
 }
 
 QByteArray OAuthLoopbackServer::callbackHtml() const
@@ -245,8 +349,8 @@ p {
         var titleEl = document.getElementById("title");
         var msgEl = document.getElementById("message");
         if (accessToken) {
-            titleEl.textContent = "Autenticação concluída!";
-            msgEl.textContent = "Você já pode fechar esta aba e retornar ao aplicativo SkyRipple.";
+            titleEl.textContent = "Login concluído!";
+            msgEl.textContent = "Pode fechar esta aba e voltar ao SkyRipple Desktop.";
         } else {
             titleEl.textContent = "Autenticação não concluída";
             msgEl.textContent = errorDesc || errorCode || "Você pode fechar esta aba e tentar novamente no aplicativo.";

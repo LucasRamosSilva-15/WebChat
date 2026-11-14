@@ -2,6 +2,8 @@
 
 #include <QObject>
 #include <QString>
+#include <QUrl>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QQmlEngine>
 #include <QJSEngine>
@@ -33,6 +35,8 @@ public:
     Q_INVOKABLE void logout();
     Q_INVOKABLE void clearError();
 
+    QUrl buildGoogleAuthorizeUrl(quint16 desktopPort) const;
+    quint16 activeGoogleLoopbackPort() const;
     void completeGoogleLoginWithToken(const QString &accessToken);
 
 signals:
@@ -49,6 +53,7 @@ private:
     void setBusy(bool value);
     void setWaitingForGoogle(bool value);
     void setErrorMessage(const QString &message);
+    void handleLoopbackSession(const QString &token, const QJsonObject &user);
     void syncOAuthUserToBackend(const QString &email,
                                 const QString &displayName,
                                 const QString &profilePhoto);
