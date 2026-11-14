@@ -163,17 +163,6 @@ Button {
                 ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(1, 1, 1, 0.92))
                 : Qt.rgba(1, 1, 1, 0.28)
         }
-
-        Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.leftMargin: root.buttonRadius * 0.4
-            anchors.rightMargin: root.buttonRadius * 0.4
-            y: parent.height
-            height: 1
-            visible: !root.down
-            color: Qt.rgba(0, 0, 0, 0.10)
-        }
     }
 
     scale: root.down ? 0.985 : 1.0
