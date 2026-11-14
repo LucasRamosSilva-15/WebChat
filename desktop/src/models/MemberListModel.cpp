@@ -167,14 +167,27 @@ MemberListModel::MemberItem MemberListModel::parseItem(const QJsonObject &obj)
         obj.value("display_name").toString(),
         obj.value("name").toString()
     });
-    if (item.displayName.isEmpty()) {
-        item.displayName = "Usuário";
-    }
-
     item.email = pickNonEmpty({
         userObj.value("email").toString(),
         obj.value("email").toString()
     });
+
+    if (item.displayName.isEmpty() && !item.email.isEmpty()) {
+        QString localPart = item.email.section('@', 0, 0);
+        localPart.replace('.', ' ');
+        localPart.replace('_', ' ');
+        localPart.replace('-', ' ');
+        const QStringList words = localPart.split(' ', Qt::SkipEmptyParts);
+        QStringList formatted;
+        for (const QString &w : words) {
+            formatted.append(w.left(1).toUpper() + w.mid(1));
+        }
+        item.displayName = formatted.join(' ');
+    }
+
+    if (item.displayName.isEmpty()) {
+        item.displayName = "Usuário";
+    }
 
     item.profilePhoto = pickNonEmpty({
         userObj.value("profilePhoto").toString(),

@@ -7,11 +7,13 @@ Rectangle {
     default property alias contentData: container.data
     property int wellRadius: 14
     property int contentPadding: 16
+    property bool fillContent: false
 
-    implicitWidth: container.implicitWidth + contentPadding * 2
-    implicitHeight: container.implicitHeight + contentPadding * 2
+    implicitWidth: fillContent ? 200 : container.childrenRect.width + contentPadding * 2
+    implicitHeight: fillContent ? 120 : container.childrenRect.height + contentPadding * 2
 
     radius: wellRadius
+    clip: true
     color: Theme.wellBg
     border.width: 1
     border.color: Theme.wellBorderSide
@@ -29,7 +31,6 @@ Rectangle {
         id: container
         anchors.fill: parent
         anchors.margins: root.contentPadding
-        implicitWidth: childrenRect.width
-        implicitHeight: childrenRect.height
+        clip: true
     }
 }

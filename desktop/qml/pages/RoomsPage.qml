@@ -63,14 +63,16 @@ Item {
 
                     SkeuoCard {
                         Layout.fillWidth: true
-                        implicitHeight: 74
+                        contentPadding: 14
+                        implicitHeight: statCol1.implicitHeight + 28
 
                         ColumnLayout {
+                            id: statCol1
                             anchors.fill: parent
-                            anchors.margins: 12
-                            spacing: 2
+                            spacing: 6
 
                             Text {
+                                Layout.fillWidth: true
                                 text: "SALAS ATIVAS"
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 10
@@ -79,6 +81,7 @@ Item {
                             }
 
                             Text {
+                                Layout.fillWidth: true
                                 text: String(RoomService.activeRooms > 0 ? RoomService.activeRooms : RoomService.rooms.count)
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 22
@@ -90,14 +93,16 @@ Item {
 
                     SkeuoCard {
                         Layout.fillWidth: true
-                        implicitHeight: 74
+                        contentPadding: 14
+                        implicitHeight: statCol2.implicitHeight + 28
 
                         ColumnLayout {
+                            id: statCol2
                             anchors.fill: parent
-                            anchors.margins: 12
-                            spacing: 2
+                            spacing: 6
 
                             Text {
+                                Layout.fillWidth: true
                                 text: "USUÁRIOS"
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 10
@@ -106,6 +111,7 @@ Item {
                             }
 
                             Text {
+                                Layout.fillWidth: true
                                 text: String(RoomService.totalUsers)
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 22
@@ -117,14 +123,16 @@ Item {
 
                     SkeuoCard {
                         Layout.fillWidth: true
-                        implicitHeight: 74
+                        contentPadding: 14
+                        implicitHeight: statCol3.implicitHeight + 28
 
                         ColumnLayout {
+                            id: statCol3
                             anchors.fill: parent
-                            anchors.margins: 12
-                            spacing: 2
+                            spacing: 6
 
                             Text {
+                                Layout.fillWidth: true
                                 text: "FAVORITOS"
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 10
@@ -133,6 +141,7 @@ Item {
                             }
 
                             Text {
+                                Layout.fillWidth: true
                                 text: String(RoomService.favoriteRoomIds.length)
                                 font.family: Theme.fontFamily
                                 font.pixelSize: 22
@@ -145,12 +154,12 @@ Item {
 
                 SkeuoCard {
                     Layout.fillWidth: true
+                    contentPadding: 16
                     implicitHeight: headerCol.implicitHeight + 32
 
                     ColumnLayout {
                         id: headerCol
                         anchors.fill: parent
-                        anchors.margins: 16
                         spacing: 12
 
                         RowLayout {
@@ -254,11 +263,12 @@ Item {
                 SkeuoWell {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    contentPadding: 10
+                    fillContent: true
 
                     GridView {
                         id: roomsGrid
                         anchors.fill: parent
-                        anchors.margins: 12
                         clip: true
                         cellWidth: Math.max(260, Math.floor(width / Math.max(1, Math.floor(width / 290))))
                         cellHeight: 176
@@ -278,10 +288,11 @@ Item {
                             SkeuoPanel {
                                 anchors.fill: parent
                                 anchors.margins: 8
+                                contentPadding: 14
+                                fillContent: true
 
                                 ColumnLayout {
                                     anchors.fill: parent
-                                    anchors.margins: 16
                                     spacing: 8
 
                                     RowLayout {
@@ -290,6 +301,7 @@ Item {
 
                                         Text {
                                             Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
                                             text: roomDelegate.name
                                             elide: Text.ElideRight
                                             font.family: Theme.fontFamily
@@ -301,12 +313,15 @@ Item {
                                         SkeuoBadge {
                                             text: roomDelegate.category
                                             roleType: "moderator"
+                                            Layout.preferredWidth: implicitWidth
+                                            Layout.minimumWidth: implicitWidth
                                         }
                                     }
 
                                     Text {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
+                                        Layout.minimumWidth: 0
                                         text: roomDelegate.description !== ""
                                             ? roomDelegate.description
                                             : "Sem descrição disponível."
@@ -320,11 +335,13 @@ Item {
 
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: 8
+                                        spacing: 6
 
                                         SkeuoBadge {
                                             text: roomDelegate.membersCount + " membros"
                                             roleType: "default"
+                                            Layout.preferredWidth: implicitWidth
+                                            Layout.minimumWidth: implicitWidth
                                         }
 
                                         Item {
@@ -335,14 +352,22 @@ Item {
                                             readonly property bool favored: RoomService.favoriteRoomIds.indexOf(roomDelegate.id) !== -1
                                             text: favored ? "★" : "☆"
                                             variant: favored ? "primary" : "secondary"
-                                            horizontalPadding: 12
-                                            verticalPadding: 6
+                                            horizontalPadding: 0
+                                            verticalPadding: 4
+                                            Layout.preferredWidth: 38
+                                            Layout.minimumWidth: 38
+                                            Layout.preferredHeight: 34
                                             onClicked: RoomService.toggleFavorite(roomDelegate.id, roomDelegate.name)
                                         }
 
                                         SkeuoButton {
                                             text: "Entrar"
                                             variant: "primary"
+                                            horizontalPadding: 8
+                                            verticalPadding: 4
+                                            Layout.preferredWidth: 84
+                                            Layout.minimumWidth: 84
+                                            Layout.preferredHeight: 34
                                             enabled: !RoomService.busy
                                             onClicked: RoomService.joinRoom(roomDelegate.id)
                                         }
@@ -377,6 +402,7 @@ Item {
                 SkeuoCard {
                     anchors.centerIn: parent
                     width: Math.min(440, parent.width - 40)
+                    contentPadding: 24
                     implicitHeight: modalCol.implicitHeight + 48
 
                     MouseArea {
@@ -386,7 +412,6 @@ Item {
                     ColumnLayout {
                         id: modalCol
                         anchors.fill: parent
-                        anchors.margins: 24
                         spacing: 14
 
                         Text {

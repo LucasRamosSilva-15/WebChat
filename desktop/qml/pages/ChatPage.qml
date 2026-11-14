@@ -14,7 +14,6 @@ Item {
 
     property bool showRoomsSidebar: true
     property bool showMembersSidebar: true
-    property bool searchBarOpen: false
     property bool loadingOlderSnapshot: false
     property real savedContentHeight: 0
     property real savedContentY: 0
@@ -133,10 +132,11 @@ Item {
                 Layout.minimumWidth: 240
                 Layout.maximumWidth: 240
                 Layout.fillHeight: true
+                contentPadding: 12
+                fillContent: true
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 12
                     spacing: 10
 
                     RowLayout {
@@ -145,22 +145,27 @@ Item {
 
                         Text {
                             Layout.fillWidth: true
+                            Layout.minimumWidth: 0
                             text: "Salas"
                             font.family: Theme.fontFamily
                             font.pixelSize: 14
                             font.weight: Font.Bold
                             color: Theme.textPrimary
+                            elide: Text.ElideRight
                         }
 
                         SkeuoBadge {
                             text: String(RoomService.rooms.count)
                             roleType: "default"
+                            Layout.preferredWidth: implicitWidth
+                            Layout.minimumWidth: implicitWidth
                         }
                     }
 
                     SkeuoInput {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
+                        Layout.preferredHeight: 36
                         placeholderText: "Filtrar salas..."
                         onTextChanged: RoomService.rooms.searchQuery = text
                     }
@@ -168,10 +173,11 @@ Item {
                     SkeuoWell {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        contentPadding: 6
+                        fillContent: true
 
                         ListView {
                             anchors.fill: parent
-                            anchors.margins: 6
                             clip: true
                             spacing: 6
                             model: RoomService.rooms
@@ -202,6 +208,7 @@ Item {
 
                                     Text {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 0
                                         text: sideRoomItem.name
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 13
@@ -212,6 +219,7 @@ Item {
 
                                     Text {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 0
                                         text: sideRoomItem.category + " • " + sideRoomItem.membersCount
                                         font.family: Theme.fontFamily
                                         font.pixelSize: 10
@@ -246,23 +254,27 @@ Item {
                 spacing: 10
 
                 SkeuoPanel {
+                    id: headerPanel
                     Layout.fillWidth: true
+                    contentPadding: 10
                     implicitHeight: roomHeaderRow.implicitHeight + 20
 
                     RowLayout {
                         id: roomHeaderRow
+                        objectName: "roomHeaderRow"
                         anchors.fill: parent
-                        anchors.margins: 10
                         spacing: 8
 
                         SkeuoButton {
-                            text: root.showRoomsSidebar ? "◀ Salas" : "▶ Salas"
-                            variant: "secondary"
-                            horizontalPadding: 10
-                            verticalPadding: 6
+                            id: toggleRoomsBtn
+                            text: "Salas"
+                            variant: root.showRoomsSidebar ? "primary" : "secondary"
+                            horizontalPadding: 8
+                            verticalPadding: 4
                             visible: root.width >= 880
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
+                            Layout.preferredWidth: 74
+                            Layout.minimumWidth: 74
+                            Layout.preferredHeight: 34
                             onClicked: root.showRoomsSidebar = !root.showRoomsSidebar
                         }
 
@@ -279,6 +291,7 @@ Item {
                                 color: Theme.textPrimary
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
+                                Layout.minimumWidth: 0
                             }
 
                             Text {
@@ -289,37 +302,33 @@ Item {
                                 color: Theme.textMuted
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
+                                Layout.minimumWidth: 0
                             }
                         }
 
-                        SkeuoBadge {
-                            text: RoomService.members.count + " membros"
-                            roleType: "online"
-                        }
-
-                        SkeuoButton {
-                            text: "Buscar"
-                            variant: root.searchBarOpen ? "primary" : "secondary"
-                            horizontalPadding: 12
-                            verticalPadding: 6
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
-                            onClicked: {
-                                root.searchBarOpen = !root.searchBarOpen
-                                if (!root.searchBarOpen) {
+                        SkeuoInput {
+                            id: chatSearchInput
+                            Layout.preferredWidth: 200
+                            Layout.minimumWidth: 140
+                            Layout.preferredHeight: 34
+                            placeholderText: "Buscar na sala..."
+                            onTextChanged: {
+                                if (text.trim() === "") {
                                     MessageService.clearSearch()
-                                    chatSearchInput.clear()
                                 }
                             }
+                            onAccepted: MessageService.searchMessages(root.roomId, text)
                         }
 
                         SkeuoButton {
-                            text: Theme.bubbleFormat === "classico" ? "Bolha: Clássico" : "Bolha: Grande"
+                            id: bubbleModeBtn
+                            text: Theme.bubbleFormat === "classico" ? "Clássico" : "Grande"
                             variant: "secondary"
-                            horizontalPadding: 12
-                            verticalPadding: 6
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
+                            horizontalPadding: 8
+                            verticalPadding: 4
+                            Layout.preferredWidth: 96
+                            Layout.minimumWidth: 96
+                            Layout.preferredHeight: 34
                             onClicked: {
                                 ThemeController.setBubbleFormat(
                                     Theme.bubbleFormat === "classico" ? "grande" : "classico"
@@ -328,59 +337,16 @@ Item {
                         }
 
                         SkeuoButton {
-                            text: root.showMembersSidebar ? "Membros ▶" : "Membros ◀"
-                            variant: "secondary"
-                            horizontalPadding: 10
-                            verticalPadding: 6
+                            id: toggleMembersBtn
+                            text: "Membros"
+                            variant: root.showMembersSidebar ? "primary" : "secondary"
+                            horizontalPadding: 8
+                            verticalPadding: 4
                             visible: root.width >= 760
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
+                            Layout.preferredWidth: 92
+                            Layout.minimumWidth: 92
+                            Layout.preferredHeight: 34
                             onClicked: root.showMembersSidebar = !root.showMembersSidebar
-                        }
-                    }
-                }
-
-                SkeuoCard {
-                    visible: root.searchBarOpen
-                    Layout.fillWidth: true
-                    implicitHeight: searchRow.implicitHeight + 16
-
-                    RowLayout {
-                        id: searchRow
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        spacing: 8
-
-                        SkeuoInput {
-                            id: chatSearchInput
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            placeholderText: "Buscar mensagens nesta sala..."
-                            onAccepted: MessageService.searchMessages(root.roomId, text)
-                        }
-
-                        SkeuoButton {
-                            text: MessageService.searching ? "Buscando..." : "Pesquisar"
-                            variant: "primary"
-                            horizontalPadding: 12
-                            verticalPadding: 6
-                            enabled: !MessageService.searching
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
-                            onClicked: MessageService.searchMessages(root.roomId, chatSearchInput.text)
-                        }
-
-                        SkeuoButton {
-                            text: "Limpar"
-                            variant: "secondary"
-                            horizontalPadding: 10
-                            verticalPadding: 6
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
-                            onClicked: {
-                                chatSearchInput.clear()
-                                MessageService.clearSearch()
-                            }
                         }
                     }
                 }
@@ -411,11 +377,12 @@ Item {
                 SkeuoWell {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    contentPadding: 8
+                    fillContent: true
 
                     ListView {
                         id: messageListView
                         anchors.fill: parent
-                        anchors.margins: 8
                         clip: true
                         reuseItems: true
                         spacing: Theme.bubbleFormat === "classico" ? 4 : 8
@@ -496,30 +463,35 @@ Item {
                     }
                 }
 
-                SkeuoCard {
+                SkeuoPanel {
+                    id: composerPanel
                     Layout.fillWidth: true
+                    contentPadding: 10
                     implicitHeight: composerRow.implicitHeight + 20
 
                     RowLayout {
                         id: composerRow
+                        objectName: "composerRow"
                         anchors.fill: parent
-                        anchors.margins: 10
                         spacing: 8
 
                         SkeuoButton {
+                            id: attachBtn
                             text: "Anexar"
                             variant: "secondary"
-                            horizontalPadding: 12
-                            verticalPadding: 8
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
+                            horizontalPadding: 8
+                            verticalPadding: 6
+                            Layout.preferredWidth: 86
+                            Layout.minimumWidth: 86
+                            Layout.preferredHeight: 40
                             onClicked: attachmentDialog.open()
                         }
 
                         SkeuoInput {
                             id: composerInput
                             Layout.fillWidth: true
-                            Layout.minimumWidth: 0
+                            Layout.minimumWidth: 120
+                            Layout.preferredHeight: 40
                             placeholderText: "Digite sua mensagem..."
                             maximumLength: 1000
                             onAccepted: {
@@ -528,22 +500,26 @@ Item {
                         }
 
                         Text {
+                            id: charCountText
                             text: composerInput.text.length + "/1000"
                             font.family: Theme.fontFamily
                             font.pixelSize: 11
                             font.weight: Font.Medium
+                            horizontalAlignment: Text.AlignRight
                             color: composerInput.text.length >= 950 ? "#ef4444" : Theme.textMuted
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
+                            Layout.preferredWidth: 54
+                            Layout.minimumWidth: 54
                         }
 
                         SkeuoButton {
+                            id: sendBtn
                             text: "Enviar"
                             variant: "primary"
-                            horizontalPadding: 16
-                            verticalPadding: 8
-                            Layout.preferredWidth: implicitWidth
-                            Layout.minimumWidth: implicitWidth
+                            horizontalPadding: 8
+                            verticalPadding: 6
+                            Layout.preferredWidth: 86
+                            Layout.minimumWidth: 86
+                            Layout.preferredHeight: 40
                             onClicked: {
                                 MessageService.sendMessage(root.roomId, composerInput.text)
                             }
@@ -558,10 +534,11 @@ Item {
                 Layout.minimumWidth: 250
                 Layout.maximumWidth: 250
                 Layout.fillHeight: true
+                contentPadding: 12
+                fillContent: true
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 12
                     spacing: 10
 
                     RowLayout {
@@ -570,26 +547,31 @@ Item {
 
                         Text {
                             Layout.fillWidth: true
+                            Layout.minimumWidth: 0
                             text: "Membros"
                             font.family: Theme.fontFamily
                             font.pixelSize: 14
                             font.weight: Font.Bold
                             color: Theme.textPrimary
+                            elide: Text.ElideRight
                         }
 
                         SkeuoBadge {
                             text: String(RoomService.members.count)
                             roleType: "online"
+                            Layout.preferredWidth: implicitWidth
+                            Layout.minimumWidth: implicitWidth
                         }
                     }
 
                     SkeuoWell {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        contentPadding: 6
+                        fillContent: true
 
                         ListView {
                             anchors.fill: parent
-                            anchors.margins: 6
                             clip: true
                             spacing: 8
                             model: RoomService.members
@@ -598,6 +580,7 @@ Item {
                                 id: memberDelegate
                                 required property string userId
                                 required property string displayName
+                                required property string email
                                 required property string profilePhoto
                                 required property string role
                                 required property string status
@@ -610,6 +593,7 @@ Item {
                                 width: ListView.view.width
                                 implicitHeight: memberCol.implicitHeight + 14
                                 radius: 10
+                                clip: true
                                 color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.04) : Qt.rgba(1, 1, 1, 0.72)
                                 border.width: 1
                                 border.color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(0, 0, 0, 0.08)
@@ -651,6 +635,7 @@ Item {
 
                                         Text {
                                             Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
                                             text: memberDelegate.displayName
                                             font.family: Theme.fontFamily
                                             font.pixelSize: 12
@@ -663,6 +648,8 @@ Item {
                                             visible: memberDelegate.role === "owner" || memberDelegate.role === "moderator"
                                             text: memberDelegate.role === "owner" ? "DONO" : "MOD"
                                             roleType: memberDelegate.role === "owner" ? "owner" : "moderator"
+                                            Layout.preferredWidth: implicitWidth
+                                            Layout.minimumWidth: implicitWidth
                                         }
                                     }
 
@@ -675,9 +662,11 @@ Item {
                                             visible: memberDelegate.amOwner
                                             text: memberDelegate.role === "moderator" ? "Rebaixar" : "Promover"
                                             variant: "secondary"
-                                            horizontalPadding: 8
-                                            verticalPadding: 4
-                                            Layout.preferredWidth: implicitWidth
+                                            horizontalPadding: 4
+                                            verticalPadding: 3
+                                            Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
+                                            Layout.preferredHeight: 28
                                             onClicked: {
                                                 const nextRole = memberDelegate.role === "moderator" ? "user" : "moderator"
                                                 RoomService.updateMemberRole(root.roomId, memberDelegate.userId, nextRole)
@@ -688,18 +677,22 @@ Item {
                                             visible: memberDelegate.amOwner
                                             text: "Dono"
                                             variant: "secondary"
-                                            horizontalPadding: 8
-                                            verticalPadding: 4
-                                            Layout.preferredWidth: implicitWidth
+                                            horizontalPadding: 4
+                                            verticalPadding: 3
+                                            Layout.preferredWidth: 50
+                                            Layout.minimumWidth: 50
+                                            Layout.preferredHeight: 28
                                             onClicked: RoomService.transferOwnership(root.roomId, memberDelegate.userId)
                                         }
 
                                         SkeuoButton {
                                             text: "Expulsar"
                                             variant: "danger"
-                                            horizontalPadding: 8
-                                            verticalPadding: 4
-                                            Layout.preferredWidth: implicitWidth
+                                            horizontalPadding: 4
+                                            verticalPadding: 3
+                                            Layout.fillWidth: true
+                                            Layout.minimumWidth: 0
+                                            Layout.preferredHeight: 28
                                             onClicked: RoomService.kickMember(root.roomId, memberDelegate.userId)
                                         }
                                     }

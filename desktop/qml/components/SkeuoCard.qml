@@ -7,11 +7,13 @@ Rectangle {
     default property alias contentData: container.data
     property int cardRadius: 28
     property int contentPadding: 28
+    property bool fillContent: false
 
-    implicitWidth: container.implicitWidth + contentPadding * 2
-    implicitHeight: container.implicitHeight + contentPadding * 2
+    implicitWidth: fillContent ? 200 : container.childrenRect.width + contentPadding * 2
+    implicitHeight: fillContent ? 120 : container.childrenRect.height + contentPadding * 2
 
     radius: cardRadius
+    clip: true
     color: Theme.cardBg
     border.width: 1
     border.color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.16) : Qt.rgba(148 / 255, 163 / 255, 184 / 255, 0.45)
@@ -29,7 +31,6 @@ Rectangle {
         id: container
         anchors.fill: parent
         anchors.margins: root.contentPadding
-        implicitWidth: childrenRect.width
-        implicitHeight: childrenRect.height
+        clip: true
     }
 }

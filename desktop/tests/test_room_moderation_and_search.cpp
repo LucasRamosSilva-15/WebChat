@@ -6,6 +6,11 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QQmlComponent>
+#include <QQmlEngine>
+#include <QQuickItem>
+#include <QQuickStyle>
+#include <QQuickWindow>
 
 #include "RoomService.hpp"
 #include "MessageService.hpp"
@@ -232,6 +237,67 @@ private slots:
         const QJsonObject userObj = tokenSpy.at(0).at(1).toJsonObject();
         QCOMPARE(userObj.value("displayName").toString(), QString("Lucas Ramos Silva"));
         loopback.stopListening();
+    }
+
+    void testQmlLayoutGeometry()
+    {
+        QQuickStyle::setStyle("Basic");
+        QQmlEngine engine;
+        QQuickWindow window;
+        window.resize(1280, 800);
+        window.show();
+
+        auto checkRowNoOverlap = [](QQuickItem *rowItem, int expectedVisibleChildren) {
+            QVERIFY(rowItem != nullptr);
+            QVERIFY(rowItem->width() > 400.0);
+            QVERIFY(rowItem->height() > 20.0);
+            QList<QQuickItem *> items;
+            for (QObject *obj : rowItem->children()) {
+                auto *item = qobject_cast<QQuickItem *>(obj);
+                if (item && item->isVisible() && item->width() > 0 && item->height() > 0) {
+                    items.append(item);
+                }
+            }
+            QCOMPARE(items.size(), expectedVisibleChildren);
+            std::sort(items.begin(), items.end(), [](QQuickItem *a, QQuickItem *b) {
+                return a->x() < b->x();
+            });
+            for (int i = 1; i < items.size(); ++i) {
+                QVERIFY2(items[i - 1]->x() + items[i - 1]->width() <= items[i]->x() + 1.0,
+                         qPrintable(QString("Overlap at index %1: prevEnd=%2 currX=%3")
+                                    .arg(i)
+                                    .arg(items[i - 1]->x() + items[i - 1]->width())
+                                    .arg(items[i]->x())));
+            }
+        };
+
+        QQmlComponent roomsComp(&engine);
+        roomsComp.loadFromModule("SkyRipple", "RoomsPage");
+        QVERIFY2(roomsComp.isReady(), qPrintable(roomsComp.errorString()));
+        std::unique_ptr<QObject> roomsObj(roomsComp.create());
+        auto *roomsPage = qobject_cast<QQuickItem *>(roomsObj.get());
+        QVERIFY(roomsPage != nullptr);
+        roomsPage->setParentItem(window.contentItem());
+        roomsPage->setSize(QSizeF(1280, 800));
+        QCoreApplication::processEvents();
+        QVERIFY(roomsPage->width() == 1280);
+        QVERIFY(roomsPage->height() == 800);
+        roomsPage->setVisible(false);
+
+        QQmlComponent chatComp(&engine);
+        chatComp.loadFromModule("SkyRipple", "ChatPage");
+        QVERIFY2(chatComp.isReady(), qPrintable(chatComp.errorString()));
+        std::unique_ptr<QObject> chatObj(chatComp.create());
+        auto *chatPage = qobject_cast<QQuickItem *>(chatObj.get());
+        QVERIFY(chatPage != nullptr);
+        chatPage->setParentItem(window.contentItem());
+        chatPage->setSize(QSizeF(1280, 800));
+        QCoreApplication::processEvents();
+
+        auto *headerRow = chatPage->findChild<QQuickItem *>("roomHeaderRow");
+        auto *composerRow = chatPage->findChild<QQuickItem *>("composerRow");
+        checkRowNoOverlap(headerRow, 5);
+        checkRowNoOverlap(composerRow, 4);
     }
 };
 

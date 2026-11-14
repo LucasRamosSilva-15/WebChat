@@ -145,6 +145,7 @@ foreach(test_name IN ITEMS
     )
     target_link_libraries(${test_name} PRIVATE
         SkyRippleCore
+        SkyRippleCoreplugin
         SkyRippleTestSupport
         Qt6::Test
     )
