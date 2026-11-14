@@ -158,6 +158,8 @@ Item {
                                 SkeuoInput {
                                     id: emailInput
                                     Layout.fillWidth: true
+                                    formMode: true
+                                    leadingIcon: "user"
                                     placeholderText: "seu@email.com"
                                     inputMethodHints: Qt.ImhEmailCharactersOnly
                                     enabled: !AuthService.busy
@@ -177,25 +179,18 @@ Item {
                                     color: Theme.textMuted
                                 }
 
-                                RowLayout {
+                                SkeuoInput {
+                                    id: passwordInput
                                     Layout.fillWidth: true
-                                    spacing: 8
-
-                                    SkeuoInput {
-                                        id: passwordInput
-                                        Layout.fillWidth: true
-                                        placeholderText: "Sua senha"
-                                        echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
-                                        enabled: !AuthService.busy
-                                        onAccepted: root.submitLogin()
-                                    }
-
-                                    SkeuoButton {
-                                        Layout.preferredWidth: 74
-                                        text: root.showPassword ? "Ocultar" : "Ver"
-                                        variant: "secondary"
-                                        onClicked: root.showPassword = !root.showPassword
-                                    }
+                                    formMode: true
+                                    leadingIcon: "lock"
+                                    showPasswordToggle: true
+                                    passwordVisible: root.showPassword
+                                    onPasswordToggleClicked: root.showPassword = !root.showPassword
+                                    placeholderText: "Sua senha"
+                                    echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
+                                    enabled: !AuthService.busy
+                                    onAccepted: root.submitLogin()
                                 }
                             }
                         }
@@ -235,7 +230,7 @@ Item {
                         SkeuoWell {
                             Layout.fillWidth: true
                             visible: root.showServerConfig
-                            contentPadding: 12
+                            contentPadding: 14
 
                             ColumnLayout {
                                 anchors.left: parent.left
@@ -253,6 +248,8 @@ Item {
                                 SkeuoInput {
                                     id: serverUrlInput
                                     Layout.fillWidth: true
+                                    formMode: true
+                                    leadingIcon: "link"
                                     text: AppConfig.apiBaseUrl
                                     placeholderText: "https://webchat-9vqr.onrender.com/api"
                                     onEditingFinished: AppConfig.setApiBaseUrl(text)

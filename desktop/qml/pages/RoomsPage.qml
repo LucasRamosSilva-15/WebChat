@@ -220,6 +220,8 @@ Item {
                         SkeuoInput {
                             id: searchInput
                             Layout.fillWidth: true
+                            formMode: true
+                            leadingIcon: "search"
                             placeholderText: "Buscar sala por nome, categoria ou descrição..."
                             onTextChanged: RoomService.rooms.searchQuery = text
                         }
@@ -453,6 +455,7 @@ Item {
                             SkeuoInput {
                                 id: newRoomNameInput
                                 Layout.fillWidth: true
+                                formMode: true
                                 placeholderText: "Ex.: Sala Geral"
                             }
                         }
@@ -491,6 +494,7 @@ Item {
                             SkeuoInput {
                                 id: newRoomDescInput
                                 Layout.fillWidth: true
+                                formMode: true
                                 placeholderText: "Sobre o que é esta sala?"
                             }
                         }

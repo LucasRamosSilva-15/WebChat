@@ -176,6 +176,8 @@ Item {
                                 SkeuoInput {
                                     id: nameInput
                                     Layout.fillWidth: true
+                                    formMode: true
+                                    leadingIcon: "user"
                                     placeholderText: "Ex: Lucas Ramos"
                                     enabled: !AuthService.busy
                                     onAccepted: emailInput.forceActiveFocus()
@@ -197,6 +199,8 @@ Item {
                                 SkeuoInput {
                                     id: emailInput
                                     Layout.fillWidth: true
+                                    formMode: true
+                                    leadingIcon: "mail"
                                     placeholderText: "seu@email.com"
                                     inputMethodHints: Qt.ImhEmailCharactersOnly
                                     enabled: !AuthService.busy
@@ -216,25 +220,18 @@ Item {
                                     color: Theme.textMuted
                                 }
 
-                                RowLayout {
+                                SkeuoInput {
+                                    id: passwordInput
                                     Layout.fillWidth: true
-                                    spacing: 8
-
-                                    SkeuoInput {
-                                        id: passwordInput
-                                        Layout.fillWidth: true
-                                        placeholderText: "Mínimo 6 caracteres"
-                                        echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
-                                        enabled: !AuthService.busy
-                                        onAccepted: confirmInput.forceActiveFocus()
-                                    }
-
-                                    SkeuoButton {
-                                        Layout.preferredWidth: 74
-                                        text: root.showPassword ? "Ocultar" : "Ver"
-                                        variant: "secondary"
-                                        onClicked: root.showPassword = !root.showPassword
-                                    }
+                                    formMode: true
+                                    leadingIcon: "lock"
+                                    showPasswordToggle: true
+                                    passwordVisible: root.showPassword
+                                    onPasswordToggleClicked: root.showPassword = !root.showPassword
+                                    placeholderText: "Mínimo 6 caracteres"
+                                    echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
+                                    enabled: !AuthService.busy
+                                    onAccepted: confirmInput.forceActiveFocus()
                                 }
 
                                 RowLayout {
@@ -285,6 +282,11 @@ Item {
                                 SkeuoInput {
                                     id: confirmInput
                                     Layout.fillWidth: true
+                                    formMode: true
+                                    leadingIcon: "lock"
+                                    showPasswordToggle: true
+                                    passwordVisible: root.showPassword
+                                    onPasswordToggleClicked: root.showPassword = !root.showPassword
                                     placeholderText: "Repita a senha"
                                     echoMode: root.showPassword ? TextInput.Normal : TextInput.Password
                                     enabled: !AuthService.busy
