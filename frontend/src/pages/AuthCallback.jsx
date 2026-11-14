@@ -10,42 +10,13 @@ export default function AuthCallback() {
   useEffect(() => {
     let isMounted = true;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const sourceParam = urlParams.get('source');
-    const isDesktop = sourceParam === 'desktop';
-    const rawDesktopPort = (urlParams.get('desktop_port') || '').trim();
-    const parsedDesktopPort = Number.parseInt(rawDesktopPort, 10);
-    const hasValidDesktopPort =
-      Number.isInteger(parsedDesktopPort) &&
-      String(parsedDesktopPort) === rawDesktopPort &&
-      parsedDesktopPort >= 1024 &&
-      parsedDesktopPort <= 65535;
-
-    const redirectDesktopError = (message) => {
-      const target = `http://127.0.0.1:${parsedDesktopPort}/callback?error=${encodeURIComponent(message || 'Falha na autenticação Google.')}`;
-      if (isMounted) {
-        setStatusMessage('Retornando para o SkyRipple Desktop...');
-        setDeepLinkUrl(target);
-      }
-      window.location.replace(target);
-    };
-
     const processAuth = async () => {
       try {
-        const oauthError =
-          urlParams.get('error_description') ||
-          hashParams.get('error_description') ||
-          urlParams.get('error') ||
-          hashParams.get('error');
-
-        if (isDesktop && hasValidDesktopPort && oauthError) {
-          redirectDesktopError(oauthError);
-          return;
-        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
         const isMobile =
-          sourceParam === 'mobile' ||
+          urlParams.get('source') === 'mobile' ||
           localStorage.getItem('auth_source') === 'mobile';
 
         let { data: { session } } = await supabase.auth.getSession();
@@ -88,10 +59,6 @@ export default function AuthCallback() {
 
         const rawUser = synced?.user || session?.user || null;
         let userToSend = null;
-        let resolvedEmail = '';
-        let resolvedDisplayName = '';
-        let resolvedProfilePhoto = '';
-
         if (rawUser) {
           const realName =
             rawUser?.user_metadata?.full_name ||
@@ -105,53 +72,13 @@ export default function AuthCallback() {
             rawUser?.username ||
             (rawUser?.email ? rawUser.email.split('@')[0] : 'usuario');
 
-          resolvedEmail = rawUser?.email || '';
-          resolvedDisplayName = realName;
-          resolvedProfilePhoto =
-            rawUser?.profilePhoto ||
-            rawUser?.avatar_url ||
-            rawUser?.user_metadata?.avatar_url ||
-            rawUser?.user_metadata?.picture ||
-            '';
-
           userToSend = {
             ...rawUser,
             displayName: realName,
             name: realName,
             username: usernameHandle,
-            handle: usernameHandle,
-            profilePhoto: resolvedProfilePhoto || undefined
+            handle: usernameHandle
           };
-        }
-
-        if (isDesktop && hasValidDesktopPort) {
-          if (!token) {
-            redirectDesktopError('Token de autenticação não recebido.');
-            return;
-          }
-
-          const desktopParams = new URLSearchParams();
-          desktopParams.set('token', token);
-          if (userToSend) {
-            desktopParams.set('user', JSON.stringify(userToSend));
-          }
-          if (resolvedEmail) {
-            desktopParams.set('email', resolvedEmail);
-          }
-          if (resolvedDisplayName) {
-            desktopParams.set('displayName', resolvedDisplayName);
-          }
-          if (resolvedProfilePhoto) {
-            desktopParams.set('profilePhoto', resolvedProfilePhoto);
-          }
-
-          const desktopCallbackUrl = `http://127.0.0.1:${parsedDesktopPort}/callback?${desktopParams.toString()}`;
-          if (isMounted) {
-            setStatusMessage('Retornando para o SkyRipple Desktop...');
-            setDeepLinkUrl(desktopCallbackUrl);
-          }
-          window.location.replace(desktopCallbackUrl);
-          return;
         }
 
         if (isMobile && token) {
@@ -183,10 +110,6 @@ export default function AuthCallback() {
         }
       } catch (err) {
         console.error('[AuthCallback] Erro ao processar callback de autenticação:', err);
-        if (isDesktop && hasValidDesktopPort) {
-          redirectDesktopError(err?.message || 'Erro ao processar callback de autenticação.');
-          return;
-        }
         navigate('/login', { replace: true });
       }
     };
