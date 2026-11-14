@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
+import QtQuick.Effects
 import SkyRipple
 
 Rectangle {
@@ -101,21 +102,30 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        Item {
+        Rectangle {
             id: profileTrigger
-            Layout.preferredWidth: profileTriggerRow.implicitWidth
-            Layout.preferredHeight: 36
+            Layout.preferredWidth: profileTriggerRow.implicitWidth + 18
+            Layout.preferredHeight: 38
+            radius: 19
+            color: profileHover.hovered || profilePopup.opened
+                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(15 / 255, 23 / 255, 42 / 255, 0.06))
+                : "transparent"
+            border.width: 1
+            border.color: profileHover.hovered || profilePopup.opened
+                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(148 / 255, 163 / 255, 184 / 255, 0.45))
+                : "transparent"
 
             RowLayout {
                 id: profileTriggerRow
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.centerIn: parent
                 spacing: 8
 
                 UserAvatar {
                     source: SessionStore.profilePhoto
                     name: root.resolvedDisplayName
                     size: "sm"
-                    showStatus: false
+                    showStatus: true
+                    status: "online"
                     Layout.preferredWidth: 32
                     Layout.preferredHeight: 32
                 }
@@ -152,9 +162,17 @@ Rectangle {
                         color: Theme.isDark ? "#4ade80" : "#16a34a"
                     }
                 }
+
+                Text {
+                    text: profilePopup.opened ? "▴" : "▾"
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    color: Theme.textMuted
+                }
             }
 
             HoverHandler {
+                id: profileHover
                 cursorShape: Qt.PointingHandCursor
             }
 
@@ -180,10 +198,33 @@ Rectangle {
                 focus: true
                 closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
 
-                background: SkeuoPanel {
-                    panelRadius: 16
-                    contentPadding: 0
-                    fillContent: true
+                background: Item {
+                    implicitWidth: 260
+                    implicitHeight: 200
+
+                    Rectangle {
+                        id: popupSurface
+                        anchors.fill: parent
+                        radius: 16
+                        color: Theme.isDark
+                            ? Qt.rgba(15 / 255, 23 / 255, 42 / 255, 0.97)
+                            : Qt.rgba(1, 1, 1, 0.97)
+                        border.width: 1
+                        border.color: Theme.isDark
+                            ? Qt.rgba(148 / 255, 163 / 255, 184 / 255, 0.28)
+                            : Qt.rgba(148 / 255, 163 / 255, 184 / 255, 0.55)
+                        visible: false
+                        layer.enabled: true
+                    }
+
+                    MultiEffect {
+                        anchors.fill: popupSurface
+                        source: popupSurface
+                        shadowEnabled: true
+                        shadowBlur: 0.45
+                        shadowVerticalOffset: 8
+                        shadowColor: Qt.rgba(0, 0, 0, Theme.isDark ? 0.55 : 0.24)
+                    }
                 }
 
                 contentItem: ColumnLayout {
@@ -274,30 +315,6 @@ Rectangle {
                         }
                     }
                 }
-            }
-        }
-
-        SkeuoButton {
-            text: Theme.isDark ? "Claro" : "Escuro"
-            variant: "secondary"
-            horizontalPadding: 12
-            verticalPadding: 6
-            Layout.preferredWidth: implicitWidth
-            Layout.minimumWidth: implicitWidth
-            onClicked: ThemeController.toggleColorMode()
-        }
-
-        SkeuoButton {
-            text: "Sair"
-            variant: "danger"
-            horizontalPadding: 14
-            verticalPadding: 6
-            Layout.preferredWidth: implicitWidth
-            Layout.minimumWidth: implicitWidth
-            onClicked: {
-                MessageService.stopSync()
-                RoomService.leaveActiveRoom()
-                AuthService.logout()
             }
         }
     }

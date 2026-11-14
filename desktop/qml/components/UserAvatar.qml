@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import SkyRipple
 
 Item {
@@ -49,6 +50,8 @@ Item {
 
     implicitWidth: avatarPx
     implicitHeight: avatarPx
+    width: avatarPx
+    height: avatarPx
 
     scale: root.clickable && avatarHover.hovered ? 1.05 : 1.0
     Behavior on scale {
@@ -69,10 +72,18 @@ Item {
             anchors.fill: parent
             anchors.margins: root.ringPadding
             radius: width / 2
-            clip: true
             gradient: Gradient {
                 GradientStop { position: 0.0; color: Theme.isDark ? "#374151" : "#ffffff" }
                 GradientStop { position: 1.0; color: Theme.isDark ? "#1f2937" : "#f9fafb" }
+            }
+
+            Rectangle {
+                id: avatarMask
+                anchors.fill: parent
+                radius: width / 2
+                color: "#ffffff"
+                visible: false
+                layer.enabled: true
             }
 
             Image {
@@ -81,12 +92,20 @@ Item {
                 source: root.source
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
-                visible: root.source !== "" && status === Image.Ready
+                visible: false
+            }
+
+            MultiEffect {
+                anchors.fill: avatarImg
+                source: avatarImg
+                visible: root.source !== "" && avatarImg.status === Image.Ready
+                maskEnabled: true
+                maskSource: avatarMask
             }
 
             Text {
                 anchors.centerIn: parent
-                visible: !avatarImg.visible
+                visible: !(root.source !== "" && avatarImg.status === Image.Ready)
                 text: root.initial
                 font.family: Theme.fontFamily
                 font.pixelSize: root.fontPx
@@ -103,7 +122,7 @@ Item {
         radius: width / 2
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        border.width: 2
+        border.width: 1.5
         border.color: Theme.isDark ? "#0f172a" : "#ffffff"
 
         gradient: Gradient {

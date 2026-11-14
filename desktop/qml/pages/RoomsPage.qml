@@ -49,14 +49,25 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            ColumnLayout {
-                width: Math.min(parent.width - 48, 1240)
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.topMargin: 20
-                anchors.bottomMargin: 20
-                spacing: 14
+            Flickable {
+                id: pageFlickable
+                anchors.fill: parent
+                contentWidth: width
+                contentHeight: mainContainer.implicitHeight + 40
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
+
+                ColumnLayout {
+                    id: mainContainer
+                    width: Math.min(pageFlickable.width - 48, 1240)
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.topMargin: 20
+                    spacing: 14
 
                 RowLayout {
                     Layout.fillWidth: true
@@ -206,31 +217,29 @@ Item {
                             }
                         }
 
-                        RowLayout {
+                        SkeuoInput {
+                            id: searchInput
                             Layout.fillWidth: true
-                            spacing: 10
+                            placeholderText: "Buscar sala por nome, categoria ou descrição..."
+                            onTextChanged: RoomService.rooms.searchQuery = text
+                        }
 
-                            SkeuoInput {
-                                id: searchInput
-                                Layout.fillWidth: true
-                                placeholderText: "Buscar sala por nome, categoria ou descrição..."
-                                onTextChanged: RoomService.rooms.searchQuery = text
-                            }
+                        Flow {
+                            Layout.fillWidth: true
+                            spacing: 8
 
-                            RowLayout {
-                                spacing: 6
+                            Repeater {
+                                model: root.categories
 
-                                Repeater {
-                                    model: root.categories
-
-                                    SkeuoButton {
-                                        required property string modelData
-                                        text: modelData
-                                        variant: root.selectedCategory === modelData ? "primary" : "secondary"
-                                        onClicked: {
-                                            root.selectedCategory = modelData
-                                            RoomService.rooms.categoryFilter = modelData
-                                        }
+                                SkeuoButton {
+                                    required property string modelData
+                                    text: modelData
+                                    horizontalPadding: 14
+                                    verticalPadding: 6
+                                    variant: root.selectedCategory === modelData ? "primary" : "secondary"
+                                    onClicked: {
+                                        root.selectedCategory = modelData
+                                        RoomService.rooms.categoryFilter = modelData
                                     }
                                 }
                             }
@@ -263,32 +272,37 @@ Item {
 
                 SkeuoWell {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    contentPadding: 10
+                    contentPadding: 12
                     fillContent: true
+                    implicitHeight: RoomService.rooms.count > 0
+                        ? roomsGridLayout.implicitHeight + 24
+                        : 140
 
-                    GridView {
-                        id: roomsGrid
-                        anchors.fill: parent
-                        clip: true
-                        cellWidth: Math.max(260, Math.floor(width / Math.max(1, Math.floor(width / 290))))
-                        cellHeight: 176
-                        model: RoomService.rooms
+                    GridLayout {
+                        id: roomsGridLayout
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        readonly property int cols: Math.max(1, Math.floor((width + columnSpacing) / 290))
+                        columns: cols
+                        columnSpacing: 12
+                        rowSpacing: 12
 
-                        delegate: Item {
-                            id: roomDelegate
-                            required property string id
-                            required property string name
-                            required property string description
-                            required property string category
-                            required property int membersCount
+                        Repeater {
+                            model: RoomService.rooms
 
-                            width: roomsGrid.cellWidth
-                            height: roomsGrid.cellHeight
+                            delegate: SkeuoPanel {
+                                id: roomDelegate
+                                required property string id
+                                required property string name
+                                required property string description
+                                required property string category
+                                required property int membersCount
 
-                            SkeuoPanel {
-                                anchors.fill: parent
-                                anchors.margins: 8
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 0
+                                Layout.preferredWidth: Math.floor((roomsGridLayout.width - (roomsGridLayout.columns - 1) * roomsGridLayout.columnSpacing) / roomsGridLayout.columns)
+                                Layout.preferredHeight: 164
                                 contentPadding: 14
                                 fillContent: true
 
@@ -387,6 +401,7 @@ Item {
                         color: Theme.textMuted
                     }
                 }
+            }
             }
 
             Rectangle {
