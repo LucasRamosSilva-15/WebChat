@@ -7,15 +7,15 @@ Item {
     id: root
 
     readonly property var accentOptions: [
-        { "id": "blue", "label": "Azul", "swatch": "#0071e3" },
-        { "id": "green", "label": "Verde", "swatch": "#10b981" },
-        { "id": "purple", "label": "Roxo", "swatch": "#a855f7" },
-        { "id": "red", "label": "Rosa", "swatch": "#f43f5e" },
-        { "id": "slate", "label": "Ardósia", "swatch": "#64748b" }
+        { "id": "blue", "label": "Azul", "swatch": "#0071e3", "darker": "#004488" },
+        { "id": "green", "label": "Verde", "swatch": "#10b981", "darker": "#047857" },
+        { "id": "purple", "label": "Roxo", "swatch": "#a855f7", "darker": "#7e22ce" },
+        { "id": "red", "label": "Rosa", "swatch": "#f43f5e", "darker": "#be123c" },
+        { "id": "slate", "label": "Ardósia", "swatch": "#64748b", "darker": "#334155" }
     ]
 
     readonly property var bgOptions: [
-        { "id": "neutral", "label": "Ardósia" },
+        { "id": "neutral", "label": "Neutro" },
         { "id": "classic_blue", "label": "Azul Clássico" },
         { "id": "smooth_gradient", "label": "Gradiente Suave" },
         { "id": "clean_light", "label": "Claro Limpo" }
@@ -221,19 +221,41 @@ Item {
                                         height: 40
                                         radius: 20
                                         color: modelData.swatch
-                                        border.width: selected ? 3 : 1
-                                        border.color: selected ? Theme.textPrimary : Qt.rgba(1, 1, 1, 0.45)
+                                        border.width: selected ? 1.5 : 1
+                                        border.color: selected ? modelData.darker : Qt.rgba(0, 0, 0, 0.18)
 
                                         Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
+                                            anchors.fill: parent
+                                            anchors.margins: -4
+                                            radius: width / 2
+                                            color: "transparent"
+                                            border.width: 4
+                                            border.color: Theme.primaryRing
+                                            visible: swatchDelegate.selected
+                                            z: -1
+                                        }
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            anchors.margins: 1.5
+                                            radius: width / 2
+                                            color: "transparent"
+                                            border.width: 1
+                                            border.color: Qt.rgba(1, 1, 1, 0.75)
+                                            visible: swatchDelegate.selected
+                                        }
+
+                                        Rectangle {
+                                            anchors.horizontalCenter: parent.horizontalCenter
                                             anchors.top: parent.top
-                                            anchors.leftMargin: 8
-                                            anchors.rightMargin: 8
-                                            anchors.topMargin: 3
-                                            height: 10
-                                            radius: 5
-                                            color: Qt.rgba(1, 1, 1, 0.35)
+                                            anchors.topMargin: 4
+                                            width: 22
+                                            height: 11
+                                            radius: 5.5
+                                            gradient: Gradient {
+                                                GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.55) }
+                                                GradientStop { position: 1.0; color: "transparent" }
+                                            }
                                         }
 
                                         MouseArea {

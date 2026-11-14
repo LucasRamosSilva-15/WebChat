@@ -5,12 +5,12 @@ import SkyRipple
 TextField {
     id: root
 
-    property int inputRadius: 14
+    property int inputRadius: 22
 
     implicitWidth: 260
     implicitHeight: 42
-    leftPadding: 14
-    rightPadding: 14
+    leftPadding: 16
+    rightPadding: 16
     topPadding: 9
     bottomPadding: 9
 
@@ -29,14 +29,13 @@ TextField {
         border.color: root.activeFocus ? Theme.primaryMain : Theme.inputBorder
 
         Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.leftMargin: root.inputRadius * 0.4
-            anchors.rightMargin: root.inputRadius * 0.4
-            height: 1
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: root.inputRadius - 1
+            color: "transparent"
+            border.width: 1
+            border.color: Theme.isDark ? Qt.rgba(0, 0, 0, 0.5) : Qt.rgba(0, 0, 0, 0.08)
             visible: !root.activeFocus
-            color: Theme.inputBorderTop
         }
 
         Rectangle {

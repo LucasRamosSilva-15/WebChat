@@ -14,28 +14,15 @@ Rectangle {
     radius: cardRadius
     color: Theme.cardBg
     border.width: 1
-    border.color: Theme.cardBorder
+    border.color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.16) : Qt.rgba(148 / 255, 163 / 255, 184 / 255, 0.45)
 
     Rectangle {
         anchors.fill: parent
-        anchors.margins: -1
-        radius: root.cardRadius + 1
+        anchors.margins: 1
+        radius: root.cardRadius - 1
         color: "transparent"
         border.width: 1
-        border.color: Theme.cardOuterStroke
-        z: -1
-    }
-
-    Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.leftMargin: root.cardRadius * 0.45
-        anchors.rightMargin: root.cardRadius * 0.45
-        anchors.topMargin: 1
-        height: 1
-        color: Theme.cardSpecularTop
-        opacity: 0.9
+        border.color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(1, 1, 1, 0.9)
     }
 
     Item {

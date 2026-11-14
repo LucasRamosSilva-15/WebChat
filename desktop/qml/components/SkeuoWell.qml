@@ -17,24 +17,12 @@ Rectangle {
     border.color: Theme.wellBorderSide
 
     Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.leftMargin: root.wellRadius * 0.35
-        anchors.rightMargin: root.wellRadius * 0.35
-        height: 1
-        color: Theme.wellBorderTop
-    }
-
-    Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.leftMargin: root.wellRadius * 0.35
-        anchors.rightMargin: root.wellRadius * 0.35
-        anchors.bottomMargin: -1
-        height: 1
-        color: Theme.wellHighlightBottom
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: root.wellRadius - 1
+        color: "transparent"
+        border.width: 1
+        border.color: Theme.isDark ? Qt.rgba(0, 0, 0, 0.45) : Qt.rgba(15 / 255, 23 / 255, 42 / 255, 0.08)
     }
 
     Item {

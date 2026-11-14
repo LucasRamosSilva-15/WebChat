@@ -106,17 +106,15 @@ Button {
         }
 
         Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.leftMargin: root.buttonRadius * 0.4
-            anchors.rightMargin: root.buttonRadius * 0.4
-            anchors.topMargin: 1
-            height: 1
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: root.buttonRadius - 1
+            color: "transparent"
+            border.width: 1
             visible: !root.down
-            color: root.variant === "secondary"
-                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(1, 1, 1, 0.95))
-                : Qt.rgba(1, 1, 1, 0.38)
+            border.color: root.variant === "secondary"
+                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(1, 1, 1, 0.9))
+                : Qt.rgba(1, 1, 1, 0.32)
         }
     }
 

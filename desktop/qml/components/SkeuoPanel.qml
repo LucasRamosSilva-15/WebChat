@@ -21,14 +21,12 @@ Rectangle {
     }
 
     Rectangle {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.leftMargin: root.panelRadius * 0.4
-        anchors.rightMargin: root.panelRadius * 0.4
-        anchors.topMargin: 1
-        height: 1
-        color: Theme.panelBorderTop
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: root.panelRadius - 1
+        color: "transparent"
+        border.width: 1
+        border.color: Theme.panelBorderTop
     }
 
     Item {

@@ -44,11 +44,13 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.leftMargin: parent.height * 0.35
-        anchors.rightMargin: parent.height * 0.35
-        anchors.topMargin: 1
-        height: 1
-        color: Qt.rgba(1, 1, 1, Theme.isDark ? 0.18 : 0.6)
+        anchors.margins: 1
+        height: parent.height * 0.52
+        radius: height / 2
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, Theme.isDark ? 0.22 : 0.48) }
+            GradientStop { position: 1.0; color: "transparent" }
+        }
     }
 
     Text {
