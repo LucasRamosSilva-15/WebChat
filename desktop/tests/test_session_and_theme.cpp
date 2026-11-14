@@ -78,18 +78,18 @@ private slots:
     void appConfigNormalizationAndPersistence()
     {
         AppConfig *config = AppConfig::instance();
-        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com/api"));
+        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com/api"));
 
         QSignalSpy urlSpy(config, &AppConfig::apiBaseUrlChanged);
-        config->setApiBaseUrl("https://skyripple-9vqr.onrender.com///");
-        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com"));
+        config->setApiBaseUrl("https://webchat-9vqr.onrender.com///");
+        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com"));
         QCOMPARE(urlSpy.count(), 1);
 
         config->setApiBaseUrl("https://custom.example.com/api/");
         QCOMPARE(config->apiBaseUrl(), QString("https://custom.example.com/api"));
 
         config->setApiBaseUrl("");
-        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com/api"));
+        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com/api"));
 
         config->setApiBaseUrl("http://127.0.0.1:4000/api");
         QCOMPARE(config->apiBaseUrl(), QString("http://127.0.0.1:4000/api"));
@@ -98,7 +98,7 @@ private slots:
         QCOMPARE(config->apiBaseUrl(), QString("http://127.0.0.1:4000/api"));
 
         config->resetApiBaseUrl();
-        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com/api"));
+        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com/api"));
     }
 
     void appConfigLoadsSupabaseFromDotEnv()
