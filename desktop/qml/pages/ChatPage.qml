@@ -22,6 +22,9 @@ Item {
 
     function loadRoomData() {
         if (root.roomId !== "") {
+            if (RoomService.activeRoomId !== root.roomId) {
+                RoomService.joinRoom(root.roomId)
+            }
             MessageService.loadInitialMessages(root.roomId, 50)
             RoomService.fetchMembers(root.roomId)
             if (RoomService.rooms.count === 0) {
@@ -60,7 +63,7 @@ Item {
         target: RoomService
         function onRoomEntered(newRoomId) {
             if (newRoomId !== "" && newRoomId !== root.roomId) {
-                root.roomId = newRoomId
+                NavHistory.push("chat", { "roomId": newRoomId })
             }
         }
     }

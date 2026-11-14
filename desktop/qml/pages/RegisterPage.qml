@@ -66,6 +66,13 @@ Item {
         AuthService.registerAccount(cleanName, cleanEmail, pwd)
     }
 
+    SystemNavControls {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.margins: 16
+        z: 10
+    }
+
     ScrollView {
         anchors.fill: parent
         contentWidth: availableWidth

@@ -12,6 +12,13 @@ Item {
     readonly property bool isLoggedIn: SessionStore.isAuthenticated
     readonly property string welcomeName: SessionStore.displayName !== "" ? SessionStore.displayName : "explorador"
 
+    SystemNavControls {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.margins: 16
+        z: 10
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         width: Math.min(parent.width - 32, 480)

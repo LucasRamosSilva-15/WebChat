@@ -36,7 +36,7 @@ qt_add_library(SkyRippleCore STATIC
     src/network/MessageService.cpp
 )
 
-set_source_files_properties(qml/theme/Theme.qml PROPERTIES
+set_source_files_properties(qml/theme/Theme.qml qml/theme/NavHistory.qml PROPERTIES
     QT_QML_SINGLETON_TYPE TRUE
 )
 
@@ -46,6 +46,7 @@ qt_add_qml_module(SkyRippleCore
     QML_FILES
         qml/Main.qml
         qml/theme/Theme.qml
+        qml/theme/NavHistory.qml
         qml/components/SkeuoCard.qml
         qml/components/SkeuoPanel.qml
         qml/components/SkeuoWell.qml
@@ -53,6 +54,7 @@ qt_add_qml_module(SkyRippleCore
         qml/components/SkeuoInput.qml
         qml/components/SkeuoBadge.qml
         qml/components/UserAvatar.qml
+        qml/components/SystemNavControls.qml
         qml/components/Navbar.qml
         qml/components/MessageBubble.qml
         qml/pages/HomePage.qml

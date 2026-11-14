@@ -32,15 +32,8 @@ Rectangle {
         anchors.rightMargin: 16
         spacing: 12
 
-        SkeuoButton {
-            visible: root.showBackButton
-            text: "Voltar"
-            variant: "secondary"
-            horizontalPadding: 12
-            verticalPadding: 6
-            Layout.preferredWidth: implicitWidth
-            Layout.minimumWidth: implicitWidth
-            onClicked: root.backClicked()
+        SystemNavControls {
+            compact: root.width < 980
         }
 
         RowLayout {

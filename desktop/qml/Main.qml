@@ -17,6 +17,35 @@ ApplicationWindow {
 
     property bool lastAuthenticated: SessionStore.isAuthenticated
 
+    function applyRoute(route, props) {
+        const curr = stackView.currentItem
+        if (curr && curr.objectName === "chatPage" && route !== "chat") {
+            MessageService.stopSync()
+            RoomService.leaveActiveRoom()
+        }
+
+        if (route === "chat" && curr && curr.objectName === "chatPage") {
+            const nextRoomId = props && props.roomId ? String(props.roomId) : ""
+            if (nextRoomId !== "") {
+                curr.roomId = nextRoomId
+            }
+            return
+        }
+
+        let target = homeComponent
+        if (route === "login") {
+            target = loginComponent
+        } else if (route === "register") {
+            target = registerComponent
+        } else if (route === "rooms") {
+            target = roomsComponent
+        } else if (route === "chat") {
+            target = chatComponent
+        }
+
+        stackView.replace(target, props || {})
+    }
+
     function navigateToAuthenticatedRooms() {
         if (!SessionStore.isAuthenticated) {
             return
@@ -26,22 +55,31 @@ ApplicationWindow {
         if (curr && (curr.objectName === "roomsPage" || curr.objectName === "chatPage")) {
             return
         }
-        stackView.clear()
-        stackView.push(roomsComponent)
+        NavHistory.reset("rooms", {})
     }
 
     function handleSessionExpiredRedirect() {
         window.lastAuthenticated = false
         MessageService.stopSync()
         RoomService.leaveActiveRoom()
-        stackView.clear()
-        stackView.push(loginComponent, { "sessionExpiredNotice": true })
+        NavHistory.reset("login", { "sessionExpiredNotice": true })
     }
 
     Component.onCompleted: {
+        NavHistory.initIfEmpty(SessionStore.isAuthenticated ? "rooms" : "home", {})
         if (SessionStore.isAuthenticated) {
             AuthService.validateSession()
         }
+    }
+
+    Shortcut {
+        sequences: [StandardKey.Back]
+        onActivated: NavHistory.goBack()
+    }
+
+    Shortcut {
+        sequences: [StandardKey.Forward]
+        onActivated: NavHistory.goForward()
     }
 
     onActiveChanged: {
@@ -79,23 +117,24 @@ ApplicationWindow {
     Component {
         id: homeComponent
         HomePage {
-            onLoginRequested: stackView.push(loginComponent)
-            onRegisterRequested: stackView.push(registerComponent)
+            onLoginRequested: NavHistory.push("login", {})
+            onRegisterRequested: NavHistory.push("register", {})
+            onRoomsRequested: NavHistory.push("rooms", {})
         }
     }
 
     Component {
         id: loginComponent
         LoginPage {
-            onRegisterRequested: stackView.replace(registerComponent)
-            onBackRequested: stackView.pop()
+            onRegisterRequested: NavHistory.push("register", {})
+            onBackRequested: NavHistory.goBack()
         }
     }
 
     Component {
         id: registerComponent
         RegisterPage {
-            onLoginRequested: stackView.replace(loginComponent)
+            onLoginRequested: NavHistory.push("login", {})
         }
     }
 
@@ -103,7 +142,7 @@ ApplicationWindow {
         id: roomsComponent
         RoomsPage {
             onRoomOpened: function(roomId) {
-                stackView.push(chatComponent, { "roomId": roomId })
+                NavHistory.push("chat", { "roomId": roomId })
             }
         }
     }
@@ -111,7 +150,7 @@ ApplicationWindow {
     Component {
         id: chatComponent
         ChatPage {
-            onBackToRoomsRequested: stackView.pop()
+            onBackToRoomsRequested: NavHistory.push("rooms", {})
         }
     }
 
@@ -119,6 +158,13 @@ ApplicationWindow {
         id: stackView
         anchors.fill: parent
         initialItem: SessionStore.isAuthenticated ? roomsComponent : homeComponent
+    }
+
+    Connections {
+        target: NavHistory
+        function onNavigateRequested(route, props) {
+            window.applyRoute(route, props)
+        }
     }
 
     Connections {
@@ -133,8 +179,7 @@ ApplicationWindow {
                 return
             }
             window.lastAuthenticated = false
-            stackView.clear()
-            stackView.push(homeComponent)
+            NavHistory.reset("home", {})
         }
         function onSessionExpired() {
             window.handleSessionExpiredRedirect()
