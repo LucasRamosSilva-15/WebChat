@@ -24,6 +24,7 @@ Button {
         Row {
             id: contentRow
             anchors.centerIn: parent
+            anchors.verticalCenterOffset: root.down ? 1 : 0
             spacing: 8
 
             Image {
@@ -48,7 +49,7 @@ Button {
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: root.variant === "secondary" ? Theme.secondaryBtnText : "#ffffff"
+                color: root.variant === "secondary" ? (Theme.isDark ? "#f8fafc" : "#1d1d1f") : "#ffffff"
                 opacity: root.enabled ? 1.0 : 0.6
             }
         }
@@ -63,6 +64,10 @@ Button {
                 return root.down ? "#7f1d1d" : Theme.dangerBorder
             }
             if (root.variant === "secondary") {
+                if (!Theme.isDark) {
+                    if (root.down) return "#888888"
+                    return root.hovered ? "#999999" : "#b8b8b8"
+                }
                 return Theme.secondaryBtnBorder
             }
             return Theme.primaryDarker
@@ -77,6 +82,10 @@ Button {
                         return root.hovered ? Theme.dangerHover0 : Theme.dangerStop0
                     }
                     if (root.variant === "secondary") {
+                        if (!Theme.isDark) {
+                            if (root.down) return "#e2e2e2"
+                            return root.hovered ? "#ffffff" : "#ffffff"
+                        }
                         if (root.down) return Theme.secondaryBtnStop100
                         return root.hovered ? Theme.secondaryBtnHover0 : Theme.secondaryBtnStop0
                     }
@@ -92,6 +101,10 @@ Button {
                         return root.hovered ? Theme.dangerHover50 : Theme.dangerStop50
                     }
                     if (root.variant === "secondary") {
+                        if (!Theme.isDark) {
+                            if (root.down) return "#ebebeb"
+                            return root.hovered ? "#ffffff" : "#f9f9f9"
+                        }
                         if (root.down) return Theme.secondaryBtnStop100
                         return root.hovered ? Theme.secondaryBtnHover0 : Theme.secondaryBtnStop50
                     }
@@ -107,6 +120,10 @@ Button {
                         return root.hovered ? Theme.dangerHover51 : Theme.dangerStop51
                     }
                     if (root.variant === "secondary") {
+                        if (!Theme.isDark) {
+                            if (root.down) return "#f4f4f4"
+                            return root.hovered ? "#f2f2f2" : "#ececec"
+                        }
                         if (root.down) return Theme.secondaryBtnStop100
                         return root.hovered ? Theme.secondaryBtnHover100 : Theme.secondaryBtnStop51
                     }
@@ -122,6 +139,10 @@ Button {
                         return root.hovered ? Theme.dangerHover100 : Theme.dangerStop100
                     }
                     if (root.variant === "secondary") {
+                        if (!Theme.isDark) {
+                            if (root.down) return "#fafafa"
+                            return root.hovered ? "#e4e4e4" : "#dcdcdc"
+                        }
                         if (root.down) return Theme.secondaryBtnStop100
                         return root.hovered ? Theme.secondaryBtnHover100 : Theme.secondaryBtnStop100
                     }
@@ -132,17 +153,26 @@ Button {
         }
 
         Rectangle {
+            anchors.fill: parent
+            anchors.margins: 1
+            radius: Math.max(0, root.buttonRadius - 1)
+            color: "transparent"
+            border.width: 1
+            visible: !root.down
+            border.color: root.variant === "secondary"
+                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(1, 1, 1, 0.92))
+                : Qt.rgba(1, 1, 1, 0.28)
+        }
+
+        Rectangle {
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.leftMargin: root.buttonRadius * 0.5
-            anchors.rightMargin: root.buttonRadius * 0.5
-            anchors.topMargin: 1
+            anchors.leftMargin: root.buttonRadius * 0.4
+            anchors.rightMargin: root.buttonRadius * 0.4
+            y: parent.height
             height: 1
             visible: !root.down
-            color: root.variant === "secondary"
-                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(1, 1, 1, 0.85))
-                : Qt.rgba(1, 1, 1, 0.35)
+            color: Qt.rgba(0, 0, 0, 0.10)
         }
     }
 
