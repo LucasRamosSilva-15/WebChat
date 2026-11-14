@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Svg)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Svg Network)
 
 qt_standard_project_setup(REQUIRES 6.5)
 qt_policy(SET QTP0004 NEW)
@@ -15,6 +15,14 @@ qt_add_executable(SkyRippleDesktop
     src/main.cpp
     src/core/ThemeController.hpp
     src/core/ThemeController.cpp
+    src/core/AppConfig.hpp
+    src/core/AppConfig.cpp
+    src/core/SessionStore.hpp
+    src/core/SessionStore.cpp
+    src/network/ApiClient.hpp
+    src/network/ApiClient.cpp
+    src/network/AuthService.hpp
+    src/network/AuthService.cpp
 )
 
 set_source_files_properties(qml/theme/Theme.qml PROPERTIES
@@ -34,6 +42,9 @@ qt_add_qml_module(SkyRippleDesktop
         qml/components/SkeuoInput.qml
         qml/components/SkeuoBadge.qml
         qml/pages/HomePage.qml
+        qml/pages/LoginPage.qml
+        qml/pages/RegisterPage.qml
+        qml/pages/AuthenticatedStubPage.qml
     RESOURCES
         assets/icons/skyripple_logo.svg
 )
@@ -41,6 +52,7 @@ qt_add_qml_module(SkyRippleDesktop
 target_include_directories(SkyRippleDesktop PRIVATE
     src
     src/core
+    src/network
 )
 
 target_link_libraries(SkyRippleDesktop PRIVATE
@@ -50,6 +62,7 @@ target_link_libraries(SkyRippleDesktop PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
     Qt6::Svg
+    Qt6::Network
 )
 
 set_target_properties(SkyRippleDesktop PROPERTIES

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls.Basic
 import SkyRipple
@@ -38,7 +40,51 @@ ApplicationWindow {
         }
     }
 
-    HomePage {
+    Component {
+        id: homeComponent
+        HomePage {
+            onLoginRequested: stackView.push(loginComponent)
+            onRegisterRequested: stackView.push(registerComponent)
+        }
+    }
+
+    Component {
+        id: loginComponent
+        LoginPage {
+            onRegisterRequested: stackView.replace(registerComponent)
+            onBackRequested: stackView.pop()
+        }
+    }
+
+    Component {
+        id: registerComponent
+        RegisterPage {
+            onLoginRequested: stackView.replace(loginComponent)
+        }
+    }
+
+    Component {
+        id: authenticatedComponent
+        AuthenticatedStubPage {}
+    }
+
+    StackView {
+        id: stackView
         anchors.fill: parent
+        initialItem: SessionStore.isAuthenticated ? authenticatedComponent : homeComponent
+    }
+
+    Connections {
+        target: SessionStore
+        function onSessionChanged() {
+            stackView.clear()
+            stackView.push(SessionStore.isAuthenticated ? authenticatedComponent : loginComponent)
+        }
+    }
+
+    Component.onCompleted: {
+        if (SessionStore.isAuthenticated) {
+            AuthService.fetchMe()
+        }
     }
 }

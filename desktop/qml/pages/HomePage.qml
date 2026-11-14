@@ -6,6 +6,9 @@ import SkyRipple
 Item {
     id: root
 
+    signal loginRequested()
+    signal registerRequested()
+
     readonly property var accentOptions: [
         { "id": "blue", "label": "Azul", "swatch": "#0071e3", "darker": "#004488" },
         { "id": "green", "label": "Verde", "swatch": "#10b981", "darker": "#047857" },
@@ -126,12 +129,14 @@ Item {
                                 Layout.fillWidth: true
                                 text: "Entrar"
                                 variant: "primary"
+                                onClicked: root.loginRequested()
                             }
 
                             SkeuoButton {
                                 Layout.fillWidth: true
                                 text: "Criar Conta"
                                 variant: "secondary"
+                                onClicked: root.registerRequested()
                             }
 
                             SkeuoButton {
