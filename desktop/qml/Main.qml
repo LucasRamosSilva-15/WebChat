@@ -15,6 +15,10 @@ ApplicationWindow {
     title: "SkyRipple"
     color: Theme.bgGradientBottom
 
+    onActiveChanged: {
+        MessageService.setWindowActive(window.active)
+    }
+
     Rectangle {
         id: backgroundLayer
         anchors.fill: parent
@@ -64,27 +68,42 @@ ApplicationWindow {
     }
 
     Component {
-        id: authenticatedComponent
-        AuthenticatedStubPage {}
+        id: roomsComponent
+        RoomsPage {
+            onRoomOpened: function(roomId) {
+                stackView.push(chatComponent, { "roomId": roomId })
+            }
+        }
+    }
+
+    Component {
+        id: chatComponent
+        ChatPage {
+            onBackToRoomsRequested: stackView.pop()
+        }
     }
 
     StackView {
         id: stackView
         anchors.fill: parent
-        initialItem: SessionStore.isAuthenticated ? authenticatedComponent : homeComponent
+        initialItem: SessionStore.isAuthenticated ? roomsComponent : homeComponent
     }
 
     Connections {
         target: SessionStore
         function onSessionChanged() {
             stackView.clear()
-            stackView.push(SessionStore.isAuthenticated ? authenticatedComponent : loginComponent)
+            stackView.push(SessionStore.isAuthenticated ? roomsComponent : homeComponent)
         }
     }
 
-    Component.onCompleted: {
-        if (SessionStore.isAuthenticated) {
-            AuthService.fetchMe()
+    Connections {
+        target: ApiClient
+        function onSessionExpired() {
+            MessageService.stopSync()
+            RoomService.leaveActiveRoom()
+            stackView.clear()
+            stackView.push(loginComponent)
         }
     }
 }

@@ -18,10 +18,18 @@ qt_add_library(SkyRippleCore STATIC
     src/core/AppConfig.cpp
     src/core/SessionStore.hpp
     src/core/SessionStore.cpp
+    src/models/RoomListModel.hpp
+    src/models/RoomListModel.cpp
+    src/models/MessageListModel.hpp
+    src/models/MessageListModel.cpp
     src/network/ApiClient.hpp
     src/network/ApiClient.cpp
     src/network/AuthService.hpp
     src/network/AuthService.cpp
+    src/network/RoomService.hpp
+    src/network/RoomService.cpp
+    src/network/MessageService.hpp
+    src/network/MessageService.cpp
 )
 
 set_source_files_properties(qml/theme/Theme.qml PROPERTIES
@@ -40,10 +48,13 @@ qt_add_qml_module(SkyRippleCore
         qml/components/SkeuoButton.qml
         qml/components/SkeuoInput.qml
         qml/components/SkeuoBadge.qml
+        qml/components/Navbar.qml
+        qml/components/MessageBubble.qml
         qml/pages/HomePage.qml
         qml/pages/LoginPage.qml
         qml/pages/RegisterPage.qml
-        qml/pages/AuthenticatedStubPage.qml
+        qml/pages/RoomsPage.qml
+        qml/pages/ChatPage.qml
     RESOURCES
         assets/icons/skyripple_logo.svg
 )
@@ -51,6 +62,7 @@ qt_add_qml_module(SkyRippleCore
 target_include_directories(SkyRippleCore PUBLIC
     src
     src/core
+    src/models
     src/network
 )
 
@@ -118,6 +130,8 @@ foreach(test_name IN ITEMS
     test_session_and_theme
     test_api_client
     test_auth_service
+    test_room_service
+    test_message_and_pagination
 )
     qt_add_executable(${test_name}
         tests/${test_name}.cpp
