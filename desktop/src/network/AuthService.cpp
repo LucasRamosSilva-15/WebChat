@@ -52,6 +52,18 @@ AuthService::AuthService(QObject *parent)
         }
     });
     m_sessionCheckTimer.start();
+
+    connect(ApiClient::instance(), &ApiClient::sessionExpired, this, [this]() {
+        m_loopbackServer.stopListening();
+        setWaitingForGoogle(false);
+        setBusy(false);
+    });
+
+    connect(SessionStore::instance(), &SessionStore::sessionExpired, this, [this]() {
+        m_loopbackServer.stopListening();
+        setWaitingForGoogle(false);
+        setBusy(false);
+    });
 }
 
 bool AuthService::busy() const

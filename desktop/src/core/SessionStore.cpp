@@ -164,9 +164,12 @@ bool SessionStore::isJwtExpired(const QString &token, qint64 skewSeconds)
     if (!obj.contains("exp")) {
         return false;
     }
-    const qint64 expSec = obj.value("exp").toVariant().toLongLong();
+    qint64 expSec = obj.value("exp").toVariant().toLongLong();
     if (expSec <= 0) {
         return false;
+    }
+    if (expSec > 1000000000000LL) {
+        expSec /= 1000;
     }
     const qint64 nowSec = QDateTime::currentSecsSinceEpoch();
     return expSec <= (nowSec + skewSeconds);

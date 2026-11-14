@@ -16,10 +16,8 @@ ApplicationWindow {
     color: Theme.bgGradientBottom
 
     property bool lastAuthenticated: SessionStore.isAuthenticated
-    property bool expiredRedirectPending: false
 
     function handleSessionExpiredRedirect() {
-        window.expiredRedirectPending = true
         window.lastAuthenticated = false
         MessageService.stopSync()
         RoomService.leaveActiveRoom()
@@ -118,18 +116,8 @@ ApplicationWindow {
                 return
             }
             window.lastAuthenticated = authNow
-            if (authNow) {
-                window.expiredRedirectPending = false
-                stackView.clear()
-                stackView.push(roomsComponent)
-                return
-            }
-            if (window.expiredRedirectPending) {
-                window.expiredRedirectPending = false
-                return
-            }
             stackView.clear()
-            stackView.push(homeComponent)
+            stackView.push(authNow ? roomsComponent : homeComponent)
         }
         function onSessionExpired() {
             window.handleSessionExpiredRedirect()
