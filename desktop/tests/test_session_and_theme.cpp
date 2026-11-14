@@ -1,6 +1,10 @@
 #include <QtTest>
 #include <QSignalSpy>
 #include <QJsonObject>
+#include <QTemporaryDir>
+#include <QDir>
+#include <QFile>
+#include <QTextStream>
 
 #include "ThemeController.hpp"
 #include "AppConfig.hpp"
@@ -74,18 +78,18 @@ private slots:
     void appConfigNormalizationAndPersistence()
     {
         AppConfig *config = AppConfig::instance();
-        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com/api"));
+        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com/api"));
 
         QSignalSpy urlSpy(config, &AppConfig::apiBaseUrlChanged);
-        config->setApiBaseUrl("https://webchat-9vqr.onrender.com///");
-        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com"));
+        config->setApiBaseUrl("https://skyripple-9vqr.onrender.com///");
+        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com"));
         QCOMPARE(urlSpy.count(), 1);
 
         config->setApiBaseUrl("https://custom.example.com/api/");
         QCOMPARE(config->apiBaseUrl(), QString("https://custom.example.com/api"));
 
         config->setApiBaseUrl("");
-        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com/api"));
+        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com/api"));
 
         config->setApiBaseUrl("http://127.0.0.1:4000/api");
         QCOMPARE(config->apiBaseUrl(), QString("http://127.0.0.1:4000/api"));
@@ -94,7 +98,33 @@ private slots:
         QCOMPARE(config->apiBaseUrl(), QString("http://127.0.0.1:4000/api"));
 
         config->resetApiBaseUrl();
-        QCOMPARE(config->apiBaseUrl(), QString("https://webchat-9vqr.onrender.com/api"));
+        QCOMPARE(config->apiBaseUrl(), QString("https://skyripple-9vqr.onrender.com/api"));
+    }
+
+    void appConfigLoadsSupabaseFromDotEnv()
+    {
+        QTemporaryDir tempDir;
+        QVERIFY(tempDir.isValid());
+
+        QFile envFile(tempDir.filePath(".env"));
+        QVERIFY(envFile.open(QIODevice::WriteOnly | QIODevice::Text));
+        QTextStream out(&envFile);
+        out << "VITE_SUPABASE_URL=\"https://dotenv-demo.supabase.co/\"\n";
+        out << "VITE_SUPABASE_ANON_KEY='anon-key-from-dotenv'\n";
+        envFile.close();
+
+        const QString oldCwd = QDir::currentPath();
+        QVERIFY(QDir::setCurrent(tempDir.path()));
+
+        AppConfig *config = AppConfig::instance();
+        config->setSupabaseUrl("");
+        config->setSupabaseAnonKey("");
+        config->reload();
+
+        QCOMPARE(config->supabaseUrl(), QString("https://dotenv-demo.supabase.co"));
+        QCOMPARE(config->supabaseAnonKey(), QString("anon-key-from-dotenv"));
+
+        QVERIFY(QDir::setCurrent(oldCwd));
     }
 
     void sessionStorePersistAndClear()

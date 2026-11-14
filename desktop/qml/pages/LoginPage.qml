@@ -375,6 +375,9 @@ Item {
                                 AppConfig.setApiBaseUrl(serverUrlInput.text)
                                 AppConfig.setSupabaseUrl(supabaseUrlInput.text)
                                 AppConfig.setSupabaseAnonKey(supabaseKeyInput.text)
+                                if (AppConfig.supabaseUrl === "" || AppConfig.supabaseAnonKey === "") {
+                                    root.showServerConfig = true
+                                }
                                 AuthService.loginWithGoogle()
                             }
                         }
