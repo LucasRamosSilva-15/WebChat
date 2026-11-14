@@ -39,6 +39,7 @@ public:
     void setSession(const QString &token, const QJsonObject &user);
     void updateUser(const QJsonObject &user);
     Q_INVOKABLE void clearSession();
+    void reload();
 
 signals:
     void sessionChanged();

@@ -100,10 +100,26 @@ void SessionStore::clearSession()
     m_profileDesc.clear();
     m_role.clear();
     m_status.clear();
-    m_settings.remove("session");
+    QSettings fresh("SkyRipple", "SkyRippleDesktop");
+    fresh.remove("session");
+    fresh.sync();
     if (hadSession) {
         emit sessionChanged();
     }
+}
+
+void SessionStore::reload()
+{
+    QSettings fresh("SkyRipple", "SkyRippleDesktop");
+    m_token = fresh.value("session/token").toString();
+    m_userId = fresh.value("session/userId").toString();
+    m_displayName = fresh.value("session/displayName").toString();
+    m_email = fresh.value("session/email").toString();
+    m_profilePhoto = fresh.value("session/profilePhoto").toString();
+    m_profileDesc = fresh.value("session/profileDesc").toString();
+    m_role = fresh.value("session/role").toString();
+    m_status = fresh.value("session/status").toString();
+    emit sessionChanged();
 }
 
 void SessionStore::applyUserFields(const QJsonObject &user)
@@ -138,12 +154,14 @@ void SessionStore::applyUserFields(const QJsonObject &user)
 
 void SessionStore::persist()
 {
-    m_settings.setValue("session/token", m_token);
-    m_settings.setValue("session/userId", m_userId);
-    m_settings.setValue("session/displayName", m_displayName);
-    m_settings.setValue("session/email", m_email);
-    m_settings.setValue("session/profilePhoto", m_profilePhoto);
-    m_settings.setValue("session/profileDesc", m_profileDesc);
-    m_settings.setValue("session/role", m_role);
-    m_settings.setValue("session/status", m_status);
+    QSettings settings("SkyRipple", "SkyRippleDesktop");
+    settings.setValue("session/token", m_token);
+    settings.setValue("session/userId", m_userId);
+    settings.setValue("session/displayName", m_displayName);
+    settings.setValue("session/email", m_email);
+    settings.setValue("session/profilePhoto", m_profilePhoto);
+    settings.setValue("session/profileDesc", m_profileDesc);
+    settings.setValue("session/role", m_role);
+    settings.setValue("session/status", m_status);
+    settings.sync();
 }

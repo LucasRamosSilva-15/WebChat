@@ -18,7 +18,7 @@ AppConfig *AppConfig::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
 AppConfig::AppConfig(QObject *parent)
     : QObject(parent)
     , m_settings("SkyRipple", "SkyRippleDesktop")
-    , m_apiBaseUrl(normalizeUrl(m_settings.value("network/apiBaseUrl", "http://localhost:3001/api").toString()))
+    , m_apiBaseUrl(normalizeUrl(m_settings.value("network/apiBaseUrl", "https://webchat-9vqr.onrender.com/api").toString()))
 {
 }
 
@@ -34,13 +34,25 @@ void AppConfig::setApiBaseUrl(const QString &url)
         return;
     }
     m_apiBaseUrl = normalized;
-    m_settings.setValue("network/apiBaseUrl", m_apiBaseUrl);
+    QSettings settings("SkyRipple", "SkyRippleDesktop");
+    settings.setValue("network/apiBaseUrl", m_apiBaseUrl);
+    settings.sync();
     emit apiBaseUrlChanged();
 }
 
 void AppConfig::resetApiBaseUrl()
 {
-    setApiBaseUrl("http://localhost:3001/api");
+    setApiBaseUrl("https://webchat-9vqr.onrender.com/api");
+}
+
+void AppConfig::reload()
+{
+    QSettings fresh("SkyRipple", "SkyRippleDesktop");
+    const QString loaded = normalizeUrl(fresh.value("network/apiBaseUrl", "https://webchat-9vqr.onrender.com/api").toString());
+    if (m_apiBaseUrl != loaded) {
+        m_apiBaseUrl = loaded;
+        emit apiBaseUrlChanged();
+    }
 }
 
 QString AppConfig::normalizeUrl(const QString &url) const
@@ -50,7 +62,7 @@ QString AppConfig::normalizeUrl(const QString &url) const
         trimmed.chop(1);
     }
     if (trimmed.isEmpty()) {
-        return "http://localhost:3001/api";
+        return "https://webchat-9vqr.onrender.com/api";
     }
     return trimmed;
 }

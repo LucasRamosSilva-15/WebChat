@@ -20,6 +20,7 @@ public:
     QString apiBaseUrl() const;
     Q_INVOKABLE void setApiBaseUrl(const QString &url);
     Q_INVOKABLE void resetApiBaseUrl();
+    void reload();
 
 signals:
     void apiBaseUrlChanged();

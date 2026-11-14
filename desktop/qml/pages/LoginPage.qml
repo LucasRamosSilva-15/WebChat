@@ -247,7 +247,7 @@ Item {
                                     id: serverUrlInput
                                     Layout.fillWidth: true
                                     text: AppConfig.apiBaseUrl
-                                    placeholderText: "http://localhost:3001/api"
+                                    placeholderText: "https://webchat-9vqr.onrender.com/api"
                                     onEditingFinished: AppConfig.setApiBaseUrl(text)
                                 }
 
