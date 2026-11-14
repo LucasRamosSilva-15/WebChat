@@ -7,6 +7,7 @@ import SkyRipple
 
 Item {
     id: root
+    objectName: "roomsPage"
 
     signal roomOpened(string roomId)
 

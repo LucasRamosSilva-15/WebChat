@@ -8,6 +8,7 @@ import SkyRipple
 
 Item {
     id: root
+    objectName: "chatPage"
 
     property string roomId: ""
     signal backToRoomsRequested()

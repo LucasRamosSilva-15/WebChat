@@ -17,6 +17,19 @@ ApplicationWindow {
 
     property bool lastAuthenticated: SessionStore.isAuthenticated
 
+    function navigateToAuthenticatedRooms() {
+        if (!SessionStore.isAuthenticated) {
+            return
+        }
+        window.lastAuthenticated = true
+        const curr = stackView.currentItem
+        if (curr && (curr.objectName === "roomsPage" || curr.objectName === "chatPage")) {
+            return
+        }
+        stackView.clear()
+        stackView.push(roomsComponent)
+    }
+
     function handleSessionExpiredRedirect() {
         window.lastAuthenticated = false
         MessageService.stopSync()
@@ -112,12 +125,16 @@ ApplicationWindow {
         target: SessionStore
         function onSessionChanged() {
             const authNow = SessionStore.isAuthenticated
-            if (authNow === window.lastAuthenticated) {
+            if (authNow) {
+                window.navigateToAuthenticatedRooms()
                 return
             }
-            window.lastAuthenticated = authNow
+            if (!window.lastAuthenticated) {
+                return
+            }
+            window.lastAuthenticated = false
             stackView.clear()
-            stackView.push(authNow ? roomsComponent : homeComponent)
+            stackView.push(homeComponent)
         }
         function onSessionExpired() {
             window.handleSessionExpiredRedirect()
@@ -133,6 +150,12 @@ ApplicationWindow {
 
     Connections {
         target: AuthService
+        function onLoginSucceeded() {
+            window.navigateToAuthenticatedRooms()
+        }
+        function onRegisterSucceeded() {
+            window.navigateToAuthenticatedRooms()
+        }
         function onRequestWindowFocus() {
             window.raise()
             window.requestActivate()
