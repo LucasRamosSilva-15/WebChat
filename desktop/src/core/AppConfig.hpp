@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QMap>
 #include <QQmlEngine>
 #include <QJSEngine>
 
@@ -40,8 +41,10 @@ private:
     explicit AppConfig(QObject *parent = nullptr);
     QString normalizeUrl(const QString &url) const;
     QString normalizeSupabaseUrl(const QString &url) const;
-    QString loadSupabaseUrl(const QSettings &settings) const;
-    QString loadSupabaseAnonKey(const QSettings &settings) const;
+    QString loadSupabaseUrl(const QSettings &settings, const QMap<QString, QString> &envVars) const;
+    QString loadSupabaseAnonKey(const QSettings &settings, const QMap<QString, QString> &envVars) const;
+    QMap<QString, QString> loadDotEnvFiles() const;
+    QString stripQuotes(const QString &value) const;
 
     QSettings m_settings;
     QString m_apiBaseUrl;
