@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls.Basic
 import SkyRipple
 
 Item {
@@ -8,303 +7,168 @@ Item {
 
     signal loginRequested()
     signal registerRequested()
+    signal roomsRequested()
 
-    readonly property var accentOptions: [
-        { "id": "blue", "label": "Azul", "swatch": "#0071e3", "darker": "#004488" },
-        { "id": "green", "label": "Verde", "swatch": "#10b981", "darker": "#047857" },
-        { "id": "purple", "label": "Roxo", "swatch": "#a855f7", "darker": "#7e22ce" },
-        { "id": "red", "label": "Rosa", "swatch": "#f43f5e", "darker": "#be123c" },
-        { "id": "slate", "label": "Ardósia", "swatch": "#64748b", "darker": "#334155" }
-    ]
+    readonly property bool isLoggedIn: SessionStore.isAuthenticated
+    readonly property string welcomeName: SessionStore.displayName !== "" ? SessionStore.displayName : "explorador"
 
-    readonly property var bgOptions: [
-        { "id": "neutral", "label": "Neutro" },
-        { "id": "classic_blue", "label": "Azul Clássico" },
-        { "id": "smooth_gradient", "label": "Gradiente Suave" },
-        { "id": "clean_light", "label": "Claro Limpo" }
-    ]
+    ColumnLayout {
+        anchors.centerIn: parent
+        width: Math.min(parent.width - 32, 480)
+        spacing: 16
 
-    ScrollView {
-        anchors.fill: parent
-        contentWidth: availableWidth
-        clip: true
+        SkeuoCard {
+            Layout.fillWidth: true
+            cardRadius: 28
+            contentPadding: 34
 
-        Item {
-            width: parent.width
-            implicitHeight: Math.max(root.height, mainRow.implicitHeight + 64)
+            ColumnLayout {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                spacing: 0
 
-            RowLayout {
-                id: mainRow
-                anchors.centerIn: parent
-                width: Math.min(parent.width - 48, 920)
-                spacing: 24
+                Image {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 80
+                    Layout.preferredHeight: 80
+                    source: "qrc:/qt/qml/SkyRipple/assets/icons/skyripple_logo.svg"
+                    sourceSize.width: 80
+                    sourceSize.height: 80
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                }
 
-                SkeuoCard {
+                Item {
+                    Layout.preferredHeight: 16
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "SkyRipple"
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 34
+                    font.weight: Font.Bold
+                    color: Theme.textPrimary
+                }
+
+                Item {
+                    Layout.preferredHeight: 10
+                }
+
+                Text {
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 440
-                    Layout.alignment: Qt.AlignTop
-                    contentPadding: 28
+                    Layout.maximumWidth: 380
+                    Layout.alignment: Qt.AlignHCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    lineHeight: 1.45
+                    textFormat: Text.RichText
+                    text: root.isLoggedIn
+                        ? ("Bem-vindo de volta, <b style='color:" + (Theme.isDark ? "#38bdf8" : "#0284c7") + ";'>" + root.welcomeName + "</b>! Pronto para conversar?")
+                        : "O seu espaço para conversas em tempo real. Deixe as suas ideias fluírem livremente."
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 14
+                    color: Theme.isDark ? "#94a3b8" : "#475569"
+                }
 
-                    ColumnLayout {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        spacing: 16
+                Item {
+                    Layout.preferredHeight: 24
+                }
 
-                        Image {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.preferredWidth: 72
-                            Layout.preferredHeight: 72
-                            source: "qrc:/qt/qml/SkyRipple/assets/icons/skyripple_logo.svg"
-                            sourceSize.width: 72
-                            sourceSize.height: 72
-                            fillMode: Image.PreserveAspectFit
-                            smooth: true
-                        }
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 12
 
-                        Text {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: "SkyRipple"
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 28
-                            font.weight: Font.Bold
-                            color: Theme.textPrimary
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignHCenter
-                            horizontalAlignment: Text.AlignHCenter
-                            wrapMode: Text.WordWrap
-                            text: "O seu espaço para conversas em tempo real. Design System nativo em Qt 6 + QML."
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 13
-                            color: Theme.textSecondary
-                        }
-
-                        SkeuoWell {
-                            Layout.fillWidth: true
-                            contentPadding: 14
-
-                            ColumnLayout {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                spacing: 10
-
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 8
-
-                                    SkeuoBadge {
-                                        text: "DONO"
-                                        roleType: "owner"
-                                    }
-                                    SkeuoBadge {
-                                        text: "MOD"
-                                        roleType: "moderator"
-                                    }
-                                    SkeuoBadge {
-                                        text: "ONLINE"
-                                        roleType: "online"
-                                    }
-                                }
-
-                                SkeuoInput {
-                                    Layout.fillWidth: true
-                                    placeholderText: "E-mail ou utilizador"
-                                }
-
-                                SkeuoInput {
-                                    Layout.fillWidth: true
-                                    placeholderText: "Senha"
-                                    echoMode: TextInput.Password
-                                }
+                    SkeuoButton {
+                        text: root.isLoggedIn ? "Explorar Salas  →" : "Criar conta gratuita  →"
+                        variant: "primary"
+                        horizontalPadding: 22
+                        verticalPadding: 11
+                        onClicked: {
+                            if (root.isLoggedIn) {
+                                root.roomsRequested()
+                            } else {
+                                root.registerRequested()
                             }
                         }
+                    }
 
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 10
-
-                            SkeuoButton {
-                                Layout.fillWidth: true
-                                text: "Entrar"
-                                variant: "primary"
-                                onClicked: root.loginRequested()
-                            }
-
-                            SkeuoButton {
-                                Layout.fillWidth: true
-                                text: "Criar Conta"
-                                variant: "secondary"
-                                onClicked: root.registerRequested()
-                            }
-
-                            SkeuoButton {
-                                text: "Sair"
-                                variant: "danger"
+                    SkeuoButton {
+                        text: root.isLoggedIn ? "Mensagens Diretas" : "Já tenho conta"
+                        variant: "secondary"
+                        horizontalPadding: 20
+                        verticalPadding: 11
+                        onClicked: {
+                            if (root.isLoggedIn) {
+                                root.roomsRequested()
+                            } else {
+                                root.loginRequested()
                             }
                         }
                     }
                 }
+            }
+        }
 
-                SkeuoPanel {
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: 420
-                    Layout.alignment: Qt.AlignTop
-                    contentPadding: 24
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            implicitWidth: pillRow.implicitWidth + 28
+            implicitHeight: pillRow.implicitHeight + 12
+            radius: height / 2
+            color: Theme.isDark
+                ? Qt.rgba(30 / 255, 41 / 255, 59 / 255, 0.72)
+                : Qt.rgba(1, 1, 1, 0.72)
+            border.width: 1
+            border.color: Theme.isDark
+                ? Qt.rgba(1, 1, 1, 0.1)
+                : Qt.rgba(1, 1, 1, 0.85)
 
-                    ColumnLayout {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        spacing: 18
+            RowLayout {
+                id: pillRow
+                anchors.centerIn: parent
+                spacing: 8
 
-                        Text {
-                            text: "Aparência e Tema"
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 18
-                            font.weight: Font.Bold
-                            color: Theme.textPrimary
-                        }
+                Rectangle {
+                    Layout.preferredWidth: 6
+                    Layout.preferredHeight: 6
+                    radius: 3
+                    color: "#0ea5e9"
+                }
 
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
+                Text {
+                    text: "Salas temáticas"
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    font.weight: Font.Medium
+                    color: Theme.isDark ? "#cbd5e1" : "#334155"
+                }
 
-                            Text {
-                                text: "MODO DE COR"
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 11
-                                font.weight: Font.Bold
-                                color: Theme.textMuted
-                            }
+                Text {
+                    text: "•"
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    color: Theme.isDark ? "#475569" : "#cbd5e1"
+                }
 
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 10
+                Text {
+                    text: "Mensagens instantâneas"
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    color: Theme.isDark ? "#94a3b8" : "#64748b"
+                }
 
-                                SkeuoButton {
-                                    Layout.fillWidth: true
-                                    text: "Modo Claro"
-                                    variant: !Theme.isDark ? "primary" : "secondary"
-                                    onClicked: ThemeController.setColorMode("light")
-                                }
+                Text {
+                    text: "•"
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    color: Theme.isDark ? "#475569" : "#cbd5e1"
+                }
 
-                                SkeuoButton {
-                                    Layout.fillWidth: true
-                                    text: "Modo Escuro"
-                                    variant: Theme.isDark ? "primary" : "secondary"
-                                    onClicked: ThemeController.setColorMode("dark")
-                                }
-                            }
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            Text {
-                                text: "COR DE DESTAQUE"
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 11
-                                font.weight: Font.Bold
-                                color: Theme.textMuted
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 10
-
-                                Repeater {
-                                    model: root.accentOptions
-
-                                    delegate: Rectangle {
-                                        id: swatchDelegate
-                                        required property var modelData
-                                        readonly property bool selected: Theme.primaryColorName === modelData.id
-
-                                        width: 40
-                                        height: 40
-                                        radius: 20
-                                        color: modelData.swatch
-                                        border.width: selected ? 1.5 : 1
-                                        border.color: selected ? modelData.darker : Qt.rgba(0, 0, 0, 0.18)
-
-                                        Rectangle {
-                                            anchors.fill: parent
-                                            anchors.margins: -4
-                                            radius: width / 2
-                                            color: "transparent"
-                                            border.width: 4
-                                            border.color: Theme.primaryRing
-                                            visible: swatchDelegate.selected
-                                            z: -1
-                                        }
-
-                                        Rectangle {
-                                            anchors.fill: parent
-                                            anchors.margins: 1.5
-                                            radius: width / 2
-                                            color: "transparent"
-                                            border.width: 1
-                                            border.color: Qt.rgba(1, 1, 1, 0.75)
-                                            visible: swatchDelegate.selected
-                                        }
-
-                                        Rectangle {
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            anchors.top: parent.top
-                                            anchors.topMargin: 4
-                                            width: 22
-                                            height: 11
-                                            radius: 5.5
-                                            gradient: Gradient {
-                                                GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.55) }
-                                                GradientStop { position: 1.0; color: "transparent" }
-                                            }
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: ThemeController.setPrimaryColor(swatchDelegate.modelData.id)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-
-                            Text {
-                                text: "ESTILO DE FUNDO (MODO CLARO)"
-                                font.family: Theme.fontFamily
-                                font.pixelSize: 11
-                                font.weight: Font.Bold
-                                color: Theme.textMuted
-                            }
-
-                            GridLayout {
-                                Layout.fillWidth: true
-                                columns: 2
-                                columnSpacing: 10
-                                rowSpacing: 10
-
-                                Repeater {
-                                    model: root.bgOptions
-
-                                    delegate: SkeuoButton {
-                                        required property var modelData
-                                        Layout.fillWidth: true
-                                        text: modelData.label
-                                        variant: Theme.bgColorName === modelData.id ? "primary" : "secondary"
-                                        onClicked: ThemeController.setBgColor(modelData.id)
-                                    }
-                                }
-                            }
-                        }
-                    }
+                Text {
+                    text: "100% Nativo"
+                    font.family: Theme.fontFamily
+                    font.pixelSize: 11
+                    color: Theme.isDark ? "#94a3b8" : "#64748b"
                 }
             }
         }
