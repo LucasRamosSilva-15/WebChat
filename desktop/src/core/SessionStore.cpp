@@ -1,5 +1,8 @@
 #include "SessionStore.hpp"
 
+#include <QDateTime>
+#include <QJsonDocument>
+
 SessionStore *SessionStore::instance()
 {
     static SessionStore singleton;
@@ -27,6 +30,9 @@ SessionStore::SessionStore(QObject *parent)
     , m_role(m_settings.value("session/role").toString())
     , m_status(m_settings.value("session/status").toString())
 {
+    if (!m_token.isEmpty() && isJwtExpired(m_token)) {
+        clearSession();
+    }
 }
 
 bool SessionStore::isAuthenticated() const
@@ -119,7 +125,51 @@ void SessionStore::reload()
     m_profileDesc = fresh.value("session/profileDesc").toString();
     m_role = fresh.value("session/role").toString();
     m_status = fresh.value("session/status").toString();
+    if (!m_token.isEmpty() && isJwtExpired(m_token)) {
+        clearSession();
+        return;
+    }
     emit sessionChanged();
+}
+
+bool SessionStore::checkTokenExpiration()
+{
+    if (m_token.isEmpty()) {
+        return false;
+    }
+    if (isJwtExpired(m_token)) {
+        clearSession();
+        emit sessionExpired();
+        return false;
+    }
+    return true;
+}
+
+bool SessionStore::isJwtExpired(const QString &token, qint64 skewSeconds)
+{
+    const QStringList parts = token.trimmed().split('.');
+    if (parts.size() != 3) {
+        return false;
+    }
+    QByteArray payloadBytes = QByteArray::fromBase64(parts.at(1).toLatin1(), QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+    if (payloadBytes.isEmpty()) {
+        return false;
+    }
+    QJsonParseError err;
+    const QJsonDocument doc = QJsonDocument::fromJson(payloadBytes, &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject()) {
+        return false;
+    }
+    const QJsonObject obj = doc.object();
+    if (!obj.contains("exp")) {
+        return false;
+    }
+    const qint64 expSec = obj.value("exp").toVariant().toLongLong();
+    if (expSec <= 0) {
+        return false;
+    }
+    const qint64 nowSec = QDateTime::currentSecsSinceEpoch();
+    return expSec <= (nowSec + skewSeconds);
 }
 
 void SessionStore::applyUserFields(const QJsonObject &user)

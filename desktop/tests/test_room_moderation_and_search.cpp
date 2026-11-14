@@ -14,6 +14,8 @@
 
 #include "RoomService.hpp"
 #include "MessageService.hpp"
+#include "AuthService.hpp"
+#include "ApiClient.hpp"
 #include "MemberListModel.hpp"
 #include "MessageListModel.hpp"
 #include "OAuthLoopbackServer.hpp"
@@ -298,6 +300,17 @@ private slots:
         auto *composerRow = chatPage->findChild<QQuickItem *>("composerRow");
         checkRowNoOverlap(headerRow, 5);
         checkRowNoOverlap(composerRow, 4);
+    }
+
+    void testAutoLogoutOnAuthMe401()
+    {
+        QVERIFY(SessionStore::instance()->isAuthenticated());
+        m_server->addRoute("GET", "/api/auth/me", 401, QJsonObject{{"error", "Token inválido"}});
+
+        QSignalSpy expiredSpy(ApiClient::instance(), &ApiClient::sessionExpired);
+        AuthService::instance()->validateSession();
+        QTRY_COMPARE(expiredSpy.count(), 1);
+        QVERIFY(!SessionStore::instance()->isAuthenticated());
     }
 };
 

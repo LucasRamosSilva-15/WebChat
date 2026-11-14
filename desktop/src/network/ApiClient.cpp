@@ -134,8 +134,14 @@ void ApiClient::sendRequest(const QString &method,
         const QString errMsg = extractErrorMessage(rawData, reply, statusCode);
 
         if (statusCode == 401) {
-            const bool isAuthEndpoint = endpoint.startsWith("/auth/login") || endpoint.startsWith("/auth/register");
-            if (!isAuthEndpoint && !SessionStore::instance()->token().isEmpty()) {
+            const bool isPublicAuthEndpoint = endpoint.startsWith("/auth/login")
+                || endpoint.startsWith("/auth/register")
+                || endpoint.startsWith("/auth/oauth-sync")
+                || endpoint.startsWith("/auth/forgot-password")
+                || endpoint.startsWith("/auth/reset-password")
+                || endpoint.startsWith("/auth/verify-email")
+                || endpoint.startsWith("/admin/login");
+            if (!isPublicAuthEndpoint && !SessionStore::instance()->token().isEmpty()) {
                 SessionStore::instance()->clearSession();
                 emit sessionExpired();
             }

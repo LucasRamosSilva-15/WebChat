@@ -39,10 +39,13 @@ public:
     void setSession(const QString &token, const QJsonObject &user);
     void updateUser(const QJsonObject &user);
     Q_INVOKABLE void clearSession();
+    Q_INVOKABLE bool checkTokenExpiration();
+    static bool isJwtExpired(const QString &token, qint64 skewSeconds = 0);
     void reload();
 
 signals:
     void sessionChanged();
+    void sessionExpired();
 
 private:
     explicit SessionStore(QObject *parent = nullptr);

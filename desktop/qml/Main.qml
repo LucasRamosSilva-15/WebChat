@@ -15,8 +15,29 @@ ApplicationWindow {
     title: "SkyRipple"
     color: Theme.bgGradientBottom
 
+    property bool lastAuthenticated: SessionStore.isAuthenticated
+    property bool expiredRedirectPending: false
+
+    function handleSessionExpiredRedirect() {
+        window.expiredRedirectPending = true
+        window.lastAuthenticated = false
+        MessageService.stopSync()
+        RoomService.leaveActiveRoom()
+        stackView.clear()
+        stackView.push(loginComponent, { "sessionExpiredNotice": true })
+    }
+
+    Component.onCompleted: {
+        if (SessionStore.isAuthenticated) {
+            AuthService.validateSession()
+        }
+    }
+
     onActiveChanged: {
         MessageService.setWindowActive(window.active)
+        if (window.active && SessionStore.isAuthenticated) {
+            SessionStore.checkTokenExpiration()
+        }
     }
 
     Rectangle {
@@ -92,18 +113,33 @@ ApplicationWindow {
     Connections {
         target: SessionStore
         function onSessionChanged() {
+            const authNow = SessionStore.isAuthenticated
+            if (authNow === window.lastAuthenticated) {
+                return
+            }
+            window.lastAuthenticated = authNow
+            if (authNow) {
+                window.expiredRedirectPending = false
+                stackView.clear()
+                stackView.push(roomsComponent)
+                return
+            }
+            if (window.expiredRedirectPending) {
+                window.expiredRedirectPending = false
+                return
+            }
             stackView.clear()
-            stackView.push(SessionStore.isAuthenticated ? roomsComponent : homeComponent)
+            stackView.push(homeComponent)
+        }
+        function onSessionExpired() {
+            window.handleSessionExpiredRedirect()
         }
     }
 
     Connections {
         target: ApiClient
         function onSessionExpired() {
-            MessageService.stopSync()
-            RoomService.leaveActiveRoom()
-            stackView.clear()
-            stackView.push(loginComponent)
+            window.handleSessionExpiredRedirect()
         }
     }
 

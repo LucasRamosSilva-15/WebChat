@@ -44,6 +44,14 @@ AuthService::AuthService(QObject *parent)
         setErrorMessage(message);
         emit authFailed(message);
     });
+
+    m_sessionCheckTimer.setInterval(300000);
+    connect(&m_sessionCheckTimer, &QTimer::timeout, this, []() {
+        if (SessionStore::instance()->isAuthenticated()) {
+            SessionStore::instance()->checkTokenExpiration();
+        }
+    });
+    m_sessionCheckTimer.start();
 }
 
 bool AuthService::busy() const
@@ -411,6 +419,14 @@ void AuthService::fetchMe()
             }
         }
     );
+}
+
+void AuthService::validateSession()
+{
+    if (!SessionStore::instance()->checkTokenExpiration()) {
+        return;
+    }
+    fetchMe();
 }
 
 void AuthService::logout()

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls.Basic
 import SkyRipple
 
 Rectangle {
@@ -13,7 +14,9 @@ Rectangle {
     signal backClicked()
     signal navigateTab(string tab)
 
-    implicitHeight: 58
+    readonly property string resolvedDisplayName: SessionStore.displayName !== "" ? SessionStore.displayName : "Usuário"
+
+    implicitHeight: 56
     radius: 0
     color: Theme.isDark
         ? Qt.rgba(15 / 255, 23 / 255, 42 / 255, 0.90)
@@ -35,6 +38,8 @@ Rectangle {
             variant: "secondary"
             horizontalPadding: 12
             verticalPadding: 6
+            Layout.preferredWidth: implicitWidth
+            Layout.minimumWidth: implicitWidth
             onClicked: root.backClicked()
         }
 
@@ -43,10 +48,10 @@ Rectangle {
 
             Image {
                 source: "qrc:/qt/qml/SkyRipple/assets/icons/skyripple_logo.svg"
-                sourceSize.width: 28
-                sourceSize.height: 28
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 28
+                sourceSize.width: 30
+                sourceSize.height: 30
+                Layout.preferredWidth: 30
+                Layout.preferredHeight: 30
                 fillMode: Image.PreserveAspectFit
                 smooth: true
             }
@@ -57,7 +62,7 @@ Rectangle {
                 Text {
                     text: "SkyRipple"
                     font.family: Theme.fontFamily
-                    font.pixelSize: 15
+                    font.pixelSize: 16
                     font.weight: Font.Bold
                     color: Theme.textPrimary
                 }
@@ -103,63 +108,179 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        RowLayout {
-            spacing: 8
+        Item {
+            id: profileTrigger
+            Layout.preferredWidth: profileTriggerRow.implicitWidth
+            Layout.preferredHeight: 36
 
-            Item {
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 28
+            RowLayout {
+                id: profileTriggerRow
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 8
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 14
-                    color: Theme.primaryMain
-                    border.width: 1
-                    border.color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.22) : "#ffffff"
+                UserAvatar {
+                    source: SessionStore.profilePhoto
+                    name: root.resolvedDisplayName
+                    size: "sm"
+                    showStatus: false
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                }
 
-                    Image {
-                        anchors.fill: parent
-                        anchors.margins: 1
-                        source: SessionStore.profilePhoto
-                        fillMode: Image.PreserveAspectCrop
-                        visible: status === Image.Ready && SessionStore.profilePhoto !== ""
-                        asynchronous: true
+                ColumnLayout {
+                    spacing: 1
+
+                    RowLayout {
+                        spacing: 6
+
+                        Text {
+                            text: root.resolvedDisplayName
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                            color: Theme.textPrimary
+                            elide: Text.ElideRight
+                            Layout.maximumWidth: 180
+                        }
+
+                        SkeuoBadge {
+                            visible: SessionStore.role === "admin"
+                            text: "ADMIN"
+                            roleType: "owner"
+                        }
                     }
 
                     Text {
-                        anchors.centerIn: parent
-                        visible: SessionStore.profilePhoto === ""
-                        text: {
-                            var n = SessionStore.displayName
-                            return n !== "" ? n.charAt(0).toUpperCase() : "U"
-                        }
+                        text: "ONLINE"
                         font.family: Theme.fontFamily
-                        font.pixelSize: 12
+                        font.pixelSize: 9
                         font.weight: Font.Bold
-                        color: "#ffffff"
+                        font.letterSpacing: 0.8
+                        color: Theme.isDark ? "#4ade80" : "#16a34a"
                     }
-                }
-
-                Rectangle {
-                    width: 9
-                    height: 9
-                    radius: 5
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    color: "#10b981"
-                    border.width: 1.5
-                    border.color: Theme.isDark ? "#0f172a" : "#ffffff"
                 }
             }
 
-            Text {
-                text: SessionStore.displayName !== "" ? SessionStore.displayName : "Usuário"
-                font.family: Theme.fontFamily
-                font.pixelSize: 13
-                font.weight: Font.DemiBold
-                color: Theme.textPrimary
-                elide: Text.ElideRight
-                Layout.maximumWidth: 180
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    if (profilePopup.opened) {
+                        profilePopup.close()
+                    } else {
+                        profilePopup.open()
+                    }
+                }
+            }
+
+            Popup {
+                id: profilePopup
+                x: Math.max(-220, profileTrigger.width - width)
+                y: profileTrigger.height + 8
+                width: 260
+                padding: 0
+                modal: false
+                focus: true
+                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+
+                background: SkeuoPanel {
+                    panelRadius: 16
+                    contentPadding: 0
+                    fillContent: true
+                }
+
+                contentItem: ColumnLayout {
+                    spacing: 0
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.margins: 16
+                        spacing: 8
+
+                        UserAvatar {
+                            Layout.alignment: Qt.AlignHCenter
+                            source: SessionStore.profilePhoto
+                            name: root.resolvedDisplayName
+                            size: "xl"
+                            showStatus: true
+                            status: "online"
+                            Layout.preferredWidth: 64
+                            Layout.preferredHeight: 64
+                        }
+
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: 6
+
+                            Text {
+                                text: root.resolvedDisplayName
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 14
+                                font.weight: Font.Bold
+                                color: Theme.textPrimary
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: 180
+                            }
+
+                            SkeuoBadge {
+                                visible: SessionStore.role === "admin"
+                                text: "ADMIN"
+                                roleType: "owner"
+                            }
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            text: SessionStore.email !== "" ? SessionStore.email : "Conectado no SkyRipple"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 11
+                            color: Theme.textMuted
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    SkeuoWell {
+                        Layout.fillWidth: true
+                        wellRadius: 14
+                        contentPadding: 10
+                        fillContent: true
+                        implicitHeight: popupActionsCol.implicitHeight + 20
+
+                        ColumnLayout {
+                            id: popupActionsCol
+                            anchors.fill: parent
+                            spacing: 8
+
+                            SkeuoButton {
+                                Layout.fillWidth: true
+                                text: Theme.isDark ? "Tema: Claro" : "Tema: Escuro"
+                                variant: "secondary"
+                                horizontalPadding: 10
+                                verticalPadding: 6
+                                onClicked: ThemeController.toggleColorMode()
+                            }
+
+                            SkeuoButton {
+                                Layout.fillWidth: true
+                                text: "Sair da Conta"
+                                variant: "danger"
+                                horizontalPadding: 10
+                                verticalPadding: 6
+                                onClicked: {
+                                    profilePopup.close()
+                                    MessageService.stopSync()
+                                    RoomService.leaveActiveRoom()
+                                    AuthService.logout()
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -168,6 +289,8 @@ Rectangle {
             variant: "secondary"
             horizontalPadding: 12
             verticalPadding: 6
+            Layout.preferredWidth: implicitWidth
+            Layout.minimumWidth: implicitWidth
             onClicked: ThemeController.toggleColorMode()
         }
 
@@ -176,6 +299,8 @@ Rectangle {
             variant: "danger"
             horizontalPadding: 14
             verticalPadding: 6
+            Layout.preferredWidth: implicitWidth
+            Layout.minimumWidth: implicitWidth
             onClicked: {
                 MessageService.stopSync()
                 RoomService.leaveActiveRoom()

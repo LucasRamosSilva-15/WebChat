@@ -187,6 +187,38 @@ private slots:
         QCOMPARE(store->isAuthenticated(), false);
         QVERIFY(store->token().isEmpty());
     }
+
+    void jwtExpirationAndReloadAutoLogout()
+    {
+        auto makeJwt = [](qint64 expSec) -> QString {
+            const QByteArray header = QByteArray("{\"alg\":\"HS256\",\"typ\":\"JWT\"}").toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+            const QByteArray payload = QJsonDocument(QJsonObject{{"id", "42"}, {"exp", expSec}}).toJson(QJsonDocument::Compact).toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+            return QString::fromLatin1(header + "." + payload + ".sig");
+        };
+
+        const qint64 nowSec = QDateTime::currentSecsSinceEpoch();
+        const QString validJwt = makeJwt(nowSec + 3600);
+        const QString expiredJwt = makeJwt(nowSec - 60);
+
+        QVERIFY(!SessionStore::isJwtExpired("opaque-test-token"));
+        QVERIFY(!SessionStore::isJwtExpired(validJwt));
+        QVERIFY(SessionStore::isJwtExpired(expiredJwt));
+
+        SessionStore *store = SessionStore::instance();
+        store->setSession(validJwt, QJsonObject{{"id", "42"}, {"displayName", "Lucas"}});
+        QVERIFY(store->checkTokenExpiration());
+        QVERIFY(store->isAuthenticated());
+
+        QSignalSpy expiredSpy(store, &SessionStore::sessionExpired);
+        store->setSession(expiredJwt, QJsonObject{{"id", "42"}, {"displayName", "Lucas"}});
+        QVERIFY(!store->checkTokenExpiration());
+        QCOMPARE(expiredSpy.count(), 1);
+        QVERIFY(!store->isAuthenticated());
+
+        store->setSession(expiredJwt, QJsonObject{{"id", "42"}, {"displayName", "Lucas"}});
+        store->reload();
+        QVERIFY(!store->isAuthenticated());
+    }
 };
 
 QTEST_MAIN(TestSessionAndTheme)

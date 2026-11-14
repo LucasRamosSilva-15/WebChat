@@ -52,6 +52,7 @@ qt_add_qml_module(SkyRippleCore
         qml/components/SkeuoButton.qml
         qml/components/SkeuoInput.qml
         qml/components/SkeuoBadge.qml
+        qml/components/UserAvatar.qml
         qml/components/Navbar.qml
         qml/components/MessageBubble.qml
         qml/pages/HomePage.qml

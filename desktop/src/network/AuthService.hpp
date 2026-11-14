@@ -5,6 +5,7 @@
 #include <QUrl>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
+#include <QTimer>
 #include <QQmlEngine>
 #include <QJSEngine>
 
@@ -32,6 +33,7 @@ public:
     Q_INVOKABLE void loginWithGoogle();
     Q_INVOKABLE void cancelGoogleLogin();
     Q_INVOKABLE void fetchMe();
+    Q_INVOKABLE void validateSession();
     Q_INVOKABLE void logout();
     Q_INVOKABLE void clearError();
 
@@ -63,4 +65,5 @@ private:
     QString m_errorMessage;
     OAuthLoopbackServer m_loopbackServer;
     QNetworkAccessManager m_oauthNetwork;
+    QTimer m_sessionCheckTimer;
 };

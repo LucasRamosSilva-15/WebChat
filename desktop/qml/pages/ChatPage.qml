@@ -608,29 +608,14 @@ Item {
                                         Layout.fillWidth: true
                                         spacing: 8
 
-                                        Rectangle {
+                                        UserAvatar {
+                                            source: memberDelegate.profilePhoto
+                                            name: memberDelegate.displayName
+                                            size: "xs"
+                                            showStatus: true
+                                            status: memberDelegate.status
                                             Layout.preferredWidth: 24
                                             Layout.preferredHeight: 24
-                                            radius: 12
-                                            color: Theme.primaryMain
-
-                                            Image {
-                                                anchors.fill: parent
-                                                source: memberDelegate.profilePhoto
-                                                fillMode: Image.PreserveAspectCrop
-                                                visible: status === Image.Ready && memberDelegate.profilePhoto !== ""
-                                                asynchronous: true
-                                            }
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                visible: memberDelegate.profilePhoto === ""
-                                                text: memberDelegate.displayName !== "" ? memberDelegate.displayName.charAt(0).toUpperCase() : "U"
-                                                font.family: Theme.fontFamily
-                                                font.pixelSize: 11
-                                                font.weight: Font.Bold
-                                                color: "#ffffff"
-                                            }
                                         }
 
                                         Text {
