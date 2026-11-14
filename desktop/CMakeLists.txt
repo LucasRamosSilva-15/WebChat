@@ -24,6 +24,8 @@ qt_add_library(SkyRippleCore STATIC
     src/models/MessageListModel.cpp
     src/network/ApiClient.hpp
     src/network/ApiClient.cpp
+    src/network/OAuthLoopbackServer.hpp
+    src/network/OAuthLoopbackServer.cpp
     src/network/AuthService.hpp
     src/network/AuthService.cpp
     src/network/RoomService.hpp
@@ -57,6 +59,7 @@ qt_add_qml_module(SkyRippleCore
         qml/pages/ChatPage.qml
     RESOURCES
         assets/icons/skyripple_logo.svg
+        assets/icons/google_g.svg
 )
 
 target_include_directories(SkyRippleCore PUBLIC
@@ -130,6 +133,7 @@ foreach(test_name IN ITEMS
     test_session_and_theme
     test_api_client
     test_auth_service
+    test_google_oauth
     test_room_service
     test_message_and_pagination
 )

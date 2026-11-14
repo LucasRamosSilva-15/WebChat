@@ -2,8 +2,11 @@
 
 #include <QObject>
 #include <QString>
+#include <QNetworkAccessManager>
 #include <QQmlEngine>
 #include <QJSEngine>
+
+#include "OAuthLoopbackServer.hpp"
 
 class AuthService : public QObject
 {
@@ -11,6 +14,7 @@ class AuthService : public QObject
     QML_ELEMENT
     QML_SINGLETON
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
+    Q_PROPERTY(bool waitingForGoogle READ waitingForGoogle NOTIFY waitingForGoogleChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
 
 public:
@@ -18,26 +22,40 @@ public:
     static AuthService *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
     bool busy() const;
+    bool waitingForGoogle() const;
     QString errorMessage() const;
 
     Q_INVOKABLE void login(const QString &email, const QString &password);
     Q_INVOKABLE void registerAccount(const QString &displayName, const QString &email, const QString &password);
+    Q_INVOKABLE void loginWithGoogle();
+    Q_INVOKABLE void cancelGoogleLogin();
     Q_INVOKABLE void fetchMe();
     Q_INVOKABLE void logout();
     Q_INVOKABLE void clearError();
 
+    void completeGoogleLoginWithToken(const QString &accessToken);
+
 signals:
     void busyChanged();
+    void waitingForGoogleChanged();
     void errorMessageChanged();
     void loginSucceeded();
     void registerSucceeded();
     void authFailed(const QString &message);
+    void requestWindowFocus();
 
 private:
     explicit AuthService(QObject *parent = nullptr);
     void setBusy(bool value);
+    void setWaitingForGoogle(bool value);
     void setErrorMessage(const QString &message);
+    void syncOAuthUserToBackend(const QString &email,
+                                const QString &displayName,
+                                const QString &profilePhoto);
 
-    bool m_busy;
+    bool m_busy = false;
+    bool m_waitingForGoogle = false;
     QString m_errorMessage;
+    OAuthLoopbackServer m_loopbackServer;
+    QNetworkAccessManager m_oauthNetwork;
 };

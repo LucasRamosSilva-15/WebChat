@@ -275,6 +275,39 @@ Item {
                                         }
                                     }
                                 }
+
+                                Text {
+                                    text: "SUPABASE URL"
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 11
+                                    font.weight: Font.Bold
+                                    color: Theme.textMuted
+                                }
+
+                                SkeuoInput {
+                                    id: supabaseUrlInput
+                                    Layout.fillWidth: true
+                                    text: AppConfig.supabaseUrl
+                                    placeholderText: "https://seu-projeto.supabase.co"
+                                    onEditingFinished: AppConfig.setSupabaseUrl(text)
+                                }
+
+                                Text {
+                                    text: "SUPABASE ANON KEY"
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 11
+                                    font.weight: Font.Bold
+                                    color: Theme.textMuted
+                                }
+
+                                SkeuoInput {
+                                    id: supabaseKeyInput
+                                    Layout.fillWidth: true
+                                    text: AppConfig.supabaseAnonKey
+                                    echoMode: TextInput.Password
+                                    placeholderText: "Cole a chave anônima do Supabase"
+                                    onEditingFinished: AppConfig.setSupabaseAnonKey(text)
+                                }
                             }
                         }
                     }
@@ -287,7 +320,7 @@ Item {
                             Layout.fillWidth: true
                             text: AuthService.busy ? "Entrando..." : "Entrar"
                             variant: "primary"
-                            enabled: !AuthService.busy
+                            enabled: !AuthService.busy && !AuthService.waitingForGoogle
                             onClicked: root.submitLogin()
                         }
 
@@ -295,11 +328,62 @@ Item {
                             Layout.fillWidth: true
                             text: "Criar Conta"
                             variant: "secondary"
-                            enabled: !AuthService.busy
+                            enabled: !AuthService.busy && !AuthService.waitingForGoogle
                             onClicked: {
                                 AuthService.clearError()
                                 root.registerRequested()
                             }
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.12) : Qt.rgba(148 / 255, 163 / 255, 184 / 255, 0.4)
+                        }
+
+                        Text {
+                            text: "ou"
+                            font.family: Theme.fontFamily
+                            font.pixelSize: 11
+                            font.weight: Font.Bold
+                            color: Theme.textMuted
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.12) : Qt.rgba(148 / 255, 163 / 255, 184 / 255, 0.4)
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        SkeuoButton {
+                            Layout.fillWidth: true
+                            text: AuthService.waitingForGoogle ? "Aguardando navegador..." : "Entrar com Google"
+                            variant: "secondary"
+                            iconSource: "qrc:/qt/qml/SkyRipple/assets/icons/google_g.svg"
+                            enabled: !AuthService.busy && !AuthService.waitingForGoogle
+                            onClicked: {
+                                AppConfig.setApiBaseUrl(serverUrlInput.text)
+                                AppConfig.setSupabaseUrl(supabaseUrlInput.text)
+                                AppConfig.setSupabaseAnonKey(supabaseKeyInput.text)
+                                AuthService.loginWithGoogle()
+                            }
+                        }
+
+                        SkeuoButton {
+                            visible: AuthService.waitingForGoogle
+                            text: "Cancelar"
+                            variant: "danger"
+                            onClicked: AuthService.cancelGoogleLogin()
                         }
                     }
 

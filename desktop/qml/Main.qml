@@ -106,4 +106,12 @@ ApplicationWindow {
             stackView.push(loginComponent)
         }
     }
+
+    Connections {
+        target: AuthService
+        function onRequestWindowFocus() {
+            window.raise()
+            window.requestActivate()
+        }
+    }
 }

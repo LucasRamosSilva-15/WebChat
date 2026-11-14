@@ -1,7 +1,15 @@
 #include "AuthService.hpp"
 #include "ApiClient.hpp"
+#include "AppConfig.hpp"
 #include "SessionStore.hpp"
+
+#include <QDesktopServices>
+#include <QJsonDocument>
 #include <QJsonObject>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrl>
+#include <QUrlQuery>
 
 AuthService *AuthService::instance()
 {
@@ -20,13 +28,29 @@ AuthService *AuthService::create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
 
 AuthService::AuthService(QObject *parent)
     : QObject(parent)
-    , m_busy(false)
 {
+    m_oauthNetwork.setTransferTimeout(15000);
+
+    connect(&m_loopbackServer, &OAuthLoopbackServer::tokenReceived,
+            this, &AuthService::completeGoogleLoginWithToken);
+
+    connect(&m_loopbackServer, &OAuthLoopbackServer::authError,
+            this, [this](const QString &message) {
+        setWaitingForGoogle(false);
+        setBusy(false);
+        setErrorMessage(message);
+        emit authFailed(message);
+    });
 }
 
 bool AuthService::busy() const
 {
     return m_busy;
+}
+
+bool AuthService::waitingForGoogle() const
+{
+    return m_waitingForGoogle;
 }
 
 QString AuthService::errorMessage() const
@@ -41,6 +65,15 @@ void AuthService::setBusy(bool value)
     }
     m_busy = value;
     emit busyChanged();
+}
+
+void AuthService::setWaitingForGoogle(bool value)
+{
+    if (m_waitingForGoogle == value) {
+        return;
+    }
+    m_waitingForGoogle = value;
+    emit waitingForGoogleChanged();
 }
 
 void AuthService::setErrorMessage(const QString &message)
@@ -65,7 +98,7 @@ void AuthService::login(const QString &email, const QString &password)
 
     const QString cleanEmail = email.trimmed();
     if (cleanEmail.isEmpty() || password.isEmpty()) {
-        setErrorMessage("Informe e-mail e senha para entrar.");
+        setErrorMessage("Preencha e-mail e senha.");
         emit authFailed(m_errorMessage);
         return;
     }
@@ -148,6 +181,170 @@ void AuthService::registerAccount(const QString &displayName, const QString &ema
     );
 }
 
+void AuthService::loginWithGoogle()
+{
+    if (m_busy || m_waitingForGoogle) {
+        return;
+    }
+
+    const QString supabaseUrl = AppConfig::instance()->supabaseUrl();
+    const QString supabaseAnonKey = AppConfig::instance()->supabaseAnonKey();
+    if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
+        setErrorMessage("Configure a URL e a Anon Key do Supabase nas opções de servidor.");
+        emit authFailed(m_errorMessage);
+        return;
+    }
+
+    const QString callbackUrl = m_loopbackServer.startListening();
+    if (callbackUrl.isEmpty()) {
+        setErrorMessage("Não foi possível iniciar o servidor local de autenticação.");
+        emit authFailed(m_errorMessage);
+        return;
+    }
+
+    setErrorMessage(QString());
+    setWaitingForGoogle(true);
+
+    QUrl authUrl(supabaseUrl + "/auth/v1/authorize");
+    QUrlQuery query;
+    query.addQueryItem("provider", "google");
+    query.addQueryItem("redirect_to", callbackUrl);
+    authUrl.setQuery(query);
+
+    if (!QDesktopServices::openUrl(authUrl)) {
+        m_loopbackServer.stopListening();
+        setWaitingForGoogle(false);
+        setErrorMessage("Não foi possível abrir o navegador do sistema.");
+        emit authFailed(m_errorMessage);
+    }
+}
+
+void AuthService::cancelGoogleLogin()
+{
+    m_loopbackServer.stopListening();
+    setWaitingForGoogle(false);
+    setBusy(false);
+}
+
+void AuthService::completeGoogleLoginWithToken(const QString &accessToken)
+{
+    setWaitingForGoogle(false);
+
+    const QString cleanToken = accessToken.trimmed();
+    if (cleanToken.isEmpty()) {
+        setBusy(false);
+        setErrorMessage("Token de acesso do Google inválido.");
+        emit authFailed(m_errorMessage);
+        return;
+    }
+
+    const QString supabaseUrl = AppConfig::instance()->supabaseUrl();
+    const QString supabaseAnonKey = AppConfig::instance()->supabaseAnonKey();
+    if (supabaseUrl.isEmpty() || supabaseAnonKey.isEmpty()) {
+        setBusy(false);
+        setErrorMessage("Configuração do Supabase ausente.");
+        emit authFailed(m_errorMessage);
+        return;
+    }
+
+    setBusy(true);
+    setErrorMessage(QString());
+
+    QNetworkRequest request(QUrl(supabaseUrl + "/auth/v1/user"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Accept", "application/json");
+    request.setRawHeader("apikey", supabaseAnonKey.toUtf8());
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(cleanToken).toUtf8());
+
+    QNetworkReply *reply = m_oauthNetwork.get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+        const QByteArray raw = reply->readAll();
+        const int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        const QNetworkReply::NetworkError netErr = reply->error();
+        const QString errStr = reply->errorString();
+        reply->deleteLater();
+
+        if (netErr != QNetworkReply::NoError || statusCode < 200 || statusCode >= 300) {
+            setBusy(false);
+            const QJsonObject errObj = QJsonDocument::fromJson(raw).object();
+            QString msg = errObj.value("error_description").toString();
+            if (msg.isEmpty()) {
+                msg = errObj.value("msg").toString();
+            }
+            if (msg.isEmpty()) {
+                msg = errObj.value("error").toString();
+            }
+            if (msg.isEmpty()) {
+                msg = statusCode == 0 ? errStr : QString("Falha ao validar conta Google (%1).").arg(statusCode);
+            }
+            setErrorMessage(msg);
+            emit authFailed(msg);
+            return;
+        }
+
+        const QJsonObject userObj = QJsonDocument::fromJson(raw).object();
+        const QString email = userObj.value("email").toString().trimmed();
+        if (email.isEmpty()) {
+            setBusy(false);
+            setErrorMessage("E-mail da conta Google não retornado pelo Supabase.");
+            emit authFailed(m_errorMessage);
+            return;
+        }
+
+        const QJsonObject meta = userObj.value("user_metadata").toObject();
+        QString displayName = meta.value("full_name").toString().trimmed();
+        if (displayName.isEmpty()) {
+            displayName = meta.value("name").toString().trimmed();
+        }
+        if (displayName.isEmpty()) {
+            displayName = email.section('@', 0, 0);
+        }
+
+        QString profilePhoto = meta.value("avatar_url").toString().trimmed();
+        if (profilePhoto.isEmpty()) {
+            profilePhoto = meta.value("picture").toString().trimmed();
+        }
+
+        syncOAuthUserToBackend(email, displayName, profilePhoto);
+    });
+}
+
+void AuthService::syncOAuthUserToBackend(const QString &email,
+                                         const QString &displayName,
+                                         const QString &profilePhoto)
+{
+    QJsonObject body;
+    body.insert("email", email);
+    body.insert("name", displayName);
+    if (!profilePhoto.isEmpty()) {
+        body.insert("avatar_url", profilePhoto);
+    }
+
+    ApiClient::instance()->post(
+        "/auth/oauth-sync",
+        body,
+        [this](const QJsonDocument &doc, int) {
+            setBusy(false);
+            const QJsonObject obj = doc.object();
+            const QString token = obj.value("token").toString();
+            const QJsonObject user = obj.value("user").toObject();
+            if (token.isEmpty()) {
+                setErrorMessage("Token de autenticação não recebido.");
+                emit authFailed(m_errorMessage);
+                return;
+            }
+            SessionStore::instance()->setSession(token, user);
+            emit loginSucceeded();
+            emit requestWindowFocus();
+        },
+        [this](const QString &error, int) {
+            setBusy(false);
+            setErrorMessage(error);
+            emit authFailed(error);
+        }
+    );
+}
+
 void AuthService::fetchMe()
 {
     if (!SessionStore::instance()->isAuthenticated()) {
@@ -174,6 +371,8 @@ void AuthService::fetchMe()
 
 void AuthService::logout()
 {
+    m_loopbackServer.stopListening();
+    setWaitingForGoogle(false);
     setBusy(false);
     setErrorMessage(QString());
     SessionStore::instance()->clearSession();

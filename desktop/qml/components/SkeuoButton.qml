@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import QtQuick.Controls.Basic
 import SkyRipple
 
@@ -7,25 +8,51 @@ Button {
 
     property string variant: "primary"
     property int buttonRadius: 12
+    property string iconSource: ""
 
     horizontalPadding: 18
     verticalPadding: 10
 
-    implicitWidth: Math.max(88, labelItem.implicitWidth + horizontalPadding * 2)
-    implicitHeight: Math.max(38, labelItem.implicitHeight + verticalPadding * 2)
+    implicitWidth: Math.max(88, contentRow.implicitWidth + horizontalPadding * 2)
+    implicitHeight: Math.max(38, contentRow.implicitHeight + verticalPadding * 2)
 
     hoverEnabled: true
 
-    contentItem: Text {
-        id: labelItem
-        text: root.text
-        font.family: Theme.fontFamily
-        font.pixelSize: 13
-        font.weight: Font.DemiBold
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        color: root.variant === "secondary" ? Theme.secondaryBtnText : "#ffffff"
-        opacity: root.enabled ? 1.0 : 0.6
+    contentItem: RowLayout {
+        id: contentRow
+        spacing: 8
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        Image {
+            visible: root.iconSource !== ""
+            source: root.iconSource
+            sourceSize.width: 16
+            sourceSize.height: 16
+            Layout.preferredWidth: 16
+            Layout.preferredHeight: 16
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            opacity: root.enabled ? 1.0 : 0.6
+        }
+
+        Text {
+            id: labelItem
+            text: root.text
+            font.family: Theme.fontFamily
+            font.pixelSize: 13
+            font.weight: Font.DemiBold
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            color: root.variant === "secondary" ? Theme.secondaryBtnText : "#ffffff"
+            opacity: root.enabled ? 1.0 : 0.6
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
     }
 
     background: Rectangle {
