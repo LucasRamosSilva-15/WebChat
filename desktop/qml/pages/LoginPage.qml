@@ -275,39 +275,6 @@ Item {
                                         }
                                     }
                                 }
-
-                                Text {
-                                    text: "SUPABASE URL"
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 11
-                                    font.weight: Font.Bold
-                                    color: Theme.textMuted
-                                }
-
-                                SkeuoInput {
-                                    id: supabaseUrlInput
-                                    Layout.fillWidth: true
-                                    text: AppConfig.supabaseUrl
-                                    placeholderText: "https://seu-projeto.supabase.co"
-                                    onEditingFinished: AppConfig.setSupabaseUrl(text)
-                                }
-
-                                Text {
-                                    text: "SUPABASE ANON KEY"
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 11
-                                    font.weight: Font.Bold
-                                    color: Theme.textMuted
-                                }
-
-                                SkeuoInput {
-                                    id: supabaseKeyInput
-                                    Layout.fillWidth: true
-                                    text: AppConfig.supabaseAnonKey
-                                    echoMode: TextInput.Password
-                                    placeholderText: "Cole a chave anônima do Supabase"
-                                    onEditingFinished: AppConfig.setSupabaseAnonKey(text)
-                                }
                             }
                         }
                     }
@@ -373,8 +340,6 @@ Item {
                             enabled: !AuthService.busy && !AuthService.waitingForGoogle
                             onClicked: {
                                 AppConfig.setApiBaseUrl(serverUrlInput.text)
-                                AppConfig.setSupabaseUrl(supabaseUrlInput.text)
-                                AppConfig.setSupabaseAnonKey(supabaseKeyInput.text)
                                 AuthService.loginWithGoogle()
                             }
                         }
