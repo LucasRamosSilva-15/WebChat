@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import QtQuick.Controls.Basic
 import SkyRipple
 
@@ -18,40 +17,40 @@ Button {
 
     hoverEnabled: true
 
-    contentItem: RowLayout {
-        id: contentRow
-        spacing: 8
+    contentItem: Item {
+        implicitWidth: contentRow.implicitWidth
+        implicitHeight: contentRow.implicitHeight
 
-        Item {
-            Layout.fillWidth: true
-        }
+        Row {
+            id: contentRow
+            anchors.centerIn: parent
+            spacing: 8
 
-        Image {
-            visible: root.iconSource !== ""
-            source: root.iconSource
-            sourceSize.width: 16
-            sourceSize.height: 16
-            Layout.preferredWidth: 16
-            Layout.preferredHeight: 16
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-            opacity: root.enabled ? 1.0 : 0.6
-        }
+            Image {
+                visible: root.iconSource !== ""
+                source: root.iconSource
+                sourceSize.width: 16
+                sourceSize.height: 16
+                width: 16
+                height: 16
+                anchors.verticalCenter: parent.verticalCenter
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                opacity: root.enabled ? 1.0 : 0.6
+            }
 
-        Text {
-            id: labelItem
-            text: root.text
-            font.family: Theme.fontFamily
-            font.pixelSize: 13
-            font.weight: Font.DemiBold
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            color: root.variant === "secondary" ? Theme.secondaryBtnText : "#ffffff"
-            opacity: root.enabled ? 1.0 : 0.6
-        }
-
-        Item {
-            Layout.fillWidth: true
+            Text {
+                id: labelItem
+                text: root.text
+                font.family: Theme.fontFamily
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                anchors.verticalCenter: parent.verticalCenter
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: root.variant === "secondary" ? Theme.secondaryBtnText : "#ffffff"
+                opacity: root.enabled ? 1.0 : 0.6
+            }
         }
     }
 
@@ -133,15 +132,17 @@ Button {
         }
 
         Rectangle {
-            anchors.fill: parent
-            anchors.margins: 1
-            radius: root.buttonRadius - 1
-            color: "transparent"
-            border.width: 1
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.leftMargin: root.buttonRadius * 0.5
+            anchors.rightMargin: root.buttonRadius * 0.5
+            anchors.topMargin: 1
+            height: 1
             visible: !root.down
-            border.color: root.variant === "secondary"
-                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(1, 1, 1, 0.9))
-                : Qt.rgba(1, 1, 1, 0.32)
+            color: root.variant === "secondary"
+                ? (Theme.isDark ? Qt.rgba(1, 1, 1, 0.08) : Qt.rgba(1, 1, 1, 0.85))
+                : Qt.rgba(1, 1, 1, 0.35)
         }
     }
 

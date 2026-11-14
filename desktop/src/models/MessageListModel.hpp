@@ -27,7 +27,13 @@ public:
         CreatedAtRole,
         FormattedTimeRole,
         IsMeRole,
-        CanDeleteRole
+        CanDeleteRole,
+        ImageUrlRole,
+        AttachmentUrlRole,
+        AttachmentTypeRole,
+        AttachmentNameRole,
+        AttachmentSizeRole,
+        AttachmentKindRole
     };
 
     struct MessageItem {
@@ -41,6 +47,12 @@ public:
         QString formattedTime;
         bool isMe = false;
         bool canDelete = false;
+        QString imageUrl;
+        QString attachmentUrl;
+        QString attachmentType;
+        QString attachmentName;
+        qint64 attachmentSize = 0;
+        QString attachmentKind;
     };
 
     explicit MessageListModel(QObject *parent = nullptr);

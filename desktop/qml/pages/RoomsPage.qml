@@ -17,6 +17,8 @@ Item {
 
     Component.onCompleted: {
         RoomService.fetchRooms()
+        RoomService.fetchStats()
+        RoomService.fetchFavorites()
     }
 
     Connections {
@@ -47,9 +49,99 @@ Item {
             Layout.fillHeight: true
 
             ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 24
-                spacing: 16
+                width: Math.min(parent.width - 48, 1240)
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.topMargin: 20
+                anchors.bottomMargin: 20
+                spacing: 14
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+
+                    SkeuoCard {
+                        Layout.fillWidth: true
+                        implicitHeight: 74
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            spacing: 2
+
+                            Text {
+                                text: "SALAS ATIVAS"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                                font.weight: Font.Bold
+                                color: Theme.textMuted
+                            }
+
+                            Text {
+                                text: String(RoomService.activeRooms > 0 ? RoomService.activeRooms : RoomService.rooms.count)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 22
+                                font.weight: Font.Bold
+                                color: Theme.textPrimary
+                            }
+                        }
+                    }
+
+                    SkeuoCard {
+                        Layout.fillWidth: true
+                        implicitHeight: 74
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            spacing: 2
+
+                            Text {
+                                text: "USUÁRIOS"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                                font.weight: Font.Bold
+                                color: Theme.textMuted
+                            }
+
+                            Text {
+                                text: String(RoomService.totalUsers)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 22
+                                font.weight: Font.Bold
+                                color: Theme.primaryMain
+                            }
+                        }
+                    }
+
+                    SkeuoCard {
+                        Layout.fillWidth: true
+                        implicitHeight: 74
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 12
+                            spacing: 2
+
+                            Text {
+                                text: "FAVORITOS"
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 10
+                                font.weight: Font.Bold
+                                color: Theme.textMuted
+                            }
+
+                            Text {
+                                text: String(RoomService.favoriteRoomIds.length)
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 22
+                                font.weight: Font.Bold
+                                color: "#f59e0b"
+                            }
+                        }
+                    }
+                }
 
                 SkeuoCard {
                     Layout.fillWidth: true
@@ -237,6 +329,15 @@ Item {
 
                                         Item {
                                             Layout.fillWidth: true
+                                        }
+
+                                        SkeuoButton {
+                                            readonly property bool favored: RoomService.favoriteRoomIds.indexOf(roomDelegate.id) !== -1
+                                            text: favored ? "★" : "☆"
+                                            variant: favored ? "primary" : "secondary"
+                                            horizontalPadding: 12
+                                            verticalPadding: 6
+                                            onClicked: RoomService.toggleFavorite(roomDelegate.id, roomDelegate.name)
                                         }
 
                                         SkeuoButton {

@@ -22,6 +22,8 @@ qt_add_library(SkyRippleCore STATIC
     src/models/RoomListModel.cpp
     src/models/MessageListModel.hpp
     src/models/MessageListModel.cpp
+    src/models/MemberListModel.hpp
+    src/models/MemberListModel.cpp
     src/network/ApiClient.hpp
     src/network/ApiClient.cpp
     src/network/OAuthLoopbackServer.hpp
@@ -136,6 +138,7 @@ foreach(test_name IN ITEMS
     test_google_oauth
     test_room_service
     test_message_and_pagination
+    test_room_moderation_and_search
 )
     qt_add_executable(${test_name}
         tests/${test_name}.cpp

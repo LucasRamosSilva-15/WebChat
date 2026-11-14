@@ -127,9 +127,15 @@ void OAuthLoopbackServer::processSocketBuffer(QTcpSocket *socket, QByteArray &bu
 
     if (method == "GET" && path == "/callback") {
         const QUrlQuery query(targetUrl);
-        const QString errorDesc = query.queryItemValue("error_description", QUrl::FullyDecoded).trimmed();
-        const QString errorCode = query.queryItemValue("error", QUrl::FullyDecoded).trimmed();
-        const QString token = query.queryItemValue("token", QUrl::FullyDecoded).trimmed();
+        auto decodeParam = [&query](const QString &key) -> QString {
+            QString raw = query.queryItemValue(key, QUrl::FullyEncoded);
+            raw.replace('+', ' ');
+            return QUrl::fromPercentEncoding(raw.toUtf8()).trimmed();
+        };
+
+        const QString errorDesc = decodeParam("error_description");
+        const QString errorCode = decodeParam("error");
+        const QString token = decodeParam("token");
 
         if (!errorDesc.isEmpty() || !errorCode.isEmpty()) {
             const QString msg = !errorDesc.isEmpty() ? errorDesc : errorCode;
@@ -146,7 +152,7 @@ void OAuthLoopbackServer::processSocketBuffer(QTcpSocket *socket, QByteArray &bu
 
         if (!token.isEmpty()) {
             QJsonObject userObj;
-            const QString userRaw = query.queryItemValue("user", QUrl::FullyDecoded).trimmed();
+            const QString userRaw = decodeParam("user");
             if (!userRaw.isEmpty()) {
                 const QJsonDocument userDoc = QJsonDocument::fromJson(userRaw.toUtf8());
                 if (userDoc.isObject()) {
@@ -154,9 +160,9 @@ void OAuthLoopbackServer::processSocketBuffer(QTcpSocket *socket, QByteArray &bu
                 }
             }
 
-            const QString email = query.queryItemValue("email", QUrl::FullyDecoded).trimmed();
-            const QString displayName = query.queryItemValue("displayName", QUrl::FullyDecoded).trimmed();
-            const QString profilePhoto = query.queryItemValue("profilePhoto", QUrl::FullyDecoded).trimmed();
+            const QString email = decodeParam("email");
+            const QString displayName = decodeParam("displayName");
+            const QString profilePhoto = decodeParam("profilePhoto");
 
             if (!email.isEmpty() && userObj.value("email").toString().isEmpty()) {
                 userObj.insert("email", email);

@@ -8,14 +8,16 @@ Rectangle {
     id: root
 
     property string pageTitle: "Salas de Conversa"
+    property string activeTab: "rooms"
     property bool showBackButton: false
     signal backClicked()
+    signal navigateTab(string tab)
 
-    implicitHeight: 62
+    implicitHeight: 58
     radius: 0
     color: Theme.isDark
-        ? Qt.rgba(15 / 255, 23 / 255, 42 / 255, 0.88)
-        : Qt.rgba(1, 1, 1, 0.86)
+        ? Qt.rgba(15 / 255, 23 / 255, 42 / 255, 0.90)
+        : Qt.rgba(1, 1, 1, 0.88)
     border.width: 1
     border.color: Theme.isDark
         ? Qt.rgba(1, 1, 1, 0.1)
@@ -23,14 +25,16 @@ Rectangle {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 18
-        anchors.rightMargin: 18
-        spacing: 14
+        anchors.leftMargin: 16
+        anchors.rightMargin: 16
+        spacing: 12
 
         SkeuoButton {
             visible: root.showBackButton
             text: "Voltar"
             variant: "secondary"
+            horizontalPadding: 12
+            verticalPadding: 6
             onClicked: root.backClicked()
         }
 
@@ -39,10 +43,10 @@ Rectangle {
 
             Image {
                 source: "qrc:/qt/qml/SkyRipple/assets/icons/skyripple_logo.svg"
-                sourceSize.width: 30
-                sourceSize.height: 30
-                Layout.preferredWidth: 30
-                Layout.preferredHeight: 30
+                sourceSize.width: 28
+                sourceSize.height: 28
+                Layout.preferredWidth: 28
+                Layout.preferredHeight: 28
                 fillMode: Image.PreserveAspectFit
                 smooth: true
             }
@@ -64,6 +68,7 @@ Rectangle {
                     font.pixelSize: 11
                     font.weight: Font.Medium
                     color: Theme.textMuted
+                    elide: Text.ElideRight
                 }
             }
         }
@@ -72,20 +77,105 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        SkeuoBadge {
-            text: SessionStore.displayName !== "" ? SessionStore.displayName : "Usuário"
-            roleType: "default"
+        RowLayout {
+            visible: root.width >= 760
+            spacing: 6
+
+            Repeater {
+                model: [
+                    { key: "rooms", label: "Salas" },
+                    { key: "chat", label: "Chat" },
+                    { key: "favorites", label: "Favoritos" }
+                ]
+
+                delegate: SkeuoButton {
+                    required property var modelData
+                    text: modelData.label
+                    variant: root.activeTab === modelData.key ? "primary" : "secondary"
+                    horizontalPadding: 14
+                    verticalPadding: 6
+                    onClicked: root.navigateTab(modelData.key)
+                }
+            }
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        RowLayout {
+            spacing: 8
+
+            Item {
+                Layout.preferredWidth: 28
+                Layout.preferredHeight: 28
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 14
+                    color: Theme.primaryMain
+                    border.width: 1
+                    border.color: Theme.isDark ? Qt.rgba(1, 1, 1, 0.22) : "#ffffff"
+
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 1
+                        source: SessionStore.profilePhoto
+                        fillMode: Image.PreserveAspectCrop
+                        visible: status === Image.Ready && SessionStore.profilePhoto !== ""
+                        asynchronous: true
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        visible: SessionStore.profilePhoto === ""
+                        text: {
+                            var n = SessionStore.displayName
+                            return n !== "" ? n.charAt(0).toUpperCase() : "U"
+                        }
+                        font.family: Theme.fontFamily
+                        font.pixelSize: 12
+                        font.weight: Font.Bold
+                        color: "#ffffff"
+                    }
+                }
+
+                Rectangle {
+                    width: 9
+                    height: 9
+                    radius: 5
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    color: "#10b981"
+                    border.width: 1.5
+                    border.color: Theme.isDark ? "#0f172a" : "#ffffff"
+                }
+            }
+
+            Text {
+                text: SessionStore.displayName !== "" ? SessionStore.displayName : "Usuário"
+                font.family: Theme.fontFamily
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                color: Theme.textPrimary
+                elide: Text.ElideRight
+                Layout.maximumWidth: 180
+            }
         }
 
         SkeuoButton {
             text: Theme.isDark ? "Claro" : "Escuro"
             variant: "secondary"
+            horizontalPadding: 12
+            verticalPadding: 6
             onClicked: ThemeController.toggleColorMode()
         }
 
         SkeuoButton {
             text: "Sair"
             variant: "danger"
+            horizontalPadding: 14
+            verticalPadding: 6
             onClicked: {
                 MessageService.stopSync()
                 RoomService.leaveActiveRoom()

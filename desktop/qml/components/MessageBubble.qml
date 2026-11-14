@@ -13,6 +13,15 @@ Item {
     property string formattedTime: ""
     property bool isMe: false
     property bool canDelete: false
+    property string imageUrl: ""
+    property string attachmentUrl: ""
+    property string attachmentType: ""
+    property string attachmentName: ""
+    property double attachmentSize: 0
+    property string attachmentKind: ""
+
+    readonly property string effectiveImageUrl: imageUrl !== "" ? imageUrl : (attachmentKind === "image" ? attachmentUrl : "")
+    readonly property bool hasAttachmentCard: attachmentUrl !== "" && effectiveImageUrl === ""
 
     signal deleteRequested(string messageId)
 
@@ -119,7 +128,82 @@ Item {
                     anchors.bottomMargin: root.isGrande ? 10 : 7
                     spacing: 4
 
+                    Image {
+                        visible: root.effectiveImageUrl !== ""
+                        source: root.effectiveImageUrl
+                        asynchronous: true
+                        fillMode: Image.PreserveAspectFit
+                        Layout.maximumWidth: 280
+                        Layout.maximumHeight: 220
+                        Layout.preferredWidth: Math.min(280, Math.max(140, implicitWidth))
+                        Layout.preferredHeight: implicitWidth > 0
+                            ? Math.min(220, implicitHeight * (Layout.preferredWidth / implicitWidth))
+                            : 160
+                    }
+
+                    Rectangle {
+                        visible: root.hasAttachmentCard
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 190
+                        implicitHeight: attachRow.implicitHeight + 14
+                        radius: 10
+                        color: root.isMe
+                            ? Qt.rgba(1, 1, 1, 0.16)
+                            : (Theme.isDark ? Qt.rgba(15 / 255, 23 / 255, 42 / 255, 0.55) : Qt.rgba(0, 0, 0, 0.05))
+                        border.width: 1
+                        border.color: root.isMe
+                            ? Qt.rgba(1, 1, 1, 0.25)
+                            : (Theme.isDark ? Qt.rgba(1, 1, 1, 0.12) : Qt.rgba(0, 0, 0, 0.1))
+
+                        RowLayout {
+                            id: attachRow
+                            anchors.fill: parent
+                            anchors.margins: 7
+                            spacing: 8
+
+                            SkeuoBadge {
+                                text: root.attachmentKind === "audio" ? "ÁUDIO" : "ANEXO"
+                                roleType: root.attachmentKind === "audio" ? "moderator" : "default"
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 1
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: root.attachmentName !== "" ? root.attachmentName : "Arquivo anexado"
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 12
+                                    font.weight: Font.DemiBold
+                                    color: root.isMe ? "#ffffff" : Theme.textPrimary
+                                    elide: Text.ElideRight
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: {
+                                        var parts = []
+                                        if (root.attachmentType !== "") {
+                                            parts.push(root.attachmentType)
+                                        }
+                                        if (root.attachmentSize > 0) {
+                                            parts.push((root.attachmentSize / 1024).toFixed(1) + " KB")
+                                        }
+                                        return parts.join(" • ")
+                                    }
+                                    visible: text !== ""
+                                    font.family: Theme.fontFamily
+                                    font.pixelSize: 10
+                                    color: root.isMe ? Qt.rgba(1, 1, 1, 0.78) : Theme.textMuted
+                                    elide: Text.ElideRight
+                                }
+                            }
+                        }
+                    }
+
                     Text {
+                        visible: root.content !== ""
                         Layout.fillWidth: true
                         text: root.content
                         wrapMode: Text.Wrap

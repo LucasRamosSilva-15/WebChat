@@ -48,6 +48,18 @@ QVariant MessageListModel::data(const QModelIndex &index, int role) const
         return item.isMe;
     case CanDeleteRole:
         return item.canDelete;
+    case ImageUrlRole:
+        return item.imageUrl;
+    case AttachmentUrlRole:
+        return item.attachmentUrl;
+    case AttachmentTypeRole:
+        return item.attachmentType;
+    case AttachmentNameRole:
+        return item.attachmentName;
+    case AttachmentSizeRole:
+        return item.attachmentSize;
+    case AttachmentKindRole:
+        return item.attachmentKind;
     default:
         return {};
     }
@@ -65,7 +77,13 @@ QHash<int, QByteArray> MessageListModel::roleNames() const
         {CreatedAtRole, "createdAt"},
         {FormattedTimeRole, "formattedTime"},
         {IsMeRole, "isMe"},
-        {CanDeleteRole, "canDelete"}
+        {CanDeleteRole, "canDelete"},
+        {ImageUrlRole, "imageUrl"},
+        {AttachmentUrlRole, "attachmentUrl"},
+        {AttachmentTypeRole, "attachmentType"},
+        {AttachmentNameRole, "attachmentName"},
+        {AttachmentSizeRole, "attachmentSize"},
+        {AttachmentKindRole, "attachmentKind"}
     };
 }
 
@@ -268,7 +286,14 @@ MessageListModel::MessageItem MessageListModel::parseItem(const QJsonObject &obj
         item.roomId = obj.value("roomId").toVariant().toString();
     }
 
-    const QJsonObject userObj = obj.value("user").toObject();
+    QJsonObject userObj = obj.value("User").toObject();
+    if (userObj.isEmpty()) {
+        userObj = obj.value("user").toObject();
+    }
+    if (userObj.isEmpty() && obj.value("sender").isObject()) {
+        userObj = obj.value("sender").toObject();
+    }
+
     item.userId = obj.value("user_id").toVariant().toString();
     if (item.userId.isEmpty()) {
         item.userId = obj.value("userId").toVariant().toString();
@@ -277,29 +302,85 @@ MessageListModel::MessageItem MessageListModel::parseItem(const QJsonObject &obj
         item.userId = userObj.value("id").toVariant().toString();
     }
 
-    item.senderName = userObj.value("displayName").toString();
-    if (item.senderName.isEmpty()) {
-        item.senderName = userObj.value("name").toString();
-    }
-    if (item.senderName.isEmpty()) {
-        item.senderName = obj.value("sender_name").toString();
-    }
-    if (item.senderName.isEmpty()) {
-        item.senderName = obj.value("sender").toString();
-    }
+    auto pickNonEmpty = [](std::initializer_list<QString> candidates) -> QString {
+        for (const QString &c : candidates) {
+            if (!c.trimmed().isEmpty()) {
+                return c.trimmed();
+            }
+        }
+        return {};
+    };
+
+    item.senderName = pickNonEmpty({
+        userObj.value("displayName").toString(),
+        userObj.value("display_name").toString(),
+        userObj.value("name").toString(),
+        userObj.value("username").toString(),
+        obj.value("userName").toString(),
+        obj.value("senderName").toString(),
+        obj.value("sender_name").toString(),
+        obj.value("sender").isString() ? obj.value("sender").toString() : QString()
+    });
     if (item.senderName.isEmpty()) {
         item.senderName = "Usuário";
     }
 
-    item.senderPhoto = userObj.value("profilePhoto").toString();
-    if (item.senderPhoto.isEmpty()) {
-        item.senderPhoto = userObj.value("avatar_url").toString();
-    }
-    if (item.senderPhoto.isEmpty()) {
-        item.senderPhoto = obj.value("sender_photo").toString();
-    }
+    item.senderPhoto = pickNonEmpty({
+        userObj.value("profilePhoto").toString(),
+        userObj.value("profile_photo").toString(),
+        userObj.value("avatar_url").toString(),
+        obj.value("senderPhoto").toString(),
+        obj.value("sender_photo").toString()
+    });
 
     item.content = obj.value("content").toString();
+    item.imageUrl = pickNonEmpty({
+        obj.value("image_url").toString(),
+        obj.value("imageUrl").toString()
+    });
+
+    const QJsonObject attachmentObj = obj.value("attachment").toObject();
+    item.attachmentUrl = pickNonEmpty({
+        obj.value("attachment_url").toString(),
+        obj.value("attachmentUrl").toString(),
+        attachmentObj.value("url").toString()
+    });
+    item.attachmentType = pickNonEmpty({
+        obj.value("attachment_type").toString(),
+        obj.value("attachmentType").toString(),
+        attachmentObj.value("type").toString()
+    });
+    item.attachmentName = pickNonEmpty({
+        obj.value("attachment_name").toString(),
+        obj.value("attachmentName").toString(),
+        attachmentObj.value("name").toString()
+    });
+
+    if (obj.contains("attachment_size")) {
+        item.attachmentSize = obj.value("attachment_size").toVariant().toLongLong();
+    } else if (obj.contains("attachmentSize")) {
+        item.attachmentSize = obj.value("attachmentSize").toVariant().toLongLong();
+    } else if (attachmentObj.contains("size")) {
+        item.attachmentSize = attachmentObj.value("size").toVariant().toLongLong();
+    }
+
+    item.attachmentKind = pickNonEmpty({
+        obj.value("attachment_kind").toString(),
+        obj.value("attachmentKind").toString(),
+        attachmentObj.value("kind").toString()
+    });
+    if (item.attachmentKind.isEmpty() && !item.attachmentUrl.isEmpty()) {
+        if (item.attachmentType.startsWith("image/", Qt::CaseInsensitive)) {
+            item.attachmentKind = "image";
+        } else if (item.attachmentType.startsWith("audio/", Qt::CaseInsensitive)) {
+            item.attachmentKind = "audio";
+        } else {
+            item.attachmentKind = "file";
+        }
+    }
+    if (item.imageUrl.isEmpty() && item.attachmentKind == "image" && !item.attachmentUrl.isEmpty()) {
+        item.imageUrl = item.attachmentUrl;
+    }
     item.createdAt = obj.value("created_at").toString();
     if (item.createdAt.isEmpty()) {
         item.createdAt = obj.value("createdAt").toString();

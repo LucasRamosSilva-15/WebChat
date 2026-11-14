@@ -3,9 +3,12 @@
 #include "SessionStore.hpp"
 
 #include <QDateTime>
+#include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMimeDatabase>
 #include <QUrlQuery>
 
 MessageService *MessageService::instance()
@@ -59,6 +62,16 @@ bool MessageService::syncing() const
     return m_syncing;
 }
 
+bool MessageService::searching() const
+{
+    return m_searching;
+}
+
+QString MessageService::searchQuery() const
+{
+    return m_searchQuery;
+}
+
 QString MessageService::errorMessage() const
 {
     return m_errorMessage;
@@ -72,6 +85,11 @@ QString MessageService::activeRoomId() const
 MessageListModel *MessageService::messages()
 {
     return &m_messages;
+}
+
+MessageListModel *MessageService::searchResults()
+{
+    return &m_searchResults;
 }
 
 void MessageService::loadInitialMessages(const QString &roomId, int limit)
@@ -216,17 +234,24 @@ void MessageService::syncNewMessages(int limit)
     );
 }
 
-bool MessageService::sendMessage(const QString &roomId, const QString &content)
+bool MessageService::sendMessage(const QString &roomId,
+                                 const QString &content,
+                                 const QString &attachmentDataUrl,
+                                 const QString &attachmentType,
+                                 const QString &attachmentName,
+                                 qint64 attachmentSize)
 {
     const QString cleanRoomId = roomId.trimmed();
     const QString cleanContent = content.trimmed();
+    const QString cleanAttachmentUrl = attachmentDataUrl.trimmed();
+    const bool hasAttachment = !cleanAttachmentUrl.isEmpty();
 
     if (cleanRoomId.isEmpty()) {
         setErrorMessage("Sala inválida.");
         emit sendFailed(m_errorMessage);
         return false;
     }
-    if (cleanContent.isEmpty()) {
+    if (cleanContent.isEmpty() && !hasAttachment) {
         setErrorMessage("Digite uma mensagem antes de enviar.");
         emit sendFailed(m_errorMessage);
         return false;
@@ -235,6 +260,36 @@ bool MessageService::sendMessage(const QString &roomId, const QString &content)
         setErrorMessage("A mensagem excede o limite de 1000 caracteres.");
         emit sendFailed(m_errorMessage);
         return false;
+    }
+
+    if (hasAttachment) {
+        qint64 effectiveSize = attachmentSize;
+        if (effectiveSize <= 0) {
+            const int commaIdx = cleanAttachmentUrl.indexOf(',');
+            if (commaIdx > 0) {
+                const qint64 b64Len = cleanAttachmentUrl.size() - commaIdx - 1;
+                effectiveSize = (b64Len * 3) / 4;
+            }
+        }
+        if (effectiveSize > MaxAttachmentBytes) {
+            setErrorMessage("O anexo excede o limite máximo de 5 MB.");
+            emit sendFailed(m_errorMessage);
+            return false;
+        }
+
+        const QString lowerType = attachmentType.trimmed().toLower();
+        const bool isAllowedImage = lowerType.startsWith("image/") && lowerType != "image/svg+xml";
+        const bool isAllowedAudio = lowerType.startsWith("audio/");
+        const bool isAllowedDoc = (lowerType == "application/pdf"
+            || lowerType == "text/plain"
+            || lowerType == "application/msword"
+            || lowerType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            || lowerType == "application/zip");
+        if (!lowerType.isEmpty() && !isAllowedImage && !isAllowedAudio && !isAllowedDoc) {
+            setErrorMessage("Tipo de arquivo não permitido.");
+            emit sendFailed(m_errorMessage);
+            return false;
+        }
     }
 
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
@@ -249,6 +304,20 @@ bool MessageService::sendMessage(const QString &roomId, const QString &content)
 
     QJsonObject body;
     body.insert("content", cleanContent);
+    if (hasAttachment) {
+        QJsonObject attachment;
+        attachment.insert("url", cleanAttachmentUrl);
+        if (!attachmentType.trimmed().isEmpty()) {
+            attachment.insert("type", attachmentType.trimmed());
+        }
+        if (!attachmentName.trimmed().isEmpty()) {
+            attachment.insert("name", attachmentName.trimmed());
+        }
+        if (attachmentSize > 0) {
+            attachment.insert("size", attachmentSize);
+        }
+        body.insert("attachment", attachment);
+    }
 
     ApiClient::instance()->post(
         QString("/rooms/%1/messages").arg(cleanRoomId),
@@ -265,6 +334,46 @@ bool MessageService::sendMessage(const QString &roomId, const QString &content)
         }
     );
     return true;
+}
+
+bool MessageService::sendAttachmentFromFile(const QString &roomId,
+                                            const QString &content,
+                                            const QUrl &fileUrl)
+{
+    const QString localPath = fileUrl.isLocalFile() ? fileUrl.toLocalFile() : fileUrl.toString();
+    if (localPath.trimmed().isEmpty()) {
+        setErrorMessage("Arquivo inválido.");
+        emit sendFailed(m_errorMessage);
+        return false;
+    }
+
+    const QFileInfo info(localPath);
+    if (!info.exists() || !info.isFile()) {
+        setErrorMessage("Arquivo não encontrado.");
+        emit sendFailed(m_errorMessage);
+        return false;
+    }
+    if (info.size() > MaxAttachmentBytes) {
+        setErrorMessage("O anexo excede o limite máximo de 5 MB.");
+        emit sendFailed(m_errorMessage);
+        return false;
+    }
+
+    QFile file(localPath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        setErrorMessage("Não foi possível ler o arquivo selecionado.");
+        emit sendFailed(m_errorMessage);
+        return false;
+    }
+    const QByteArray bytes = file.readAll();
+    file.close();
+
+    QMimeDatabase mimeDb;
+    const QString mimeType = mimeDb.mimeTypeForFileNameAndData(info.fileName(), bytes).name();
+    const QString dataUrl = QString("data:%1;base64,%2")
+        .arg(mimeType, QString::fromLatin1(bytes.toBase64()));
+
+    return sendMessage(roomId, content, dataUrl, mimeType, info.fileName(), info.size());
 }
 
 void MessageService::deleteMessage(const QString &messageId)
@@ -287,6 +396,59 @@ void MessageService::deleteMessage(const QString &messageId)
     );
 }
 
+void MessageService::searchMessages(const QString &roomId, const QString &queryText)
+{
+    const QString cleanRoomId = roomId.trimmed();
+    const QString cleanQuery = queryText.trimmed();
+
+    if (m_searchQuery != cleanQuery) {
+        m_searchQuery = cleanQuery;
+        emit searchChanged();
+    }
+
+    if (cleanRoomId.isEmpty() || cleanQuery.isEmpty()) {
+        m_searchResults.clear();
+        setSearching(false);
+        return;
+    }
+
+    setSearching(true);
+    setErrorMessage(QString());
+
+    QUrlQuery query;
+    query.addQueryItem("q", cleanQuery);
+
+    ApiClient::instance()->get(
+        QString("/rooms/%1/messages/search").arg(cleanRoomId),
+        query,
+        [this, cleanQuery](const QJsonDocument &doc, int) {
+            setSearching(false);
+            if (m_searchQuery != cleanQuery) {
+                return;
+            }
+            if (doc.isArray()) {
+                m_searchResults.setInitialMessages(doc.array(), QString(), QString());
+            } else if (doc.isObject()) {
+                m_searchResults.setInitialMessages(doc.object().value("messages").toArray(), QString(), QString());
+            }
+        },
+        [this](const QString &error, int) {
+            setSearching(false);
+            setErrorMessage(error);
+        }
+    );
+}
+
+void MessageService::clearSearch()
+{
+    if (!m_searchQuery.isEmpty()) {
+        m_searchQuery.clear();
+        emit searchChanged();
+    }
+    m_searchResults.clear();
+    setSearching(false);
+}
+
 void MessageService::stopSync()
 {
     m_syncTimer.stop();
@@ -294,6 +456,7 @@ void MessageService::stopSync()
         m_activeRoomId.clear();
         emit activeRoomIdChanged();
     }
+    clearSearch();
     setBusy(false);
     setLoadingMore(false);
     setSyncing(false);
@@ -348,6 +511,15 @@ void MessageService::setSyncing(bool value)
     }
     m_syncing = value;
     emit syncingChanged();
+}
+
+void MessageService::setSearching(bool value)
+{
+    if (m_searching == value) {
+        return;
+    }
+    m_searching = value;
+    emit searchingChanged();
 }
 
 void MessageService::setErrorMessage(const QString &message)
