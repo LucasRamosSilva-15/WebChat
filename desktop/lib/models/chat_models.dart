@@ -140,6 +140,76 @@ class ChatConversation {
   }
 }
 
+DateTime? _parseMessageDate(dynamic raw) {
+  if (raw == null) return null;
+  if (raw is DateTime) return raw.toLocal();
+  final text = raw.toString().trim();
+  if (text.isEmpty || text == 'null') return null;
+  final normalized = text.contains(' ') && !text.contains('T')
+      ? '${text.replaceFirst(' ', 'T')}Z'
+      : text;
+  final parsed = DateTime.tryParse(normalized);
+  return parsed?.toLocal();
+}
+
+String _twoDigits(int n) => n.toString().padLeft(2, '0');
+
+const _ptMonths = [
+  'janeiro',
+  'fevereiro',
+  'março',
+  'abril',
+  'maio',
+  'junho',
+  'julho',
+  'agosto',
+  'setembro',
+  'outubro',
+  'novembro',
+  'dezembro',
+];
+
+String formatMessageDateDivider(DateTime? dt, {DateTime? now}) {
+  if (dt == null) return 'Hoje';
+  final ref = now ?? DateTime.now();
+  final targetDay = DateTime(dt.year, dt.month, dt.day);
+  final today = DateTime(ref.year, ref.month, ref.day);
+  final diff = today.difference(targetDay).inDays;
+  if (diff == 0) return 'Hoje';
+  if (diff == 1) return 'Ontem';
+  final monthName = _ptMonths[dt.month - 1];
+  if (dt.year == ref.year) {
+    return '${_twoDigits(dt.day)} de $monthName';
+  }
+  return '${_twoDigits(dt.day)} de $monthName de ${dt.year}';
+}
+
+String formatMessageHourMinute(DateTime? dt, String fallbackTime) {
+  if (dt != null) {
+    return '${_twoDigits(dt.hour)}:${_twoDigits(dt.minute)}';
+  }
+  return fallbackTime.isNotEmpty ? fallbackTime : '';
+}
+
+String formatMessageFullDateTime(DateTime? dt, String fallbackTime) {
+  if (dt != null) {
+    return '${_twoDigits(dt.day)}/${_twoDigits(dt.month)}/${dt.year} às ${_twoDigits(dt.hour)}:${_twoDigits(dt.minute)}';
+  }
+  return fallbackTime;
+}
+
+class MessageHistoryPage {
+  const MessageHistoryPage({
+    required this.messages,
+    this.hasMore = false,
+    this.nextCursor,
+  });
+
+  final List<ChatMessage> messages;
+  final bool hasMore;
+  final String? nextCursor;
+}
+
 class ChatMessage {
   const ChatMessage({
     required this.id,
@@ -148,6 +218,7 @@ class ChatMessage {
     required this.text,
     required this.timestamp,
     required this.isSent,
+    this.createdAt,
     this.senderAvatarUrl,
     this.role,
     this.kind = ChatBubbleKind.text,
@@ -161,11 +232,17 @@ class ChatMessage {
   final String text;
   final String timestamp;
   final bool isSent;
+  final DateTime? createdAt;
   final String? senderAvatarUrl;
   final String? role;
   final ChatBubbleKind kind;
   final String? fileName;
   final String? fileSize;
+
+  String get formattedTime => formatMessageHourMinute(createdAt, timestamp);
+  String get fullDateTime => formatMessageFullDateTime(createdAt, timestamp);
+  String dateDividerLabel({DateTime? now}) =>
+      formatMessageDateDivider(createdAt, now: now);
 
   factory ChatMessage.fromJson(
     Map<String, dynamic> json, {
@@ -213,6 +290,13 @@ class ChatMessage {
     final hasAttachment = attachment is Map<String, dynamic>;
     final mime = hasAttachment ? (attachment['mimeType'] ?? '').toString() : '';
     final isAudio = mime.startsWith('audio/');
+    final parsedCreatedAt = _parseMessageDate(
+      json['created_at'] ?? json['createdAt'] ?? json['timestamp'],
+    );
+    final rawTime = (json['time'] ?? '').toString();
+    final timeFallback = rawTime.isNotEmpty && rawTime != 'null'
+        ? rawTime
+        : formatMessageHourMinute(parsedCreatedAt, '');
     return ChatMessage(
       id: (json['messageId'] ?? json['id'] ?? '').toString(),
       senderId: senderId,
@@ -220,8 +304,9 @@ class ChatMessage {
       senderAvatarUrl: senderAvatarUrl,
       text: (json['text'] ?? json['content'] ?? json['message'] ?? '')
           .toString(),
-      timestamp: (json['time'] ?? '').toString(),
+      timestamp: timeFallback,
       isSent: isMe,
+      createdAt: parsedCreatedAt ?? _parseMessageDate(json['time']),
       role: _mapRole(json['role']?.toString()),
       kind: isAudio
           ? ChatBubbleKind.audio

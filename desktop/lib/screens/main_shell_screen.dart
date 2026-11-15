@@ -72,6 +72,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
   bool _showInspector = true;
   bool _loadingLists = true;
   bool _loadingMessages = false;
+  bool _loadingOlderMessages = false;
+  bool _hasMoreMessages = false;
+  String? _nextCursor;
   bool _sending = false;
   String? _statusError;
 
@@ -88,6 +91,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   final _searchController = TextEditingController();
   final _composerController = TextEditingController();
+  final _messagesScrollController = ScrollController();
 
   @override
   void initState() {
@@ -95,8 +99,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
     _myPresence = widget.initialPresence;
     _displayName = widget.user.name;
     _bio = widget.initialBio;
+    _messagesScrollController.addListener(_onMessagesScroll);
     _connectRealtime();
     _loadInitialData();
+  }
+
+  void _onMessagesScroll() {
+    if (!_messagesScrollController.hasClients) return;
+    if (_messagesScrollController.position.pixels <= 80) {
+      _loadOlderMessages();
+    }
   }
 
   void _connectRealtime() {
@@ -216,13 +228,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
     setState(() {
       _loadingMessages = true;
+      _loadingOlderMessages = false;
+      _hasMoreMessages = false;
+      _nextCursor = null;
       _messages = [];
       _roomMembers = [];
     });
 
     try {
       if (active.isRoom) {
-        final msgsFuture = widget.chatClient.listRoomMessages(
+        final pageFuture = widget.chatClient.listRoomMessagesPage(
           apiUrl: widget.apiUrl,
           token: widget.token,
           roomId: active.id,
@@ -233,15 +248,18 @@ class _MainShellScreenState extends State<MainShellScreen> {
           token: widget.token,
           roomId: active.id,
         );
-        final results = await Future.wait([msgsFuture, membersFuture]);
+        final results = await Future.wait([pageFuture, membersFuture]);
         if (!mounted || _selectedId != conversationId) return;
+        final page = results[0] as MessageHistoryPage;
         setState(() {
-          _messages = results[0] as List<ChatMessage>;
+          _messages = page.messages;
+          _hasMoreMessages = page.hasMore;
+          _nextCursor = page.nextCursor;
           _roomMembers = results[1] as List<RoomMember>;
           _loadingMessages = false;
         });
       } else {
-        final msgs = await widget.chatClient.listDirectMessages(
+        final page = await widget.chatClient.listDirectMessagesPage(
           apiUrl: widget.apiUrl,
           token: widget.token,
           conversationId: active.id,
@@ -249,13 +267,60 @@ class _MainShellScreenState extends State<MainShellScreen> {
         );
         if (!mounted || _selectedId != conversationId) return;
         setState(() {
-          _messages = msgs;
+          _messages = page.messages;
+          _hasMoreMessages = page.hasMore;
+          _nextCursor = page.nextCursor;
           _loadingMessages = false;
         });
       }
     } catch (_) {
       if (!mounted) return;
       setState(() => _loadingMessages = false);
+    }
+  }
+
+  Future<void> _loadOlderMessages() async {
+    final active = _activeConversation;
+    if (active == null ||
+        _loadingOlderMessages ||
+        !_hasMoreMessages ||
+        _nextCursor == null ||
+        _nextCursor!.isEmpty) {
+      return;
+    }
+
+    final targetId = active.id;
+    setState(() => _loadingOlderMessages = true);
+    try {
+      final page = active.isRoom
+          ? await widget.chatClient.listRoomMessagesPage(
+              apiUrl: widget.apiUrl,
+              token: widget.token,
+              roomId: active.id,
+              currentUserId: widget.user.id,
+              before: _nextCursor,
+            )
+          : await widget.chatClient.listDirectMessagesPage(
+              apiUrl: widget.apiUrl,
+              token: widget.token,
+              conversationId: active.id,
+              currentUserId: widget.user.id,
+              before: _nextCursor,
+            );
+      if (!mounted || _selectedId != targetId) return;
+      final existingIds = _messages.map((m) => m.id).where((id) => id.isNotEmpty).toSet();
+      final older = page.messages
+          .where((m) => m.id.isEmpty || !existingIds.contains(m.id))
+          .toList();
+      setState(() {
+        _messages = [...older, ..._messages];
+        _hasMoreMessages = page.hasMore;
+        _nextCursor = page.nextCursor;
+        _loadingOlderMessages = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingOlderMessages = false);
     }
   }
 
@@ -274,6 +339,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   void dispose() {
     widget.realtimeClient.dispose();
+    _messagesScrollController.removeListener(_onMessagesScroll);
+    _messagesScrollController.dispose();
     _searchController.dispose();
     _composerController.dispose();
     super.dispose();
@@ -1470,6 +1537,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         ),
                       )
                     : ListView.builder(
+                        controller: _messagesScrollController,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 20,
@@ -1477,85 +1545,216 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final msg = _messages[index];
-                          final prevSender =
-                              index > 0 ? _messages[index - 1].senderId : null;
-                          final showHeader =
-                              index == 0 || prevSender != msg.senderId;
+                          final prev = index > 0 ? _messages[index - 1] : null;
+                          final currentDateLabel = msg.dateDividerLabel();
+                          final prevDateLabel = prev?.dateDividerLabel();
+                          final showDateDivider =
+                              index == 0 || currentDateLabel != prevDateLabel;
+                          final showHeader = index == 0 ||
+                              showDateDivider ||
+                              prev!.senderId != msg.senderId;
                           final senderName = _resolveMessageSenderName(msg);
                           final senderAvatar = _resolveMessageAvatarUrl(msg);
                           final senderPresence =
                               _resolveMessagePresence(msg);
+                          final timeLabel = msg.formattedTime;
+                          final fullTimeTooltip = msg.fullDateTime;
 
-                          return Padding(
-                            padding: EdgeInsets.only(top: showHeader ? 12 : 4),
-                            child: Column(
-                              crossAxisAlignment: msg.isSent
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              children: [
-                                if (showHeader) ...[
-                                  MouseRegion(
-                                    cursor: msg.isSent
-                                        ? MouseCursor.defer
-                                        : SystemMouseCursors.click,
-                                    child: GestureDetector(
-                                      onTap: msg.isSent
-                                          ? null
-                                          : () => _openSenderProfileDialog(
-                                                userId: msg.senderId,
-                                                name: senderName,
-                                                avatarUrl: senderAvatar,
-                                                role: msg.role,
-                                                presence: senderPresence,
-                                              ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          if (!msg.isSent) ...[
-                                            UserAvatar(
-                                              label: senderName,
-                                              avatarUrl: senderAvatar,
-                                              size: 22,
-                                              presence: senderPresence,
-                                            ),
-                                            const SizedBox(width: 6),
-                                          ],
-                                          Text(
-                                            senderName,
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (index == 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Center(
+                                    child: _loadingOlderMessages
+                                        ? Text(
+                                            'Carregando mensagens anteriores...',
                                             style: TextStyle(
                                               color: theme.textMuted,
                                               fontSize: 11.5,
-                                              fontWeight: FontWeight.w600,
+                                              fontWeight: FontWeight.w500,
                                             ),
-                                          ),
-                                          if (msg.role != null) ...[
-                                            const SizedBox(width: 6),
-                                            _RolePillBadge(role: msg.role!),
-                                          ],
-                                          if (msg.isSent) ...[
-                                            const SizedBox(width: 6),
-                                            UserAvatar(
-                                              label: _displayName,
-                                              avatarUrl: widget.user.avatarUrl,
-                                              size: 22,
-                                              presence: _myPresence,
-                                            ),
-                                          ],
-                                        ],
+                                          )
+                                        : (_hasMoreMessages
+                                            ? InkWell(
+                                                onTap: _loadOlderMessages,
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
+                                                child: Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 5,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: theme.panelSurface,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            999),
+                                                    border: Border.all(
+                                                      color: theme.borderSubtle,
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    'Carregar mensagens anteriores',
+                                                    style: TextStyle(
+                                                      color: theme.palette.main,
+                                                      fontSize: 11.5,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Text(
+                                                active.isRoom
+                                                    ? '📌 Início do histórico da sala alcançado'
+                                                    : '📌 Início do histórico da conversa alcançado',
+                                                style: TextStyle(
+                                                  color: theme.textMuted,
+                                                  fontSize: 11.5,
+                                                ),
+                                              )),
+                                  ),
+                                ),
+                              if (showDateDivider)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  child: Center(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: theme.panelSurface,
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                        border: Border.all(
+                                          color: theme.borderSubtle,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        currentDateLabel,
+                                        style: TextStyle(
+                                          color: theme.textMuted,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                ],
-                                ChatBubble(
-                                  isSent: msg.isSent,
-                                  kind: msg.kind,
-                                  text: msg.text,
-                                  fileName: msg.fileName ?? 'Arquivo',
-                                  fileSize: msg.fileSize ?? '',
                                 ),
-                              ],
-                            ),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  top: showHeader ? 8 : 4,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: msg.isSent
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                                  children: [
+                                    if (showHeader) ...[
+                                      MouseRegion(
+                                        cursor: msg.isSent
+                                            ? MouseCursor.defer
+                                            : SystemMouseCursors.click,
+                                        child: GestureDetector(
+                                          onTap: msg.isSent
+                                              ? null
+                                              : () => _openSenderProfileDialog(
+                                                    userId: msg.senderId,
+                                                    name: senderName,
+                                                    avatarUrl: senderAvatar,
+                                                    role: msg.role,
+                                                    presence: senderPresence,
+                                                  ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (!msg.isSent) ...[
+                                                UserAvatar(
+                                                  label: senderName,
+                                                  avatarUrl: senderAvatar,
+                                                  size: 22,
+                                                  presence: senderPresence,
+                                                ),
+                                                const SizedBox(width: 6),
+                                              ],
+                                              Text(
+                                                senderName,
+                                                style: TextStyle(
+                                                  color: theme.textMuted,
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              if (msg.role != null) ...[
+                                                const SizedBox(width: 6),
+                                                _RolePillBadge(role: msg.role!),
+                                              ],
+                                              if (timeLabel.isNotEmpty) ...[
+                                                const SizedBox(width: 6),
+                                                Tooltip(
+                                                  message: fullTimeTooltip,
+                                                  child: Text(
+                                                    timeLabel,
+                                                    style: TextStyle(
+                                                      color: theme.textMuted
+                                                          .withValues(
+                                                              alpha: 0.8),
+                                                      fontSize: 10.5,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                              if (msg.isSent) ...[
+                                                const SizedBox(width: 6),
+                                                UserAvatar(
+                                                  label: _displayName,
+                                                  avatarUrl:
+                                                      widget.user.avatarUrl,
+                                                  size: 22,
+                                                  presence: _myPresence,
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                    ],
+                                    ChatBubble(
+                                      isSent: msg.isSent,
+                                      kind: msg.kind,
+                                      text: msg.text,
+                                      fileName: msg.fileName ?? 'Arquivo',
+                                      fileSize: msg.fileSize ?? '',
+                                    ),
+                                    if (!showHeader && timeLabel.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 2),
+                                        child: Tooltip(
+                                          message: fullTimeTooltip,
+                                          child: Text(
+                                            timeLabel,
+                                            style: TextStyle(
+                                              color: theme.textMuted
+                                                  .withValues(alpha: 0.75),
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           );
                         },
                       )),

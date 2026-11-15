@@ -16,6 +16,14 @@ abstract class ChatApiClient {
     required String currentUserId,
   });
 
+  Future<MessageHistoryPage> listDirectMessagesPage({
+    required String apiUrl,
+    required String token,
+    required String conversationId,
+    required String currentUserId,
+    String? before,
+  });
+
   Future<ChatMessage> sendDirectMessage({
     required String apiUrl,
     required String token,
@@ -46,6 +54,14 @@ abstract class ChatApiClient {
     required String token,
     required String roomId,
     required String currentUserId,
+  });
+
+  Future<MessageHistoryPage> listRoomMessagesPage({
+    required String apiUrl,
+    required String token,
+    required String roomId,
+    required String currentUserId,
+    String? before,
   });
 
   Future<ChatMessage> sendRoomMessage({
@@ -129,12 +145,33 @@ class HttpChatApiClient implements ChatApiClient {
     required String conversationId,
     required String currentUserId,
   }) async {
+    final page = await listDirectMessagesPage(
+      apiUrl: apiUrl,
+      token: token,
+      conversationId: conversationId,
+      currentUserId: currentUserId,
+    );
+    return page.messages;
+  }
+
+  @override
+  Future<MessageHistoryPage> listDirectMessagesPage({
+    required String apiUrl,
+    required String token,
+    required String conversationId,
+    required String currentUserId,
+    String? before,
+  }) async {
+    final query = (before != null && before.isNotEmpty)
+        ? '?before=${Uri.encodeQueryComponent(before)}'
+        : '';
     final decoded = await _request(
       method: 'GET',
-      url: '${_normalize(apiUrl)}/directs/conversations/$conversationId/messages',
+      url:
+          '${_normalize(apiUrl)}/directs/conversations/$conversationId/messages$query',
       token: token,
     );
-    return _parseMessageList(decoded, currentUserId);
+    return _parseMessagePage(decoded, currentUserId);
   }
 
   @override
@@ -222,12 +259,32 @@ class HttpChatApiClient implements ChatApiClient {
     required String roomId,
     required String currentUserId,
   }) async {
+    final page = await listRoomMessagesPage(
+      apiUrl: apiUrl,
+      token: token,
+      roomId: roomId,
+      currentUserId: currentUserId,
+    );
+    return page.messages;
+  }
+
+  @override
+  Future<MessageHistoryPage> listRoomMessagesPage({
+    required String apiUrl,
+    required String token,
+    required String roomId,
+    required String currentUserId,
+    String? before,
+  }) async {
+    final query = (before != null && before.isNotEmpty)
+        ? '?before=${Uri.encodeQueryComponent(before)}'
+        : '';
     final decoded = await _request(
       method: 'GET',
-      url: '${_normalize(apiUrl)}/rooms/$roomId/messages',
+      url: '${_normalize(apiUrl)}/rooms/$roomId/messages$query',
       token: token,
     );
-    return _parseMessageList(decoded, currentUserId);
+    return _parseMessagePage(decoded, currentUserId);
   }
 
   @override
@@ -378,19 +435,27 @@ class HttpChatApiClient implements ChatApiClient {
     );
   }
 
-  List<ChatMessage> _parseMessageList(dynamic decoded, String currentUserId) {
-    final List<dynamic> list;
+  MessageHistoryPage _parseMessagePage(dynamic decoded, String currentUserId) {
     if (decoded is List) {
-      list = decoded;
-    } else if (decoded is Map<String, dynamic> && decoded['messages'] is List) {
-      list = decoded['messages'] as List<dynamic>;
-    } else {
-      return const [];
+      return MessageHistoryPage(
+        messages: decoded
+            .whereType<Map<String, dynamic>>()
+            .map((m) => ChatMessage.fromJson(m, currentUserId: currentUserId))
+            .toList(),
+      );
     }
-    return list
-        .whereType<Map<String, dynamic>>()
-        .map((m) => ChatMessage.fromJson(m, currentUserId: currentUserId))
-        .toList();
+    if (decoded is Map<String, dynamic> && decoded['messages'] is List) {
+      final list = (decoded['messages'] as List<dynamic>)
+          .whereType<Map<String, dynamic>>()
+          .map((m) => ChatMessage.fromJson(m, currentUserId: currentUserId))
+          .toList();
+      return MessageHistoryPage(
+        messages: list,
+        hasMore: decoded['hasMore'] == true,
+        nextCursor: decoded['nextCursor']?.toString(),
+      );
+    }
+    return const MessageHistoryPage(messages: []);
   }
 
   String _normalize(String apiUrl) {

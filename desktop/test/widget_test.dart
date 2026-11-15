@@ -117,6 +117,43 @@ class _FakeChatClient implements ChatApiClient {
   }
 
   @override
+  Future<MessageHistoryPage> listDirectMessagesPage({
+    required String apiUrl,
+    required String token,
+    required String conversationId,
+    required String currentUserId,
+    String? before,
+  }) async {
+    if (before == 'c1') {
+      return MessageHistoryPage(
+        messages: [
+          ChatMessage(
+            id: 'm0',
+            senderId: 'u2',
+            senderName: 'Marina Oliveira',
+            text: 'Mensagem antiga do histórico!',
+            timestamp: '09:15',
+            isSent: false,
+            createdAt: DateTime(2026, 10, 15, 9, 15),
+          ),
+        ],
+        hasMore: false,
+      );
+    }
+    final msgs = await listDirectMessages(
+      apiUrl: apiUrl,
+      token: token,
+      conversationId: conversationId,
+      currentUserId: currentUserId,
+    );
+    return MessageHistoryPage(
+      messages: msgs,
+      hasMore: true,
+      nextCursor: 'c1',
+    );
+  }
+
+  @override
   Future<List<ChatMessage>> listDirectMessages({
     required String apiUrl,
     required String token,
@@ -163,6 +200,23 @@ class _FakeChatClient implements ChatApiClient {
         role: 'Dono',
       ),
     ];
+  }
+
+  @override
+  Future<MessageHistoryPage> listRoomMessagesPage({
+    required String apiUrl,
+    required String token,
+    required String roomId,
+    required String currentUserId,
+    String? before,
+  }) async {
+    final msgs = await listRoomMessages(
+      apiUrl: apiUrl,
+      token: token,
+      roomId: roomId,
+      currentUserId: currentUserId,
+    );
+    return MessageHistoryPage(messages: msgs, hasMore: false);
   }
 
   @override
@@ -548,5 +602,43 @@ void main() {
 
     final saved = await storage.load();
     expect(saved.user?.name, 'Lucas Dev');
+  });
+
+  testWidgets('Message history formats date/month dividers and loads older messages', (
+    tester,
+  ) async {
+    final refNow = DateTime(2026, 11, 15, 19, 30);
+    expect(formatMessageDateDivider(DateTime(2026, 11, 15, 10, 0), now: refNow), 'Hoje');
+    expect(formatMessageDateDivider(DateTime(2026, 11, 14, 18, 0), now: refNow), 'Ontem');
+    expect(formatMessageDateDivider(DateTime(2026, 10, 15, 9, 15), now: refNow), '15 de outubro');
+    expect(formatMessageDateDivider(DateTime(2024, 10, 15, 9, 15), now: refNow), '15 de outubro de 2024');
+
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      SkyRippleApp(
+        authClient: _FakeAuthClient(),
+        chatClient: _FakeChatClient(),
+        realtimeClient: NoopRealtimeClient(),
+        sessionStorage: MemorySessionStorage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), 'lucas@example.com');
+    await tester.enterText(find.byType(TextField).at(1), 'SenhaForte#2026');
+    await tester.tap(find.text('Entrar no SkyRipple'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Carregar mensagens anteriores'), findsOneWidget);
+    await tester.tap(find.text('Carregar mensagens anteriores'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mensagem antiga do histórico!'), findsOneWidget);
+    expect(find.text('09:15'), findsOneWidget);
+    expect(find.text('15 de outubro'), findsOneWidget);
+    expect(find.text('📌 Início do histórico da conversa alcançado'), findsOneWidget);
   });
 }
