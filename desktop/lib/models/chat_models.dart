@@ -115,7 +115,10 @@ class ChatConversation {
           json['updated_at'],
     );
     final rawTime = (json['time'] ?? '').toString();
-    final preview = (json['lastMessage'] ?? 'Conversa iniciada').toString();
+    final rawPreview = (json['lastMessage'] ?? 'Conversa iniciada').toString();
+    final preview = rawPreview.startsWith('e2ee:')
+        ? '🔒 Mensagem criptografada'
+        : rawPreview;
     final resolvedTime = lastMsgAt != null
         ? formatConversationRosterTimestamp(lastMsgAt, rawTime)
         : (preview == 'Conversa iniciada' &&
@@ -266,6 +269,8 @@ class ChatMessage {
     this.kind = ChatBubbleKind.text,
     this.fileName,
     this.fileSize,
+    this.isEncrypted = false,
+    this.decryptFailed = false,
   });
 
   final String id;
@@ -282,6 +287,38 @@ class ChatMessage {
   final ChatBubbleKind kind;
   final String? fileName;
   final String? fileSize;
+  final bool isEncrypted;
+  final bool decryptFailed;
+
+  ChatMessage copyWith({
+    String? text,
+    String? imageUrl,
+    String? attachmentUrl,
+    ChatBubbleKind? kind,
+    String? fileName,
+    String? fileSize,
+    bool? isEncrypted,
+    bool? decryptFailed,
+  }) {
+    return ChatMessage(
+      id: id,
+      senderId: senderId,
+      senderName: senderName,
+      text: text ?? this.text,
+      timestamp: timestamp,
+      isSent: isSent,
+      createdAt: createdAt,
+      senderAvatarUrl: senderAvatarUrl,
+      imageUrl: imageUrl ?? this.imageUrl,
+      attachmentUrl: attachmentUrl ?? this.attachmentUrl,
+      role: role,
+      kind: kind ?? this.kind,
+      fileName: fileName ?? this.fileName,
+      fileSize: fileSize ?? this.fileSize,
+      isEncrypted: isEncrypted ?? this.isEncrypted,
+      decryptFailed: decryptFailed ?? this.decryptFailed,
+    );
+  }
 
   String get formattedTime => formatMessageHourMinute(createdAt, timestamp);
   String get fullDateTime => formatMessageFullDateTime(createdAt, timestamp);

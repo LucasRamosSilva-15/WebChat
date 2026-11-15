@@ -3,10 +3,13 @@ import 'package:material_ui/material_ui.dart';
 import 'package:skyripple_desktop/main.dart';
 import 'package:skyripple_desktop/models/chat_models.dart';
 import 'package:skyripple_desktop/models/user_session.dart';
+import 'package:skyripple_desktop/screens/main_shell_screen.dart';
 import 'package:skyripple_desktop/services/auth_service.dart';
 import 'package:skyripple_desktop/services/chat_service.dart';
+import 'package:skyripple_desktop/services/e2ee_service.dart';
 import 'package:skyripple_desktop/services/realtime_service.dart';
 import 'package:skyripple_desktop/services/session_store.dart';
+import 'package:skyripple_desktop/theme/skyripple_theme.dart';
 import 'package:skyripple_desktop/widgets/user_avatar.dart';
 
 class _FakeAuthClient implements AuthApiClient {
@@ -112,6 +115,7 @@ class _FakeChatClient implements ChatApiClient {
         presence: UserPresence.online,
         isE2ee: true,
         subtitle: 'Online agora',
+        partnerId: 'u2',
       ),
     ];
   }
@@ -257,6 +261,8 @@ class _FakeChatClient implements ChatApiClient {
     ];
   }
 
+  String? lastDirectContentSent;
+
   @override
   Future<ChatMessage> sendDirectMessage({
     required String apiUrl,
@@ -267,6 +273,7 @@ class _FakeChatClient implements ChatApiClient {
     String? imageUrl,
     Map<String, dynamic>? attachment,
   }) async {
+    lastDirectContentSent = content;
     return ChatMessage(
       id: 'm2',
       senderId: currentUserId,
@@ -406,6 +413,27 @@ class _FakeChatClient implements ChatApiClient {
     required String token,
   }) async {
     notifications = [];
+  }
+
+  final Map<String, Map<String, dynamic>> publicKeys = {};
+
+  @override
+  Future<Map<String, dynamic>?> getPublicKey({
+    required String apiUrl,
+    required String token,
+    required String userId,
+  }) async {
+    final key = publicKeys[userId];
+    return key == null ? null : Map<String, dynamic>.from(key);
+  }
+
+  @override
+  Future<void> putPublicKey({
+    required String apiUrl,
+    required String token,
+    required Map<String, dynamic> publicKey,
+  }) async {
+    publicKeys['u1'] = Map<String, dynamic>.from(publicKey);
   }
 }
 
@@ -873,5 +901,142 @@ void main() {
     await tester.tap(find.text('Salas').first);
     await tester.pumpAndSettle();
     expect(find.text('1'), findsNothing);
+  });
+
+  test('E2eeService derives matching keys, safety number, and encrypts/decrypts',
+      () async {
+    final aliceService = E2eeService(keyStore: MemoryE2eeKeyStore());
+    final bobService = E2eeService(keyStore: MemoryE2eeKeyStore());
+
+    final aliceId = await aliceService.generateIdentity();
+    final bobId = await bobService.generateIdentity();
+
+    expect(aliceId.publicJwk['kty'], 'EC');
+    expect(aliceId.publicJwk['crv'], 'P-256');
+    expect((aliceId.publicJwk['x'] as String).length, 43);
+    expect((aliceId.publicJwk['y'] as String).length, 43);
+
+    final safetyA = await aliceService.computeSafetyNumber(
+      aliceId.publicJwk,
+      bobId.publicJwk,
+    );
+    final safetyB = await bobService.computeSafetyNumber(
+      bobId.publicJwk,
+      aliceId.publicJwk,
+    );
+    expect(safetyA, safetyB);
+
+    final keyA = await aliceService.deriveConversationKey(
+      aliceId.privateKey,
+      bobId.publicJwk,
+    );
+    final keyB = await bobService.deriveConversationKey(
+      bobId.privateKey,
+      aliceId.publicJwk,
+    );
+
+    final envelope = await aliceService.encryptPayload(
+      key: keyA,
+      conversationId: 'conv-1',
+      payload: {'t': 'Olá, Marina!', 'i': null, 'a': null},
+    );
+    expect(E2eeService.isEncryptedContent(envelope), isTrue);
+
+    final decrypted = await bobService.decryptPayload(
+      key: keyB,
+      conversationId: 'conv-1',
+      envelope: envelope,
+    );
+    expect(decrypted['t'], 'Olá, Marina!');
+
+    await expectLater(
+      bobService.decryptPayload(
+        key: keyB,
+        conversationId: 'wrong-conv',
+        envelope: envelope,
+      ),
+      throwsA(anything),
+    );
+  });
+
+  testWidgets('Directs encrypt outgoing messages and decrypt incoming E2EE', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final bobService = E2eeService(keyStore: MemoryE2eeKeyStore());
+    final bobIdentity = await bobService.generateIdentity();
+
+    final chatClient = _FakeChatClient();
+    chatClient.publicKeys['u2'] = bobIdentity.publicJwk;
+
+    final realtimeClient = _ControllableRealtimeClient();
+    final aliceService = E2eeService(keyStore: MemoryE2eeKeyStore());
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SkyRippleTheme.buildThemeData(
+          isDark: false,
+          accent: SkyRippleAccent.blue,
+        ),
+        home: MainShellScreen(
+          user: const SkyRippleUser(
+            id: 'u1',
+            name: 'Lucas Ramos',
+            email: 'lucas@example.com',
+          ),
+          token: 'token-123',
+          apiUrl: 'https://api.example.com',
+          chatClient: chatClient,
+          realtimeClient: realtimeClient,
+          isDark: false,
+          accent: SkyRippleAccent.blue,
+          initialPresence: UserPresence.online,
+          onThemeChanged: (_) {},
+          onAccentChanged: (_) {},
+          onPresenceChanged: (_) {},
+          onSignOut: () {},
+          e2eeService: aliceService,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Criptografia ponta a ponta ativa'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).last, 'Segredo E2EE');
+    await tester.tap(find.text('Enviar'));
+    await tester.pumpAndSettle();
+
+    expect(
+      E2eeService.isEncryptedContent(chatClient.lastDirectContentSent),
+      isTrue,
+    );
+    expect(find.text('Segredo E2EE'), findsOneWidget);
+
+    final alicePublicJwk = chatClient.publicKeys['u1']!;
+    final bobSharedKey = await bobService.deriveConversationKey(
+      bobIdentity.privateKey,
+      alicePublicJwk,
+    );
+    final incomingEnvelope = await bobService.encryptPayload(
+      key: bobSharedKey,
+      conversationId: 'd1',
+      payload: {'t': 'Resposta secreta da Marina', 'i': null, 'a': null},
+    );
+
+    realtimeClient.emitMessage({
+      'id': 'm-e2ee-in',
+      'conversationId': 'd1',
+      'senderId': 'u2',
+      'senderName': 'Marina Oliveira',
+      'content': incomingEnvelope,
+      'timestamp': '15:20',
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('Resposta secreta da Marina'), findsOneWidget);
   });
 }

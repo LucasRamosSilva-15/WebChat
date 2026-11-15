@@ -6,6 +6,7 @@ import '../models/chat_models.dart';
 import '../models/user_session.dart';
 import '../services/auth_service.dart';
 import '../services/chat_service.dart';
+import '../services/e2ee_service.dart';
 import '../services/realtime_service.dart';
 import '../theme/skyripple_theme.dart';
 import '../widgets/aero_button.dart';
@@ -43,6 +44,7 @@ class MainShellScreen extends StatefulWidget {
     required this.onPresenceChanged,
     this.onProfileSaved,
     required this.onSignOut,
+    this.e2eeService,
   });
 
   final SkyRippleUser user;
@@ -63,6 +65,7 @@ class MainShellScreen extends StatefulWidget {
     String? avatarUrl,
   })? onProfileSaved;
   final VoidCallback onSignOut;
+  final E2eeService? e2eeService;
 
   @override
   State<MainShellScreen> createState() => _MainShellScreenState();
@@ -95,6 +98,33 @@ class _MainShellScreenState extends State<MainShellScreen> {
   List<ChatMessage> _messages = [];
   List<RoomMember> _roomMembers = [];
   Set<String> _onlineUserIds = {};
+  late final E2eeService _e2ee;
+  ConversationCrypto? _activeCrypto;
+
+  Future<List<ChatMessage>> _decryptDirectMessages(
+    List<ChatMessage> list,
+    ChatConversation conv,
+  ) async {
+    final peerId = conv.partnerId ?? '';
+    if (conv.isRoom || peerId.isEmpty) {
+      return list;
+    }
+    return Future.wait(
+      list.map(
+        (m) => E2eeService.isEncryptedContent(m.text)
+            ? _e2ee.decryptMessage(
+                message: m,
+                userId: widget.user.id,
+                peerId: peerId,
+                conversationId: conv.id,
+                chatClient: widget.chatClient,
+                apiUrl: widget.apiUrl,
+                token: widget.token,
+              )
+            : Future.value(m),
+      ),
+    );
+  }
 
   int get _unreadNotificationsCount =>
       _notifications.where((n) => !n.read).length;
@@ -381,10 +411,17 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   void initState() {
     super.initState();
+    _e2ee = widget.e2eeService ?? E2eeService();
     _myPresence = widget.initialPresence;
     _displayName = widget.user.name;
     _bio = widget.initialBio;
     _messagesScrollController.addListener(_onMessagesScroll);
+    _e2ee.initIdentity(
+      userId: widget.user.id,
+      chatClient: widget.chatClient,
+      apiUrl: widget.apiUrl,
+      token: widget.token,
+    );
     _connectRealtime();
     _loadInitialData();
   }
@@ -433,14 +470,42 @@ class _MainShellScreenState extends State<MainShellScreen> {
             (m) => m.id.isNotEmpty && m.id == incoming.id,
           );
           if (!alreadyExists) {
-            setState(() => _messages = [..._messages, incoming]);
+            if (!active.isRoom &&
+                E2eeService.isEncryptedContent(incoming.text) &&
+                (active.partnerId ?? '').isNotEmpty) {
+              _e2ee
+                  .decryptMessage(
+                    message: incoming,
+                    userId: widget.user.id,
+                    peerId: active.partnerId!,
+                    conversationId: active.id,
+                    chatClient: widget.chatClient,
+                    apiUrl: widget.apiUrl,
+                    token: widget.token,
+                  )
+                  .then((decrypted) {
+                if (!mounted || _selectedId != active.id) return;
+                final existsAfter = _messages.any(
+                  (m) => m.id.isNotEmpty && m.id == decrypted.id,
+                );
+                if (!existsAfter) {
+                  setState(() => _messages = [..._messages, decrypted]);
+                }
+              });
+            } else {
+              setState(() => _messages = [..._messages, incoming]);
+            }
           }
           return;
         }
         if (incoming.isSent) return;
-        final previewText = incoming.text.isNotEmpty
-            ? incoming.text
-            : (incoming.imageUrl != null ? 'Enviou uma imagem' : 'Enviou um anexo');
+        final previewText = E2eeService.isEncryptedContent(incoming.text)
+            ? '🔒 Mensagem criptografada'
+            : (incoming.text.isNotEmpty
+                ? incoming.text
+                : (incoming.imageUrl != null
+                    ? 'Enviou uma imagem'
+                    : 'Enviou um anexo'));
         final timeText = incoming.formattedTime.isNotEmpty
             ? incoming.formattedTime
             : 'Agora';
@@ -572,6 +637,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       _nextCursor = null;
       _messages = [];
       _roomMembers = [];
+      _activeCrypto = null;
     });
 
     try {
@@ -598,20 +664,38 @@ class _MainShellScreenState extends State<MainShellScreen> {
           _loadingMessages = false;
         });
       } else {
-        final page = await widget.chatClient.listDirectMessagesPage(
+        final peerId = active.partnerId ?? '';
+        final pageFuture = widget.chatClient.listDirectMessagesPage(
           apiUrl: widget.apiUrl,
           token: widget.token,
           conversationId: active.id,
           currentUserId: widget.user.id,
         );
+        final cryptoFuture = peerId.isNotEmpty
+            ? _e2ee.getConversationCrypto(
+                userId: widget.user.id,
+                peerId: peerId,
+                chatClient: widget.chatClient,
+                apiUrl: widget.apiUrl,
+                token: widget.token,
+              )
+            : Future<ConversationCrypto?>.value(null);
+        final results = await Future.wait([pageFuture, cryptoFuture]);
+        final page = results[0] as MessageHistoryPage;
+        final crypto = results[1] as ConversationCrypto?;
+        final decryptedMessages = await _decryptDirectMessages(
+          page.messages,
+          active,
+        );
         if (!mounted || _selectedId != conversationId) return;
         setState(() {
-          _messages = page.messages;
+          _activeCrypto = crypto;
+          _messages = decryptedMessages;
           _hasMoreMessages = page.hasMore;
           _nextCursor = page.nextCursor;
           _loadingMessages = false;
-          if (page.messages.isNotEmpty) {
-            final lastMsg = page.messages.last;
+          if (decryptedMessages.isNotEmpty) {
+            final lastMsg = decryptedMessages.last;
             final nextTs = formatConversationRosterTimestamp(
               lastMsg.createdAt,
               active.timestamp,
@@ -659,9 +743,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
               currentUserId: widget.user.id,
               before: _nextCursor,
             );
+      final decryptedOlder = active.isRoom
+          ? page.messages
+          : await _decryptDirectMessages(page.messages, active);
       if (!mounted || _selectedId != targetId) return;
-      final existingIds = _messages.map((m) => m.id).where((id) => id.isNotEmpty).toSet();
-      final older = page.messages
+      final existingIds =
+          _messages.map((m) => m.id).where((id) => id.isNotEmpty).toSet();
+      final older = decryptedOlder
           .where((m) => m.id.isEmpty || !existingIds.contains(m.id))
           .toList();
       setState(() {
@@ -1032,30 +1120,77 @@ class _MainShellScreenState extends State<MainShellScreen> {
     _composerController.clear();
     _clearPendingAttachment();
     try {
-      final sent = active.isRoom
-          ? await widget.chatClient.sendRoomMessage(
-              apiUrl: widget.apiUrl,
-              token: widget.token,
-              roomId: active.id,
-              currentUserId: widget.user.id,
-              content: text,
-              imageUrl: imageUrl,
-              attachment: attachment,
-            )
-          : await widget.chatClient.sendDirectMessage(
-              apiUrl: widget.apiUrl,
-              token: widget.token,
-              conversationId: active.id,
-              currentUserId: widget.user.id,
-              content: text,
-              imageUrl: imageUrl,
-              attachment: attachment,
-            );
+      final ChatMessage displaySent;
+      if (active.isRoom) {
+        displaySent = await widget.chatClient.sendRoomMessage(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+          roomId: active.id,
+          currentUserId: widget.user.id,
+          content: text,
+          imageUrl: imageUrl,
+          attachment: attachment,
+        );
+      } else {
+        final peerId = active.partnerId ?? '';
+        final crypto = _activeCrypto ??
+            (peerId.isNotEmpty
+                ? await _e2ee.getConversationCrypto(
+                    userId: widget.user.id,
+                    peerId: peerId,
+                    chatClient: widget.chatClient,
+                    apiUrl: widget.apiUrl,
+                    token: widget.token,
+                  )
+                : null);
+        if (crypto != null) {
+          final envelope = await _e2ee.encryptMessage(
+            crypto: crypto,
+            conversationId: active.id,
+            text: text,
+            imageUrl: imageUrl,
+            attachment: attachment,
+          );
+          final sent = await widget.chatClient.sendDirectMessage(
+            apiUrl: widget.apiUrl,
+            token: widget.token,
+            conversationId: active.id,
+            currentUserId: widget.user.id,
+            content: envelope,
+          );
+          if (!mounted) return;
+          _activeCrypto = crypto;
+          displaySent = sent.copyWith(
+            text: text,
+            imageUrl: imageUrl,
+            attachmentUrl: attachment?['url']?.toString(),
+            fileName: attachment?['name']?.toString(),
+            kind: imageUrl != null
+                ? ChatBubbleKind.image
+                : (attachment != null
+                    ? ChatBubbleKind.attachment
+                    : ChatBubbleKind.text),
+            isEncrypted: true,
+            decryptFailed: false,
+          );
+        } else {
+          displaySent = await widget.chatClient.sendDirectMessage(
+            apiUrl: widget.apiUrl,
+            token: widget.token,
+            conversationId: active.id,
+            currentUserId: widget.user.id,
+            content: text,
+            imageUrl: imageUrl,
+            attachment: attachment,
+          );
+        }
+      }
       if (!mounted) return;
-      final exists = _messages.any((m) => m.id.isNotEmpty && m.id == sent.id);
+      final exists =
+          _messages.any((m) => m.id.isNotEmpty && m.id == displaySent.id);
       setState(() {
         if (!exists) {
-          _messages = [..._messages, sent];
+          _messages = [..._messages, displaySent];
         }
         _sending = false;
       });
@@ -2119,34 +2254,48 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     ],
                   ),
                 ),
-                if (active.isE2ee)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: theme.onlineGreen.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.verified_user_outlined,
-                          size: 13,
-                          color: theme.onlineGreen,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'E2EE',
-                          style: TextStyle(
-                            color: theme.onlineGreen,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                if (!active.isRoom && active.isE2ee)
+                  Tooltip(
+                    message: _activeCrypto != null
+                        ? 'Criptografia ponta a ponta ativa\nCódigo de segurança: ${_activeCrypto!.safetyNumber}'
+                        : 'Aguardando chave pública do contato para ativar E2EE',
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (_activeCrypto != null
+                                ? theme.onlineGreen
+                                : theme.awayAmber)
+                            .withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _activeCrypto != null
+                                ? Icons.verified_user_outlined
+                                : Icons.lock_clock_outlined,
+                            size: 13,
+                            color: _activeCrypto != null
+                                ? theme.onlineGreen
+                                : theme.awayAmber,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            _activeCrypto != null ? 'E2EE' : 'E2EE pendente',
+                            style: TextStyle(
+                              color: _activeCrypto != null
+                                  ? theme.onlineGreen
+                                  : theme.awayAmber,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 const SizedBox(width: 8),
@@ -2422,17 +2571,32 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                     if (!showHeader && timeLabel.isNotEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 2),
-                                        child: Tooltip(
-                                          message: fullTimeTooltip,
-                                          child: Text(
-                                            timeLabel,
-                                            style: TextStyle(
-                                              color: theme.textMuted
-                                                  .withValues(alpha: 0.75),
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w500,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (msg.isEncrypted) ...[
+                                              Icon(
+                                                Icons.lock_outline_rounded,
+                                                size: 11,
+                                                color: msg.decryptFailed
+                                                    ? theme.busyRed
+                                                    : theme.onlineGreen,
+                                              ),
+                                              const SizedBox(width: 3),
+                                            ],
+                                            Tooltip(
+                                              message: fullTimeTooltip,
+                                              child: Text(
+                                                timeLabel,
+                                                style: TextStyle(
+                                                  color: theme.textMuted
+                                                      .withValues(alpha: 0.75),
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ),
                                       ),
                                   ],
@@ -2714,9 +2878,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
               Row(
                 children: [
                   Icon(
-                    Icons.verified_user_outlined,
+                    _activeCrypto != null
+                        ? Icons.verified_user_outlined
+                        : Icons.lock_clock_outlined,
                     size: 15,
-                    color: theme.onlineGreen,
+                    color: _activeCrypto != null
+                        ? theme.onlineGreen
+                        : theme.awayAmber,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -2731,13 +2899,38 @@ class _MainShellScreenState extends State<MainShellScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Sessão protegida com token JWT',
+                _activeCrypto != null
+                    ? 'Criptografia ponta a ponta ativa'
+                    : 'Aguardando chave pública do contato',
                 style: TextStyle(
-                  color: theme.onlineGreen,
+                  color: _activeCrypto != null
+                      ? theme.onlineGreen
+                      : theme.awayAmber,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              if (_activeCrypto != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Código de segurança',
+                  style: TextStyle(
+                    color: theme.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                SelectableText(
+                  _activeCrypto!.safetyNumber,
+                  style: TextStyle(
+                    color: theme.textPrimary,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
             ],
           ),
         ),

@@ -143,6 +143,18 @@ abstract class ChatApiClient {
     required String apiUrl,
     required String token,
   });
+
+  Future<Map<String, dynamic>?> getPublicKey({
+    required String apiUrl,
+    required String token,
+    required String userId,
+  });
+
+  Future<void> putPublicKey({
+    required String apiUrl,
+    required String token,
+    required Map<String, dynamic> publicKey,
+  });
 }
 
 class HttpChatApiClient implements ChatApiClient {
@@ -544,6 +556,44 @@ class HttpChatApiClient implements ChatApiClient {
       method: 'DELETE',
       url: '${_normalize(apiUrl)}/notifications/all',
       token: token,
+    );
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getPublicKey({
+    required String apiUrl,
+    required String token,
+    required String userId,
+  }) async {
+    try {
+      final decoded = await _request(
+        method: 'GET',
+        url: '${_normalize(apiUrl)}/directs/keys/$userId',
+        token: token,
+      );
+      if (decoded is Map<String, dynamic> &&
+          decoded['publicKey'] is Map<String, dynamic>) {
+        return Map<String, dynamic>.from(
+          decoded['publicKey'] as Map<String, dynamic>,
+        );
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> putPublicKey({
+    required String apiUrl,
+    required String token,
+    required Map<String, dynamic> publicKey,
+  }) async {
+    await _request(
+      method: 'PUT',
+      url: '${_normalize(apiUrl)}/directs/keys',
+      token: token,
+      body: {'publicKey': publicKey},
     );
   }
 
