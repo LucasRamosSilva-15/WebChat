@@ -17,9 +17,10 @@ class SkyRippleUser {
   factory SkyRippleUser.fromJson(Map<String, dynamic> json) {
     return SkyRippleUser(
       id: (json['id'] ?? json['_id'] ?? '').toString(),
-      name: (json['name'] ?? json['nome'] ?? 'Usuário').toString(),
+      name: (json['displayName'] ?? json['name'] ?? json['nome'] ?? 'Usuário')
+          .toString(),
       email: (json['email'] ?? '').toString(),
-      avatarUrl: json['avatar_url']?.toString(),
+      avatarUrl: (json['profilePhoto'] ?? json['avatar_url'])?.toString(),
     );
   }
 

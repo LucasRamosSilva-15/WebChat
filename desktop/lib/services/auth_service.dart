@@ -36,6 +36,16 @@ class HttpAuthApiClient implements AuthApiClient {
   HttpAuthApiClient({HttpClient? httpClient})
       : _externalClient = httpClient;
 
+  static const String _supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://qwdfrjsbljrnujskknqv.supabase.co',
+  );
+
+  static const String _supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: 'sb_publishable_bAA4cyt55miKJ3ZGdCd_Sg__FiUEead',
+  );
+
   final HttpClient? _externalClient;
 
   @override
@@ -44,15 +54,89 @@ class HttpAuthApiClient implements AuthApiClient {
     required String email,
     required String password,
   }) async {
-    final data = await _requestJson(
-      method: 'POST',
-      url: '${_normalizeBase(apiUrl)}/auth/login',
-      body: {
-        'email': email.trim(),
-        'password': password,
-      },
-    );
-    return _parseAuthResult(data);
+    final cleanEmail = email.trim();
+    final cleanPassword = password.trim();
+    try {
+      final data = await _requestJson(
+        method: 'POST',
+        url: '${_normalizeBase(apiUrl)}/auth/login',
+        body: {
+          'email': cleanEmail,
+          'password': cleanPassword,
+        },
+      );
+      return _parseAuthResult(data);
+    } on AuthApiException catch (loginErr) {
+      final isInvalidCreds =
+          loginErr.statusCode == 401 ||
+          loginErr.message.toLowerCase().contains('credenciais');
+      if (!isInvalidCreds) {
+        rethrow;
+      }
+      final fallbackResult = await _loginViaSupabaseFallback(
+        apiUrl: apiUrl,
+        email: cleanEmail,
+        password: cleanPassword,
+      );
+      if (fallbackResult != null) {
+        return fallbackResult;
+      }
+      rethrow;
+    }
+  }
+
+  Future<AuthResult?> _loginViaSupabaseFallback({
+    required String apiUrl,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final supaData = await _requestJson(
+        method: 'POST',
+        url: '$_supabaseUrl/auth/v1/token?grant_type=password',
+        headers: {'apikey': _supabaseAnonKey},
+        body: {
+          'email': email,
+          'password': password,
+        },
+      );
+
+      final supaUser = supaData['user'];
+      final metadata = supaUser is Map<String, dynamic> &&
+              supaUser['user_metadata'] is Map<String, dynamic>
+          ? supaUser['user_metadata'] as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      final displayName =
+          metadata['full_name']?.toString() ??
+          metadata['name']?.toString() ??
+          email.split('@').first;
+      final avatarUrl =
+          metadata['avatar_url']?.toString() ??
+          metadata['picture']?.toString();
+
+      try {
+        return await register(
+          apiUrl: apiUrl,
+          name: displayName,
+          email: email,
+          password: password,
+        );
+      } catch (_) {
+        final synced = await _requestJson(
+          method: 'POST',
+          url: '${_normalizeBase(apiUrl)}/auth/oauth-sync',
+          body: {
+            'email': email,
+            'name': displayName,
+            'avatar_url': ?avatarUrl,
+          },
+        );
+        return _parseAuthResult(synced);
+      }
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
@@ -68,7 +152,7 @@ class HttpAuthApiClient implements AuthApiClient {
       body: {
         'name': name.trim(),
         'email': email.trim(),
-        'password': password,
+        'password': password.trim(),
       },
     );
     return _parseAuthResult(data);
@@ -114,15 +198,19 @@ class HttpAuthApiClient implements AuthApiClient {
     required String method,
     required String url,
     Map<String, dynamic>? body,
+    Map<String, String>? headers,
     String? token,
   }) async {
     final client = _externalClient ?? HttpClient();
-    client.connectionTimeout = const Duration(seconds: 10);
+    client.connectionTimeout = const Duration(seconds: 15);
     try {
       final uri = Uri.parse(url);
       final request = await client.openUrl(method, uri);
       request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      if (headers != null) {
+        headers.forEach(request.headers.set);
+      }
       if (token != null && token.isNotEmpty) {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
       }
@@ -143,6 +231,8 @@ class HttpAuthApiClient implements AuthApiClient {
       }
       final message = parsed['error']?.toString() ??
           parsed['message']?.toString() ??
+          parsed['msg']?.toString() ??
+          parsed['error_description']?.toString() ??
           'Erro na requisição (${response.statusCode}).';
       throw AuthApiException(message, statusCode: response.statusCode);
     } on AuthApiException {
