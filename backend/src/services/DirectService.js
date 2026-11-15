@@ -4,6 +4,54 @@ const UserRepository = require('../repositories/UserRepository');
 const DirectRepository = require('../repositories/DirectRepository');
 const { parseHistoryParams } = require('../utils/pagination');
 
+function formatConversationListTime(rawDate) {
+  if (!rawDate) return 'Agora';
+  try {
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return 'Agora';
+    const tz = 'America/Sao_Paulo';
+    const dayFmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 86400000);
+    const targetKey = dayFmt.format(date);
+    const todayKey = dayFmt.format(now);
+    const yesterdayKey = dayFmt.format(yesterday);
+    if (targetKey === todayKey) {
+      return date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: tz
+      });
+    }
+    if (targetKey === yesterdayKey) {
+      return 'Ontem';
+    }
+    const targetYear = targetKey.slice(0, 4);
+    const todayYear = todayKey.slice(0, 4);
+    if (targetYear === todayYear) {
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        timeZone: tz
+      });
+    }
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      timeZone: tz
+    });
+  } catch {
+    return 'Agora';
+  }
+}
+
 class DirectService {
   async listConversations(userId) {
     if (!userId) {
@@ -15,16 +63,8 @@ class DirectService {
     return convs.map(conv => {
       const partner = conv.user1_id === userId ? conv.user2 : conv.user1;
       const partnerName = partner?.displayName || (partner?.email ? partner.email.split('@')[0] : 'Usuário');
-
-      let timeFormatted = 'Agora';
-      if (conv.last_message_at) {
-        try {
-          const date = new Date(conv.last_message_at);
-          timeFormatted = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Sao_Paulo' });
-        } catch {
-          timeFormatted = 'Agora';
-        }
-      }
+      const refDate = conv.last_message_at || conv.created_at || conv.createdAt || null;
+      const timeFormatted = formatConversationListTime(refDate);
 
       return {
         id: conv.id,
@@ -34,6 +74,8 @@ class DirectService {
         avatar: partner?.profilePhoto || null,
         lastMessage: conv.last_message || 'Conversa iniciada',
         time: timeFormatted,
+        lastMessageAt: refDate,
+        createdAt: conv.created_at || conv.createdAt || null,
         online: partner?.id ? Boolean(global.globalOnlineUsers && global.globalOnlineUsers.has(partner.id)) || partner?.status === 'active' : false,
         unread: 0
       };
@@ -72,6 +114,7 @@ class DirectService {
       avatar: partner?.profilePhoto || null,
       lastMessage: conv.last_message || 'Conversa iniciada',
       time: 'Agora',
+      lastMessageAt: conv.last_message_at || null,
       online: partner?.status === 'active',
       unread: 0
     };

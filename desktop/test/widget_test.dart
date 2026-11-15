@@ -612,6 +612,32 @@ void main() {
     expect(formatMessageDateDivider(DateTime(2026, 11, 14, 18, 0), now: refNow), 'Ontem');
     expect(formatMessageDateDivider(DateTime(2026, 10, 15, 9, 15), now: refNow), '15 de outubro');
     expect(formatMessageDateDivider(DateTime(2024, 10, 15, 9, 15), now: refNow), '15 de outubro de 2024');
+    expect(formatConversationRosterTimestamp(DateTime(2026, 11, 15, 17, 29), '17:29', now: refNow), '17:29');
+    expect(formatConversationRosterTimestamp(DateTime(2026, 11, 14, 15, 4), '15:04', now: refNow), 'Ontem');
+    expect(formatConversationRosterTimestamp(DateTime(2026, 10, 15, 13, 23), '13:23', now: refNow), '15/10');
+    expect(formatConversationRosterTimestamp(DateTime(2024, 10, 15, 13, 23), '13:23', now: refNow), '15/10/24');
+    final directWithOldDate = ChatConversation.fromDirectJson({
+      'id': 'd-old',
+      'name': 'wssi',
+      'time': '13:23',
+      'lastMessageAt': '2025-10-15T16:23:00.000Z',
+    });
+    expect(directWithOldDate.timestamp.contains('/'), isTrue);
+    final startedWithoutDate = ChatConversation.fromDirectJson({
+      'id': 'd-started',
+      'name': 'ArturRodent',
+      'lastMessage': 'Conversa iniciada',
+      'time': '15:04',
+    });
+    expect(startedWithoutDate.timestamp, '');
+    final startedWithCreatedAt = ChatConversation.fromDirectJson({
+      'id': 'd-started-date',
+      'name': 'ArturRodent',
+      'lastMessage': 'Conversa iniciada',
+      'time': '15:04',
+      'createdAt': '2025-10-23T18:04:00.000Z',
+    });
+    expect(startedWithCreatedAt.timestamp.contains('/'), isTrue);
 
     tester.view.physicalSize = const Size(1280, 800);
     tester.view.devicePixelRatio = 1.0;

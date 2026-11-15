@@ -106,11 +106,28 @@ class ChatConversation {
       partnerObj?['profilePhoto'],
       partnerObj?['avatar'],
     ]);
+    final lastMsgAt = _parseMessageDate(
+      json['lastMessageAt'] ??
+          json['last_message_at'] ??
+          json['createdAt'] ??
+          json['created_at'] ??
+          json['updatedAt'] ??
+          json['updated_at'],
+    );
+    final rawTime = (json['time'] ?? '').toString();
+    final preview = (json['lastMessage'] ?? 'Conversa iniciada').toString();
+    final resolvedTime = lastMsgAt != null
+        ? formatConversationRosterTimestamp(lastMsgAt, rawTime)
+        : (preview == 'Conversa iniciada' &&
+                rawTime.contains(':') &&
+                !rawTime.contains('/')
+            ? ''
+            : rawTime);
     return ChatConversation(
       id: (json['id'] ?? '').toString(),
       title: name,
-      preview: (json['lastMessage'] ?? 'Conversa iniciada').toString(),
-      timestamp: (json['time'] ?? '').toString(),
+      preview: preview,
+      timestamp: resolvedTime,
       isRoom: false,
       presence: isOnline ? UserPresence.online : UserPresence.offline,
       avatarUrl: avatar,
@@ -196,6 +213,29 @@ String formatMessageFullDateTime(DateTime? dt, String fallbackTime) {
     return '${_twoDigits(dt.day)}/${_twoDigits(dt.month)}/${dt.year} às ${_twoDigits(dt.hour)}:${_twoDigits(dt.minute)}';
   }
   return fallbackTime;
+}
+
+String formatConversationRosterTimestamp(
+  DateTime? dt,
+  String fallbackTime, {
+  DateTime? now,
+}) {
+  if (dt == null) return fallbackTime;
+  final ref = now ?? DateTime.now();
+  final targetDay = DateTime(dt.year, dt.month, dt.day);
+  final today = DateTime(ref.year, ref.month, ref.day);
+  final diff = today.difference(targetDay).inDays;
+  if (diff == 0) {
+    return '${_twoDigits(dt.hour)}:${_twoDigits(dt.minute)}';
+  }
+  if (diff == 1) {
+    return 'Ontem';
+  }
+  if (dt.year == ref.year) {
+    return '${_twoDigits(dt.day)}/${_twoDigits(dt.month)}';
+  }
+  final shortYear = (dt.year % 100).toString().padLeft(2, '0');
+  return '${_twoDigits(dt.day)}/${_twoDigits(dt.month)}/$shortYear';
 }
 
 class MessageHistoryPage {

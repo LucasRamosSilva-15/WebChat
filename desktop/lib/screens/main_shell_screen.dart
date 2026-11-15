@@ -271,6 +271,19 @@ class _MainShellScreenState extends State<MainShellScreen> {
           _hasMoreMessages = page.hasMore;
           _nextCursor = page.nextCursor;
           _loadingMessages = false;
+          if (page.messages.isNotEmpty) {
+            final lastMsg = page.messages.last;
+            final nextTs = formatConversationRosterTimestamp(
+              lastMsg.createdAt,
+              active.timestamp,
+            );
+            _directs = _directs.map((d) {
+              if (d.id == active.id) {
+                return d.copyWith(timestamp: nextTs);
+              }
+              return d;
+            }).toList();
+          }
         });
       }
     } catch (_) {
