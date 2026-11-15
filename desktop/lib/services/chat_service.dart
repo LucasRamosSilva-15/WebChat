@@ -122,6 +122,27 @@ abstract class ChatApiClient {
     required String itemType,
     required String itemId,
   });
+
+  Future<List<AppNotification>> listNotifications({
+    required String apiUrl,
+    required String token,
+  });
+
+  Future<void> markNotificationRead({
+    required String apiUrl,
+    required String token,
+    required String notificationId,
+  });
+
+  Future<void> markAllNotificationsRead({
+    required String apiUrl,
+    required String token,
+  });
+
+  Future<void> clearNotifications({
+    required String apiUrl,
+    required String token,
+  });
 }
 
 class HttpChatApiClient implements ChatApiClient {
@@ -466,6 +487,62 @@ class HttpChatApiClient implements ChatApiClient {
     await _request(
       method: 'DELETE',
       url: '${_normalize(apiUrl)}/favorites/$itemType/$itemId',
+      token: token,
+    );
+  }
+
+  @override
+  Future<List<AppNotification>> listNotifications({
+    required String apiUrl,
+    required String token,
+  }) async {
+    final decoded = await _request(
+      method: 'GET',
+      url: '${_normalize(apiUrl)}/notifications',
+      token: token,
+    );
+    if (decoded is! List) {
+      return const [];
+    }
+    return decoded
+        .whereType<Map<String, dynamic>>()
+        .map(AppNotification.fromJson)
+        .toList();
+  }
+
+  @override
+  Future<void> markNotificationRead({
+    required String apiUrl,
+    required String token,
+    required String notificationId,
+  }) async {
+    await _request(
+      method: 'PATCH',
+      url: '${_normalize(apiUrl)}/notifications/$notificationId/read',
+      token: token,
+    );
+  }
+
+  @override
+  Future<void> markAllNotificationsRead({
+    required String apiUrl,
+    required String token,
+  }) async {
+    await _request(
+      method: 'PATCH',
+      url: '${_normalize(apiUrl)}/notifications/read-all',
+      token: token,
+    );
+  }
+
+  @override
+  Future<void> clearNotifications({
+    required String apiUrl,
+    required String token,
+  }) async {
+    await _request(
+      method: 'DELETE',
+      url: '${_normalize(apiUrl)}/notifications/all',
       token: token,
     );
   }

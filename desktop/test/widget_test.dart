@@ -358,6 +358,91 @@ class _FakeChatClient implements ChatApiClient {
     required String itemType,
     required String itemId,
   }) async {}
+
+  List<AppNotification> notifications = [
+    AppNotification(
+      id: 'n1',
+      type: 'message',
+      title: 'Nova mensagem de Marina',
+      content: 'Oi! Tudo certo?',
+      read: false,
+      createdAt: DateTime(2026, 11, 15, 14, 32),
+    ),
+  ];
+
+  bool markAllCalled = false;
+
+  @override
+  Future<List<AppNotification>> listNotifications({
+    required String apiUrl,
+    required String token,
+  }) async {
+    return List<AppNotification>.from(notifications);
+  }
+
+  @override
+  Future<void> markNotificationRead({
+    required String apiUrl,
+    required String token,
+    required String notificationId,
+  }) async {
+    notifications = notifications
+        .map((n) => n.id == notificationId ? n.copyWith(read: true) : n)
+        .toList();
+  }
+
+  @override
+  Future<void> markAllNotificationsRead({
+    required String apiUrl,
+    required String token,
+  }) async {
+    markAllCalled = true;
+    notifications = notifications.map((n) => n.copyWith(read: true)).toList();
+  }
+
+  @override
+  Future<void> clearNotifications({
+    required String apiUrl,
+    required String token,
+  }) async {
+    notifications = [];
+  }
+}
+
+class _ControllableRealtimeClient implements RealtimeClient {
+  void Function(Map<String, dynamic> payload)? _onMessage;
+  void Function(Map<String, dynamic> payload)? _onNotification;
+
+  @override
+  void connect({
+    required String apiUrl,
+    required String token,
+    required String userId,
+    required void Function(Map<String, dynamic> payload) onMessage,
+    required void Function(List<String> onlineUserIds) onOnlineUsers,
+    void Function(String messageId)? onMessageDeleted,
+    void Function(Map<String, dynamic> payload)? onNotification,
+  }) {
+    _onMessage = onMessage;
+    _onNotification = onNotification;
+  }
+
+  void emitMessage(Map<String, dynamic> payload) {
+    _onMessage?.call(payload);
+  }
+
+  void emitNotification(Map<String, dynamic> payload) {
+    _onNotification?.call(payload);
+  }
+
+  @override
+  void joinRoom(String roomId, String userId) {}
+
+  @override
+  void leaveRoom(String roomId, String userId) {}
+
+  @override
+  void dispose() {}
 }
 
 void main() {
@@ -732,5 +817,61 @@ void main() {
     await tester.tap(find.text('Excluir'));
     await tester.pumpAndSettle();
     expect(find.text('Mensagem para apagar'), findsNothing);
+  });
+
+  testWidgets('Notifications dialog and unread message badges update', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final chatClient = _FakeChatClient();
+    final realtimeClient = _ControllableRealtimeClient();
+
+    await tester.pumpWidget(
+      SkyRippleApp(
+        authClient: _FakeAuthClient(),
+        chatClient: chatClient,
+        realtimeClient: realtimeClient,
+        sessionStorage: MemorySessionStorage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), 'lucas@example.com');
+    await tester.enterText(find.byType(TextField).at(1), 'SenhaForte#2026');
+    await tester.tap(find.text('Entrar no SkyRipple'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.notifications_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('Notificações'), findsOneWidget);
+    expect(find.text('Nova mensagem de Marina'), findsOneWidget);
+
+    await tester.tap(find.text('Marcar todas como lidas'));
+    await tester.pumpAndSettle();
+    expect(chatClient.markAllCalled, isTrue);
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('1'), findsNothing);
+
+    realtimeClient.emitMessage({
+      'id': 'm-room-1',
+      'roomId': 'r1',
+      'senderId': 'u2',
+      'senderName': 'Marina Oliveira',
+      'content': 'Mensagem na sala',
+      'timestamp': '15:10',
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('1'), findsWidgets);
+
+    await tester.tap(find.text('Salas').first);
+    await tester.pumpAndSettle();
+    expect(find.text('1'), findsNothing);
   });
 }

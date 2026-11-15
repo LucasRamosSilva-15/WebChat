@@ -500,3 +500,54 @@ class FavoriteItem {
     );
   }
 }
+
+class AppNotification {
+  const AppNotification({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.content,
+    required this.read,
+    this.link,
+    this.createdAt,
+  });
+
+  final String id;
+  final String type;
+  final String title;
+  final String content;
+  final bool read;
+  final String? link;
+  final DateTime? createdAt;
+
+  String get formattedTime {
+    if (createdAt == null) return '';
+    return formatMessageFullDateTime(createdAt, '');
+  }
+
+  AppNotification copyWith({bool? read}) {
+    return AppNotification(
+      id: id,
+      type: type,
+      title: title,
+      content: content,
+      read: read ?? this.read,
+      link: link,
+      createdAt: createdAt,
+    );
+  }
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: (json['id'] ?? '').toString(),
+      type: (json['type'] ?? 'system').toString(),
+      title: (json['title'] ?? 'Notificação').toString(),
+      content: (json['content'] ?? '').toString(),
+      read: json['read'] == true || json['is_read'] == true,
+      link: _firstNonEmptyOrNull([json['link']]),
+      createdAt: _parseMessageDate(
+        json['time'] ?? json['created_at'] ?? json['createdAt'],
+      ),
+    );
+  }
+}

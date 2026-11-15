@@ -91,9 +91,288 @@ class _MainShellScreenState extends State<MainShellScreen> {
   List<ChatConversation> _directs = [];
   List<ChatConversation> _rooms = [];
   List<FavoriteItem> _favorites = [];
+  List<AppNotification> _notifications = [];
   List<ChatMessage> _messages = [];
   List<RoomMember> _roomMembers = [];
   Set<String> _onlineUserIds = {};
+
+  int get _unreadNotificationsCount =>
+      _notifications.where((n) => !n.read).length;
+
+  int get _totalUnreadMessagesCount =>
+      _directs.fold<int>(0, (sum, item) => sum + item.unread) +
+      _rooms.fold<int>(0, (sum, item) => sum + item.unread);
+
+  Future<void> _markNotificationRead(AppNotification notification) async {
+    if (notification.read) return;
+    setState(() {
+      _notifications = _notifications
+          .map((n) => n.id == notification.id ? n.copyWith(read: true) : n)
+          .toList();
+    });
+    try {
+      await widget.chatClient.markNotificationRead(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        notificationId: notification.id,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _markAllNotificationsRead() async {
+    if (_unreadNotificationsCount == 0) return;
+    setState(() {
+      _notifications =
+          _notifications.map((n) => n.copyWith(read: true)).toList();
+    });
+    try {
+      await widget.chatClient.markAllNotificationsRead(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _clearAllNotifications() async {
+    if (_notifications.isEmpty) return;
+    setState(() {
+      _notifications = [];
+    });
+    try {
+      await widget.chatClient.clearNotifications(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+      );
+    } catch (_) {}
+  }
+
+  void _openNotificationLink(String? link) {
+    if (link == null || link.trim().isEmpty) return;
+    final parsed = Uri.tryParse(
+      link.startsWith('http') ? link : 'http://local$link',
+    );
+    if (parsed == null) return;
+    final convId = parsed.queryParameters['conv'];
+    if (convId != null && convId.isNotEmpty) {
+      for (final d in _directs) {
+        if (d.id == convId) {
+          setState(() {
+            _navSection = _NavSection.directs;
+            _rosterFilter = _RosterFilter.directs;
+          });
+          _selectConversation(d);
+          return;
+        }
+      }
+    }
+    final roomId = parsed.queryParameters['room'];
+    if (roomId != null && roomId.isNotEmpty) {
+      for (final r in _rooms) {
+        if (r.id == roomId) {
+          setState(() {
+            _navSection = _NavSection.rooms;
+            _rosterFilter = _RosterFilter.rooms;
+          });
+          _selectConversation(r);
+          return;
+        }
+      }
+    }
+  }
+
+  Future<void> _openNotificationsDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        final theme = SkyRippleTheme.of(context);
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final unreadCount = _unreadNotificationsCount;
+            return AlertDialog(
+              backgroundColor: theme.panelSurface,
+              titlePadding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
+              contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              title: Row(
+                children: [
+                  const Text(
+                    'Notificações',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  if (unreadCount > 0) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.palette.main,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  if (_notifications.isNotEmpty) ...[
+                    TextButton(
+                      onPressed: unreadCount > 0
+                          ? () async {
+                              await _markAllNotificationsRead();
+                              setDialogState(() {});
+                            }
+                          : null,
+                      child: const Text('Marcar todas como lidas'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await _clearAllNotifications();
+                        setDialogState(() {});
+                      },
+                      child: Text(
+                        'Limpar',
+                        style: TextStyle(color: theme.busyRed),
+                      ),
+                    ),
+                  ],
+                  IconButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                    tooltip: 'Fechar',
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 440,
+                height: 360,
+                child: _notifications.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.notifications_none_rounded,
+                              size: 40,
+                              color: theme.textMuted,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Nenhuma notificação',
+                              style: TextStyle(color: theme.textMuted),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: _notifications.length,
+                        separatorBuilder: (_, _) => Divider(
+                          height: 1,
+                          color: theme.borderSubtle,
+                        ),
+                        itemBuilder: (_, index) {
+                          final item = _notifications[index];
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () async {
+                              await _markNotificationRead(item);
+                              setDialogState(() {});
+                              if (item.link != null &&
+                                  item.link!.trim().isNotEmpty &&
+                                  dialogContext.mounted) {
+                                Navigator.of(dialogContext).pop();
+                                _openNotificationLink(item.link);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: item.read
+                                    ? Colors.transparent
+                                    : theme.palette.main
+                                        .withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 5),
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: item.read
+                                            ? Colors.transparent
+                                            : theme.palette.main,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                item.title,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: item.read
+                                                      ? FontWeight.w500
+                                                      : FontWeight.w700,
+                                                  color: theme.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            if (item.formattedTime.isNotEmpty)
+                                              Text(
+                                                item.formattedTime,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: theme.textMuted,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        if (item.content.isNotEmpty) ...[
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            item.content,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: theme.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   final _searchController = TextEditingController();
   final _composerController = TextEditingController();
@@ -141,27 +420,69 @@ class _MainShellScreenState extends State<MainShellScreen> {
         if (!mounted) return;
         final roomId = (payload['room'] ?? payload['roomId'] ?? '').toString();
         final convId = (payload['conversationId'] ?? '').toString();
+        final incoming = ChatMessage.fromJson(
+          payload,
+          currentUserId: widget.user.id,
+        );
         final active = _activeConversation;
-        if (active == null) return;
-        if ((active.isRoom && roomId == active.id) ||
-            (!active.isRoom && convId == active.id)) {
-          final incoming = ChatMessage.fromJson(
-            payload,
-            currentUserId: widget.user.id,
-          );
+        final isForActive = active != null &&
+            ((active.isRoom && roomId == active.id) ||
+                (!active.isRoom && convId == active.id));
+        if (isForActive) {
           final alreadyExists = _messages.any(
             (m) => m.id.isNotEmpty && m.id == incoming.id,
           );
           if (!alreadyExists) {
             setState(() => _messages = [..._messages, incoming]);
           }
+          return;
         }
+        if (incoming.isSent) return;
+        final previewText = incoming.text.isNotEmpty
+            ? incoming.text
+            : (incoming.imageUrl != null ? 'Enviou uma imagem' : 'Enviou um anexo');
+        final timeText = incoming.formattedTime.isNotEmpty
+            ? incoming.formattedTime
+            : 'Agora';
+        setState(() {
+          if (roomId.isNotEmpty) {
+            _rooms = _rooms.map((r) {
+              if (r.id == roomId) {
+                return r.copyWith(
+                  unread: r.unread + 1,
+                  preview: previewText,
+                  timestamp: timeText,
+                );
+              }
+              return r;
+            }).toList();
+          } else if (convId.isNotEmpty) {
+            _directs = _directs.map((d) {
+              if (d.id == convId) {
+                return d.copyWith(
+                  unread: d.unread + 1,
+                  preview: previewText,
+                  timestamp: timeText,
+                );
+              }
+              return d;
+            }).toList();
+          }
+        });
       },
       onMessageDeleted: (messageId) {
         if (!mounted) return;
         setState(() {
           _messages = _messages.where((m) => m.id != messageId).toList();
         });
+      },
+      onNotification: (payload) {
+        if (!mounted) return;
+        final item = AppNotification.fromJson(payload);
+        final exists = _notifications.any((n) => n.id.isNotEmpty && n.id == item.id);
+        if (!exists) {
+          setState(() => _notifications = [item, ..._notifications]);
+        }
       },
     );
   }
@@ -185,11 +506,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
           apiUrl: widget.apiUrl,
           token: widget.token,
         ),
+        widget.chatClient.listNotifications(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+        ),
       ]);
       if (!mounted) return;
       final loadedDirects = results[0] as List<ChatConversation>;
       final loadedRooms = results[1] as List<ChatConversation>;
       final loadedFavorites = results[2] as List<FavoriteItem>;
+      final loadedNotifications = results[3] as List<AppNotification>;
 
       String? initialSelected = _selectedId;
       if (initialSelected == null) {
@@ -208,6 +534,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
         _directs = loadedDirects;
         _rooms = loadedRooms;
         _favorites = loadedFavorites;
+        _notifications = loadedNotifications;
         _selectedId = initialSelected;
         _loadingLists = false;
       });
@@ -357,6 +684,15 @@ class _MainShellScreenState extends State<MainShellScreen> {
     setState(() {
       _selectedId = item.id;
       _navSection = item.isRoom ? _NavSection.rooms : _NavSection.directs;
+      if (item.isRoom) {
+        _rooms = _rooms
+            .map((r) => r.id == item.id ? r.copyWith(unread: 0) : r)
+            .toList();
+      } else {
+        _directs = _directs
+            .map((d) => d.id == item.id ? d.copyWith(unread: 0) : d)
+            .toList();
+      }
     });
     await _loadConversationDetails(item.id);
   }
@@ -1391,6 +1727,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
             icon: Icons.chat_bubble_rounded,
             tooltip: 'Directs',
             active: _navSection == _NavSection.directs,
+            badgeCount: _totalUnreadMessagesCount,
             onTap: () {
               setState(() {
                 _navSection = _NavSection.directs;
@@ -1422,6 +1759,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
             tooltip: 'Favoritos',
             active: _navSection == _NavSection.favorites,
             onTap: () => setState(() => _navSection = _NavSection.favorites),
+          ),
+          const SizedBox(height: 8),
+          _RailIconButton(
+            icon: Icons.notifications_rounded,
+            tooltip: 'Notificações',
+            badgeCount: _unreadNotificationsCount,
+            onTap: _openNotificationsDialog,
           ),
           const SizedBox(height: 8),
           _RailIconButton(
@@ -2674,12 +3018,14 @@ class _RailIconButton extends StatelessWidget {
     required this.tooltip,
     required this.onTap,
     this.active = false,
+    this.badgeCount = 0,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback onTap;
   final bool active;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -2689,20 +3035,59 @@ class _RailIconButton extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: active
-                ? theme.palette.main.withValues(alpha: 0.14)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            size: 21,
-            color: active ? theme.palette.main : theme.textMuted,
-          ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: active
+                    ? theme.palette.main.withValues(alpha: 0.14)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                size: 21,
+                color: active ? theme.palette.main : theme.textMuted,
+              ),
+            ),
+            if (badgeCount > 0)
+              Positioned(
+                top: 2,
+                right: 2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 1,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.busyRed,
+                    borderRadius: BorderRadius.circular(9),
+                    border: Border.all(
+                      color: theme.railBackground,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      badgeCount > 99 ? '99+' : '$badgeCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

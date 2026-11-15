@@ -8,6 +8,7 @@ abstract class RealtimeClient {
     required void Function(Map<String, dynamic> payload) onMessage,
     required void Function(List<String> onlineUserIds) onOnlineUsers,
     void Function(String messageId)? onMessageDeleted,
+    void Function(Map<String, dynamic> payload)? onNotification,
   });
 
   void joinRoom(String roomId, String userId);
@@ -26,6 +27,7 @@ class SocketIoRealtimeClient implements RealtimeClient {
     required void Function(Map<String, dynamic> payload) onMessage,
     required void Function(List<String> onlineUserIds) onOnlineUsers,
     void Function(String messageId)? onMessageDeleted,
+    void Function(Map<String, dynamic> payload)? onNotification,
   }) {
     dispose();
     final baseUrl = apiUrl.replaceFirst(RegExp(r'/api/?$'), '');
@@ -63,6 +65,12 @@ class SocketIoRealtimeClient implements RealtimeClient {
       }
     });
 
+    socket.on('new_notification', (data) {
+      if (data is Map && onNotification != null) {
+        onNotification(Map<String, dynamic>.from(data));
+      }
+    });
+
     socket.connect();
     _socket = socket;
   }
@@ -94,6 +102,7 @@ class NoopRealtimeClient implements RealtimeClient {
     required void Function(Map<String, dynamic> payload) onMessage,
     required void Function(List<String> onlineUserIds) onOnlineUsers,
     void Function(String messageId)? onMessageDeleted,
+    void Function(Map<String, dynamic> payload)? onNotification,
   }) {}
 
   @override
