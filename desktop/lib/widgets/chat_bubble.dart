@@ -1,10 +1,24 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import '../theme/skyripple_theme.dart';
 
 enum ChatBubbleKind {
   text,
+  image,
   audio,
   attachment,
+}
+
+Uint8List? decodeDataUrlBytes(String? raw) {
+  if (raw == null || !raw.startsWith('data:')) return null;
+  final comma = raw.indexOf(',');
+  if (comma < 0 || comma >= raw.length - 1) return null;
+  try {
+    return base64Decode(raw.substring(comma + 1));
+  } catch (_) {
+    return null;
+  }
 }
 
 class ChatBubble extends StatelessWidget {
@@ -13,19 +27,23 @@ class ChatBubble extends StatelessWidget {
     required this.isSent,
     this.kind = ChatBubbleKind.text,
     this.text = '',
+    this.imageUrl,
     this.audioDuration = '0:24 • 1x',
     this.fileName = 'Apresentação.pdf',
     this.fileSize = '1.8 MB',
     this.onActionTap,
+    this.onImageTap,
   });
 
   final bool isSent;
   final ChatBubbleKind kind;
   final String text;
+  final String? imageUrl;
   final String audioDuration;
   final String fileName;
   final String fileSize;
   final VoidCallback? onActionTap;
+  final VoidCallback? onImageTap;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +136,71 @@ class ChatBubble extends StatelessWidget {
             fontSize: 13.5,
             height: 1.4,
           ),
+        );
+      case ChatBubbleKind.image:
+        final bytes = decodeDataUrlBytes(imageUrl);
+        final hasNetUrl = imageUrl != null &&
+            (imageUrl!.startsWith('http://') ||
+                imageUrl!.startsWith('https://'));
+        Widget imgWidget;
+        if (bytes != null) {
+          imgWidget = Image.memory(
+            bytes,
+            width: 260,
+            height: 190,
+            fit: BoxFit.cover,
+          );
+        } else if (hasNetUrl) {
+          imgWidget = Image.network(
+            imageUrl!,
+            width: 260,
+            height: 190,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => Container(
+              width: 260,
+              height: 120,
+              color: Colors.black12,
+              alignment: Alignment.center,
+              child: Icon(Icons.broken_image_outlined, color: textColor),
+            ),
+          );
+        } else {
+          imgWidget = Container(
+            width: 220,
+            height: 110,
+            color: Colors.black12,
+            alignment: Alignment.center,
+            child: Icon(Icons.image_outlined, color: textColor),
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            MouseRegion(
+              cursor: onImageTap != null
+                  ? SystemMouseCursors.click
+                  : MouseCursor.defer,
+              child: GestureDetector(
+                onTap: onImageTap,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: imgWidget,
+                ),
+              ),
+            ),
+            if (text.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                text,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 13.5,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ],
         );
       case ChatBubbleKind.audio:
         const heights = <double>[

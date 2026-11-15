@@ -264,12 +264,16 @@ class _FakeChatClient implements ChatApiClient {
     required String conversationId,
     required String currentUserId,
     required String content,
+    String? imageUrl,
+    Map<String, dynamic>? attachment,
   }) async {
     return ChatMessage(
       id: 'm2',
       senderId: currentUserId,
       senderName: 'Você',
       text: content,
+      imageUrl: imageUrl,
+      attachmentUrl: attachment?['url']?.toString(),
       timestamp: 'Agora',
       isSent: true,
     );
@@ -282,16 +286,27 @@ class _FakeChatClient implements ChatApiClient {
     required String roomId,
     required String currentUserId,
     required String content,
+    String? imageUrl,
+    Map<String, dynamic>? attachment,
   }) async {
     return ChatMessage(
       id: 'rm2',
       senderId: currentUserId,
       senderName: 'Você',
       text: content,
+      imageUrl: imageUrl,
+      attachmentUrl: attachment?['url']?.toString(),
       timestamp: 'Agora',
       isSent: true,
     );
   }
+
+  @override
+  Future<void> deleteRoomMessage({
+    required String apiUrl,
+    required String token,
+    required String messageId,
+  }) async {}
 
   @override
   Future<ChatConversation> createRoom({
@@ -666,5 +681,56 @@ void main() {
     expect(find.text('09:15'), findsOneWidget);
     expect(find.text('15 de outubro'), findsOneWidget);
     expect(find.text('📌 Início do histórico da conversa alcançado'), findsOneWidget);
+  });
+
+  testWidgets('Image message parsing and room message deletion work cleanly', (
+    tester,
+  ) async {
+    final imgMsg = ChatMessage.fromJson(
+      {
+        'id': 'm-img',
+        'user_id': 'u2',
+        'content': 'Olha essa foto',
+        'image_url':
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWrcAAAAASUVORK5CYII=',
+      },
+      currentUserId: 'u1',
+    );
+    expect(imgMsg.imageUrl, isNotNull);
+
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      SkyRippleApp(
+        authClient: _FakeAuthClient(),
+        chatClient: _FakeChatClient(),
+        realtimeClient: NoopRealtimeClient(),
+        sessionStorage: MemorySessionStorage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), 'lucas@example.com');
+    await tester.enterText(find.byType(TextField).at(1), 'SenhaForte#2026');
+    await tester.tap(find.text('Entrar no SkyRipple'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Salas').first);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).last, 'Mensagem para apagar');
+    await tester.tap(find.text('Enviar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mensagem para apagar'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.delete_outline_rounded).last);
+    await tester.pumpAndSettle();
+    expect(find.text('Excluir mensagem'), findsOneWidget);
+
+    await tester.tap(find.text('Excluir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mensagem para apagar'), findsNothing);
   });
 }

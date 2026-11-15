@@ -260,6 +260,8 @@ class ChatMessage {
     required this.isSent,
     this.createdAt,
     this.senderAvatarUrl,
+    this.imageUrl,
+    this.attachmentUrl,
     this.role,
     this.kind = ChatBubbleKind.text,
     this.fileName,
@@ -274,6 +276,8 @@ class ChatMessage {
   final bool isSent;
   final DateTime? createdAt;
   final String? senderAvatarUrl;
+  final String? imageUrl;
+  final String? attachmentUrl;
   final String? role;
   final ChatBubbleKind kind;
   final String? fileName;
@@ -328,8 +332,17 @@ class ChatMessage {
     ]);
     final attachment = json['attachment'];
     final hasAttachment = attachment is Map<String, dynamic>;
-    final mime = hasAttachment ? (attachment['mimeType'] ?? '').toString() : '';
+    final mime = hasAttachment
+        ? (attachment['mimeType'] ?? attachment['type'] ?? '').toString()
+        : '';
     final isAudio = mime.startsWith('audio/');
+    final resolvedImageUrl = _firstNonEmptyOrNull([
+      json['image'],
+      json['image_url'],
+      json['imageUrl'],
+    ]);
+    final resolvedAttachmentUrl =
+        hasAttachment ? _firstNonEmptyOrNull([attachment['url']]) : null;
     final parsedCreatedAt = _parseMessageDate(
       json['created_at'] ?? json['createdAt'] ?? json['timestamp'],
     );
@@ -342,15 +355,21 @@ class ChatMessage {
       senderId: senderId,
       senderName: senderName,
       senderAvatarUrl: senderAvatarUrl,
+      imageUrl: resolvedImageUrl,
+      attachmentUrl: resolvedAttachmentUrl,
       text: (json['text'] ?? json['content'] ?? json['message'] ?? '')
           .toString(),
       timestamp: timeFallback,
       isSent: isMe,
       createdAt: parsedCreatedAt ?? _parseMessageDate(json['time']),
       role: _mapRole(json['role']?.toString()),
-      kind: isAudio
-          ? ChatBubbleKind.audio
-          : (hasAttachment ? ChatBubbleKind.attachment : ChatBubbleKind.text),
+      kind: resolvedImageUrl != null
+          ? ChatBubbleKind.image
+          : (isAudio
+              ? ChatBubbleKind.audio
+              : (hasAttachment
+                  ? ChatBubbleKind.attachment
+                  : ChatBubbleKind.text)),
       fileName: hasAttachment ? attachment['name']?.toString() : null,
       fileSize: hasAttachment && attachment['size'] is num
           ? '${((attachment['size'] as num) / (1024 * 1024)).toStringAsFixed(1)} MB'

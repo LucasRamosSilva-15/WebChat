@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_selector/file_selector.dart';
 import 'package:material_ui/material_ui.dart';
 import '../models/chat_models.dart';
 import '../models/user_session.dart';
@@ -77,6 +80,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
   String? _nextCursor;
   bool _sending = false;
   String? _statusError;
+  String? _pendingImageUrl;
+  Map<String, dynamic>? _pendingAttachment;
+  String? _pendingAttachmentLabel;
 
   late UserPresence _myPresence;
   late String _displayName;
@@ -150,6 +156,12 @@ class _MainShellScreenState extends State<MainShellScreen> {
             setState(() => _messages = [..._messages, incoming]);
           }
         }
+      },
+      onMessageDeleted: (messageId) {
+        if (!mounted) return;
+        setState(() {
+          _messages = _messages.where((m) => m.id != messageId).toList();
+        });
       },
     );
   }
@@ -395,14 +407,294 @@ class _MainShellScreenState extends State<MainShellScreen> {
         .toList();
   }
 
+  String? _mimeTypeForName(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+    if (lower.endsWith('.gif')) return 'image/gif';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.pdf')) return 'application/pdf';
+    if (lower.endsWith('.txt')) return 'text/plain';
+    if (lower.endsWith('.csv')) return 'text/csv';
+    if (lower.endsWith('.zip')) return 'application/zip';
+    if (lower.endsWith('.doc')) return 'application/msword';
+    if (lower.endsWith('.docx')) {
+      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    }
+    if (lower.endsWith('.xls')) return 'application/vnd.ms-excel';
+    if (lower.endsWith('.xlsx')) {
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    }
+    if (lower.endsWith('.ppt')) return 'application/vnd.ms-powerpoint';
+    if (lower.endsWith('.pptx')) {
+      return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    }
+    if (lower.endsWith('.mp3')) return 'audio/mpeg';
+    if (lower.endsWith('.wav')) return 'audio/wav';
+    if (lower.endsWith('.ogg')) return 'audio/ogg';
+    if (lower.endsWith('.m4a')) return 'audio/mp4';
+    if (lower.endsWith('.aac')) return 'audio/aac';
+    return null;
+  }
+
+  Future<void> _pickAttachment() async {
+    const typeGroup = XTypeGroup(
+      label: 'Imagens e arquivos',
+      extensions: [
+        'png',
+        'jpg',
+        'jpeg',
+        'gif',
+        'webp',
+        'pdf',
+        'txt',
+        'csv',
+        'zip',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'ppt',
+        'pptx',
+        'mp3',
+        'wav',
+        'ogg',
+        'm4a',
+        'aac',
+      ],
+    );
+    final file = await openFile(acceptedTypeGroups: [typeGroup]);
+    if (file == null || !mounted) return;
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    if (bytes.length > 5 * 1024 * 1024) {
+      _showNotice('O arquivo excede o limite de 5 MB.');
+      return;
+    }
+    final mime = _mimeTypeForName(file.name);
+    if (mime == null) {
+      _showNotice('Formato de arquivo não suportado.');
+      return;
+    }
+    final dataUrl = 'data:$mime;base64,${base64Encode(bytes)}';
+    setState(() {
+      if (mime.startsWith('image/')) {
+        _pendingImageUrl = dataUrl;
+        _pendingAttachment = null;
+        _pendingAttachmentLabel = 'Imagem: ${file.name}';
+      } else {
+        _pendingImageUrl = null;
+        _pendingAttachment = {
+          'url': dataUrl,
+          'type': mime,
+          'name': file.name,
+          'size': bytes.length,
+        };
+        _pendingAttachmentLabel = 'Anexo: ${file.name}';
+      }
+    });
+  }
+
+  void _clearPendingAttachment() {
+    setState(() {
+      _pendingImageUrl = null;
+      _pendingAttachment = null;
+      _pendingAttachmentLabel = null;
+    });
+  }
+
+  void _showNotice(String message) {
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierColor: const Color(0x730F172A),
+      builder: (ctx) {
+        final theme = SkyRippleTheme.of(ctx);
+        return Dialog(
+          backgroundColor: theme.panelSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: theme.borderSubtle),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message,
+                    style: TextStyle(color: theme.textPrimary, fontSize: 13.5),
+                  ),
+                  const SizedBox(height: 14),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: AeroButton(
+                      label: 'OK',
+                      height: 34,
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  bool _canDeleteMessage(ChatMessage msg, ChatConversation active) {
+    if (!active.isRoom || msg.id.isEmpty) return false;
+    if (msg.isSent) return true;
+    for (final m in _roomMembers) {
+      if (m.id == widget.user.id && (m.role == 'Dono' || m.role == 'Mod')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> _confirmDeleteMessage(ChatMessage msg) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: const Color(0x730F172A),
+      builder: (ctx) {
+        final theme = SkyRippleTheme.of(ctx);
+        return Dialog(
+          backgroundColor: theme.panelSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: theme.borderSubtle),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 380),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Excluir mensagem',
+                    style: TextStyle(
+                      color: theme.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tem certeza que deseja apagar esta mensagem?',
+                    style: TextStyle(color: theme.textSecondary, fontSize: 13.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AeroButton(
+                        label: 'Cancelar',
+                        variant: AeroButtonVariant.secondary,
+                        height: 34,
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                      ),
+                      const SizedBox(width: 8),
+                      AeroButton(
+                        label: 'Excluir',
+                        height: 34,
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await widget.chatClient.deleteRoomMessage(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        messageId: msg.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _messages = _messages.where((m) => m.id != msg.id).toList();
+      });
+    } on AuthApiException catch (err) {
+      _showNotice(err.message);
+    } catch (_) {
+      _showNotice('Não foi possível excluir a mensagem.');
+    }
+  }
+
+  void _openImagePreviewDialog(String imageUrl) {
+    final bytes = decodeDataUrlBytes(imageUrl);
+    showDialog<void>(
+      context: context,
+      barrierColor: const Color(0xBF0F172A),
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Stack(
+            alignment: Alignment.topRight,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: bytes != null
+                    ? Image.memory(bytes, fit: BoxFit.contain)
+                    : Image.network(imageUrl, fit: BoxFit.contain),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: IconButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0x990F172A),
+                  ),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _saveAttachment(ChatMessage msg) async {
+    final bytes = decodeDataUrlBytes(msg.attachmentUrl);
+    if (bytes == null) {
+      _showNotice('Anexo indisponível para download.');
+      return;
+    }
+    final fileName = msg.fileName ?? 'anexo';
+    final location = await getSaveLocation(suggestedName: fileName);
+    if (location == null) return;
+    await File(location.path).writeAsBytes(bytes);
+    if (!mounted) return;
+    _showNotice('Arquivo salvo em ${location.path}');
+  }
+
   Future<void> _sendMessage() async {
     final active = _activeConversation;
     final text = _composerController.text.trim();
-    if (active == null || text.isEmpty || _sending) {
+    final imageUrl = _pendingImageUrl;
+    final attachment = _pendingAttachment;
+    if (active == null ||
+        (text.isEmpty && imageUrl == null && attachment == null) ||
+        _sending) {
       return;
     }
     setState(() => _sending = true);
     _composerController.clear();
+    _clearPendingAttachment();
     try {
       final sent = active.isRoom
           ? await widget.chatClient.sendRoomMessage(
@@ -411,6 +703,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
               roomId: active.id,
               currentUserId: widget.user.id,
               content: text,
+              imageUrl: imageUrl,
+              attachment: attachment,
             )
           : await widget.chatClient.sendDirectMessage(
               apiUrl: widget.apiUrl,
@@ -418,6 +712,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
               conversationId: active.id,
               currentUserId: widget.user.id,
               content: text,
+              imageUrl: imageUrl,
+              attachment: attachment,
             );
       if (!mounted) return;
       final exists = _messages.any((m) => m.id.isNotEmpty && m.id == sent.id);
@@ -432,6 +728,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
       setState(() {
         _sending = false;
         _composerController.text = text;
+        _pendingImageUrl = imageUrl;
+        _pendingAttachment = attachment;
       });
     }
   }
@@ -1725,6 +2023,27 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                                   ),
                                                 ),
                                               ],
+                                              if (_canDeleteMessage(
+                                                  msg, active)) ...[
+                                                const SizedBox(width: 4),
+                                                InkWell(
+                                                  onTap: () =>
+                                                      _confirmDeleteMessage(
+                                                          msg),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(2),
+                                                    child: Icon(
+                                                      Icons
+                                                          .delete_outline_rounded,
+                                                      size: 14,
+                                                      color: theme.textMuted,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                               if (msg.isSent) ...[
                                                 const SizedBox(width: 6),
                                                 UserAvatar(
@@ -1745,8 +2064,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                       isSent: msg.isSent,
                                       kind: msg.kind,
                                       text: msg.text,
+                                      imageUrl: msg.imageUrl,
                                       fileName: msg.fileName ?? 'Arquivo',
                                       fileSize: msg.fileSize ?? '',
+                                      onImageTap: msg.imageUrl != null
+                                          ? () => _openImagePreviewDialog(
+                                              msg.imageUrl!)
+                                          : null,
+                                      onActionTap: msg.attachmentUrl != null
+                                          ? () => _saveAttachment(msg)
+                                          : null,
                                     ),
                                     if (!showHeader && timeLabel.isNotEmpty)
                                       Padding(
@@ -1777,21 +2104,86 @@ class _MainShellScreenState extends State<MainShellScreen> {
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: theme.borderSubtle)),
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: WellInput(
-                    controller: _composerController,
-                    hintText: 'Escreva uma mensagem...',
-                    leadingIcon: Icons.attach_file_rounded,
-                    onSubmitted: (_) => _sendMessage(),
+                if (_pendingAttachmentLabel != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.palette.main.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: theme.palette.main.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _pendingImageUrl != null
+                                ? Icons.image_outlined
+                                : Icons.attach_file_rounded,
+                            size: 14,
+                            color: theme.palette.main,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              _pendingAttachmentLabel!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: theme.textPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          GestureDetector(
+                            onTap: _clearPendingAttachment,
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 15,
+                              color: theme.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                AeroButton(
-                  label: _sending ? 'Enviando...' : 'Enviar',
-                  height: 42,
-                  onPressed: _sending ? null : _sendMessage,
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: _sending ? null : _pickAttachment,
+                      icon: Icon(
+                        Icons.attach_file_rounded,
+                        color: theme.palette.main,
+                      ),
+                      tooltip: 'Anexar imagem ou arquivo',
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: WellInput(
+                        controller: _composerController,
+                        hintText: 'Escreva uma mensagem...',
+                        onSubmitted: (_) => _sendMessage(),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    AeroButton(
+                      label: _sending ? 'Enviando...' : 'Enviar',
+                      height: 42,
+                      onPressed: _sending ? null : _sendMessage,
+                    ),
+                  ],
                 ),
               ],
             ),

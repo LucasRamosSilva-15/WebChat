@@ -30,6 +30,8 @@ abstract class ChatApiClient {
     required String conversationId,
     required String currentUserId,
     required String content,
+    String? imageUrl,
+    Map<String, dynamic>? attachment,
   });
 
   Future<List<DirectoryUser>> listAvailableUsers({
@@ -70,6 +72,14 @@ abstract class ChatApiClient {
     required String roomId,
     required String currentUserId,
     required String content,
+    String? imageUrl,
+    Map<String, dynamic>? attachment,
+  });
+
+  Future<void> deleteRoomMessage({
+    required String apiUrl,
+    required String token,
+    required String messageId,
   });
 
   Future<List<RoomMember>> listRoomMembers({
@@ -181,12 +191,18 @@ class HttpChatApiClient implements ChatApiClient {
     required String conversationId,
     required String currentUserId,
     required String content,
+    String? imageUrl,
+    Map<String, dynamic>? attachment,
   }) async {
     final decoded = await _request(
       method: 'POST',
       url: '${_normalize(apiUrl)}/directs/conversations/$conversationId/messages',
       token: token,
-      body: {'content': content},
+      body: {
+        'content': content,
+        if (imageUrl != null && imageUrl.isNotEmpty) 'imageUrl': imageUrl,
+        'attachment': ?attachment,
+      },
     );
     if (decoded is Map<String, dynamic>) {
       return ChatMessage.fromJson(decoded, currentUserId: currentUserId);
@@ -294,17 +310,36 @@ class HttpChatApiClient implements ChatApiClient {
     required String roomId,
     required String currentUserId,
     required String content,
+    String? imageUrl,
+    Map<String, dynamic>? attachment,
   }) async {
     final decoded = await _request(
       method: 'POST',
       url: '${_normalize(apiUrl)}/rooms/$roomId/messages',
       token: token,
-      body: {'content': content},
+      body: {
+        'content': content,
+        if (imageUrl != null && imageUrl.isNotEmpty) 'imageUrl': imageUrl,
+        'attachment': ?attachment,
+      },
     );
     if (decoded is Map<String, dynamic>) {
       return ChatMessage.fromJson(decoded, currentUserId: currentUserId);
     }
     throw const AuthApiException('Resposta inválida ao enviar mensagem.');
+  }
+
+  @override
+  Future<void> deleteRoomMessage({
+    required String apiUrl,
+    required String token,
+    required String messageId,
+  }) async {
+    await _request(
+      method: 'DELETE',
+      url: '${_normalize(apiUrl)}/messages/$messageId',
+      token: token,
+    );
   }
 
   @override
