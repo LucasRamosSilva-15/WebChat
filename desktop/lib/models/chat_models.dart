@@ -330,14 +330,18 @@ class FavoriteItem {
     required this.id,
     required this.title,
     required this.subtitle,
+    this.itemType = 'room',
   });
 
   final String id;
   final String title;
   final String subtitle;
+  final String itemType;
+
+  bool get isRoom => itemType == 'room';
 
   factory FavoriteItem.fromJson(Map<String, dynamic> json) {
-    final itemType = (json['item_type'] ?? json['itemType'] ?? 'item')
+    final itemType = (json['item_type'] ?? json['itemType'] ?? 'room')
         .toString();
     final title = (json['title'] ??
             json['name'] ??
@@ -345,9 +349,10 @@ class FavoriteItem {
             'Item favoritado')
         .toString();
     return FavoriteItem(
-      id: (json['item_id'] ?? json['id'] ?? '').toString(),
+      id: (json['item_id'] ?? json['itemId'] ?? json['id'] ?? '').toString(),
       title: title,
       subtitle: itemType == 'room' ? 'Sala temática' : 'Conversa direta',
+      itemType: itemType,
     );
   }
 }

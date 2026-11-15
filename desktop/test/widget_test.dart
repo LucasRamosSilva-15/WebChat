@@ -238,6 +238,57 @@ class _FakeChatClient implements ChatApiClient {
       isSent: true,
     );
   }
+
+  @override
+  Future<ChatConversation> createRoom({
+    required String apiUrl,
+    required String token,
+    required String name,
+    String? description,
+    String? category,
+  }) async {
+    return ChatConversation(
+      id: 'r2',
+      title: name.startsWith('#') ? name : '# $name',
+      preview: description ?? 'Sala temática',
+      timestamp: '1 membros',
+      isRoom: true,
+      subtitle: '1 membros • ${description ?? 'Geral'}',
+      membersCount: 1,
+    );
+  }
+
+  @override
+  Future<void> joinRoom({
+    required String apiUrl,
+    required String token,
+    required String roomId,
+  }) async {}
+
+  @override
+  Future<FavoriteItem> addFavorite({
+    required String apiUrl,
+    required String token,
+    required String itemType,
+    required String itemId,
+    required String title,
+    String? content,
+  }) async {
+    return FavoriteItem(
+      id: itemId,
+      title: title,
+      subtitle: itemType == 'room' ? 'Sala temática' : 'Conversa direta',
+      itemType: itemType,
+    );
+  }
+
+  @override
+  Future<void> removeFavorite({
+    required String apiUrl,
+    required String token,
+    required String itemType,
+    required String itemId,
+  }) async {}
 }
 
 void main() {
@@ -448,5 +499,54 @@ void main() {
     await tester.tap(find.text('Ana Beatriz').first);
     await tester.pumpAndSettle();
     expect(find.text('Enviar Direct'), findsOneWidget);
+  });
+
+  testWidgets('Create room, toggle favorite, and persist profile updates', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final storage = MemorySessionStorage();
+    await tester.pumpWidget(
+      SkyRippleApp(
+        authClient: _FakeAuthClient(),
+        chatClient: _FakeChatClient(),
+        realtimeClient: NoopRealtimeClient(),
+        sessionStorage: storage,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), 'lucas@example.com');
+    await tester.enterText(find.byType(TextField).at(1), 'SenhaForte#2026');
+    await tester.tap(find.text('Entrar no SkyRipple'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.group_add_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('Criar nova sala'), findsOneWidget);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ex.: Design & Aero'),
+      'Aero Lab',
+    );
+    await tester.tap(find.text('Criar sala'));
+    await tester.pumpAndSettle();
+    expect(find.text('# Aero Lab'), findsWidgets);
+
+    await tester.tap(find.byIcon(Icons.star_border_rounded));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.star_rounded), findsWidgets);
+
+    await tester.tap(find.byIcon(Icons.settings_rounded));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Lucas Ramos'), 'Lucas Dev');
+    await tester.tap(find.text('Salvar Alterações'));
+    await tester.pumpAndSettle();
+
+    final saved = await storage.load();
+    expect(saved.user?.name, 'Lucas Dev');
   });
 }

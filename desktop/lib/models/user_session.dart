@@ -24,6 +24,19 @@ class SkyRippleUser {
     );
   }
 
+  SkyRippleUser copyWith({
+    String? name,
+    String? email,
+    String? avatarUrl,
+  }) {
+    return SkyRippleUser(
+      id: id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -50,35 +63,41 @@ class DesktopPreferences {
     this.accent = SkyRippleAccent.blue,
     this.presence = UserPresence.online,
     this.apiUrl = defaultApiUrl,
+    this.bio = defaultBio,
   });
 
   static const String defaultApiUrl = String.fromEnvironment(
     'API_URL',
     defaultValue: 'https://webchat-9vqr.onrender.com/api',
   );
+  static const String defaultBio = 'Construindo ideias para conectar pessoas';
 
   final bool isDark;
   final SkyRippleAccent accent;
   final UserPresence presence;
   final String apiUrl;
+  final String bio;
 
   DesktopPreferences copyWith({
     bool? isDark,
     SkyRippleAccent? accent,
     UserPresence? presence,
     String? apiUrl,
+    String? bio,
   }) {
     return DesktopPreferences(
       isDark: isDark ?? this.isDark,
       accent: accent ?? this.accent,
       presence: presence ?? this.presence,
       apiUrl: apiUrl ?? this.apiUrl,
+      bio: bio ?? this.bio,
     );
   }
 
   factory DesktopPreferences.fromJson(Map<String, dynamic> json) {
     final accentName = json['accent']?.toString();
     final presenceName = json['presence']?.toString();
+    final rawBio = json['bio']?.toString().trim();
     return DesktopPreferences(
       isDark: json['isDark'] == true,
       accent: SkyRippleAccent.values.firstWhere(
@@ -92,6 +111,7 @@ class DesktopPreferences {
       apiUrl: (json['apiUrl']?.toString().trim().isNotEmpty ?? false)
           ? json['apiUrl'].toString().trim()
           : defaultApiUrl,
+      bio: (rawBio != null && rawBio.isNotEmpty) ? rawBio : defaultBio,
     );
   }
 
@@ -101,6 +121,7 @@ class DesktopPreferences {
       'accent': accent.name,
       'presence': presence.name,
       'apiUrl': apiUrl,
+      'bio': bio,
     };
   }
 }

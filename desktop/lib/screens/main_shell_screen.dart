@@ -34,9 +34,11 @@ class MainShellScreen extends StatefulWidget {
     required this.isDark,
     required this.accent,
     required this.initialPresence,
+    this.initialBio = DesktopPreferences.defaultBio,
     required this.onThemeChanged,
     required this.onAccentChanged,
     required this.onPresenceChanged,
+    this.onProfileSaved,
     required this.onSignOut,
   });
 
@@ -48,9 +50,15 @@ class MainShellScreen extends StatefulWidget {
   final bool isDark;
   final SkyRippleAccent accent;
   final UserPresence initialPresence;
+  final String initialBio;
   final ValueChanged<bool> onThemeChanged;
   final ValueChanged<SkyRippleAccent> onAccentChanged;
   final ValueChanged<UserPresence> onPresenceChanged;
+  final Future<void> Function({
+    required String name,
+    required String bio,
+    String? avatarUrl,
+  })? onProfileSaved;
   final VoidCallback onSignOut;
 
   @override
@@ -86,6 +94,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
     super.initState();
     _myPresence = widget.initialPresence;
     _displayName = widget.user.name;
+    _bio = widget.initialBio;
     _connectRealtime();
     _loadInitialData();
   }
@@ -370,15 +379,116 @@ class _MainShellScreenState extends State<MainShellScreen> {
     );
   }
 
+  Future<void> _openCreateRoomDialog() async {
+    await showDialog<void>(
+      context: context,
+      barrierColor: const Color(0x730F172A),
+      builder: (_) => _CreateRoomDialog(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        chatClient: widget.chatClient,
+        onCreated: (room) async {
+          if (!mounted) return;
+          setState(() {
+            _rooms = [room, ..._rooms];
+            _rosterFilter = _RosterFilter.rooms;
+            _navSection = _NavSection.rooms;
+          });
+          await _selectConversation(room);
+        },
+      ),
+    );
+  }
+
+  bool _isFavorited(ChatConversation conv) {
+    final targetType = conv.isRoom ? 'room' : 'conversation';
+    return _favorites.any(
+      (f) => f.id == conv.id && f.itemType == targetType,
+    );
+  }
+
+  Future<void> _toggleFavorite(ChatConversation conv) async {
+    final itemType = conv.isRoom ? 'room' : 'conversation';
+    final already = _isFavorited(conv);
+    if (already) {
+      setState(() {
+        _favorites = _favorites
+            .where((f) => !(f.id == conv.id && f.itemType == itemType))
+            .toList();
+      });
+      try {
+        await widget.chatClient.removeFavorite(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+          itemType: itemType,
+          itemId: conv.id,
+        );
+      } catch (_) {}
+      return;
+    }
+
+    try {
+      final created = await widget.chatClient.addFavorite(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        itemType: itemType,
+        itemId: conv.id,
+        title: conv.title,
+        content: conv.subtitle,
+      );
+      if (!mounted) return;
+      setState(() {
+        _favorites = [created, ..._favorites];
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _removeFavoriteItem(FavoriteItem fav) async {
+    setState(() {
+      _favorites = _favorites
+          .where((f) => !(f.id == fav.id && f.itemType == fav.itemType))
+          .toList();
+    });
+    try {
+      await widget.chatClient.removeFavorite(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        itemType: fav.itemType,
+        itemId: fav.id,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _openFavorite(FavoriteItem fav) async {
+    final list = fav.isRoom ? _rooms : _directs;
+    ChatConversation? match;
+    for (final item in list) {
+      if (item.id == fav.id) {
+        match = item;
+        break;
+      }
+    }
+    if (match != null) {
+      setState(() {
+        _rosterFilter =
+            fav.isRoom ? _RosterFilter.rooms : _RosterFilter.directs;
+      });
+      await _selectConversation(match);
+    }
+  }
+
   void _openSettingsModal() {
     var draftName = _displayName;
     var draftBio = _bio;
+    var draftAvatar = widget.user.avatarUrl ?? '';
+    var showAvatarInput = false;
     var draftDark = widget.isDark;
     var draftAccent = widget.accent;
     var draftPresence = _myPresence;
 
     final nameCtrl = TextEditingController(text: draftName);
     final bioCtrl = TextEditingController(text: draftBio);
+    final avatarCtrl = TextEditingController(text: draftAvatar);
 
     showDialog<void>(
       context: context,
@@ -395,7 +505,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
               ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -414,7 +524,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         children: [
                           UserAvatar(
                             label: draftName,
-                            avatarUrl: widget.user.avatarUrl,
+                            avatarUrl: draftAvatar.trim().isNotEmpty
+                                ? draftAvatar.trim()
+                                : widget.user.avatarUrl,
                             size: 56,
                             presence: draftPresence,
                           ),
@@ -423,9 +535,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: () => setModalState(
+                                  () => showAvatarInput = !showAvatarInput,
+                                ),
                                 child: Text(
-                                  'Alterar foto de perfil',
+                                  showAvatarInput
+                                      ? 'Ocultar URL da foto'
+                                      : 'Alterar foto de perfil',
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: theme.palette.main,
@@ -446,6 +562,25 @@ class _MainShellScreenState extends State<MainShellScreen> {
                           ),
                         ],
                       ),
+                      if (showAvatarInput) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          'URL da foto de perfil',
+                          style: TextStyle(
+                            color: theme.textPrimary,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        WellInput(
+                          controller: avatarCtrl,
+                          hintText: 'https://exemplo.com/sua-foto.png',
+                          leadingIcon: Icons.link_rounded,
+                          onChanged: (v) =>
+                              setModalState(() => draftAvatar = v),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       Text(
                         'Nome de exibição',
@@ -593,16 +728,23 @@ class _MainShellScreenState extends State<MainShellScreen> {
                           AeroButton(
                             label: 'Salvar Alterações',
                             onPressed: () {
+                              final nextName = draftName.trim().isNotEmpty
+                                  ? draftName.trim()
+                                  : _displayName;
+                              final nextBio = draftBio.trim();
                               setState(() {
-                                if (draftName.trim().isNotEmpty) {
-                                  _displayName = draftName.trim();
-                                }
-                                _bio = draftBio.trim();
+                                _displayName = nextName;
+                                _bio = nextBio;
                                 _myPresence = draftPresence;
                               });
                               widget.onThemeChanged(draftDark);
                               widget.onAccentChanged(draftAccent);
                               widget.onPresenceChanged(draftPresence);
+                              widget.onProfileSaved?.call(
+                                name: nextName,
+                                bio: nextBio,
+                                avatarUrl: draftAvatar.trim(),
+                              );
                               Navigator.of(dialogContext).pop();
                             },
                           ),
@@ -971,22 +1113,53 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Conversas',
-                      style: TextStyle(
-                        color: theme.textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.4,
+                    Expanded(
+                      child: Text(
+                        'Conversas',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: theme.textPrimary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.4,
+                        ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: _openNewDirectDialog,
-                      icon: Icon(
-                        Icons.add_rounded,
-                        color: theme.palette.main,
-                      ),
-                      tooltip: 'Nova conversa',
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: _openCreateRoomDialog,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 34,
+                            minHeight: 34,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            Icons.group_add_outlined,
+                            size: 20,
+                            color: theme.palette.main,
+                          ),
+                          tooltip: 'Criar sala',
+                        ),
+                        IconButton(
+                          onPressed: _openNewDirectDialog,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 34,
+                            minHeight: 34,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            Icons.add_rounded,
+                            size: 22,
+                            color: theme.palette.main,
+                          ),
+                          tooltip: 'Nova conversa',
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1256,6 +1429,20 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   ),
                 const SizedBox(width: 8),
                 IconButton(
+                  onPressed: () => _toggleFavorite(active),
+                  icon: Icon(
+                    _isFavorited(active)
+                        ? Icons.star_rounded
+                        : Icons.star_border_rounded,
+                    color: _isFavorited(active)
+                        ? theme.awayAmber
+                        : theme.textMuted,
+                  ),
+                  tooltip: _isFavorited(active)
+                      ? 'Remover dos favoritos'
+                      : 'Adicionar aos favoritos',
+                ),
+                IconButton(
                   onPressed: () =>
                       setState(() => _showInspector = !_showInspector),
                   icon: Icon(
@@ -1452,38 +1639,57 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     itemCount: _favorites.length,
                     itemBuilder: (context, index) {
                       final fav = _favorites[index];
-                      return Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: theme.panelSurface,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: theme.borderSubtle),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              fav.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: theme.textPrimary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                      return InkWell(
+                        onTap: () => _openFavorite(fav),
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: theme.panelSurface,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: theme.borderSubtle),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      fav.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: theme.textPrimary,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      fav.subtitle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: theme.textMuted,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              fav.subtitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: theme.textMuted,
-                                fontSize: 12,
+                              IconButton(
+                                onPressed: () => _removeFavoriteItem(fav),
+                                icon: Icon(
+                                  Icons.star_rounded,
+                                  color: theme.awayAmber,
+                                  size: 20,
+                                ),
+                                tooltip: 'Remover favorito',
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -2198,6 +2404,184 @@ class _PresenceChip extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CreateRoomDialog extends StatefulWidget {
+  const _CreateRoomDialog({
+    required this.apiUrl,
+    required this.token,
+    required this.chatClient,
+    required this.onCreated,
+  });
+
+  final String apiUrl;
+  final String token;
+  final ChatApiClient chatClient;
+  final Future<void> Function(ChatConversation room) onCreated;
+
+  @override
+  State<_CreateRoomDialog> createState() => _CreateRoomDialogState();
+}
+
+class _CreateRoomDialogState extends State<_CreateRoomDialog> {
+  final _nameCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _catCtrl = TextEditingController(text: 'Geral');
+  bool _submitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    _catCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = 'Informe o nome da sala.');
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    try {
+      final nav = Navigator.of(context);
+      final room = await widget.chatClient.createRoom(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        name: name,
+        description: _descCtrl.text.trim(),
+        category: _catCtrl.text.trim(),
+      );
+      nav.pop();
+      await widget.onCreated(room);
+    } on AuthApiException catch (err) {
+      if (!mounted) return;
+      setState(() {
+        _submitting = false;
+        _error = err.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _submitting = false;
+        _error = 'Não foi possível criar a sala.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = SkyRippleTheme.of(context);
+    return Dialog(
+      backgroundColor: theme.panelSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: theme.borderSubtle),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Criar nova sala',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Nome da sala',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              WellInput(
+                controller: _nameCtrl,
+                hintText: 'Ex.: Design & Aero',
+                leadingIcon: Icons.tag_rounded,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Descrição',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              WellInput(
+                controller: _descCtrl,
+                hintText: 'Sobre o que é esta sala?',
+                leadingIcon: Icons.subject_rounded,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Categoria',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              WellInput(
+                controller: _catCtrl,
+                hintText: 'Geral',
+                leadingIcon: Icons.category_outlined,
+                onSubmitted: (_) => _submit(),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  _error!,
+                  style: TextStyle(
+                    color: theme.busyRed,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  AeroButton(
+                    label: 'Cancelar',
+                    variant: AeroButtonVariant.secondary,
+                    height: 36,
+                    onPressed: _submitting
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  AeroButton(
+                    label: _submitting ? 'Criando...' : 'Criar sala',
+                    height: 36,
+                    onPressed: _submitting ? null : _submit,
+                  ),
+                ],
               ),
             ],
           ),

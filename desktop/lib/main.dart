@@ -89,6 +89,29 @@ class _SkyRippleAppState extends State<SkyRippleApp> {
     await _storage.savePreferences(next);
   }
 
+  Future<void> _handleProfileSaved({
+    required String name,
+    required String bio,
+    String? avatarUrl,
+  }) async {
+    final current = _user;
+    if (current != null) {
+      final cleanedAvatar =
+          (avatarUrl != null && avatarUrl.trim().isNotEmpty)
+              ? avatarUrl.trim()
+              : current.avatarUrl;
+      final updatedUser = current.copyWith(
+        name: name,
+        avatarUrl: cleanedAvatar,
+      );
+      setState(() => _user = updatedUser);
+      if (_token.isNotEmpty) {
+        await _storage.saveSession(token: _token, user: updatedUser);
+      }
+    }
+    await _updatePreferences(_preferences.copyWith(bio: bio));
+  }
+
   Future<void> _handleAuthenticated(AuthResult result, bool keepSession) async {
     if (keepSession) {
       await _storage.saveSession(token: result.token, user: result.user);
@@ -145,6 +168,7 @@ class _SkyRippleAppState extends State<SkyRippleApp> {
                   isDark: _preferences.isDark,
                   accent: _preferences.accent,
                   initialPresence: _preferences.presence,
+                  initialBio: _preferences.bio,
                   onThemeChanged: (value) => _updatePreferences(
                     _preferences.copyWith(isDark: value),
                   ),
@@ -154,6 +178,7 @@ class _SkyRippleAppState extends State<SkyRippleApp> {
                   onPresenceChanged: (UserPresence value) => _updatePreferences(
                     _preferences.copyWith(presence: value),
                   ),
+                  onProfileSaved: _handleProfileSaved,
                   onSignOut: _handleSignOut,
                 )
               : AuthScreen(

@@ -66,6 +66,36 @@ abstract class ChatApiClient {
     required String apiUrl,
     required String token,
   });
+
+  Future<ChatConversation> createRoom({
+    required String apiUrl,
+    required String token,
+    required String name,
+    String? description,
+    String? category,
+  });
+
+  Future<void> joinRoom({
+    required String apiUrl,
+    required String token,
+    required String roomId,
+  });
+
+  Future<FavoriteItem> addFavorite({
+    required String apiUrl,
+    required String token,
+    required String itemType,
+    required String itemId,
+    required String title,
+    String? content,
+  });
+
+  Future<void> removeFavorite({
+    required String apiUrl,
+    required String token,
+    required String itemType,
+    required String itemId,
+  });
 }
 
 class HttpChatApiClient implements ChatApiClient {
@@ -257,6 +287,95 @@ class HttpChatApiClient implements ChatApiClient {
         .whereType<Map<String, dynamic>>()
         .map(FavoriteItem.fromJson)
         .toList();
+  }
+
+  @override
+  Future<ChatConversation> createRoom({
+    required String apiUrl,
+    required String token,
+    required String name,
+    String? description,
+    String? category,
+  }) async {
+    final decoded = await _request(
+      method: 'POST',
+      url: '${_normalize(apiUrl)}/rooms',
+      token: token,
+      body: {
+        'name': name,
+        if (description != null && description.trim().isNotEmpty)
+          'description': description.trim(),
+        if (category != null && category.trim().isNotEmpty)
+          'category': category.trim(),
+        'type': 'public',
+      },
+    );
+    if (decoded is Map<String, dynamic>) {
+      final roomMap = decoded['room'] is Map<String, dynamic>
+          ? decoded['room'] as Map<String, dynamic>
+          : decoded;
+      return ChatConversation.fromRoomJson(roomMap);
+    }
+    throw const AuthApiException('Resposta inválida ao criar sala.');
+  }
+
+  @override
+  Future<void> joinRoom({
+    required String apiUrl,
+    required String token,
+    required String roomId,
+  }) async {
+    await _request(
+      method: 'POST',
+      url: '${_normalize(apiUrl)}/rooms/$roomId/join',
+      token: token,
+    );
+  }
+
+  @override
+  Future<FavoriteItem> addFavorite({
+    required String apiUrl,
+    required String token,
+    required String itemType,
+    required String itemId,
+    required String title,
+    String? content,
+  }) async {
+    final decoded = await _request(
+      method: 'POST',
+      url: '${_normalize(apiUrl)}/favorites',
+      token: token,
+      body: {
+        'item_type': itemType,
+        'item_id': itemId,
+        'title': title,
+        if (content != null && content.trim().isNotEmpty)
+          'content': content.trim(),
+      },
+    );
+    if (decoded is Map<String, dynamic>) {
+      return FavoriteItem.fromJson(decoded);
+    }
+    return FavoriteItem(
+      id: itemId,
+      title: title,
+      subtitle: itemType == 'room' ? 'Sala temática' : 'Conversa direta',
+      itemType: itemType,
+    );
+  }
+
+  @override
+  Future<void> removeFavorite({
+    required String apiUrl,
+    required String token,
+    required String itemType,
+    required String itemId,
+  }) async {
+    await _request(
+      method: 'DELETE',
+      url: '${_normalize(apiUrl)}/favorites/$itemType/$itemId',
+      token: token,
+    );
   }
 
   List<ChatMessage> _parseMessageList(dynamic decoded, String currentUserId) {
