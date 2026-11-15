@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import '../models/user_session.dart';
 import '../theme/skyripple_theme.dart';
 import '../widgets/aero_button.dart';
 import '../widgets/chat_bubble.dart';
@@ -61,17 +62,23 @@ class _MessageSeed {
 class MainShellScreen extends StatefulWidget {
   const MainShellScreen({
     super.key,
+    required this.user,
     required this.isDark,
     required this.accent,
+    required this.initialPresence,
     required this.onThemeChanged,
     required this.onAccentChanged,
+    required this.onPresenceChanged,
     required this.onSignOut,
   });
 
+  final SkyRippleUser user;
   final bool isDark;
   final SkyRippleAccent accent;
+  final UserPresence initialPresence;
   final ValueChanged<bool> onThemeChanged;
   final ValueChanged<SkyRippleAccent> onAccentChanged;
+  final ValueChanged<UserPresence> onPresenceChanged;
   final VoidCallback onSignOut;
 
   @override
@@ -83,13 +90,20 @@ class _MainShellScreenState extends State<MainShellScreen> {
   _RosterFilter _rosterFilter = _RosterFilter.directs;
   String _selectedId = 'marina';
   bool _showInspector = true;
-  UserPresence _myPresence = UserPresence.online;
-  String _displayName = 'Lucas Ramos';
+  late UserPresence _myPresence;
+  late String _displayName;
   String _bio = 'Construindo ideias para conectar pessoas';
   final _searchController = TextEditingController();
   final _composerController = TextEditingController();
   final List<_MessageSeed> _extraDirectMessages = [];
   final List<_MessageSeed> _extraRoomMessages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _myPresence = widget.initialPresence;
+    _displayName = widget.user.name;
+  }
 
   static const _directs = <_ConversationSeed>[
     _ConversationSeed(
@@ -310,17 +324,22 @@ class _MainShellScreenState extends State<MainShellScreen> {
                             presence: draftPresence,
                           ),
                           const SizedBox(width: 14),
-                          TextButton(
-                            onPressed: () {},
-                            child: Text(
-                              'Alterar foto de perfil',
-                              style: TextStyle(
-                                color: theme.palette.main,
-                                fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'Alterar foto de perfil',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: theme.palette.main,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                          const Spacer(),
                           AeroButton(
                             label: 'Sair',
                             variant: AeroButtonVariant.ghost,
@@ -488,6 +507,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                               });
                               widget.onThemeChanged(draftDark);
                               widget.onAccentChanged(draftAccent);
+                              widget.onPresenceChanged(draftPresence);
                               Navigator.of(dialogContext).pop();
                             },
                           ),
@@ -501,10 +521,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           },
         );
       },
-    ).then((_) {
-      nameCtrl.dispose();
-      bioCtrl.dispose();
-    });
+    );
   }
 
   @override
@@ -544,7 +561,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
         children: [
           PopupMenuButton<UserPresence>(
             tooltip: 'Alterar status',
-            onSelected: (value) => setState(() => _myPresence = value),
+            onSelected: (value) {
+              setState(() => _myPresence = value);
+              widget.onPresenceChanged(value);
+            },
             itemBuilder: (context) => [
               _presenceMenuItem(
                 UserPresence.online,

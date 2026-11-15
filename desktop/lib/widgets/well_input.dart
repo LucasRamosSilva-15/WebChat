@@ -9,6 +9,7 @@ class WellInput extends StatefulWidget {
     this.leadingIcon,
     this.trailing,
     this.obscureText = false,
+    this.enableObscureToggle = false,
     this.onChanged,
     this.onSubmitted,
     this.height = 42,
@@ -20,6 +21,7 @@ class WellInput extends StatefulWidget {
   final IconData? leadingIcon;
   final Widget? trailing;
   final bool obscureText;
+  final bool enableObscureToggle;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final double height;
@@ -32,11 +34,21 @@ class WellInput extends StatefulWidget {
 class _WellInputState extends State<WellInput> {
   final FocusNode _focusNode = FocusNode();
   bool _focused = false;
+  late bool _obscured;
 
   @override
   void initState() {
     super.initState();
+    _obscured = widget.obscureText;
     _focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant WellInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.obscureText != widget.obscureText) {
+      _obscured = widget.obscureText;
+    }
   }
 
   void _handleFocusChange() {
@@ -104,7 +116,9 @@ class _WellInputState extends State<WellInput> {
             child: TextField(
               controller: widget.controller,
               focusNode: _focusNode,
-              obscureText: widget.obscureText,
+              obscureText: widget.enableObscureToggle
+                  ? _obscured
+                  : widget.obscureText,
               onChanged: widget.onChanged,
               onSubmitted: widget.onSubmitted,
               style: TextStyle(
@@ -123,7 +137,25 @@ class _WellInputState extends State<WellInput> {
               ),
             ),
           ),
-          if (widget.trailing != null) ...[
+          if (widget.enableObscureToggle && widget.obscureText) ...[
+            const SizedBox(width: 6),
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () => setState(() => _obscured = !_obscured),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    _obscured
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    size: 17,
+                    color: theme.textMuted,
+                  ),
+                ),
+              ),
+            ),
+          ] else if (widget.trailing != null) ...[
             const SizedBox(width: 8),
             widget.trailing!,
           ],
