@@ -3,6 +3,8 @@ import 'models/user_session.dart';
 import 'screens/auth_screen.dart';
 import 'screens/main_shell_screen.dart';
 import 'services/auth_service.dart';
+import 'services/chat_service.dart';
+import 'services/realtime_service.dart';
 import 'services/session_store.dart';
 import 'theme/skyripple_theme.dart';
 import 'widgets/user_avatar.dart';
@@ -15,10 +17,14 @@ class SkyRippleApp extends StatefulWidget {
   const SkyRippleApp({
     super.key,
     this.authClient,
+    this.chatClient,
+    this.realtimeClient,
     this.sessionStorage,
   });
 
   final AuthApiClient? authClient;
+  final ChatApiClient? chatClient;
+  final RealtimeClient? realtimeClient;
   final SessionStorage? sessionStorage;
 
   @override
@@ -27,15 +33,20 @@ class SkyRippleApp extends StatefulWidget {
 
 class _SkyRippleAppState extends State<SkyRippleApp> {
   late final AuthApiClient _authClient;
+  late final ChatApiClient _chatClient;
+  late final RealtimeClient _realtimeClient;
   late final SessionStorage _storage;
   DesktopPreferences _preferences = const DesktopPreferences();
   SkyRippleUser? _user;
+  String _token = '';
   bool _restoring = true;
 
   @override
   void initState() {
     super.initState();
     _authClient = widget.authClient ?? HttpAuthApiClient();
+    _chatClient = widget.chatClient ?? HttpChatApiClient();
+    _realtimeClient = widget.realtimeClient ?? SocketIoRealtimeClient();
     _storage = widget.sessionStorage ?? FileSessionStorage();
     _restoreSession();
   }
@@ -43,16 +54,18 @@ class _SkyRippleAppState extends State<SkyRippleApp> {
   Future<void> _restoreSession() async {
     final stored = await _storage.load();
     var validUser = stored.user;
-    if (stored.token != null && stored.token!.isNotEmpty) {
+    var validToken = stored.token ?? '';
+    if (validToken.isNotEmpty) {
       try {
         validUser = await _authClient.fetchMe(
           apiUrl: stored.preferences.apiUrl,
-          token: stored.token!,
+          token: validToken,
         );
-        await _storage.saveSession(token: stored.token, user: validUser);
+        await _storage.saveSession(token: validToken, user: validUser);
       } on AuthApiException catch (err) {
         if (err.statusCode == 401 || err.statusCode == 403) {
           validUser = null;
+          validToken = '';
           await _storage.clearAuth();
         }
       }
@@ -66,6 +79,7 @@ class _SkyRippleAppState extends State<SkyRippleApp> {
     setState(() {
       _preferences = stored.preferences;
       _user = validUser;
+      _token = validToken;
       _restoring = false;
     });
   }
@@ -84,15 +98,22 @@ class _SkyRippleAppState extends State<SkyRippleApp> {
     if (!mounted) {
       return;
     }
-    setState(() => _user = result.user);
+    setState(() {
+      _user = result.user;
+      _token = result.token;
+    });
   }
 
   Future<void> _handleSignOut() async {
+    _realtimeClient.dispose();
     await _storage.clearAuth();
     if (!mounted) {
       return;
     }
-    setState(() => _user = null);
+    setState(() {
+      _user = null;
+      _token = '';
+    });
   }
 
   @override
@@ -117,6 +138,10 @@ class _SkyRippleAppState extends State<SkyRippleApp> {
           : (_user != null
               ? MainShellScreen(
                   user: _user!,
+                  token: _token,
+                  apiUrl: _preferences.apiUrl,
+                  chatClient: _chatClient,
+                  realtimeClient: _realtimeClient,
                   isDark: _preferences.isDark,
                   accent: _preferences.accent,
                   initialPresence: _preferences.presence,

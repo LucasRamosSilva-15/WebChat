@@ -1,5 +1,9 @@
 import 'package:material_ui/material_ui.dart';
+import '../models/chat_models.dart';
 import '../models/user_session.dart';
+import '../services/auth_service.dart';
+import '../services/chat_service.dart';
+import '../services/realtime_service.dart';
 import '../theme/skyripple_theme.dart';
 import '../widgets/aero_button.dart';
 import '../widgets/chat_bubble.dart';
@@ -19,50 +23,14 @@ enum _RosterFilter {
   rooms,
 }
 
-class _ConversationSeed {
-  const _ConversationSeed({
-    required this.id,
-    required this.title,
-    required this.preview,
-    required this.timestamp,
-    required this.isRoom,
-    this.presence,
-    this.isE2ee = false,
-    this.unread = 0,
-    this.subtitle = '',
-  });
-
-  final String id;
-  final String title;
-  final String preview;
-  final String timestamp;
-  final bool isRoom;
-  final UserPresence? presence;
-  final bool isE2ee;
-  final int unread;
-  final String subtitle;
-}
-
-class _MessageSeed {
-  const _MessageSeed({
-    required this.sender,
-    required this.isSent,
-    this.role,
-    this.kind = ChatBubbleKind.text,
-    this.text = '',
-  });
-
-  final String sender;
-  final bool isSent;
-  final String? role;
-  final ChatBubbleKind kind;
-  final String text;
-}
-
 class MainShellScreen extends StatefulWidget {
   const MainShellScreen({
     super.key,
     required this.user,
+    required this.token,
+    required this.apiUrl,
+    required this.chatClient,
+    required this.realtimeClient,
     required this.isDark,
     required this.accent,
     required this.initialPresence,
@@ -73,6 +41,10 @@ class MainShellScreen extends StatefulWidget {
   });
 
   final SkyRippleUser user;
+  final String token;
+  final String apiUrl;
+  final ChatApiClient chatClient;
+  final RealtimeClient realtimeClient;
   final bool isDark;
   final SkyRippleAccent accent;
   final UserPresence initialPresence;
@@ -88,144 +60,229 @@ class MainShellScreen extends StatefulWidget {
 class _MainShellScreenState extends State<MainShellScreen> {
   _NavSection _navSection = _NavSection.directs;
   _RosterFilter _rosterFilter = _RosterFilter.directs;
-  String _selectedId = 'marina';
+  String? _selectedId;
   bool _showInspector = true;
+  bool _loadingLists = true;
+  bool _loadingMessages = false;
+  bool _sending = false;
+  String? _statusError;
+
   late UserPresence _myPresence;
   late String _displayName;
   String _bio = 'Construindo ideias para conectar pessoas';
+
+  List<ChatConversation> _directs = [];
+  List<ChatConversation> _rooms = [];
+  List<FavoriteItem> _favorites = [];
+  List<ChatMessage> _messages = [];
+  List<RoomMember> _roomMembers = [];
+  Set<String> _onlineUserIds = {};
+
   final _searchController = TextEditingController();
   final _composerController = TextEditingController();
-  final List<_MessageSeed> _extraDirectMessages = [];
-  final List<_MessageSeed> _extraRoomMessages = [];
 
   @override
   void initState() {
     super.initState();
     _myPresence = widget.initialPresence;
     _displayName = widget.user.name;
+    _connectRealtime();
+    _loadInitialData();
   }
 
-  static const _directs = <_ConversationSeed>[
-    _ConversationSeed(
-      id: 'marina',
-      title: 'Marina Oliveira',
-      preview: 'Vamos conversar sobre o protótipo?',
-      timestamp: '14:32',
-      isRoom: false,
-      presence: UserPresence.online,
-      isE2ee: true,
-      subtitle: 'Online agora • digitando...',
-    ),
-    _ConversationSeed(
-      id: 'ana',
-      title: 'Ana Beatriz',
-      preview: 'Enviei os arquivos para você.',
-      timestamp: '13:50',
-      isRoom: false,
-      presence: UserPresence.online,
-      isE2ee: true,
-      unread: 3,
-      subtitle: 'Online no Desktop',
-    ),
-    _ConversationSeed(
-      id: 'lucas_f',
-      title: 'Lucas Ferreira',
-      preview: 'Podemos revisar hoje?',
-      timestamp: '11:20',
-      isRoom: false,
-      presence: UserPresence.away,
-      isE2ee: true,
-      unread: 1,
-      subtitle: 'Ausente há 12 min',
-    ),
-    _ConversationSeed(
-      id: 'bruno',
-      title: 'Bruno Santos',
-      preview: 'Valeu pela ajuda!',
-      timestamp: 'Ontem',
-      isRoom: false,
-      presence: UserPresence.busy,
-      isE2ee: true,
-      subtitle: 'Ocupado',
-    ),
-    _ConversationSeed(
-      id: 'rafael',
-      title: 'Rafael Costa',
-      preview: 'Vamos jogar mais tarde?',
-      timestamp: 'Seg',
-      isRoom: false,
-      presence: UserPresence.online,
-      isE2ee: true,
-      unread: 2,
-      subtitle: 'Online agora',
-    ),
-    _ConversationSeed(
-      id: 'carla',
-      title: 'Carla Mendes',
-      preview: 'Adorei a nova interface.',
-      timestamp: 'Seg',
-      isRoom: false,
-      presence: UserPresence.offline,
-      isE2ee: true,
-      subtitle: 'Visto por último ontem',
-    ),
-  ];
+  void _connectRealtime() {
+    widget.realtimeClient.connect(
+      apiUrl: widget.apiUrl,
+      token: widget.token,
+      userId: widget.user.id,
+      onOnlineUsers: (ids) {
+        if (!mounted) return;
+        setState(() {
+          _onlineUserIds = ids.toSet();
+          _directs = _directs.map((d) {
+            if (d.partnerId != null && _onlineUserIds.contains(d.partnerId)) {
+              return d.copyWith(
+                presence: UserPresence.online,
+                subtitle: 'Online agora',
+              );
+            }
+            return d;
+          }).toList();
+        });
+      },
+      onMessage: (payload) {
+        if (!mounted) return;
+        final roomId = (payload['room'] ?? payload['roomId'] ?? '').toString();
+        final convId = (payload['conversationId'] ?? '').toString();
+        final active = _activeConversation;
+        if (active == null) return;
+        if ((active.isRoom && roomId == active.id) ||
+            (!active.isRoom && convId == active.id)) {
+          final incoming = ChatMessage.fromJson(
+            payload,
+            currentUserId: widget.user.id,
+          );
+          final alreadyExists = _messages.any(
+            (m) => m.id.isNotEmpty && m.id == incoming.id,
+          );
+          if (!alreadyExists) {
+            setState(() => _messages = [..._messages, incoming]);
+          }
+        }
+      },
+    );
+  }
 
-  static const _rooms = <_ConversationSeed>[
-    _ConversationSeed(
-      id: 'tech_flutter',
-      title: '# Tecnologia & Flutter',
-      preview: 'Vou mostrar o protótipo também.',
-      timestamp: '14:32',
-      isRoom: true,
-      subtitle: '24 online • Desenvolvimento e tecnologia',
-    ),
-    _ConversationSeed(
-      id: 'geral',
-      title: '# Geral',
-      preview: 'Alguém online para call?',
-      timestamp: '13:18',
-      isRoom: true,
-      unread: 3,
-      subtitle: '18 online • Conversas gerais',
-    ),
-    _ConversationSeed(
-      id: 'design_ui',
-      title: '# Design & UI',
-      preview: 'Tokens atualizados no Figma.',
-      timestamp: '11:05',
-      isRoom: true,
-      unread: 1,
-      subtitle: '12 online • Frutiger Aero & Skeuo',
-    ),
-    _ConversationSeed(
-      id: 'jogos',
-      title: '# Jogos',
-      preview: 'Partida hoje às 21h?',
-      timestamp: 'Ontem',
-      isRoom: true,
-      subtitle: '9 online • Comunidade gamer',
-    ),
-    _ConversationSeed(
-      id: 'skyripple_dev',
-      title: 'Comunidade SkyRipple',
-      preview: 'Bem-vindos ao cliente desktop!',
-      timestamp: 'Seg',
-      isRoom: true,
-      subtitle: '42 online • Canal oficial',
-    ),
-  ];
+  Future<void> _loadInitialData() async {
+    setState(() {
+      _loadingLists = true;
+      _statusError = null;
+    });
+    try {
+      final results = await Future.wait([
+        widget.chatClient.listDirectConversations(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+        ),
+        widget.chatClient.listRooms(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+        ),
+        widget.chatClient.listFavorites(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+        ),
+      ]);
+      if (!mounted) return;
+      final loadedDirects = results[0] as List<ChatConversation>;
+      final loadedRooms = results[1] as List<ChatConversation>;
+      final loadedFavorites = results[2] as List<FavoriteItem>;
+
+      String? initialSelected = _selectedId;
+      if (initialSelected == null) {
+        if (loadedDirects.isNotEmpty) {
+          initialSelected = loadedDirects.first.id;
+          _rosterFilter = _RosterFilter.directs;
+          _navSection = _NavSection.directs;
+        } else if (loadedRooms.isNotEmpty) {
+          initialSelected = loadedRooms.first.id;
+          _rosterFilter = _RosterFilter.rooms;
+          _navSection = _NavSection.rooms;
+        }
+      }
+
+      setState(() {
+        _directs = loadedDirects;
+        _rooms = loadedRooms;
+        _favorites = loadedFavorites;
+        _selectedId = initialSelected;
+        _loadingLists = false;
+      });
+
+      if (initialSelected != null) {
+        await _loadConversationDetails(initialSelected);
+      }
+    } on AuthApiException catch (err) {
+      if (!mounted) return;
+      setState(() {
+        _loadingLists = false;
+        _statusError = err.message;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingLists = false;
+        _statusError = 'Não foi possível carregar conversas.';
+      });
+    }
+  }
+
+  Future<void> _loadConversationDetails(String conversationId) async {
+    final active = _findById(conversationId);
+    if (active == null) return;
+
+    if (active.isRoom) {
+      widget.realtimeClient.joinRoom(active.id, widget.user.id);
+    }
+
+    setState(() {
+      _loadingMessages = true;
+      _messages = [];
+      _roomMembers = [];
+    });
+
+    try {
+      if (active.isRoom) {
+        final msgsFuture = widget.chatClient.listRoomMessages(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+          roomId: active.id,
+          currentUserId: widget.user.id,
+        );
+        final membersFuture = widget.chatClient.listRoomMembers(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+          roomId: active.id,
+        );
+        final results = await Future.wait([msgsFuture, membersFuture]);
+        if (!mounted || _selectedId != conversationId) return;
+        setState(() {
+          _messages = results[0] as List<ChatMessage>;
+          _roomMembers = results[1] as List<RoomMember>;
+          _loadingMessages = false;
+        });
+      } else {
+        final msgs = await widget.chatClient.listDirectMessages(
+          apiUrl: widget.apiUrl,
+          token: widget.token,
+          conversationId: active.id,
+          currentUserId: widget.user.id,
+        );
+        if (!mounted || _selectedId != conversationId) return;
+        setState(() {
+          _messages = msgs;
+          _loadingMessages = false;
+        });
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingMessages = false);
+    }
+  }
+
+  Future<void> _selectConversation(ChatConversation item) async {
+    final prev = _activeConversation;
+    if (prev != null && prev.isRoom && prev.id != item.id) {
+      widget.realtimeClient.leaveRoom(prev.id, widget.user.id);
+    }
+    setState(() {
+      _selectedId = item.id;
+      _navSection = item.isRoom ? _NavSection.rooms : _NavSection.directs;
+    });
+    await _loadConversationDetails(item.id);
+  }
 
   @override
   void dispose() {
+    widget.realtimeClient.dispose();
     _searchController.dispose();
     _composerController.dispose();
     super.dispose();
   }
 
-  List<_ConversationSeed> get _visibleItems {
+  ChatConversation? _findById(String? id) {
+    if (id == null) return null;
+    for (final item in [..._directs, ..._rooms]) {
+      if (item.id == id) return item;
+    }
+    return null;
+  }
+
+  ChatConversation? get _activeConversation => _findById(_selectedId);
+
+  List<ChatConversation> get _visibleItems {
     final query = _searchController.text.trim().toLowerCase();
-    final List<_ConversationSeed> source;
+    final List<ChatConversation> source;
     switch (_rosterFilter) {
       case _RosterFilter.all:
         source = [..._directs, ..._rooms];
@@ -249,31 +306,68 @@ class _MainShellScreenState extends State<MainShellScreen> {
         .toList();
   }
 
-  _ConversationSeed get _activeConversation {
-    final all = [..._directs, ..._rooms];
-    return all.firstWhere(
-      (item) => item.id == _selectedId,
-      orElse: () => _directs.first,
-    );
-  }
-
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
+    final active = _activeConversation;
     final text = _composerController.text.trim();
-    if (text.isEmpty) {
+    if (active == null || text.isEmpty || _sending) {
       return;
     }
-    setState(() {
-      if (_activeConversation.isRoom) {
-        _extraRoomMessages.add(
-          _MessageSeed(sender: 'Você', isSent: true, text: text),
-        );
-      } else {
-        _extraDirectMessages.add(
-          _MessageSeed(sender: 'Você', isSent: true, text: text),
-        );
-      }
-      _composerController.clear();
-    });
+    setState(() => _sending = true);
+    _composerController.clear();
+    try {
+      final sent = active.isRoom
+          ? await widget.chatClient.sendRoomMessage(
+              apiUrl: widget.apiUrl,
+              token: widget.token,
+              roomId: active.id,
+              currentUserId: widget.user.id,
+              content: text,
+            )
+          : await widget.chatClient.sendDirectMessage(
+              apiUrl: widget.apiUrl,
+              token: widget.token,
+              conversationId: active.id,
+              currentUserId: widget.user.id,
+              content: text,
+            );
+      if (!mounted) return;
+      final exists = _messages.any((m) => m.id.isNotEmpty && m.id == sent.id);
+      setState(() {
+        if (!exists) {
+          _messages = [..._messages, sent];
+        }
+        _sending = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _sending = false;
+        _composerController.text = text;
+      });
+    }
+  }
+
+  Future<void> _openNewDirectDialog() async {
+    await showDialog<void>(
+      context: context,
+      barrierColor: const Color(0x730F172A),
+      builder: (_) => _NewDirectDialog(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        chatClient: widget.chatClient,
+        onSelected: (conv) async {
+          if (!mounted) return;
+          final exists = _directs.any((d) => d.id == conv.id);
+          setState(() {
+            if (!exists) {
+              _directs = [conv, ..._directs];
+            }
+            _rosterFilter = _RosterFilter.directs;
+          });
+          await _selectConversation(conv);
+        },
+      ),
+    );
   }
 
   void _openSettingsModal() {
@@ -598,22 +692,30 @@ class _MainShellScreenState extends State<MainShellScreen> {
             icon: Icons.chat_bubble_rounded,
             tooltip: 'Directs',
             active: _navSection == _NavSection.directs,
-            onTap: () => setState(() {
-              _navSection = _NavSection.directs;
-              _rosterFilter = _RosterFilter.directs;
-              _selectedId = _directs.first.id;
-            }),
+            onTap: () {
+              setState(() {
+                _navSection = _NavSection.directs;
+                _rosterFilter = _RosterFilter.directs;
+              });
+              if (_directs.isNotEmpty) {
+                _selectConversation(_directs.first);
+              }
+            },
           ),
           const SizedBox(height: 8),
           _RailIconButton(
             icon: Icons.forum_rounded,
             tooltip: 'Salas',
             active: _navSection == _NavSection.rooms,
-            onTap: () => setState(() {
-              _navSection = _NavSection.rooms;
-              _rosterFilter = _RosterFilter.rooms;
-              _selectedId = _rooms.first.id;
-            }),
+            onTap: () {
+              setState(() {
+                _navSection = _NavSection.rooms;
+                _rosterFilter = _RosterFilter.rooms;
+              });
+              if (_rooms.isNotEmpty) {
+                _selectConversation(_rooms.first);
+              }
+            },
           ),
           const SizedBox(height: 8),
           _RailIconButton(
@@ -624,10 +726,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
           ),
           const SizedBox(height: 8),
           _RailIconButton(
-            icon: Icons.notifications_rounded,
-            tooltip: 'Notificações',
-            badgeCount: 3,
-            onTap: () {},
+            icon: Icons.refresh_rounded,
+            tooltip: 'Atualizar conversas',
+            onTap: _loadInitialData,
           ),
           const Spacer(),
           _RailIconButton(
@@ -671,6 +772,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   Widget _buildRosterColumn(SkyRippleTheme theme) {
     final items = _visibleItems;
+    final onlineDirects =
+        _directs.where((d) => d.presence == UserPresence.online).toList();
+
     return Container(
       width: 296,
       decoration: BoxDecoration(
@@ -698,7 +802,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: _openNewDirectDialog,
                       icon: Icon(
                         Icons.add_rounded,
                         color: theme.palette.main,
@@ -736,55 +840,62 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       _SegmentTab(
                         label: 'Directs',
                         active: _rosterFilter == _RosterFilter.directs,
-                        onTap: () => setState(() {
-                          _rosterFilter = _RosterFilter.directs;
-                          _navSection = _NavSection.directs;
-                          _selectedId = _directs.first.id;
-                        }),
+                        onTap: () {
+                          setState(() {
+                            _rosterFilter = _RosterFilter.directs;
+                            _navSection = _NavSection.directs;
+                          });
+                          if (_directs.isNotEmpty) {
+                            _selectConversation(_directs.first);
+                          }
+                        },
                       ),
                       _SegmentTab(
                         label: 'Salas',
                         active: _rosterFilter == _RosterFilter.rooms,
-                        onTap: () => setState(() {
-                          _rosterFilter = _RosterFilter.rooms;
-                          _navSection = _NavSection.rooms;
-                          _selectedId = _rooms.first.id;
-                        }),
+                        onTap: () {
+                          setState(() {
+                            _rosterFilter = _RosterFilter.rooms;
+                            _navSection = _NavSection.rooms;
+                          });
+                          if (_rooms.isNotEmpty) {
+                            _selectConversation(_rooms.first);
+                          }
+                        },
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  'ONLINE AGORA',
-                  style: TextStyle(
-                    color: theme.textMuted,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
+                if (onlineDirects.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Text(
+                    'ONLINE AGORA',
+                    style: TextStyle(
+                      color: theme.textMuted,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 5,
-                    separatorBuilder: (_, _) => const SizedBox(width: 10),
-                    itemBuilder: (context, index) {
-                      final contact = _directs[index];
-                      return UserAvatar(
-                        label: contact.title,
-                        size: 38,
-                        presence: contact.presence,
-                        onTap: () => setState(() {
-                          _navSection = _NavSection.directs;
-                          _selectedId = contact.id;
-                        }),
-                      );
-                    },
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: onlineDirects.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 10),
+                      itemBuilder: (context, index) {
+                        final contact = onlineDirects[index];
+                        return UserAvatar(
+                          label: contact.title,
+                          size: 38,
+                          presence: contact.presence,
+                          onTap: () => _selectConversation(contact),
+                        );
+                      },
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 14),
                 Text(
                   _rosterFilter == _RosterFilter.rooms
@@ -801,30 +912,65 @@ class _MainShellScreenState extends State<MainShellScreen> {
             ),
           ),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 14),
-              itemCount: items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 4),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return RosterItem(
-                  title: item.title,
-                  preview: item.preview,
-                  timestamp: item.timestamp,
-                  presence: item.presence,
-                  isRoom: item.isRoom,
-                  isE2ee: item.isE2ee,
-                  unreadCount: item.id == _selectedId ? 0 : item.unread,
-                  selected: item.id == _selectedId,
-                  onTap: () => setState(() {
-                    _selectedId = item.id;
-                    _navSection = item.isRoom
-                        ? _NavSection.rooms
-                        : _NavSection.directs;
-                  }),
-                );
-              },
-            ),
+            child: _loadingLists
+                ? Center(
+                    child: CircularProgressIndicator(color: theme.palette.main),
+                  )
+                : (_statusError != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _statusError!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: theme.textMuted,
+                                fontSize: 12.5,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            AeroButton(
+                              label: 'Tentar novamente',
+                              variant: AeroButtonVariant.secondary,
+                              height: 34,
+                              onPressed: _loadInitialData,
+                            ),
+                          ],
+                        ),
+                      )
+                    : (items.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Nenhuma conversa encontrada.',
+                              style: TextStyle(
+                                color: theme.textMuted,
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 14),
+                            itemCount: items.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 4),
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return RosterItem(
+                                title: item.title,
+                                preview: item.preview,
+                                timestamp: item.timestamp,
+                                presence: item.presence,
+                                isRoom: item.isRoom,
+                                isE2ee: item.isE2ee,
+                                unreadCount:
+                                    item.id == _selectedId ? 0 : item.unread,
+                                selected: item.id == _selectedId,
+                                onTap: () => _selectConversation(item),
+                              );
+                            },
+                          ))),
           ),
         ],
       ),
@@ -833,71 +979,18 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   Widget _buildChatStage(SkyRippleTheme theme) {
     final active = _activeConversation;
-    final messages = active.isRoom
-        ? [
-            const _MessageSeed(
-              sender: 'Bruno Santos',
-              isSent: false,
-              text: 'Bom dia! Alguma novidade para hoje?',
-            ),
-            const _MessageSeed(
-              sender: 'Marina Oliveira',
-              isSent: false,
-              role: 'Mod',
-              text: 'Estou terminando os componentes da interface.',
-            ),
-            const _MessageSeed(
-              sender: 'Ana Beatriz',
-              isSent: false,
-              role: 'Dono',
-              text: 'Pessoal, alguém já testou o Flutter no Linux?',
-            ),
-            const _MessageSeed(
-              sender: 'Lucas Ferreira',
-              isSent: false,
-              role: 'Mod',
-              text: 'Sim! Preparei o protótipo desktop para compartilhar.',
-            ),
-            const _MessageSeed(
-              sender: 'Você',
-              isSent: true,
-              text: 'Ótimo! Vou mostrar a base com os tokens do site.',
-            ),
-            ..._extraRoomMessages,
-          ]
-        : [
-            const _MessageSeed(
-              sender: 'Marina Oliveira',
-              isSent: false,
-              text: 'Oi! Você conseguiu avançar no design?',
-            ),
-            const _MessageSeed(
-              sender: 'Marina Oliveira',
-              isSent: false,
-              text: 'A nova versão ficou muito boa!',
-            ),
-            const _MessageSeed(
-              sender: 'Você',
-              isSent: true,
-              text: 'Sim! Estou organizando os componentes no Flutter.',
-            ),
-            const _MessageSeed(
-              sender: 'Você',
-              isSent: true,
-              text: 'Depois compartilho o build com você.',
-            ),
-            const _MessageSeed(
-              sender: 'Marina Oliveira',
-              isSent: false,
-              kind: ChatBubbleKind.audio,
-            ),
-            const _MessageSeed(
-              sender: 'Você',
-              isSent: true,
-              kind: ChatBubbleKind.attachment,
-            ),
-            ..._extraDirectMessages,
-          ];
+    if (active == null) {
+      return Container(
+        color: theme.stageBackground,
+        alignment: Alignment.center,
+        child: Text(
+          _loadingLists
+              ? 'Carregando conversas...'
+              : 'Selecione uma conversa ou sala para começar.',
+          style: TextStyle(color: theme.textMuted, fontSize: 14),
+        ),
+      );
+    }
 
     return Container(
       color: theme.stageBackground,
@@ -925,6 +1018,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     children: [
                       Text(
                         active.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: theme.textPrimary,
                           fontSize: 15,
@@ -934,8 +1029,12 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       const SizedBox(height: 2),
                       Text(
                         active.subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: theme.onlineGreen,
+                          color: active.presence == UserPresence.offline
+                              ? theme.textMuted
+                              : theme.onlineGreen,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -975,16 +1074,6 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   ),
                 const SizedBox(width: 8),
                 IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.search_rounded, color: theme.textMuted),
-                  tooltip: 'Buscar na conversa',
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.star_border_rounded, color: theme.textMuted),
-                  tooltip: 'Favoritar',
-                ),
-                IconButton(
                   onPressed: () =>
                       setState(() => _showInspector = !_showInspector),
                   icon: Icon(
@@ -997,77 +1086,72 @@ class _MainShellScreenState extends State<MainShellScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              itemCount: messages.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Center(
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.rosterBackground,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: theme.borderSubtle),
-                      ),
-                      child: Text(
-                        'Hoje',
-                        style: TextStyle(
-                          color: theme.textMuted,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+            child: _loadingMessages
+                ? Center(
+                    child: CircularProgressIndicator(color: theme.palette.main),
+                  )
+                : (_messages.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Nenhuma mensagem ainda. Envie a primeira!',
+                          style: TextStyle(
+                            color: theme.textMuted,
+                            fontSize: 13.5,
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 20,
+                        ),
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final msg = _messages[index];
+                          final prevSender =
+                              index > 0 ? _messages[index - 1].senderId : null;
+                          final showHeader =
+                              index == 0 || prevSender != msg.senderId;
 
-                final msg = messages[index - 1];
-                final prevSender =
-                    index > 1 ? messages[index - 2].sender : null;
-                final showHeader = prevSender != msg.sender;
-
-                return Padding(
-                  padding: EdgeInsets.only(top: showHeader ? 12 : 4),
-                  child: Column(
-                    crossAxisAlignment: msg.isSent
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
-                    children: [
-                      if (showHeader) ...[
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              msg.sender,
-                              style: TextStyle(
-                                color: theme.textMuted,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          return Padding(
+                            padding: EdgeInsets.only(top: showHeader ? 12 : 4),
+                            child: Column(
+                              crossAxisAlignment: msg.isSent
+                                  ? CrossAxisAlignment.end
+                                  : CrossAxisAlignment.start,
+                              children: [
+                                if (showHeader) ...[
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        msg.senderName,
+                                        style: TextStyle(
+                                          color: theme.textMuted,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      if (msg.role != null) ...[
+                                        const SizedBox(width: 6),
+                                        _RolePillBadge(role: msg.role!),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                ],
+                                ChatBubble(
+                                  isSent: msg.isSent,
+                                  kind: msg.kind,
+                                  text: msg.text,
+                                  fileName: msg.fileName ?? 'Arquivo',
+                                  fileSize: msg.fileSize ?? '',
+                                ),
+                              ],
                             ),
-                            if (msg.role != null) ...[
-                              const SizedBox(width: 6),
-                              _RolePillBadge(role: msg.role!),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                      ],
-                      ChatBubble(
-                        isSent: msg.isSent,
-                        kind: msg.kind,
-                        text: msg.text,
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                          );
+                        },
+                      )),
           ),
           Container(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
@@ -1079,32 +1163,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 Expanded(
                   child: WellInput(
                     controller: _composerController,
-                    hintText: 'Escreva uma mensagem criptografada...',
+                    hintText: 'Escreva uma mensagem...',
                     leadingIcon: Icons.attach_file_rounded,
                     onSubmitted: (_) => _sendMessage(),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.sentiment_satisfied_alt_rounded,
-                          size: 18,
-                          color: theme.textMuted,
-                        ),
-                        const SizedBox(width: 10),
-                        Icon(
-                          Icons.mic_none_rounded,
-                          size: 18,
-                          color: theme.textMuted,
-                        ),
-                      ],
-                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 AeroButton(
-                  label: 'Enviar',
+                  label: _sending ? 'Enviando...' : 'Enviar',
                   height: 42,
-                  onPressed: _sendMessage,
+                  onPressed: _sending ? null : _sendMessage,
                 ),
               ],
             ),
@@ -1115,14 +1183,6 @@ class _MainShellScreenState extends State<MainShellScreen> {
   }
 
   Widget _buildFavoritesStage(SkyRippleTheme theme) {
-    const saved = [
-      ('Apresentação.pdf', 'Arquivo • 1.8 MB • Marina Oliveira'),
-      ('Áudio da Marina', 'Áudio • 0:24 • Hoje às 14:12'),
-      ('Ideias para o SkyRipple', 'Mensagem • # Tecnologia & Flutter'),
-      ('Referência visual.png', 'Imagem • # Design & UI'),
-      ('Reunião da equipe', 'Áudio • 1:12 • Ontem'),
-      ('Próximos passos', 'Mensagem • Ana Beatriz'),
-    ];
     return Container(
       color: theme.stageBackground,
       padding: const EdgeInsets.all(24),
@@ -1145,7 +1205,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     ),
                   ),
                   Text(
-                    '6 itens salvos',
+                    '${_favorites.length} itens salvos',
                     style: TextStyle(color: theme.textMuted, fontSize: 12),
                   ),
                 ],
@@ -1154,49 +1214,60 @@ class _MainShellScreenState extends State<MainShellScreen> {
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 340,
-                mainAxisExtent: 92,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-              ),
-              itemCount: saved.length,
-              itemBuilder: (context, index) {
-                final (title, meta) = saved[index];
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: theme.panelSurface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: theme.borderSubtle),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: theme.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+            child: _favorites.isEmpty
+                ? Center(
+                    child: Text(
+                      'Nenhum favorito salvo ainda.',
+                      style: TextStyle(color: theme.textMuted, fontSize: 13.5),
+                    ),
+                  )
+                : GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 340,
+                      mainAxisExtent: 92,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                    ),
+                    itemCount: _favorites.length,
+                    itemBuilder: (context, index) {
+                      final fav = _favorites[index];
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: theme.panelSurface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: theme.borderSubtle),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        meta,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: theme.textMuted, fontSize: 12),
-                      ),
-                    ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              fav.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: theme.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              fav.subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: theme.textMuted,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -1205,6 +1276,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   Widget _buildContextInspector(SkyRippleTheme theme) {
     final active = _activeConversation;
+    if (active == null) {
+      return const SizedBox.shrink();
+    }
     return Container(
       width: 276,
       decoration: BoxDecoration(
@@ -1220,7 +1294,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   Widget _buildDirectInspector(
     SkyRippleTheme theme,
-    _ConversationSeed active,
+    ChatConversation active,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1242,14 +1316,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                '@${active.id}',
-                style: TextStyle(color: theme.textMuted, fontSize: 12),
-              ),
               const SizedBox(height: 4),
               Text(
-                'Product Designer • Desktop',
+                active.subtitle,
                 style: TextStyle(color: theme.textSecondary, fontSize: 12),
               ),
             ],
@@ -1287,7 +1356,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Chave pública verificada',
+                'Sessão protegida com token JWT',
                 style: TextStyle(
                   color: theme.onlineGreen,
                   fontSize: 12,
@@ -1297,53 +1366,20 @@ class _MainShellScreenState extends State<MainShellScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 18),
-        Text(
-          'Mídias e arquivos',
-          style: TextStyle(
-            color: theme.textPrimary,
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 10),
-        GridView.count(
-          crossAxisCount: 3,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-          children: const [
-            _MediaTile(Color(0xFF60A5FA), Color(0xFFDBEAFE)),
-            _MediaTile(Color(0xFF22D3EE), Color(0xFFCFFAFE)),
-            _MediaTile(Color(0xFF818CF8), Color(0xFFE0E7FF)),
-            _MediaTile(Color(0xFF38BDF8), Color(0xFFE0F2FE)),
-            _MediaTile(Color(0xFF34D399), Color(0xFFD1FAE5)),
-            _MediaTile(Color(0xFFC084FC), Color(0xFFF3E8FF)),
-          ],
-        ),
-        const SizedBox(height: 14),
-        _FileRow(
-          name: 'Apresentação.pdf',
-          size: '1.8 MB',
-          theme: theme,
-        ),
-        const SizedBox(height: 6),
-        _FileRow(
-          name: 'Materiais.zip',
-          size: '4.2 MB',
-          theme: theme,
-        ),
       ],
     );
   }
 
   Widget _buildRoomMembersInspector(SkyRippleTheme theme) {
+    final owners = _roomMembers.where((m) => m.role == 'Dono').toList();
+    final mods = _roomMembers.where((m) => m.role == 'Mod').toList();
+    final others = _roomMembers.where((m) => m.role == null).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Membros',
+          'Membros (${_roomMembers.length})',
           style: TextStyle(
             color: theme.textPrimary,
             fontSize: 16,
@@ -1351,54 +1387,56 @@ class _MainShellScreenState extends State<MainShellScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        _MemberGroupHeader(label: 'Dono (1)', theme: theme),
-        _MemberRow(
-          name: 'Ana Beatriz',
-          presence: UserPresence.online,
-          role: 'Dono',
-          theme: theme,
-        ),
-        const SizedBox(height: 12),
-        _MemberGroupHeader(label: 'Moderadores (2)', theme: theme),
-        _MemberRow(
-          name: 'Lucas Ferreira',
-          presence: UserPresence.online,
-          role: 'Mod',
-          theme: theme,
-        ),
-        _MemberRow(
-          name: 'Marina Oliveira',
-          presence: UserPresence.away,
-          role: 'Mod',
-          theme: theme,
-        ),
-        const SizedBox(height: 12),
-        _MemberGroupHeader(label: 'Membros online (12)', theme: theme),
-        _MemberRow(
-          name: 'Bruno Santos',
-          presence: UserPresence.busy,
-          canModerate: true,
-          theme: theme,
-        ),
-        _MemberRow(
-          name: 'Rafael Costa',
-          presence: UserPresence.online,
-          canModerate: true,
-          theme: theme,
-        ),
-        _MemberRow(
-          name: 'Carla Mendes',
-          presence: UserPresence.away,
-          canModerate: true,
-          theme: theme,
-        ),
-        const SizedBox(height: 12),
-        _MemberGroupHeader(label: 'Offline (9)', theme: theme),
-        _MemberRow(
-          name: 'Pedro Almeida',
-          presence: UserPresence.offline,
-          canModerate: true,
-          theme: theme,
+        Expanded(
+          child: _roomMembers.isEmpty
+              ? Text(
+                  'Nenhum membro listado.',
+                  style: TextStyle(color: theme.textMuted, fontSize: 12.5),
+                )
+              : ListView(
+                  children: [
+                    if (owners.isNotEmpty) ...[
+                      _MemberGroupHeader(
+                        label: 'Dono (${owners.length})',
+                        theme: theme,
+                      ),
+                      for (final m in owners)
+                        _MemberRow(
+                          name: m.name,
+                          presence: m.presence,
+                          role: m.role,
+                          theme: theme,
+                        ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (mods.isNotEmpty) ...[
+                      _MemberGroupHeader(
+                        label: 'Moderadores (${mods.length})',
+                        theme: theme,
+                      ),
+                      for (final m in mods)
+                        _MemberRow(
+                          name: m.name,
+                          presence: m.presence,
+                          role: m.role,
+                          theme: theme,
+                        ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (others.isNotEmpty) ...[
+                      _MemberGroupHeader(
+                        label: 'Membros (${others.length})',
+                        theme: theme,
+                      ),
+                      for (final m in others)
+                        _MemberRow(
+                          name: m.name,
+                          presence: m.presence,
+                          theme: theme,
+                        ),
+                    ],
+                  ],
+                ),
         ),
       ],
     );
@@ -1424,17 +1462,172 @@ class _MainShellScreenState extends State<MainShellScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          const WellInput(
-            hintText: 'Filtrar favoritos...',
-            leadingIcon: Icons.search_rounded,
-            height: 36,
-          ),
-          const SizedBox(height: 16),
           Text(
-            'Clique em qualquer item para abrir a conversa de origem.',
+            'Suas salas e conversas favoritas sincronizadas com a conta.',
             style: TextStyle(color: theme.textMuted, fontSize: 12.5),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NewDirectDialog extends StatefulWidget {
+  const _NewDirectDialog({
+    required this.apiUrl,
+    required this.token,
+    required this.chatClient,
+    required this.onSelected,
+  });
+
+  final String apiUrl;
+  final String token;
+  final ChatApiClient chatClient;
+  final Future<void> Function(ChatConversation conv) onSelected;
+
+  @override
+  State<_NewDirectDialog> createState() => _NewDirectDialogState();
+}
+
+class _NewDirectDialogState extends State<_NewDirectDialog> {
+  final _queryCtrl = TextEditingController();
+  List<DirectoryUser> _users = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _search('');
+  }
+
+  @override
+  void dispose() {
+    _queryCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _search(String q) async {
+    setState(() => _loading = true);
+    try {
+      final list = await widget.chatClient.listAvailableUsers(
+        apiUrl: widget.apiUrl,
+        token: widget.token,
+        query: q,
+      );
+      if (!mounted) return;
+      setState(() {
+        _users = list;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = SkyRippleTheme.of(context);
+    return Dialog(
+      backgroundColor: theme.panelSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: theme.borderSubtle),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 480),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Nova conversa direta',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
+              WellInput(
+                controller: _queryCtrl,
+                hintText: 'Buscar usuário...',
+                leadingIcon: Icons.search_rounded,
+                onChanged: _search,
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: _loading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: theme.palette.main,
+                        ),
+                      )
+                    : (_users.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Nenhum usuário encontrado.',
+                              style: TextStyle(color: theme.textMuted),
+                            ),
+                          )
+                        : ListView.separated(
+                            itemCount: _users.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 6),
+                            itemBuilder: (context, index) {
+                              final u = _users[index];
+                              return ListTile(
+                                leading: UserAvatar(
+                                  label: u.name,
+                                  size: 36,
+                                  presence: u.online
+                                      ? UserPresence.online
+                                      : UserPresence.offline,
+                                ),
+                                title: Text(
+                                  u.name,
+                                  style: TextStyle(
+                                    color: theme.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  u.email,
+                                  style: TextStyle(
+                                    color: theme.textMuted,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                onTap: () async {
+                                  final nav = Navigator.of(context);
+                                  final conv =
+                                      await widget.chatClient.getOrCreateDirect(
+                                    apiUrl: widget.apiUrl,
+                                    token: widget.token,
+                                    targetUserId: u.id,
+                                  );
+                                  nav.pop();
+                                  await widget.onSelected(conv);
+                                },
+                              );
+                            },
+                          )),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: AeroButton(
+                  label: 'Fechar',
+                  variant: AeroButtonVariant.secondary,
+                  height: 36,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1446,14 +1639,12 @@ class _RailIconButton extends StatelessWidget {
     required this.tooltip,
     required this.onTap,
     this.active = false,
-    this.badgeCount = 0,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback onTap;
   final bool active;
-  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -1463,47 +1654,20 @@ class _RailIconButton extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: active
-                    ? theme.palette.main.withValues(alpha: 0.14)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                size: 21,
-                color: active ? theme.palette.main : theme.textMuted,
-              ),
-            ),
-            if (badgeCount > 0)
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: theme.busyRed,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '$badgeCount',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: active
+                ? theme.palette.main.withValues(alpha: 0.14)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            size: 21,
+            color: active ? theme.palette.main : theme.textMuted,
+          ),
         ),
       ),
     );
@@ -1588,69 +1752,6 @@ class _RolePillBadge extends StatelessWidget {
   }
 }
 
-class _MediaTile extends StatelessWidget {
-  const _MediaTile(this.top, this.bottom);
-
-  final Color top;
-  final Color bottom;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [top, bottom],
-        ),
-      ),
-    );
-  }
-}
-
-class _FileRow extends StatelessWidget {
-  const _FileRow({
-    required this.name,
-    required this.size,
-    required this.theme,
-  });
-
-  final String name;
-  final String size;
-  final SkyRippleTheme theme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          Icons.insert_drive_file_outlined,
-          size: 15,
-          color: theme.textMuted,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: theme.textPrimary,
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Text(
-          size,
-          style: TextStyle(color: theme.textMuted, fontSize: 11.5),
-        ),
-      ],
-    );
-  }
-}
-
 class _MemberGroupHeader extends StatelessWidget {
   const _MemberGroupHeader({required this.label, required this.theme});
 
@@ -1679,14 +1780,12 @@ class _MemberRow extends StatelessWidget {
     required this.presence,
     required this.theme,
     this.role,
-    this.canModerate = false,
   });
 
   final String name;
   final UserPresence presence;
   final SkyRippleTheme theme;
   final String? role;
-  final bool canModerate;
 
   @override
   Widget build(BuildContext context) {
@@ -1709,32 +1808,6 @@ class _MemberRow extends StatelessWidget {
             ),
           ),
           if (role != null) _RolePillBadge(role: role!),
-          if (canModerate)
-            PopupMenuButton<String>(
-              padding: EdgeInsets.zero,
-              icon: Icon(
-                Icons.more_horiz_rounded,
-                size: 16,
-                color: theme.textMuted,
-              ),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'promote',
-                  child: Text('Promover a Moderador'),
-                ),
-                const PopupMenuItem(
-                  value: 'mute',
-                  child: Text('Silenciar membro'),
-                ),
-                PopupMenuItem(
-                  value: 'remove',
-                  child: Text(
-                    'Remover da sala',
-                    style: TextStyle(color: theme.busyRed),
-                  ),
-                ),
-              ],
-            ),
         ],
       ),
     );
