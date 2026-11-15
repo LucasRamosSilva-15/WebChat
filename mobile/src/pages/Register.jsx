@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, MailCheck, ArrowLeft } from 'lucide-react';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../services/socket';
-import { supabase, syncOAuthUserSession, handleGoogleSignIn } from '../services/supabase';
+import { supabase, handleGoogleSignIn } from '../services/supabase';
 import OtpCodeInput from '../components/common/OtpCodeInput';
 
 export default function MobileRegister() {
@@ -144,17 +144,31 @@ export default function MobileRegister() {
         throw verifyError;
       }
 
-      if (data?.session) {
-        try {
-          await syncOAuthUserSession(data.session);
-        } catch (syncErr) {
-          console.warn('Falha na sincronização após OTP:', syncErr.message);
+      const registerData = await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password
+        })
+      });
+
+      if (registerData?.token) {
+        setAuthToken(registerData.token);
+        if (socket) {
+          socket.auth = { token: registerData.token };
         }
       }
 
       localStorage.setItem('chat_isLoggedIn', 'true');
-      localStorage.setItem('chat_displayName', data?.user?.user_metadata?.name || name.trim());
-      localStorage.setItem('chat_uniqueUserId', data?.user?.id || 'user_' + Date.now());
+      localStorage.setItem(
+        'chat_displayName',
+        registerData?.user?.name || registerData?.user?.displayName || data?.user?.user_metadata?.name || name.trim()
+      );
+      localStorage.setItem(
+        'chat_uniqueUserId',
+        registerData?.user?.id || data?.user?.id || 'user_' + Date.now()
+      );
 
       if (socket) {
         socket.disconnect();

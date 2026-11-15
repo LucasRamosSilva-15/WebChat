@@ -6,7 +6,8 @@ import { FaTimes } from 'react-icons/fa';
 import { MailCheck, AlertCircle, ArrowLeft } from 'lucide-react';
 import OtpCodeInput from '../components/common/OtpCodeInput';
 import { socket } from '../socket';
-import { supabase, syncOAuthUserSession } from '../services/supabase';
+import { apiRequest, setAuthToken } from '../services/api';
+import { supabase } from '../services/supabase';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -97,17 +98,33 @@ const Register = () => {
                 throw verifyError;
             }
 
-            if (data?.session) {
-                try {
-                    await syncOAuthUserSession(data.session);
-                } catch (syncErr) {
-                    console.warn('Falha na sincronização após OTP:', syncErr.message);
-                }
+            const cleanName = username.trim();
+            const cleanEmail = email.trim();
+            const cleanPassword = password.trim();
+
+            const registerData = await apiRequest('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: cleanName,
+                    email: cleanEmail,
+                    password: cleanPassword
+                })
+            });
+
+            if (registerData?.token) {
+                setAuthToken(registerData.token);
+                socket.auth = { token: registerData.token };
             }
 
             localStorage.setItem('chat_isLoggedIn', 'true');
-            localStorage.setItem('chat_displayName', data?.user?.user_metadata?.name || username.trim());
-            localStorage.setItem('chat_uniqueUserId', data?.user?.id || 'user-' + Date.now());
+            localStorage.setItem(
+                'chat_displayName',
+                registerData?.user?.name || registerData?.user?.displayName || data?.user?.user_metadata?.name || cleanName
+            );
+            localStorage.setItem(
+                'chat_uniqueUserId',
+                registerData?.user?.id || data?.user?.id || 'user-' + Date.now()
+            );
 
             if (socket) {
                 socket.disconnect();

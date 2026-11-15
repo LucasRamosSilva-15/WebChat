@@ -28,17 +28,26 @@ class UserService {
     }
 
     const existingUser = await UserRepository.findByEmail(normalizedEmail);
-    if (existingUser) {
+    if (existingUser && existingUser.password) {
       throw new Error('Já existe um usuário com este e-mail.');
     }
 
     const hashedPassword = await hashPassword(password);
+    const resolvedDisplayName =
+      (displayName && displayName.trim()) ||
+      existingUser?.displayName ||
+      normalizedEmail.split('@')[0];
 
-    const newUser = await UserRepository.create({
-      email: normalizedEmail,
-      password: hashedPassword,
-      displayName: (displayName && displayName.trim()) || normalizedEmail.split('@')[0]
-    });
+    const newUser = existingUser
+      ? await existingUser.update({
+          password: hashedPassword,
+          displayName: resolvedDisplayName
+        })
+      : await UserRepository.create({
+          email: normalizedEmail,
+          password: hashedPassword,
+          displayName: resolvedDisplayName
+        });
 
     logSecurityEvent({
       eventType: 'AUTH_REGISTER_SUCCESS',

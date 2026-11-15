@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../services/socket';
-import { supabase, handleGoogleSignIn } from '../services/supabase';
+import { supabase, handleGoogleSignIn, syncOAuthUserSession } from '../services/supabase';
 
 export default function MobileLogin() {
   const navigate = useNavigate();
@@ -40,10 +40,47 @@ export default function MobileLogin() {
     setError(null);
 
     try {
-      const data = await apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email: email.trim(), password })
-      });
+      const cleanEmail = email.trim();
+      const cleanPassword = password.trim();
+      let data;
+
+      try {
+        data = await apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
+        });
+      } catch (loginErr) {
+        const isInvalidCreds = loginErr?.message?.toLowerCase().includes('credenciais');
+        if (isInvalidCreds && typeof supabase?.auth?.signInWithPassword === 'function') {
+          const { data: supaData, error: supaErr } = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password: cleanPassword
+          });
+
+          if (supaErr || !supaData?.session) {
+            throw loginErr;
+          }
+
+          try {
+            const displayName =
+              supaData.user?.user_metadata?.full_name ||
+              supaData.user?.user_metadata?.name ||
+              cleanEmail.split('@')[0];
+            data = await apiRequest('/auth/register', {
+              method: 'POST',
+              body: JSON.stringify({
+                name: displayName,
+                email: cleanEmail,
+                password: cleanPassword
+              })
+            });
+          } catch {
+            data = await syncOAuthUserSession(supaData.session);
+          }
+        } else {
+          throw loginErr;
+        }
+      }
 
       if (data?.token) {
         setAuthToken(data.token);

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { FiUser, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi';
 import { apiRequest, setAuthToken } from '../services/api';
 import { socket } from '../socket';
-import { supabase } from '../services/supabase';
+import { supabase, syncOAuthUserSession } from '../services/supabase';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -36,18 +36,59 @@ const Login = () => {
         setError(null);
         setSessionExpiredNotice(false);
 
-        if (email.trim() !== "" && password.trim() !== "") {
+        const cleanEmail = email.trim();
+        const cleanPassword = password.trim();
+
+        if (cleanEmail !== "" && cleanPassword !== "") {
             setLoading(true);
             try {
-                const data = await apiRequest('/auth/login', {
-                    method: 'POST',
-                    body: JSON.stringify({ email, password })
-                });
+                let data;
+                try {
+                    data = await apiRequest('/auth/login', {
+                        method: 'POST',
+                        body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
+                    });
+                } catch (loginErr) {
+                    const isInvalidCreds = loginErr?.message?.toLowerCase().includes('credenciais');
+                    if (isInvalidCreds && typeof supabase?.auth?.signInWithPassword === 'function') {
+                        const { data: supaData, error: supaErr } = await supabase.auth.signInWithPassword({
+                            email: cleanEmail,
+                            password: cleanPassword
+                        });
+
+                        if (supaErr || !supaData?.session) {
+                            throw loginErr;
+                        }
+
+                        try {
+                            const displayName =
+                                supaData.user?.user_metadata?.full_name ||
+                                supaData.user?.user_metadata?.name ||
+                                cleanEmail.split('@')[0];
+                            data = await apiRequest('/auth/register', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    name: displayName,
+                                    email: cleanEmail,
+                                    password: cleanPassword
+                                })
+                            });
+                        } catch {
+                            data = await syncOAuthUserSession(supaData.session);
+                        }
+                    } else {
+                        throw loginErr;
+                    }
+                }
+
+                if (!data?.token) {
+                    throw new Error('Erro ao autenticar sessão.');
+                }
 
                 setAuthToken(data.token);
                 localStorage.setItem('chat_isLoggedIn', 'true');
-                localStorage.setItem('chat_displayName', data.user.name);
-                localStorage.setItem('chat_uniqueUserId', data.user.id);
+                localStorage.setItem('chat_displayName', data.user?.name || data.user?.displayName || cleanEmail.split('@')[0]);
+                localStorage.setItem('chat_uniqueUserId', data.user?.id);
 
                 socket.auth = { token: data.token };
                 socket.disconnect();

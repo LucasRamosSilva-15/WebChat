@@ -69,6 +69,25 @@ describe('POST /api/auth/login', () => {
     expect(me.body.email).toBe(newUser.email);
     expect(me.body.password).toBeUndefined();
   });
+
+  it('permite concluir registro com senha em usuário pré-criado sem senha (ex: trigger/oauth-sync) e logar depois', async () => {
+    await createUser({ email: 'otp-trigger@test.com', password: null, displayName: 'OTP User' });
+
+    const reg = await request(app).post('/api/auth/register').send({
+      email: 'otp-trigger@test.com',
+      password: 'MinhaSenha#2026',
+      name: 'OTP User'
+    });
+    expect(reg.status).toBe(201);
+    expect(reg.body.token).toBeDefined();
+
+    const login = await request(app).post('/api/auth/login').send({
+      email: 'otp-trigger@test.com',
+      password: 'MinhaSenha#2026'
+    });
+    expect(login.status).toBe(200);
+    expect(login.body.token).toBeDefined();
+  });
 });
 
 describe('GET /api/auth/me', () => {
