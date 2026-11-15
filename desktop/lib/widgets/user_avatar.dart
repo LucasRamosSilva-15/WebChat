@@ -12,6 +12,7 @@ class UserAvatar extends StatelessWidget {
   const UserAvatar({
     super.key,
     required this.label,
+    this.avatarUrl,
     this.size = 40,
     this.presence,
     this.isRoom = false,
@@ -20,6 +21,7 @@ class UserAvatar extends StatelessWidget {
   });
 
   final String label;
+  final String? avatarUrl;
   final double size;
   final UserPresence? presence;
   final bool isRoom;
@@ -47,6 +49,46 @@ class UserAvatar extends StatelessWidget {
     final ledSize = (size * 0.28).clamp(8.0, 14.0);
     final displayChar =
         isRoom ? '#' : (label.isNotEmpty ? label.trim()[0].toUpperCase() : '?');
+
+    final hasPhoto = !isRoom &&
+        avatarUrl != null &&
+        avatarUrl!.trim().isNotEmpty &&
+        (avatarUrl!.startsWith('http://') || avatarUrl!.startsWith('https://'));
+
+    final fallbackContent = Stack(
+      children: [
+        Positioned(
+          top: 2,
+          left: size * 0.18,
+          right: size * 0.18,
+          height: size * 0.32,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(size),
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x66FFFFFF),
+                  Color(0x00FFFFFF),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Center(
+          child: Text(
+            displayChar,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: size * 0.40,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
+        ),
+      ],
+    );
 
     final avatar = SizedBox(
       width: size,
@@ -82,40 +124,17 @@ class UserAvatar extends StatelessWidget {
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 2,
-                  left: size * 0.18,
-                  right: size * 0.18,
-                  height: size * 0.32,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(size),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0x66FFFFFF),
-                          Color(0x00FFFFFF),
-                        ],
-                      ),
+            child: hasPhoto
+                ? ClipOval(
+                    child: Image.network(
+                      avatarUrl!.trim(),
+                      width: size,
+                      height: size,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => fallbackContent,
                     ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    displayChar,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: size * 0.40,
-                      fontWeight: FontWeight.w700,
-                      height: 1,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                  )
+                : fallbackContent,
           ),
           if (presence != null)
             Positioned(

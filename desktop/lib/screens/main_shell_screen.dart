@@ -414,6 +414,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         children: [
                           UserAvatar(
                             label: draftName,
+                            avatarUrl: widget.user.avatarUrl,
                             size: 56,
                             presence: draftPresence,
                           ),
@@ -618,6 +619,183 @@ class _MainShellScreenState extends State<MainShellScreen> {
     );
   }
 
+  String _resolveMessageSenderName(ChatMessage msg) {
+    if (msg.isSent) {
+      return 'Você';
+    }
+    if (msg.senderName.isNotEmpty && msg.senderName != 'Usuário') {
+      return msg.senderName;
+    }
+    for (final m in _roomMembers) {
+      if (m.id.isNotEmpty && m.id == msg.senderId) {
+        return m.name;
+      }
+    }
+    for (final d in _directs) {
+      if (d.partnerId != null && d.partnerId == msg.senderId) {
+        return d.title;
+      }
+    }
+    final active = _activeConversation;
+    if (active != null && !active.isRoom) {
+      return active.title;
+    }
+    return msg.senderName;
+  }
+
+  String? _resolveMessageAvatarUrl(ChatMessage msg) {
+    if (msg.isSent) {
+      return widget.user.avatarUrl;
+    }
+    if (msg.senderAvatarUrl != null && msg.senderAvatarUrl!.isNotEmpty) {
+      return msg.senderAvatarUrl;
+    }
+    for (final m in _roomMembers) {
+      if (m.id.isNotEmpty && m.id == msg.senderId && m.avatarUrl != null) {
+        return m.avatarUrl;
+      }
+    }
+    for (final d in _directs) {
+      if (d.partnerId != null &&
+          d.partnerId == msg.senderId &&
+          d.avatarUrl != null) {
+        return d.avatarUrl;
+      }
+    }
+    final active = _activeConversation;
+    if (active != null && !active.isRoom) {
+      return active.avatarUrl;
+    }
+    return null;
+  }
+
+  UserPresence _resolveMessagePresence(ChatMessage msg) {
+    if (msg.isSent) {
+      return _myPresence;
+    }
+    if (msg.senderId.isNotEmpty && _onlineUserIds.contains(msg.senderId)) {
+      return UserPresence.online;
+    }
+    for (final m in _roomMembers) {
+      if (m.id.isNotEmpty && m.id == msg.senderId) {
+        return m.presence;
+      }
+    }
+    for (final d in _directs) {
+      if (d.partnerId != null &&
+          d.partnerId == msg.senderId &&
+          d.presence != null) {
+        return d.presence!;
+      }
+    }
+    return UserPresence.offline;
+  }
+
+  Future<void> _openSenderProfileDialog({
+    required String userId,
+    required String name,
+    required String? avatarUrl,
+    required String? role,
+    required UserPresence presence,
+  }) async {
+    await showDialog<void>(
+      context: context,
+      barrierColor: const Color(0x730F172A),
+      builder: (dialogContext) {
+        final theme = SkyRippleTheme.of(dialogContext);
+        final statusLabel =
+            presence == UserPresence.online ? 'Online agora' : 'Offline';
+        return Dialog(
+          backgroundColor: theme.panelSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: theme.borderSubtle),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Padding(
+              padding: const EdgeInsets.all(22),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  UserAvatar(
+                    label: name,
+                    avatarUrl: avatarUrl,
+                    size: 64,
+                    presence: presence,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: theme.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    statusLabel,
+                    style: TextStyle(
+                      color: presence == UserPresence.online
+                          ? theme.onlineGreen
+                          : theme.textMuted,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (role != null) ...[
+                    const SizedBox(height: 8),
+                    _RolePillBadge(role: role),
+                  ],
+                  const SizedBox(height: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AeroButton(
+                        label: 'Fechar',
+                        variant: AeroButtonVariant.secondary,
+                        height: 36,
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                      ),
+                      if (userId.isNotEmpty && userId != widget.user.id) ...[
+                        const SizedBox(width: 8),
+                        AeroButton(
+                          label: 'Enviar Direct',
+                          height: 36,
+                          onPressed: () async {
+                            final nav = Navigator.of(dialogContext);
+                            final conv =
+                                await widget.chatClient.getOrCreateDirect(
+                              apiUrl: widget.apiUrl,
+                              token: widget.token,
+                              targetUserId: userId,
+                            );
+                            nav.pop();
+                            if (!mounted) return;
+                            final exists = _directs.any((d) => d.id == conv.id);
+                            setState(() {
+                              if (!exists) {
+                                _directs = [conv, ..._directs];
+                              }
+                              _rosterFilter = _RosterFilter.directs;
+                            });
+                            await _selectConversation(conv);
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = SkyRippleTheme.of(context);
@@ -683,6 +861,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
             ],
             child: UserAvatar(
               label: _displayName,
+              avatarUrl: widget.user.avatarUrl,
               size: 40,
               presence: _myPresence,
             ),
@@ -888,6 +1067,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                         final contact = onlineDirects[index];
                         return UserAvatar(
                           label: contact.title,
+                          avatarUrl: contact.avatarUrl,
                           size: 38,
                           presence: contact.presence,
                           onTap: () => _selectConversation(contact),
@@ -962,6 +1142,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                 preview: item.preview,
                                 timestamp: item.timestamp,
                                 presence: item.presence,
+                                avatarUrl: item.avatarUrl,
                                 isRoom: item.isRoom,
                                 isE2ee: item.isE2ee,
                                 unreadCount:
@@ -1006,6 +1187,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
               children: [
                 UserAvatar(
                   label: active.title,
+                  avatarUrl: active.avatarUrl,
                   size: 38,
                   isRoom: active.isRoom,
                   presence: active.isRoom ? null : active.presence,
@@ -1112,6 +1294,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
                               index > 0 ? _messages[index - 1].senderId : null;
                           final showHeader =
                               index == 0 || prevSender != msg.senderId;
+                          final senderName = _resolveMessageSenderName(msg);
+                          final senderAvatar = _resolveMessageAvatarUrl(msg);
+                          final senderPresence =
+                              _resolveMessagePresence(msg);
 
                           return Padding(
                             padding: EdgeInsets.only(top: showHeader ? 12 : 4),
@@ -1121,22 +1307,56 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                   : CrossAxisAlignment.start,
                               children: [
                                 if (showHeader) ...[
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        msg.senderName,
-                                        style: TextStyle(
-                                          color: theme.textMuted,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  MouseRegion(
+                                    cursor: msg.isSent
+                                        ? MouseCursor.defer
+                                        : SystemMouseCursors.click,
+                                    child: GestureDetector(
+                                      onTap: msg.isSent
+                                          ? null
+                                          : () => _openSenderProfileDialog(
+                                                userId: msg.senderId,
+                                                name: senderName,
+                                                avatarUrl: senderAvatar,
+                                                role: msg.role,
+                                                presence: senderPresence,
+                                              ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (!msg.isSent) ...[
+                                            UserAvatar(
+                                              label: senderName,
+                                              avatarUrl: senderAvatar,
+                                              size: 22,
+                                              presence: senderPresence,
+                                            ),
+                                            const SizedBox(width: 6),
+                                          ],
+                                          Text(
+                                            senderName,
+                                            style: TextStyle(
+                                              color: theme.textMuted,
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          if (msg.role != null) ...[
+                                            const SizedBox(width: 6),
+                                            _RolePillBadge(role: msg.role!),
+                                          ],
+                                          if (msg.isSent) ...[
+                                            const SizedBox(width: 6),
+                                            UserAvatar(
+                                              label: _displayName,
+                                              avatarUrl: widget.user.avatarUrl,
+                                              size: 22,
+                                              presence: _myPresence,
+                                            ),
+                                          ],
+                                        ],
                                       ),
-                                      if (msg.role != null) ...[
-                                        const SizedBox(width: 6),
-                                        _RolePillBadge(role: msg.role!),
-                                      ],
-                                    ],
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                 ],
@@ -1304,6 +1524,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
             children: [
               UserAvatar(
                 label: active.title,
+                avatarUrl: active.avatarUrl,
                 size: 64,
                 presence: active.presence,
               ),
@@ -1403,6 +1624,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       for (final m in owners)
                         _MemberRow(
                           name: m.name,
+                          avatarUrl: m.avatarUrl,
                           presence: m.presence,
                           role: m.role,
                           theme: theme,
@@ -1417,6 +1639,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       for (final m in mods)
                         _MemberRow(
                           name: m.name,
+                          avatarUrl: m.avatarUrl,
                           presence: m.presence,
                           role: m.role,
                           theme: theme,
@@ -1431,6 +1654,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       for (final m in others)
                         _MemberRow(
                           name: m.name,
+                          avatarUrl: m.avatarUrl,
                           presence: m.presence,
                           theme: theme,
                         ),
@@ -1581,6 +1805,7 @@ class _NewDirectDialogState extends State<_NewDirectDialog> {
                               return ListTile(
                                 leading: UserAvatar(
                                   label: u.name,
+                                  avatarUrl: u.avatarUrl,
                                   size: 36,
                                   presence: u.online
                                       ? UserPresence.online
@@ -1779,10 +2004,12 @@ class _MemberRow extends StatelessWidget {
     required this.name,
     required this.presence,
     required this.theme,
+    this.avatarUrl,
     this.role,
   });
 
   final String name;
+  final String? avatarUrl;
   final UserPresence presence;
   final SkyRippleTheme theme;
   final String? role;
@@ -1793,7 +2020,12 @@ class _MemberRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          UserAvatar(label: name, size: 28, presence: presence),
+          UserAvatar(
+            label: name,
+            avatarUrl: avatarUrl,
+            size: 28,
+            presence: presence,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

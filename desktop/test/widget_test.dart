@@ -402,4 +402,51 @@ void main() {
 
     expect(find.text('Bem-vindo de volta'), findsOneWidget);
   });
+
+  testWidgets('Room message resolves nested user displayName and opens profile', (
+    tester,
+  ) async {
+    final parsed = ChatMessage.fromJson(
+      {
+        'id': 'm99',
+        'user_id': 'u9',
+        'content': 'Olá pessoal!',
+        'user': {
+          'id': 'u9',
+          'displayName': 'Carlos Eduardo',
+          'profilePhoto': 'https://example.com/carlos.png',
+        },
+      },
+      currentUserId: 'u1',
+    );
+    expect(parsed.senderName, 'Carlos Eduardo');
+    expect(parsed.senderAvatarUrl, 'https://example.com/carlos.png');
+    expect(parsed.isSent, isFalse);
+
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      SkyRippleApp(
+        authClient: _FakeAuthClient(),
+        chatClient: _FakeChatClient(),
+        realtimeClient: NoopRealtimeClient(),
+        sessionStorage: MemorySessionStorage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), 'lucas@example.com');
+    await tester.enterText(find.byType(TextField).at(1), 'SenhaForte#2026');
+    await tester.tap(find.text('Entrar no SkyRipple'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Salas').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ana Beatriz').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Enviar Direct'), findsOneWidget);
+  });
 }

@@ -10,6 +10,7 @@ class RosterItem extends StatefulWidget {
     required this.timestamp,
     required this.onTap,
     this.presence,
+    this.avatarUrl,
     this.isRoom = false,
     this.isE2ee = false,
     this.unreadCount = 0,
@@ -21,6 +22,7 @@ class RosterItem extends StatefulWidget {
   final String timestamp;
   final VoidCallback onTap;
   final UserPresence? presence;
+  final String? avatarUrl;
   final bool isRoom;
   final bool isE2ee;
   final int unreadCount;
@@ -73,6 +75,7 @@ class _RosterItemState extends State<RosterItem> {
             children: [
               UserAvatar(
                 label: widget.title,
+                avatarUrl: widget.avatarUrl,
                 size: 40,
                 presence: widget.isRoom ? null : widget.presence,
                 isRoom: widget.isRoom,
