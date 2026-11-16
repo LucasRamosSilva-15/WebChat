@@ -28,7 +28,8 @@ class ChatBubble extends StatelessWidget {
     this.kind = ChatBubbleKind.text,
     this.text = '',
     this.imageUrl,
-    this.audioDuration = '0:24 • 1x',
+    this.audioDuration = 'Áudio',
+    this.isPlaying = false,
     this.fileName = 'Apresentação.pdf',
     this.fileSize = '1.8 MB',
     this.onActionTap,
@@ -40,6 +41,7 @@ class ChatBubble extends StatelessWidget {
   final String text;
   final String? imageUrl;
   final String audioDuration;
+  final bool isPlaying;
   final String fileName;
   final String fileSize;
   final VoidCallback? onActionTap;
@@ -244,7 +246,7 @@ class ChatBubble extends StatelessWidget {
                   color: isSent ? Colors.white : palette.main,
                 ),
                 child: Icon(
-                  Icons.play_arrow_rounded,
+                  isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
                   size: 20,
                   color: isSent ? palette.main : Colors.white,
                 ),
@@ -261,7 +263,9 @@ class ChatBubble extends StatelessWidget {
                     height: heights[i],
                     margin: const EdgeInsets.symmetric(horizontal: 1.5),
                     decoration: BoxDecoration(
-                      color: i < 9 ? activeBarColor : idleBarColor,
+                      color: (isPlaying || i < 6)
+                          ? activeBarColor
+                          : idleBarColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),

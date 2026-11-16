@@ -271,6 +271,8 @@ class ChatMessage {
     this.fileSize,
     this.isEncrypted = false,
     this.decryptFailed = false,
+    this.likes = const [],
+    this.isEdited = false,
   });
 
   final String id;
@@ -289,6 +291,8 @@ class ChatMessage {
   final String? fileSize;
   final bool isEncrypted;
   final bool decryptFailed;
+  final List<String> likes;
+  final bool isEdited;
 
   ChatMessage copyWith({
     String? text,
@@ -299,6 +303,8 @@ class ChatMessage {
     String? fileSize,
     bool? isEncrypted,
     bool? decryptFailed,
+    List<String>? likes,
+    bool? isEdited,
   }) {
     return ChatMessage(
       id: id,
@@ -317,6 +323,8 @@ class ChatMessage {
       fileSize: fileSize ?? this.fileSize,
       isEncrypted: isEncrypted ?? this.isEncrypted,
       decryptFailed: decryptFailed ?? this.decryptFailed,
+      likes: likes ?? this.likes,
+      isEdited: isEdited ?? this.isEdited,
     );
   }
 
@@ -411,6 +419,10 @@ class ChatMessage {
       fileSize: hasAttachment && attachment['size'] is num
           ? '${((attachment['size'] as num) / (1024 * 1024)).toStringAsFixed(1)} MB'
           : null,
+      likes: json['likes'] is List
+          ? (json['likes'] as List<dynamic>).map((e) => e.toString()).toList()
+          : const [],
+      isEdited: json['edited'] == true || json['isEdited'] == true,
     );
   }
 
@@ -435,6 +447,18 @@ class RoomMember {
   final UserPresence presence;
   final String? avatarUrl;
   final String? role;
+
+  RoomMember copyWith({
+    UserPresence? presence,
+  }) {
+    return RoomMember(
+      id: id,
+      name: name,
+      presence: presence ?? this.presence,
+      avatarUrl: avatarUrl,
+      role: role,
+    );
+  }
 
   factory RoomMember.fromJson(Map<String, dynamic> json) {
     final userObj = json['user'] is Map<String, dynamic>

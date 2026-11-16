@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 import 'package:material_ui/material_ui.dart';
 import '../models/chat_models.dart';
 import '../models/user_session.dart';
+import '../services/audio_service.dart';
 import '../services/auth_service.dart';
 import '../services/chat_service.dart';
 import '../services/e2ee_service.dart';
@@ -45,6 +47,7 @@ class MainShellScreen extends StatefulWidget {
     this.onProfileSaved,
     required this.onSignOut,
     this.e2eeService,
+    this.audioService,
   });
 
   final SkyRippleUser user;
@@ -66,6 +69,7 @@ class MainShellScreen extends StatefulWidget {
   })? onProfileSaved;
   final VoidCallback onSignOut;
   final E2eeService? e2eeService;
+  final AudioService? audioService;
 
   @override
   State<MainShellScreen> createState() => _MainShellScreenState();
@@ -100,6 +104,11 @@ class _MainShellScreenState extends State<MainShellScreen> {
   Set<String> _onlineUserIds = {};
   late final E2eeService _e2ee;
   ConversationCrypto? _activeCrypto;
+  late final AudioService _audioService;
+  bool _isRecordingAudio = false;
+  Timer? _recordingTimer;
+  Duration _recordingDuration = Duration.zero;
+  String? _playingMessageId;
 
   Future<List<ChatMessage>> _decryptDirectMessages(
     List<ChatMessage> list,
@@ -412,6 +421,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
   void initState() {
     super.initState();
     _e2ee = widget.e2eeService ?? E2eeService();
+    _audioService = widget.audioService ?? SystemAudioService();
     _myPresence = widget.initialPresence;
     _displayName = widget.user.name;
     _bio = widget.initialBio;
@@ -539,6 +549,65 @@ class _MainShellScreenState extends State<MainShellScreen> {
         if (!mounted) return;
         setState(() {
           _messages = _messages.where((m) => m.id != messageId).toList();
+        });
+      },
+      onMessageEdited: (messageId, newContent) {
+        if (!mounted) return;
+        setState(() {
+          _messages = _messages.map((m) {
+            if (m.id == messageId) {
+              return m.copyWith(text: newContent, isEdited: true);
+            }
+            return m;
+          }).toList();
+        });
+      },
+      onLikeToggled: (messageId, likerId) {
+        if (!mounted) return;
+        setState(() {
+          _messages = _messages.map((m) {
+            if (m.id != messageId) return m;
+            final updatedLikes = List<String>.from(m.likes);
+            if (updatedLikes.contains(likerId)) {
+              updatedLikes.remove(likerId);
+            } else {
+              updatedLikes.add(likerId);
+            }
+            return m.copyWith(likes: updatedLikes);
+          }).toList();
+        });
+      },
+      onRoomPresenceUpdated: (roomId, onlineUserIds, onlineCount) {
+        if (!mounted) return;
+        final active = _activeConversation;
+        if (active == null || !active.isRoom || active.id != roomId) return;
+        final onlineSet = onlineUserIds.toSet();
+        setState(() {
+          _roomMembers = _roomMembers.map((m) {
+            final isOnline = onlineSet.contains(m.id);
+            return m.copyWith(
+              presence: isOnline ? UserPresence.online : UserPresence.offline,
+            );
+          }).toList();
+        });
+      },
+      onUserPresenceChanged: (uid, isOnline) {
+        if (!mounted) return;
+        setState(() {
+          if (isOnline) {
+            _onlineUserIds.add(uid);
+          } else {
+            _onlineUserIds.remove(uid);
+          }
+          _directs = _directs.map((d) {
+            if (d.partnerId == uid) {
+              return d.copyWith(
+                presence: isOnline ? UserPresence.online : UserPresence.offline,
+                subtitle: isOnline ? 'Online agora' : 'Offline',
+              );
+            }
+            return d;
+          }).toList();
         });
       },
       onNotification: (payload) {
@@ -787,12 +856,147 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   @override
   void dispose() {
+    _recordingTimer?.cancel();
+    _audioService.dispose();
     widget.realtimeClient.dispose();
     _messagesScrollController.removeListener(_onMessagesScroll);
     _messagesScrollController.dispose();
     _searchController.dispose();
     _composerController.dispose();
     super.dispose();
+  }
+
+  String _formatRecordingDuration(Duration duration) {
+    final totalSeconds = duration.inSeconds;
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _startAudioRecording() async {
+    if (_sending || _isRecordingAudio) return;
+    try {
+      final supported = await _audioService.isRecordingSupported;
+      if (!supported) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Gravação de áudio indisponível neste dispositivo.',
+            ),
+          ),
+        );
+        return;
+      }
+      await _audioService.startRecording();
+      if (!mounted) return;
+      _recordingTimer?.cancel();
+      setState(() {
+        _isRecordingAudio = true;
+        _recordingDuration = Duration.zero;
+      });
+      _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted || !_isRecordingAudio) return;
+        setState(() {
+          _recordingDuration += const Duration(seconds: 1);
+        });
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isRecordingAudio = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível iniciar a gravação.')),
+      );
+    }
+  }
+
+  Future<void> _cancelAudioRecording() async {
+    _recordingTimer?.cancel();
+    _recordingTimer = null;
+    if (_isRecordingAudio && mounted) {
+      setState(() {
+        _isRecordingAudio = false;
+        _recordingDuration = Duration.zero;
+      });
+    }
+    await _audioService.cancelRecording();
+  }
+
+  Future<void> _stopAndSendAudioRecording() async {
+    if (!_isRecordingAudio) return;
+    _recordingTimer?.cancel();
+    _recordingTimer = null;
+    setState(() {
+      _isRecordingAudio = false;
+      _recordingDuration = Duration.zero;
+    });
+    try {
+      final recorded = await _audioService.stopRecording();
+      if (!mounted || recorded == null) return;
+      if (recorded.bytes.length > 5 * 1024 * 1024) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('O áudio gravado excede o limite de 5 MB.'),
+          ),
+        );
+        return;
+      }
+      setState(() {
+        _pendingImageUrl = null;
+        _pendingAttachment = {
+          'url': recorded.dataUrl,
+          'type': recorded.mimeType,
+          'name': recorded.fileName,
+          'size': recorded.bytes.length,
+        };
+        _pendingAttachmentLabel = recorded.fileName;
+      });
+      await _sendMessage();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao finalizar a gravação de áudio.')),
+      );
+    }
+  }
+
+  Future<void> _toggleAudioPlayback(ChatMessage msg) async {
+    final url = msg.attachmentUrl;
+    if (url == null || url.isEmpty) return;
+    if (_playingMessageId == msg.id) {
+      await _audioService.stopPlayback();
+      if (!mounted) return;
+      setState(() => _playingMessageId = null);
+      return;
+    }
+    try {
+      final supported = await _audioService.isPlaybackSupported;
+      if (!supported) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reprodução de áudio indisponível neste dispositivo.'),
+          ),
+        );
+        return;
+      }
+      setState(() => _playingMessageId = msg.id);
+      await _audioService.play(
+        url,
+        messageId: msg.id,
+        onCompleted: () {
+          if (mounted && _playingMessageId == msg.id) {
+            setState(() => _playingMessageId = null);
+          }
+        },
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _playingMessageId = null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível reproduzir o áudio.')),
+      );
+    }
   }
 
   ChatConversation? _findById(String? id) {
@@ -979,6 +1183,62 @@ class _MainShellScreenState extends State<MainShellScreen> {
       }
     }
     return false;
+  }
+
+  bool _canEditMessage(ChatMessage msg, ChatConversation active) {
+    return msg.isSent &&
+        active.isRoom &&
+        msg.id.isNotEmpty &&
+        msg.kind == ChatBubbleKind.text;
+  }
+
+  void _toggleMessageLike(ChatMessage msg) {
+    final active = _activeConversation;
+    if (active == null || !active.isRoom || msg.id.isEmpty) return;
+    final uid = widget.user.id;
+    setState(() {
+      _messages = _messages.map((m) {
+        if (m.id != msg.id) return m;
+        final next = List<String>.from(m.likes);
+        if (next.contains(uid)) {
+          next.remove(uid);
+        } else {
+          next.add(uid);
+        }
+        return m.copyWith(likes: next);
+      }).toList();
+    });
+    widget.realtimeClient.toggleLike(
+      roomId: active.id,
+      messageId: msg.id,
+      userId: uid,
+    );
+  }
+
+  Future<void> _editMessageDialog(ChatMessage msg) async {
+    final active = _activeConversation;
+    if (active == null || !active.isRoom || msg.id.isEmpty) return;
+    final updated = await showDialog<String>(
+      context: context,
+      barrierColor: const Color(0x730F172A),
+      builder: (_) => _EditMessageDialog(initialText: msg.text),
+    );
+    if (updated == null || updated.isEmpty || updated == msg.text || !mounted) {
+      return;
+    }
+    setState(() {
+      _messages = _messages.map((m) {
+        if (m.id == msg.id) {
+          return m.copyWith(text: updated, isEdited: true);
+        }
+        return m;
+      }).toList();
+    });
+    widget.realtimeClient.editMessage(
+      roomId: active.id,
+      messageId: msg.id,
+      content: updated,
+    );
   }
 
   Future<void> _confirmDeleteMessage(ChatMessage msg) async {
@@ -1168,7 +1428,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
             kind: imageUrl != null
                 ? ChatBubbleKind.image
                 : (attachment != null
-                    ? ChatBubbleKind.attachment
+                    ? ((attachment['type']?.toString() ?? '')
+                            .startsWith('audio/')
+                        ? ChatBubbleKind.audio
+                        : ChatBubbleKind.attachment)
                     : ChatBubbleKind.text),
             isEncrypted: true,
             decryptFailed: false,
@@ -2516,6 +2779,25 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                                   ),
                                                 ),
                                               ],
+                                              if (_canEditMessage(
+                                                  msg, active)) ...[
+                                                const SizedBox(width: 4),
+                                                InkWell(
+                                                  onTap: () =>
+                                                      _editMessageDialog(msg),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(2),
+                                                    child: Icon(
+                                                      Icons.edit_outlined,
+                                                      size: 14,
+                                                      color: theme.textMuted,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                               if (_canDeleteMessage(
                                                   msg, active)) ...[
                                                 const SizedBox(width: 4),
@@ -2558,6 +2840,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                       kind: msg.kind,
                                       text: msg.text,
                                       imageUrl: msg.imageUrl,
+                                      audioDuration: msg.fileSize ?? 'Áudio',
+                                      isPlaying: _playingMessageId == msg.id,
                                       fileName: msg.fileName ?? 'Arquivo',
                                       fileSize: msg.fileSize ?? '',
                                       onImageTap: msg.imageUrl != null
@@ -2565,12 +2849,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                               msg.imageUrl!)
                                           : null,
                                       onActionTap: msg.attachmentUrl != null
-                                          ? () => _saveAttachment(msg)
+                                          ? (msg.kind == ChatBubbleKind.audio
+                                              ? () => _toggleAudioPlayback(msg)
+                                              : () => _saveAttachment(msg))
                                           : null,
                                     ),
-                                    if (!showHeader && timeLabel.isNotEmpty)
+                                    if ((!showHeader && timeLabel.isNotEmpty) ||
+                                        msg.isEdited ||
+                                        (active.isRoom && msg.id.isNotEmpty))
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 2),
+                                        padding: const EdgeInsets.only(top: 3),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
@@ -2584,18 +2872,95 @@ class _MainShellScreenState extends State<MainShellScreen> {
                                               ),
                                               const SizedBox(width: 3),
                                             ],
-                                            Tooltip(
-                                              message: fullTimeTooltip,
-                                              child: Text(
-                                                timeLabel,
-                                                style: TextStyle(
-                                                  color: theme.textMuted
-                                                      .withValues(alpha: 0.75),
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w500,
+                                            if (!showHeader &&
+                                                timeLabel.isNotEmpty)
+                                              Tooltip(
+                                                message: fullTimeTooltip,
+                                                child: Text(
+                                                  timeLabel,
+                                                  style: TextStyle(
+                                                    color: theme.textMuted
+                                                        .withValues(
+                                                            alpha: 0.75),
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
+                                            if (msg.isEdited) ...[
+                                              if (!showHeader &&
+                                                  timeLabel.isNotEmpty)
+                                                const SizedBox(width: 4),
+                                              Text(
+                                                '(editada)',
+                                                style: TextStyle(
+                                                  color: theme.textMuted,
+                                                  fontSize: 10,
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                              ),
+                                            ],
+                                            if (active.isRoom &&
+                                                msg.id.isNotEmpty) ...[
+                                              if ((!showHeader &&
+                                                      timeLabel.isNotEmpty) ||
+                                                  msg.isEdited)
+                                                const SizedBox(width: 6),
+                                              InkWell(
+                                                onTap: () =>
+                                                    _toggleMessageLike(msg),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 4,
+                                                    vertical: 1,
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        msg.likes.contains(
+                                                                widget.user.id)
+                                                            ? Icons
+                                                                .favorite_rounded
+                                                            : Icons
+                                                                .favorite_border_rounded,
+                                                        size: 12,
+                                                        color: msg.likes
+                                                                .contains(widget
+                                                                    .user.id)
+                                                            ? theme.busyRed
+                                                            : theme.textMuted,
+                                                      ),
+                                                      if (msg.likes
+                                                          .isNotEmpty) ...[
+                                                        const SizedBox(
+                                                            width: 3),
+                                                        Text(
+                                                          '${msg.likes.length}',
+                                                          style: TextStyle(
+                                                            color: msg.likes
+                                                                    .contains(
+                                                                        widget
+                                                                            .user
+                                                                            .id)
+                                                                ? theme.busyRed
+                                                                : theme
+                                                                    .textMuted,
+                                                            fontSize: 10.5,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),
@@ -2667,32 +3032,79 @@ class _MainShellScreenState extends State<MainShellScreen> {
                       ),
                     ),
                   ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: _sending ? null : _pickAttachment,
-                      icon: Icon(
-                        Icons.attach_file_rounded,
-                        color: theme.palette.main,
+                if (_isRecordingAudio)
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: theme.busyRed,
+                        ),
                       ),
-                      tooltip: 'Anexar imagem ou arquivo',
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: WellInput(
-                        controller: _composerController,
-                        hintText: 'Escreva uma mensagem...',
-                        onSubmitted: (_) => _sendMessage(),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Gravando áudio • ${_formatRecordingDuration(_recordingDuration)}',
+                          style: TextStyle(
+                            color: theme.textPrimary,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    AeroButton(
-                      label: _sending ? 'Enviando...' : 'Enviar',
-                      height: 42,
-                      onPressed: _sending ? null : _sendMessage,
-                    ),
-                  ],
-                ),
+                      IconButton(
+                        onPressed: _cancelAudioRecording,
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: theme.textMuted,
+                        ),
+                        tooltip: 'Cancelar gravação',
+                      ),
+                      const SizedBox(width: 6),
+                      AeroButton(
+                        label: 'Enviar áudio',
+                        height: 42,
+                        onPressed: _stopAndSendAudioRecording,
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _sending ? null : _pickAttachment,
+                        icon: Icon(
+                          Icons.attach_file_rounded,
+                          color: theme.palette.main,
+                        ),
+                        tooltip: 'Anexar imagem ou arquivo',
+                      ),
+                      IconButton(
+                        onPressed: _sending ? null : _startAudioRecording,
+                        icon: Icon(
+                          Icons.mic_none_rounded,
+                          color: theme.palette.main,
+                        ),
+                        tooltip: 'Gravar áudio',
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: WellInput(
+                          controller: _composerController,
+                          hintText: 'Escreva uma mensagem...',
+                          onSubmitted: (_) => _sendMessage(),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      AeroButton(
+                        label: _sending ? 'Enviando...' : 'Enviar',
+                        height: 42,
+                        onPressed: _sending ? null : _sendMessage,
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -2942,6 +3354,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final owners = _roomMembers.where((m) => m.role == 'Dono').toList();
     final mods = _roomMembers.where((m) => m.role == 'Mod').toList();
     final others = _roomMembers.where((m) => m.role == null).toList();
+    final onlineCount =
+        _roomMembers.where((m) => m.presence == UserPresence.online).length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2952,6 +3366,15 @@ class _MainShellScreenState extends State<MainShellScreen> {
             color: theme.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$onlineCount online agora',
+          style: TextStyle(
+            color: theme.onlineGreen,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 14),
@@ -3762,6 +4185,94 @@ class _CreateRoomDialogState extends State<_CreateRoomDialog> {
                     label: _submitting ? 'Criando...' : 'Criar sala',
                     height: 36,
                     onPressed: _submitting ? null : _submit,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EditMessageDialog extends StatefulWidget {
+  const _EditMessageDialog({required this.initialText});
+
+  final String initialText;
+
+  @override
+  State<_EditMessageDialog> createState() => _EditMessageDialogState();
+}
+
+class _EditMessageDialogState extends State<_EditMessageDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialText);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final trimmed = _controller.text.trim();
+    if (trimmed.isNotEmpty) {
+      Navigator.of(context).pop(trimmed);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = SkyRippleTheme.of(context);
+    return Dialog(
+      backgroundColor: theme.panelSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.borderSubtle),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Editar mensagem',
+                style: TextStyle(
+                  color: theme.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
+              WellInput(
+                controller: _controller,
+                hintText: 'Digite a nova mensagem...',
+                onSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  AeroButton(
+                    label: 'Cancelar',
+                    variant: AeroButtonVariant.secondary,
+                    height: 34,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  AeroButton(
+                    label: 'Salvar',
+                    height: 34,
+                    onPressed: _submit,
                   ),
                 ],
               ),

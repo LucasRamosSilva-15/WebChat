@@ -484,8 +484,14 @@ class E2eeService {
           fileName = rawAttachment['name']?.toString() ??
               rawAttachment['fileName']?.toString();
           fileSize = rawAttachment['size']?.toString();
+          final mime = (rawAttachment['mimeType'] ??
+                  rawAttachment['type'] ??
+                  '')
+              .toString();
           if (attachmentUrl != null && attachmentUrl.isNotEmpty) {
-            kind = ChatBubbleKind.attachment;
+            kind = mime.startsWith('audio/')
+                ? ChatBubbleKind.audio
+                : ChatBubbleKind.attachment;
           }
         } else if (decryptedImage != null && decryptedImage.isNotEmpty) {
           kind = ChatBubbleKind.image;

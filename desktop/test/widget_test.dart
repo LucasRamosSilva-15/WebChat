@@ -1,15 +1,18 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:skyripple_desktop/main.dart';
 import 'package:skyripple_desktop/models/chat_models.dart';
 import 'package:skyripple_desktop/models/user_session.dart';
 import 'package:skyripple_desktop/screens/main_shell_screen.dart';
+import 'package:skyripple_desktop/services/audio_service.dart';
 import 'package:skyripple_desktop/services/auth_service.dart';
 import 'package:skyripple_desktop/services/chat_service.dart';
 import 'package:skyripple_desktop/services/e2ee_service.dart';
 import 'package:skyripple_desktop/services/realtime_service.dart';
 import 'package:skyripple_desktop/services/session_store.dart';
 import 'package:skyripple_desktop/theme/skyripple_theme.dart';
+import 'package:skyripple_desktop/widgets/chat_bubble.dart';
 import 'package:skyripple_desktop/widgets/user_avatar.dart';
 
 class _FakeAuthClient implements AuthApiClient {
@@ -296,6 +299,14 @@ class _FakeChatClient implements ChatApiClient {
     String? imageUrl,
     Map<String, dynamic>? attachment,
   }) async {
+    final mime = (attachment?['type'] ?? '').toString();
+    final kind = imageUrl != null
+        ? ChatBubbleKind.image
+        : (mime.startsWith('audio/')
+            ? ChatBubbleKind.audio
+            : (attachment != null
+                ? ChatBubbleKind.attachment
+                : ChatBubbleKind.text));
     return ChatMessage(
       id: 'rm2',
       senderId: currentUserId,
@@ -303,6 +314,8 @@ class _FakeChatClient implements ChatApiClient {
       text: content,
       imageUrl: imageUrl,
       attachmentUrl: attachment?['url']?.toString(),
+      kind: kind,
+      fileName: attachment?['name']?.toString(),
       timestamp: 'Agora',
       isSent: true,
     );
@@ -439,7 +452,15 @@ class _FakeChatClient implements ChatApiClient {
 
 class _ControllableRealtimeClient implements RealtimeClient {
   void Function(Map<String, dynamic> payload)? _onMessage;
+  void Function(String messageId, String newContent)? _onMessageEdited;
+  void Function(String messageId, String userId)? _onLikeToggled;
+  void Function(String roomId, List<String> onlineUserIds, int onlineCount)?
+      _onRoomPresenceUpdated;
   void Function(Map<String, dynamic> payload)? _onNotification;
+
+  String? lastEditedMessageId;
+  String? lastEditedContent;
+  String? lastLikedMessageId;
 
   @override
   void connect({
@@ -449,14 +470,34 @@ class _ControllableRealtimeClient implements RealtimeClient {
     required void Function(Map<String, dynamic> payload) onMessage,
     required void Function(List<String> onlineUserIds) onOnlineUsers,
     void Function(String messageId)? onMessageDeleted,
+    void Function(String messageId, String newContent)? onMessageEdited,
+    void Function(String messageId, String userId)? onLikeToggled,
+    void Function(String roomId, List<String> onlineUserIds, int onlineCount)?
+        onRoomPresenceUpdated,
+    void Function(String userId, bool isOnline)? onUserPresenceChanged,
     void Function(Map<String, dynamic> payload)? onNotification,
   }) {
     _onMessage = onMessage;
+    _onMessageEdited = onMessageEdited;
+    _onLikeToggled = onLikeToggled;
+    _onRoomPresenceUpdated = onRoomPresenceUpdated;
     _onNotification = onNotification;
   }
 
   void emitMessage(Map<String, dynamic> payload) {
     _onMessage?.call(payload);
+  }
+
+  void emitMessageEdited(String messageId, String newContent) {
+    _onMessageEdited?.call(messageId, newContent);
+  }
+
+  void emitLikeToggled(String messageId, String userId) {
+    _onLikeToggled?.call(messageId, userId);
+  }
+
+  void emitRoomPresenceUpdated(String roomId, List<String> onlineUserIds) {
+    _onRoomPresenceUpdated?.call(roomId, onlineUserIds, onlineUserIds.length);
   }
 
   void emitNotification(Map<String, dynamic> payload) {
@@ -468,6 +509,25 @@ class _ControllableRealtimeClient implements RealtimeClient {
 
   @override
   void leaveRoom(String roomId, String userId) {}
+
+  @override
+  void editMessage({
+    required String roomId,
+    required String messageId,
+    required String content,
+  }) {
+    lastEditedMessageId = messageId;
+    lastEditedContent = content;
+  }
+
+  @override
+  void toggleLike({
+    required String roomId,
+    required String messageId,
+    required String userId,
+  }) {
+    lastLikedMessageId = messageId;
+  }
 
   @override
   void dispose() {}
@@ -1039,4 +1099,205 @@ void main() {
 
     expect(find.text('Resposta secreta da Marina'), findsOneWidget);
   });
+
+  testWidgets(
+    'Room message editing, likes, and roomPresenceUpdated work in real time',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final chatClient = _FakeChatClient();
+      final realtimeClient = _ControllableRealtimeClient();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: SkyRippleTheme.buildThemeData(
+            isDark: false,
+            accent: SkyRippleAccent.blue,
+          ),
+          home: MainShellScreen(
+            user: const SkyRippleUser(
+              id: 'u1',
+              name: 'Lucas Ramos',
+              email: 'lucas@example.com',
+            ),
+            token: 'token-123',
+            apiUrl: 'https://api.example.com',
+            chatClient: chatClient,
+            realtimeClient: realtimeClient,
+            isDark: false,
+            accent: SkyRippleAccent.blue,
+            initialPresence: UserPresence.online,
+            onThemeChanged: (_) {},
+            onAccentChanged: (_) {},
+            onPresenceChanged: (_) {},
+            onSignOut: () {},
+            e2eeService: E2eeService(keyStore: MemoryE2eeKeyStore()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Salas').first);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).last, 'Texto original');
+      await tester.tap(find.text('Enviar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Texto original'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.edit_outlined).last);
+      await tester.pumpAndSettle();
+      expect(find.text('Editar mensagem'), findsOneWidget);
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.byType(TextField),
+        ),
+        'Mensagem editada!',
+      );
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+
+      expect(realtimeClient.lastEditedMessageId, 'rm2');
+      expect(realtimeClient.lastEditedContent, 'Mensagem editada!');
+      expect(find.text('Mensagem editada!'), findsOneWidget);
+      expect(find.text('(editada)'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.favorite_border_rounded).last);
+      await tester.pumpAndSettle();
+      expect(realtimeClient.lastLikedMessageId, 'rm2');
+      expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
+      expect(find.text('1'), findsWidgets);
+
+      realtimeClient.emitLikeToggled('rm2', 'u2');
+      await tester.pumpAndSettle();
+      expect(find.text('2'), findsOneWidget);
+
+      realtimeClient.emitRoomPresenceUpdated('r1', []);
+      await tester.pumpAndSettle();
+      expect(find.text('0 online agora'), findsOneWidget);
+
+      realtimeClient.emitRoomPresenceUpdated('r1', ['u3']);
+      await tester.pumpAndSettle();
+      expect(find.text('1 online agora'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Audio recording sends audio attachment and playback toggles cleanly',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final chatClient = _FakeChatClient();
+      final realtimeClient = _ControllableRealtimeClient();
+      final audioService = _FakeAudioService();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: SkyRippleTheme.buildThemeData(
+            isDark: false,
+            accent: SkyRippleAccent.blue,
+          ),
+          home: MainShellScreen(
+            user: const SkyRippleUser(
+              id: 'u1',
+              name: 'Lucas Ramos',
+              email: 'lucas@example.com',
+            ),
+            token: 'token-123',
+            apiUrl: 'https://api.example.com',
+            chatClient: chatClient,
+            realtimeClient: realtimeClient,
+            isDark: false,
+            accent: SkyRippleAccent.blue,
+            initialPresence: UserPresence.online,
+            onThemeChanged: (_) {},
+            onAccentChanged: (_) {},
+            onPresenceChanged: (_) {},
+            onSignOut: () {},
+            e2eeService: E2eeService(keyStore: MemoryE2eeKeyStore()),
+            audioService: audioService,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Salas').first);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.mic_none_rounded));
+      await tester.pumpAndSettle();
+      expect(audioService.startedRecording, isTrue);
+      expect(find.text('Enviar áudio'), findsOneWidget);
+
+      await tester.tap(find.text('Enviar áudio'));
+      await tester.pumpAndSettle();
+      expect(audioService.stoppedRecording, isTrue);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.play_arrow_rounded));
+      await tester.pumpAndSettle();
+      expect(audioService.playedUrl, startsWith('data:audio/wav;base64,'));
+      expect(find.byIcon(Icons.stop_rounded), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.stop_rounded));
+      await tester.pumpAndSettle();
+      expect(audioService.stoppedPlayback, isTrue);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    },
+  );
+}
+
+class _FakeAudioService implements AudioService {
+  bool startedRecording = false;
+  bool stoppedRecording = false;
+  bool stoppedPlayback = false;
+  String? playedUrl;
+
+  @override
+  Future<bool> get isRecordingSupported async => true;
+
+  @override
+  Future<bool> get isPlaybackSupported async => true;
+
+  @override
+  Future<void> startRecording() async {
+    startedRecording = true;
+  }
+
+  @override
+  Future<RecordedAudio?> stopRecording() async {
+    stoppedRecording = true;
+    return RecordedAudio(
+      bytes: Uint8List.fromList([82, 73, 70, 70, 0, 0, 0, 0]),
+      mimeType: 'audio/wav',
+      fileName: 'audio-test.wav',
+      duration: const Duration(seconds: 2),
+    );
+  }
+
+  @override
+  Future<void> cancelRecording() async {}
+
+  @override
+  Future<void> play(
+    String url, {
+    required String messageId,
+    VoidCallback? onCompleted,
+  }) async {
+    playedUrl = url;
+  }
+
+  @override
+  Future<void> stopPlayback() async {
+    stoppedPlayback = true;
+  }
+
+  @override
+  void dispose() {}
 }
