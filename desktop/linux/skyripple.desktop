@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=SkyRipple
+Comment=Cliente Desktop do SkyRipple WebChat
+Exec=skyripple_desktop
+Icon=skyripple
+Terminal=false
+Categories=Network;InstantMessaging;Chat;
+StartupWMClass=com.skyripple.desktop
